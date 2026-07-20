@@ -1,0 +1,36 @@
+name: BTC signal alerts
+
+on:
+  schedule:
+    # Diario a las 08:00 UTC. Las velas semanales cierran los lunes 00:00 UTC;
+    # correr a diario capta el cruce de umbrales sin spam (dedup por transición).
+    - cron: "0 8 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write   # para commitear alerts/state.json
+
+concurrency:
+  group: btc-alerts
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Comprobar señales y avisar por Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python alerts/check_signals.py
+      - name: Guardar estado
+        run: |
+          git config user.name "btc-alerts-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add alerts/state.json
+          git diff --cached --quiet || git commit -m "update alert state [skip ci]"
+          git push
