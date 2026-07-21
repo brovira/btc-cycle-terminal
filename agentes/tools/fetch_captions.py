@@ -40,9 +40,12 @@ def slug(s):
     s = re.sub(r"[^A-Za-z0-9]+", "-", s or "").strip("-").lower()
     return (s or "video")[:70]
 
-def list_videos(url):
+def list_videos(url, limit=0):
     """Expande vídeo/playlist/canal a una lista de {id,title,url,date}."""
-    r = run(["yt-dlp", "-J", "--flat-playlist", "--ignore-errors", url])
+    cmd = ["yt-dlp", "-J", "--flat-playlist", "--ignore-errors"]
+    if limit:
+        cmd += ["--playlist-end", str(limit)]
+    r = run(cmd + [url])
     if r.returncode != 0 and not r.stdout.strip():
         print(f"  ! no pude leer {url}: {r.stderr.strip()[:200]}"); return []
     try:
@@ -50,6 +53,8 @@ def list_videos(url):
     except Exception:
         return []
     entries = data.get("entries")
+    if entries is None and limit:
+        pass
     if entries is None:  # es un vídeo suelto
         vid = data.get("id");
         return [{"id": vid, "title": data.get("title"), "url": data.get("webpage_url") or url,
@@ -124,14 +129,15 @@ def main():
     ap.add_argument("--persona", required=True, help="carpeta destino: agentes/<persona>/yt-transcripts/")
     ap.add_argument("--lang", default="es", help="idioma de subtítulos (por defecto es)")
     ap.add_argument("--force", action="store_true", help="rehacer aunque ya exista")
+    ap.add_argument("--max", type=int, default=0, help="limitar a los N vídeos más recientes por URL (0 = todos)")
     ap.add_argument("urls", nargs="+", help="vídeo(s), playlist(s) o canal(es)")
     a = ap.parse_args()
     check_ytdlp()
     total = 0
     for url in a.urls:
-        vids = list_videos(url)
+        vids = list_videos(url, a.max)
         print(f"{url} → {len(vids)} vídeo(s)")
-        for v in vids:
+        for v in (vids[:a.max] if a.max else vids):
             if fetch_one(v, a.persona, a.lang, a.force):
                 total += 1
     print(f"\nListo. {total} transcript(s) nuevos en agentes/{a.persona}/yt-transcripts/")
