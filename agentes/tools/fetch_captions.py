@@ -28,13 +28,16 @@ marcan como fuente "vídeo". Un pase posterior de LLM puede limpiarlos si quiere
 import argparse, json, os, re, subprocess, sys, tempfile, glob
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+# Llamamos a yt-dlp como MÓDULO del mismo Python que ejecuta este script,
+# así funciona aunque el binario 'yt-dlp' no esté en el PATH.
+YTDLP = [sys.executable, "-m", "yt_dlp"]
 
 def run(cmd):
     return subprocess.run(cmd, capture_output=True, text=True)
 
 def check_ytdlp():
-    if run(["yt-dlp", "--version"]).returncode != 0:
-        sys.exit("ERROR: yt-dlp no está instalado. Instálalo con:  pip install yt-dlp")
+    if run(YTDLP + ["--version"]).returncode != 0:
+        sys.exit("ERROR: yt-dlp no está instalado para este Python. Instálalo con:  python3 -m pip install yt-dlp")
 
 def slug(s):
     s = re.sub(r"[^A-Za-z0-9]+", "-", s or "").strip("-").lower()
@@ -42,7 +45,7 @@ def slug(s):
 
 def list_videos(url, limit=0):
     """Expande vídeo/playlist/canal a una lista de {id,title,url,date}."""
-    cmd = ["yt-dlp", "-J", "--flat-playlist", "--ignore-errors"]
+    cmd = YTDLP + ["-J", "--flat-playlist", "--ignore-errors"]
     if limit:
         cmd += ["--playlist-end", str(limit)]
     r = run(cmd + [url])
@@ -102,7 +105,7 @@ def fetch_one(v, persona, lang, force):
     if os.path.exists(out) and not force:
         print(f"  = ya existe, salto: {name}"); return False
     with tempfile.TemporaryDirectory() as td:
-        cmd = ["yt-dlp", "--skip-download", "--write-subs", "--write-auto-subs",
+        cmd = YTDLP + ["--skip-download", "--write-subs", "--write-auto-subs",
                "--sub-langs", f"{lang}.*,{lang}", "--sub-format", "vtt/srv3/best",
                "--convert-subs", "vtt", "-o", os.path.join(td, "%(id)s.%(ext)s"),
                "--ignore-errors", v["url"]]
