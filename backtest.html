@@ -243,7 +243,7 @@ function fngCadence(){if(!FNG)return DATA.c.map(()=>null);const n=FNG.length;con
   const out=Array(n).fill(null),W=4;
   for(let i=0;i<n;i++){let s=0,cnt=0;for(let k=i-W+1;k<=i;k++){if(k>=0&&raw[k]!=null){s+=raw[k];cnt++;}}if(cnt>=W)out[i]=s/cnt;}
   return out;}
-const OPS=[["cross_up","cruza ↑"],["cross_dn","cruza ↓"],["gt","&gt;"],["lt","&lt;"],["eq","="],["rise","sube"],["fall","baja"]];
+const OPS=[["cross_up","cruza ↑"],["cross_dn","cruza ↓"],["hold_gt3","≥3 sem ▲"],["hold_lt3","≥3 sem ▼"],["gt","&gt;"],["lt","&lt;"],["eq","="],["rise","sube"],["fall","baja"]];
 
 /* ---------- estado del builder ---------- */
 let ENTRY={logic:"all",conds:[]}, EXIT={logic:"all",conds:[]};
@@ -320,15 +320,22 @@ async function loadOnchain(){try{const cm=await fetchCM();const dt=cm.dt,mkt=cm.
 let SERIES={};
 function seriesFor(op){if(op.ind==="value")return null;const key=op.ind+":"+JSON.stringify(op.params);if(!SERIES[key])SERIES[key]=INDS[op.ind].calc(op.params);return SERIES[key];}
 function evalCond(cond,i){
-  const L=seriesFor(cond.left);const li=L?L[i]:null,lip=L?L[i-1]:null;
-  let ri,rip;if(cond.right.ind==="value"){ri=rip=cond.right.params.v;}else{const R=seriesFor(cond.right);ri=R?R[i]:null;rip=R?R[i-1]:null;}
-  if(li==null||ri==null)return false;
+  const L=seriesFor(cond.left);
+  const isVal=cond.right.ind==="value";const R=isVal?null:seriesFor(cond.right);const rv=isVal?cond.right.params.v:null;
+  const Lat=k=>(L&&k>=0)?L[k]:null; const Rat=k=>isVal?rv:((R&&k>=0)?R[k]:null);
+  const li=Lat(i),lip=Lat(i-1),ri=Rat(i),rip=Rat(i-1);
+  const above=k=>{const l=Lat(k),r=Rat(k);return l!=null&&r!=null&&l>r;};
+  const below=k=>{const l=Lat(k),r=Rat(k);return l!=null&&r!=null&&l<r;};
   switch(cond.op){
-    case"cross_up":return lip!=null&&rip!=null&&lip<=rip&&li>ri;
-    case"cross_dn":return lip!=null&&rip!=null&&lip>=rip&&li<ri;
-    case"gt":return li>ri; case"lt":return li<ri;
-    case"eq":return Math.abs(li-ri)<1e-9;
-    case"rise":return lip!=null&&li>lip; case"fall":return lip!=null&&li<lip;
+    // cruces instantáneos (una vela)
+    case"cross_up":return li!=null&&ri!=null&&lip!=null&&rip!=null&&lip<=rip&&li>ri;
+    case"cross_dn":return li!=null&&ri!=null&&lip!=null&&rip!=null&&lip>=rip&&li<ri;
+    // cruces CONFIRMADOS: ha cerrado 3 semanas seguidas por encima/debajo (anti-whipsaw)
+    case"hold_gt3":return above(i)&&above(i-1)&&above(i-2);
+    case"hold_lt3":return below(i)&&below(i-1)&&below(i-2);
+    case"gt":return li!=null&&ri!=null&&li>ri; case"lt":return li!=null&&ri!=null&&li<ri;
+    case"eq":return li!=null&&ri!=null&&Math.abs(li-ri)<1e-9;
+    case"rise":return li!=null&&lip!=null&&li>lip; case"fall":return li!=null&&lip!=null&&li<lip;
   }return false;
 }
 function signal(block,i){const B=block==="entry"?ENTRY:EXIT;if(!B.conds.length)return false;const rs=B.conds.map(c=>evalCond(c,i));return B.logic==="all"?rs.every(Boolean):rs.some(Boolean);}
@@ -438,20 +445,25 @@ function paintChart(){
 /* ---------- presets ---------- */
 const PRESETS={
   /* === Ciclos · agentes === */
-  // LMEC — pilar "Bitcoin Halving Cycle Profit": acumular hacia el suelo (~sem 90-160
-  // post-halving) y tomar beneficio en el techo (~sem 40-80). Señal 100% temporal.
+  // LMEC — pilar "Bitcoin Halving Cycle Profit". Estructura histórica del ciclo:
+  //   · techo del bull ≈ 74-80 sem tras el halving (dic-2017, nov-2021)
+  //   · suelo del bear ≈ 125-135 sem tras el halving (dic-2018, nov-2022)
+  // → TOMA DE BENEFICIO en sem 70-110 (cerca del techo) y ACUMULACIÓN en sem 120-180
+  //   (DESPUÉS del suelo, no a mitad del crash). Comprar antes (sem 90) recompraba
+  //   mientras aún caía → no evitaba el bear. Señal 100% temporal.
   lmec_cycle:{name:"LMEC · Ciclo del halving",e:{logic:"all",conds:[
-    {left:{ind:"halvw",params:{}},op:"gt",right:{ind:"value",params:{v:90}}},
-    {left:{ind:"halvw",params:{}},op:"lt",right:{ind:"value",params:{v:160}}}]},
+    {left:{ind:"halvw",params:{}},op:"gt",right:{ind:"value",params:{v:120}}},
+    {left:{ind:"halvw",params:{}},op:"lt",right:{ind:"value",params:{v:180}}}]},
     x:{logic:"all",conds:[
-    {left:{ind:"halvw",params:{}},op:"gt",right:{ind:"value",params:{v:40}}},
-    {left:{ind:"halvw",params:{}},op:"lt",right:{ind:"value",params:{v:80}}}]}},
+    {left:{ind:"halvw",params:{}},op:"gt",right:{ind:"value",params:{v:70}}},
+    {left:{ind:"halvw",params:{}},op:"lt",right:{ind:"value",params:{v:110}}}]}},
   // LMEC — señal núcleo: recuperar la Bull Market Support Band = inicio de bull;
-  // perderla = fin de bull. Entra al reclaim, sale al perderla.
-  lmec_bmsb:{name:"LMEC · Ruptura BMSB",e:{logic:"all",conds:[
-    {left:{ind:"price",params:{}},op:"cross_up",right:{ind:"bmsb",params:{}}}]},
+  // perderla = fin de bull. Entra al reclaim CONFIRMADO (3 cierres semanales por
+  // encima) y sale al perderla CONFIRMADA (3 por debajo) → sin whipsaws de una vela.
+  lmec_bmsb:{name:"LMEC · Ruptura BMSB (confirmada)",e:{logic:"all",conds:[
+    {left:{ind:"price",params:{}},op:"hold_gt3",right:{ind:"bmsb",params:{}}}]},
     x:{logic:"all",conds:[
-    {left:{ind:"price",params:{}},op:"cross_dn",right:{ind:"bmsb",params:{}}}]}},
+    {left:{ind:"price",params:{}},op:"hold_lt3",right:{ind:"bmsb",params:{}}}]}},
   // Cowen — estacional: comprar 2ª mitad del año midterm (año%4=2, mes>=7),
   // vender Q4 del año pre-midterm (año%4=1, mes>=10). Sus propias palabras.
   cowen_seasonal:{name:"Cowen · Estacional midterm",e:{logic:"all",conds:[
@@ -465,7 +477,7 @@ const PRESETS={
   cowen_mvrv:{name:"Cowen · Reset MVRV Z",e:{logic:"all",conds:[
     {left:{ind:"mvrvz",params:{}},op:"lt",right:{ind:"value",params:{v:0}}}]},
     x:{logic:"all",conds:[
-    {left:{ind:"mvrvz",params:{}},op:"gt",right:{ind:"value",params:{v:7}}}]}},
+    {left:{ind:"mvrvz",params:{}},op:"gt",right:{ind:"value",params:{v:3}}}]}},
   // OnChainMind — su estrategia insignia "Fear & Greed Cadence" (bat​ió al DCA 10x
   // desde 2019). Compra: cadencia F&G cruza al alza de 0 + precio>MA200 (aprox 29
   // sem.) + F&G>20. Venta: cadencia cruza a la baja de 0. Reglas textuales suyas.
@@ -478,8 +490,8 @@ const PRESETS={
   /* === Indicadores clásicos === */
   gc:{name:"Golden/Death Cross 50/200",e:{logic:"all",conds:[{left:{ind:"sma",params:{n:50}},op:"cross_up",right:{ind:"sma",params:{n:200}}}]},x:{logic:"all",conds:[{left:{ind:"sma",params:{n:50}},op:"cross_dn",right:{ind:"sma",params:{n:200}}}]}},
   rsi:{name:"RSI sobreventa 34/70",e:{logic:"all",conds:[{left:{ind:"rsi",params:{n:14}},op:"cross_up",right:{ind:"value",params:{v:34}}}]},x:{logic:"all",conds:[{left:{ind:"rsi",params:{n:14}},op:"cross_dn",right:{ind:"value",params:{v:70}}}]}},
-  mvrv:{name:"MVRV Z suelo",e:{logic:"all",conds:[{left:{ind:"mvrvz",params:{}},op:"cross_up",right:{ind:"value",params:{v:0}}}]},x:{logic:"all",conds:[{left:{ind:"mvrvz",params:{}},op:"gt",right:{ind:"value",params:{v:5}}}]}},
-  bmsb:{name:"Tendencia BMSB",e:{logic:"all",conds:[{left:{ind:"price",params:{}},op:"cross_up",right:{ind:"bmsb",params:{}}}]},x:{logic:"all",conds:[{left:{ind:"price",params:{}},op:"cross_dn",right:{ind:"bmsb",params:{}}}]}},
+  mvrv:{name:"MVRV Z suelo",e:{logic:"all",conds:[{left:{ind:"mvrvz",params:{}},op:"cross_up",right:{ind:"value",params:{v:0}}}]},x:{logic:"all",conds:[{left:{ind:"mvrvz",params:{}},op:"gt",right:{ind:"value",params:{v:3}}}]}},
+  bmsb:{name:"Tendencia BMSB (confirmada)",e:{logic:"all",conds:[{left:{ind:"price",params:{}},op:"hold_gt3",right:{ind:"bmsb",params:{}}}]},x:{logic:"all",conds:[{left:{ind:"price",params:{}},op:"hold_lt3",right:{ind:"bmsb",params:{}}}]}},
   macd:{name:"Cruce MACD",e:{logic:"all",conds:[{left:{ind:"macd",params:{f:12,s:26}},op:"cross_up",right:{ind:"macds",params:{f:12,s:26,sig:9}}}]},x:{logic:"all",conds:[{left:{ind:"macd",params:{f:12,s:26}},op:"cross_dn",right:{ind:"macds",params:{f:12,s:26,sig:9}}}]}},
 };
 function loadPreset(k){const P=PRESETS[k];if(!P)return;ENTRY=JSON.parse(JSON.stringify(P.e));EXIT=JSON.parse(JSON.stringify(P.x));$("#stratName").value=P.name;renderBuilder();}
@@ -520,7 +532,11 @@ function importSaved(file){const rd=new FileReader();rd.onload=()=>{try{const ar
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("no se pudo cargar Plotly");}
 
-function run(){if(!DATA)return;try{backtest();paint();}catch(e){const b=$("#errBanner");b.style.display="block";b.textContent="Error en el backtest: "+((e&&e.message)||e);}}
+function usesOnchain(){return [...ENTRY.conds,...EXIT.conds].some(c=>(c.left&&c.left.ind==="mvrvz")||(c.right&&c.right.ind==="mvrvz"));}
+function run(){if(!DATA)return;const b=$("#errBanner");b.style.display="none";
+  try{backtest();paint();
+    if(usesOnchain()&&!OC){b.style.display="block";b.textContent="⚠️ Esta estrategia usa MVRV Z, pero el on-chain no cargó (n/d) → 0 operaciones (por eso ROI 0%). Pulsa «↻ Datos» para reintentar; si persiste, el proveedor on-chain (Coin Metrics) está bloqueado y habría que tirar del proxy /api/coinmetrics o de Glassnode.";}
+  }catch(e){b.style.display="block";b.textContent="Error en el backtest: "+((e&&e.message)||e);}}
 async function boot(){
   $("#statusDot").className="dot warn";$("#statusText").textContent="Cargando datos…";$("#errBanner").style.display="none";
   sload();renderSaved();

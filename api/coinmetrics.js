@@ -15,7 +15,9 @@ module.exports = async (req, res) => {
   const url = new URL(req.url, "http://x");
   const upstream = "https://community-api.coinmetrics.io/v4/timeseries/asset-metrics" + (url.search || "");
   try {
-    const r = await fetch(upstream, { headers: { accept: "application/json" } });
+    // User-Agent de navegador: Coin Metrics/Cloudflare devuelve 403 a peticiones sin UA
+    // (era la causa probable del on-chain "n/d"). Con UA de servidor-a-servidor pasa.
+    const r = await fetch(upstream, { headers: { accept: "application/json", "User-Agent": "Mozilla/5.0 (compatible; btc-cycle-terminal/1.0; +https://btc-cycle-terminal.vercel.app)" } });
     const text = await r.text();
     res.setHeader("Cache-Control", "s-maxage=1800, stale-while-revalidate=3600"); // cache 30 min
     res.statusCode = r.status;
