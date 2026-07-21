@@ -409,17 +409,24 @@ function bmsbSignal(){
   const n=DATA.c.length,c=DATA.c,s20=IND.s20,e21=IND.e21,rs=IND.rsi,M=IND.macd;
   const hi=i=>(s20[i]!=null&&e21[i]!=null)?Math.max(s20[i],e21[i]):null;
   const lb=i=>(s20[i]!=null&&e21[i]!=null)?Math.min(s20[i],e21[i]):null;
-  const ev=[];let state=null;
-  for(let i=1;i<n;i++){const H=hi(i),L=lb(i);if(H==null)continue;
+  // Bear anclado al techo del ciclo: drawdown >=25% desde máximos + cierre bajo la banda.
+  // Si el precio hace nuevo ATH antes de completar las 2 rupturas al alza, era corrección
+  // (p.ej. may-2021) -> se cancela el bear y se borra la "trampa" espuria.
+  const first=[],second=[];
+  let peak=0,curInBear=false,curUps=0,bearFirst=null,state=null;
+  for(let i=1;i<n;i++){
+    if(c[i]>peak)peak=c[i];
+    const H=hi(i),L=lb(i);if(H==null)continue;
     const aC=c[i]>H&&hi(i-1)!=null&&c[i-1]>hi(i-1);
     const bC=c[i]<L&&lb(i-1)!=null&&c[i-1]<lb(i-1);
-    if(aC&&state!=="up"){if(state)ev.push({i,t:"up"});state="up";}
-    else if(bC&&state!=="down"){if(state)ev.push({i,t:"down"});state="down";}
-    else if(!state)state=c[i]>H?"up":c[i]<L?"down":null;}
-  const first=[],second=[];let curInBear=false,curUps=0,lastUpI=null;
-  for(const e of ev){
-    if(e.t==="up"){lastUpI=e.i;if(curInBear){curUps++;if(curUps===1)first.push(e.i);else if(curUps===2){second.push(e.i);curInBear=false;}}}
-    else{const bl=lastUpI!=null?e.i-lastUpI:999;if(bl>=40){curInBear=true;curUps=0;}}}
+    if(c[i]>=peak&&curInBear){if(bearFirst!=null){const k=first.indexOf(bearFirst);if(k>=0)first.splice(k,1);}curInBear=false;curUps=0;bearFirst=null;}
+    if(!curInBear&&peak>0&&c[i]<peak*0.75&&bC){curInBear=true;curUps=0;bearFirst=null;}
+    let upEvent=false;
+    if(aC&&state!=="up"){upEvent=true;state="up";}
+    else if(bC&&state!=="down"){state="down";}
+    else if(!state)state=c[i]>H?"up":c[i]<L?"down":null;
+    if(upEvent&&curInBear){curUps++;if(curUps===1){bearFirst=i;first.push(i);}else if(curUps===2){second.push(i);curInBear=false;bearFirst=null;}}
+  }
   const i=n-1,rsiV=rs[i],mHist=M.h[i],mL=M.m[i],mLp=M.m[i-1];
   const macdRecovGreen=mHist!=null&&mHist>0&&mL!=null&&mLp!=null&&mL>mLp;
   const rsi4050=rsiV!=null&&rsiV>=40&&rsiV<=50;
@@ -466,6 +473,7 @@ function renderChart(){
   const ax={gridcolor:cGrid,zerolinecolor:cGrid,linecolor:cGrid,color:cMut,tickfont:{size:10}};
   const layout={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:cInk,family:cssv("--font")},
     margin:{l:58,r:14,t:8,b:22},dragmode:"zoom",hovermode:"x unified",
+    hoverlabel:{bgcolor:cPanel,bordercolor:cAcc,font:{color:cInk,size:11,family:cssv("--font")}},
     legend:{orientation:"h",y:1.03,x:0,font:{size:10.5},bgcolor:"rgba(0,0,0,0)"},
     xaxis:{...ax,anchor:"y4",type:"date",range:["2015-06-01","2027-06-01"]},
     yaxis:{...ax,domain:[0.52,1],type:"log",title:{text:"Precio (log)",font:{size:11}}},

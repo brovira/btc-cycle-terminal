@@ -141,17 +141,28 @@ function bmsbSignal(){
   const n=DATA.c.length,c=DATA.c,s20=IND.s20,e21=IND.e21,rs=IND.rsi,M=IND.macd;
   const hi=i=>(s20[i]!=null&&e21[i]!=null)?Math.max(s20[i],e21[i]):null;
   const lb=i=>(s20[i]!=null&&e21[i]!=null)?Math.min(s20[i],e21[i]):null;
-  const ev=[];let state=null;
-  for(let i=1;i<n;i++){const H=hi(i),L=lb(i);if(H==null)continue;
-    const aC=c[i]>H&&hi(i-1)!=null&&c[i-1]>hi(i-1);
-    const bC=c[i]<L&&lb(i-1)!=null&&c[i-1]<lb(i-1);
-    if(aC&&state!=="up"){if(state)ev.push({i,t:"up"});state="up";}
-    else if(bC&&state!=="down"){if(state)ev.push({i,t:"down"});state="down";}
-    else if(!state)state=c[i]>H?"up":c[i]<L?"down":null;}
-  const first=[],second=[];let curInBear=false,curUps=0,lastUpI=null;
-  for(const e of ev){
-    if(e.t==="up"){lastUpI=e.i;if(curInBear){curUps++;if(curUps===1)first.push(e.i);else if(curUps===2){second.push(e.i);curInBear=false;}}}
-    else{const bl=lastUpI!=null?e.i-lastUpI:999;if(bl>=40){curInBear=true;curUps=0;}}}
+  // Un BEAR de verdad arranca DESPUÉS del techo del ciclo: exige drawdown >=25% desde
+  // el máximo histórico + cierre confirmado bajo la banda. Si el precio recupera y hace
+  // NUEVO máximo antes de completar las 2 rupturas al alza, era solo una corrección del
+  // alcista (p.ej. may-2021) → se cancela el bear y se borra la "trampa" espuria.
+  const first=[],second=[];
+  let peak=0,bearActive=false,ups=0,bearFirst=null,state=null;
+  for(let i=1;i<n;i++){
+    if(c[i]>peak)peak=c[i];
+    const H=hi(i),L=lb(i);if(H==null)continue;
+    const aC=c[i]>H&&hi(i-1)!=null&&c[i-1]>hi(i-1);   // 2 cierres sobre la banda
+    const bC=c[i]<L&&lb(i-1)!=null&&c[i-1]<lb(i-1);   // 2 cierres bajo la banda
+    // nuevo ATH mientras el bear no se ha confirmado (2ª ruptura) => era corrección: cancelar
+    if(c[i]>=peak&&bearActive){if(bearFirst!=null){const k=first.indexOf(bearFirst);if(k>=0)first.splice(k,1);}bearActive=false;ups=0;bearFirst=null;}
+    // activar bear: caída >=25% desde máximos + confirmado bajo la banda
+    if(!bearActive&&peak>0&&c[i]<peak*0.75&&bC){bearActive=true;ups=0;bearFirst=null;}
+    // ruptura AL ALZA fresca (cambio de estado abajo->arriba, confirmada)
+    let upEvent=false;
+    if(aC&&state!=="up"){upEvent=true;state="up";}
+    else if(bC&&state!=="down"){state="down";}
+    else if(!state)state=c[i]>H?"up":c[i]<L?"down":null;
+    if(upEvent&&bearActive){ups++;if(ups===1){bearFirst=i;first.push(i);}else if(ups===2){second.push(i);bearActive=false;bearFirst=null;}}
+  }
   const i=n-1,rsiV=rs[i],mHist=M.h[i],mL=M.m[i],mLp=M.m[i-1];
   const macdRecovGreen=mHist!=null&&mHist>0&&mL!=null&&mLp!=null&&mL>mLp;
   const rsi4050=rsiV!=null&&rsiV>=40&&rsiV<=50;
@@ -159,8 +170,8 @@ function bmsbSignal(){
   const buySignal=!!secondRecent&&macdRecovGreen&&rsi4050;
   // second break condition (the "structural" one): are we at/after a 2nd break in current cycle?
   const secondBreakNow=!!secondRecent;
-  let stage; if(curInBear){stage=curUps===0?"waiting1":"waiting2";}else{stage=second.length&&(n-1-second[second.length-1])<=26?"confirmed":"outside";}
-  return{first,second,stage,curUps,curInBear,macdRecovGreen,rsi4050,rsiV,mHist,secondBreakNow,buySignal};
+  let stage; if(bearActive){stage=ups===0?"waiting1":"waiting2";}else{stage=second.length&&(n-1-second[second.length-1])<=26?"confirmed":"outside";}
+  return{first,second,stage,curUps:ups,curInBear:bearActive,macdRecovGreen,rsi4050,rsiV,mHist,secondBreakNow,buySignal};
 }
 
 let BMS=null;
@@ -224,6 +235,7 @@ function renderChart(){
   ];
   const layout={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:cInk,family:cssv("--font")},
     margin:{l:56,r:12,t:8,b:22},dragmode:"zoom",hovermode:"x unified",
+    hoverlabel:{bgcolor:cPanel,bordercolor:cAcc,font:{color:cInk,size:11,family:cssv("--font")}},
     legend:{orientation:"h",y:1.04,x:0,font:{size:11},bgcolor:"rgba(0,0,0,0)"},
     xaxis:{...ax,anchor:"y3",type:"date",range:["2015-06-01","2027-06-01"]},
     yaxis:{...ax,domain:[0.42,1],type:"log",title:{text:"Precio (log)",font:{size:11}}},
