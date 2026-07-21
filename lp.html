@@ -58,6 +58,9 @@
   .badge.closed{color:var(--muted);background:color-mix(in oklab,var(--muted) 16%,transparent)}
   .kv{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid var(--line);font-size:13px} .kv:first-of-type{border-top:none;margin-top:8px}
   .kv .k{color:var(--muted)} .kv .v{font-family:var(--mono);font-weight:700}
+  .rbar{position:relative;height:8px;border-radius:5px;background:var(--panel2);border:1px solid var(--line);margin:8px 0 3px}
+  .rbar .fill{position:absolute;inset:0;border-radius:5px;background:color-mix(in oklab,var(--accum) 26%,transparent)}
+  .rbar .mark{position:absolute;top:-4px;width:3px;height:16px;border-radius:2px}
   #feeChart{width:100%;height:340px}
   table.t{width:100%;border-collapse:collapse;font-size:12.5px}
   table.t th,table.t td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
@@ -209,7 +212,7 @@ function buildPnl(data){
     return{mint:p.positionMint,pair:primaryPair(p.tokens),status:p.status||"?",computed:(p.analyticsStatus||{}).pnl==="computed",
       first:(p.firstSeen||0)*1000,last:(p.lastSeen||0)*1000,days:Math.max(1,((p.lastSeen-p.firstSeen)||0)/86400),
       invested:pf.investedValueUsd,withdrawn:pf.withdrawnValueUsd,fees:pf.feeLikeValueUsd,gas:pf.gasValueUsd,
-      pnl:pf.netPnlUsd,pnlPct:pf.netPnlPct,vsHold:(vs.complete?vs.pnlUsd:null),current:pf.currentValueUsd};});
+      pnl:pf.netPnlUsd,pnlPct:pf.netPnlPct,vsHold:(vs.complete?vs.pnlUsd:null),current:pf.currentValueUsd,range:p.priceRange||null};});
   P.sort((a,b)=>b.last-a.last);
   const open=P.filter(p=>p.status==="open"),closed=P.filter(p=>p.status==="closed");
   const realized=closed.filter(p=>p.computed).reduce((s,p)=>s+(p.pnl||0),0);
@@ -219,6 +222,29 @@ function buildPnl(data){
   const invOpen=open.reduce((s,p)=>s+(p.invested||0),0);
   return{P,open,closed,realized,fees,gas,vsHoldTot,invOpen,
     first:P.length?Math.min(...P.map(p=>p.first)):0,last:P.length?Math.max(...P.map(p=>p.last)):0};
+}
+let BTC_PRICE=null;
+async function fetchBtc(){
+  for(const u of["https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT","https://api.binance.us/api/v3/ticker/price?symbol=BTCUSDT"]){
+    try{const r=await fetch(u,{cache:"no-store"});if(r.ok){BTC_PRICE=+(await r.json()).price;return;}}catch(e){}}
+  try{const r=await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd",{cache:"no-store"});if(r.ok){BTC_PRICE=(await r.json()).bitcoin.usd;}}catch(e){}
+}
+function rangeMarkup(r){
+  if(!r)return `<div class="kv"><span class="k">Rango</span><span class="v" style="color:var(--muted)">—</span></div>`;
+  if(r.quote==="USDC"){
+    const lo=r.priceLow,hi=r.priceHigh,px=BTC_PRICE;
+    const inr=px!=null&&px>=lo&&px<=hi;
+    const posPct=px!=null?Math.max(0,Math.min(1,(px-lo)/(hi-lo)))*100:null;
+    const status=px==null?`<span style="color:var(--muted)">precio no disponible</span>`
+      :inr?`<span style="color:var(--bull);font-weight:700">🟢 En rango · BTC ${fmtUSD(px)}</span>`
+      :px<lo?`<span style="color:var(--bear);font-weight:700">🔴 BTC ${fmtUSD(px)} por DEBAJO (→ 100% cbBTC)</span>`
+      :`<span style="color:var(--bear);font-weight:700">🔴 BTC ${fmtUSD(px)} por ENCIMA (→ 100% USDC)</span>`;
+    return `<div class="kv"><span class="k">Rango</span><span class="v">${fmtUSD(lo)} – ${fmtUSD(hi)}</span></div>
+      <div class="rbar"><div class="fill"></div>${posPct!=null?`<div class="mark" style="left:${posPct}%;background:${inr?'var(--bull)':'var(--bear)'}"></div>`:''}</div>
+      <div style="font-size:11.5px;margin-top:2px">${status}</div>`;
+  }
+  return `<div class="kv"><span class="k">Rango (${esc(r.quote)}/${esc(r.base)})</span><span class="v">${r.priceLow.toFixed(4)} – ${r.priceHigh.toFixed(4)}</span></div>
+    <div style="font-size:11.5px;margin-top:2px;color:var(--muted)">peg BTC/BTC (~1.0) · en rango salvo depeg</div>`;
 }
 function renderPnl(){
   const M=PNL;
@@ -244,7 +270,7 @@ function renderPnl(){
     <div class="kv"><span class="k">Fees/rewards</span><span class="v up">${fmtUSD(p.fees,0)}</span></div>
     <div class="kv"><span class="k">PnL</span><span class="v ${(p.pnl||0)>=0?'up':'down'}">${p.computed?fmtUSD(p.pnl,0):'parcial'}</span></div>
     <div class="kv"><span class="k">Días activa</span><span class="v">${p.days.toFixed(0)}d</span></div>
-    <div class="kv"><span class="k">Desde</span><span class="v">${p.first?new Date(p.first).toISOString().slice(0,10):'—'}</span></div>
+    ${rangeMarkup(p.range)}
   </div>`).join(""):'<div class="note">Ninguna posición abierta detectada en el JSON.</div>';
   // grafico: PnL realizado acumulado por fecha de cierre
   const cInk=cssv("--ink"),cMut=cssv("--muted"),cGrid=cssv("--grid"),cPanel=cssv("--panel"),cAcc=cssv("--accent"),cBull=cssv("--bull");
@@ -350,6 +376,7 @@ drop.addEventListener("drop",e=>{const f=e.dataTransfer.files[0];if(f){const r=n
 $("#clearBtn").addEventListener("click",()=>{localStorage.removeItem(LKEY);location.reload();});
 $("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);redraw();});
 (function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);
+  fetchBtc().then(()=>redraw());
   const saved=localStorage.getItem(LKEY);if(saved){loadPlotly().then(()=>loadText(saved));}})();
 </script>
 </body>
