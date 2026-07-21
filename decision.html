@@ -60,6 +60,9 @@
   .note{font-size:12.5px;color:var(--muted);line-height:1.6}
   footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;line-height:1.6}
   .banner{display:none;margin:14px 0 0;padding:10px 13px;border-radius:11px;background:color-mix(in oklab,var(--hot) 14%,var(--panel));border:1px solid color-mix(in oklab,var(--hot) 40%,var(--line));font-size:12.5px;color:var(--ink2)}
+  .htbl{width:100%;border-collapse:collapse;font-size:13px}
+  .htbl th{text-align:left;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+  .htbl td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
@@ -97,6 +100,14 @@
   <div class="sec-head"><h2>Niveles en vivo</h2><div class="rule"></div></div>
   <div class="levels" id="levels"></div>
 
+  <div class="sec-head"><h2>Historial y acierto</h2><div class="rule"></div><span class="mtxt" id="histCount" style="font-size:12px"></span></div>
+  <div id="histWrap">
+    <div class="note" id="histEmpty">El sistema <b>registra cada semana</b> la recomendación y luego mide su resultado (retorno de BTC desde entonces). Aún no hay histórico — se llena solo cada lunes. Para sembrarlo ya: GitHub → <b>Actions</b> → «Decision history snapshot» → <b>Run workflow</b>.</div>
+    <div id="scorecards" class="grid" style="margin-bottom:14px"></div>
+    <div style="overflow:auto" id="histTblWrap"><table class="htbl" id="histTbl"></table></div>
+    <div class="note" id="histFoot" style="margin-top:10px;display:none">«Acierto»: para acciones de <b>compra/esperar-compra</b> cuenta si BTC subió después; para <b>Tomar beneficio</b>, si bajó después. Con pocas semanas el dato es orientativo — sirve para <b>calibrar los umbrales</b>, no como verdad absoluta.</div>
+  </div>
+
   <div class="sec-head"><h2>Cómo se decide</h2><div class="rule"></div></div>
   <div class="note" id="logic"></div>
 
@@ -109,6 +120,7 @@
 "use strict";
 const $=s=>document.querySelector(s);
 const fmtUSD=(v,d=0)=>v==null||isNaN(v)?"—":"$"+Number(v).toLocaleString("en-US",{maximumFractionDigits:d,minimumFractionDigits:d});
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
 (function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
 $("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);});
 
@@ -243,12 +255,44 @@ function render(R){
   if(nd){$("#banner").style.display="block";$("#banner").innerHTML="⚠️ Alguna señal on-chain (MVRV / F&amp;G) no cargó y no cuenta en el marcador. Si el MVRV sale <b>n/d</b> de forma persistente, el proveedor on-chain (Coin Metrics) está bloqueado — se arregla con el proxy <code>/api/coinmetrics</code> o Glassnode.";}
 }
 
+/* ---------- historial: lee data/decision_history.json y puntúa el acierto ---------- */
+const BUY_ACTIONS=new Set(["Comprar por niveles","DCA base","Esperar dip a nivel","Esperar seasonality","Esperar dip"]);
+function hitOf(action,fwd){
+  if(action==="Tomar beneficio")return fwd<0;   // vender antes de una caída = acierto
+  if(BUY_ACTIONS.has(action))return fwd>0;       // comprar/esperar antes de una subida = acierto
+  return null;
+}
+async function loadHistory(livePrice){
+  let hist=null;
+  try{const r=await fetch("data/decision_history.json?_="+new Date().getTime(),{cache:"no-store"});if(r.ok)hist=await r.json();}catch(e){}
+  const snaps=(hist&&Array.isArray(hist.snapshots))?hist.snapshots.filter(s=>s&&s.price>0):[];
+  if(!snaps.length)return;
+  $("#histEmpty").style.display="none";$("#histFoot").style.display="block";
+  $("#histCount").textContent=snaps.length+(snaps.length===1?" semana registrada":" semanas registradas");
+  // scorecard por tipo de acción
+  const byAction={};
+  for(const s of snaps){const fwd=livePrice/s.price-1;(byAction[s.action]=byAction[s.action]||[]).push(fwd);}
+  const cards=Object.keys(byAction).map(a=>{const arr=byAction[a];const avg=arr.reduce((x,y)=>x+y,0)/arr.length;
+    const hits=arr.map(f=>hitOf(a,f)).filter(h=>h!=null);const hr=hits.length?Math.round(100*hits.filter(Boolean).length/hits.length):null;return{a,n:arr.length,avg,hr};});
+  $("#scorecards").innerHTML=cards.map(c=>`<div class="sig"><div class="r1"><span class="nm">${esc(c.a)}</span><span class="st ${c.hr==null?"off":(c.hr>=50?"on":"nd")}">${c.hr==null?"—":c.hr+"% ok"}</span></div>
+    <div class="val" style="color:${c.avg>=0?'var(--bull)':'var(--bear)'}">${(c.avg>=0?"+":"")+(c.avg*100).toFixed(1)}%</div>
+    <div class="ds">retorno medio de BTC desde esas ${c.n} recomendación(es) hasta hoy</div></div>`).join("");
+  // tabla, reciente primero
+  const rows=snaps.slice().reverse();
+  $("#histTbl").innerHTML=`<thead><tr><th>Semana</th><th>Acción</th><th>Señales</th><th>Precio BTC</th><th>Desde entonces</th><th>Acierto</th></tr></thead><tbody>`+
+    rows.map(s=>{const fwd=livePrice/s.price-1;const h=hitOf(s.action,fwd);
+      return `<tr><td class="mono">${esc(s.date)}</td><td>${esc(s.action)}</td><td class="mono">${s.lit}/${s.tot}</td><td class="mono">${fmtUSD(s.price)}</td>
+        <td class="mono" style="color:${fwd>=0?'var(--bull)':'var(--bear)'}">${(fwd>=0?"+":"")+(fwd*100).toFixed(1)}%</td>
+        <td>${h==null?'<span class="st off">n/a</span>':(h?'<span class="st on">✓</span>':'<span class="st nd">✗</span>')}</td></tr>`;}).join("")+`</tbody>`;
+}
+
 (async function(){
   try{
     const D=await fetchWeekly();
     const [z,fng]=await Promise.all([fetchMVRVZ().catch(()=>null),fetchFNG().catch(()=>null)]);
     D.z=z;D.fng=fng;
     const R=evaluate(D);render(R);
+    loadHistory(R.price);
     $("#statusDot").className="dot ok";
     $("#statusText").textContent="Actualizado · "+new Date().toISOString().slice(0,10)+" · fuente: Binance"+(z!=null?" + Coin Metrics":"");
   }catch(e){
