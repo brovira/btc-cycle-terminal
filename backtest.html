@@ -111,13 +111,21 @@
     <div class="panel">
       <div class="cfg">
         <div class="fld"><label>Preset</label><select id="c_preset">
-          <option value="">— cargar ejemplo —</option>
-          <option value="gc">Golden/Death Cross 50/200</option>
-          <option value="rsi">RSI sobreventa (34/70)</option>
-          <option value="mvrv">MVRV Z suelo (&lt;0 dentro, &gt;5 fuera)</option>
-          <option value="bmsb">Tendencia BMSB (cruce banda)</option>
-          <option value="macd">Cruce MACD (línea/señal)</option>
-        </select><span class="hint">rellena el constructor</span></div>
+          <option value="">— cargar estrategia —</option>
+          <optgroup label="🔄 Ciclos · agentes">
+            <option value="lmec_cycle">LMEC · Ciclo del halving (temporal)</option>
+            <option value="lmec_bmsb">LMEC · Ruptura de la BMSB</option>
+            <option value="cowen_seasonal">Cowen · Estacional midterm (compra H2 midterm / vende Q4 pre-midterm)</option>
+            <option value="cowen_mvrv">Cowen · Reset MVRV Z (&lt;0 dentro / &gt;7 fuera)</option>
+          </optgroup>
+          <optgroup label="📐 Indicadores clásicos">
+            <option value="gc">Golden/Death Cross 50/200</option>
+            <option value="rsi">RSI sobreventa (34/70)</option>
+            <option value="mvrv">MVRV Z suelo (&lt;0 dentro, &gt;5 fuera)</option>
+            <option value="bmsb">Tendencia BMSB (cruce banda)</option>
+            <option value="macd">Cruce MACD (línea/señal)</option>
+          </optgroup>
+        </select><span class="hint">carga y ejecuta al instante</span></div>
         <div class="fld"><label>Capital inicial (USD)</label><input type="number" id="c_cap" value="10000" step="any"></div>
         <div class="fld"><label>Comisión+slippage %</label><input type="number" id="c_fee" value="0.1" step="0.05"><span class="hint">por operación</span></div>
         <div class="fld"><label>Tamaño posición %</label><input type="number" id="c_size" value="100" step="5"><span class="hint">del capital por entrada</span></div>
@@ -183,8 +191,11 @@
 
   <footer>
     <div class="note" style="max-width:960px">
-      <b>Cómo funciona.</b> Construyes <b>señales de entrada y salida</b> combinando indicadores (precio, SMA/EMA con el periodo que quieras, RSI, MACD línea/señal/histograma, BMSB, MVRV Z) con operadores (<b>cruza al alza/baja, &gt;, &lt;, sube, baja</b>) contra otro indicador o un valor fijo. Combina varias condiciones con <b>Y / O</b>. El motor entra/sale <b>al cierre semanal</b> de la señal, aplica comisión+slippage, y calcula métricas <b>profesionales</b>: ROI, CAGR, <b>Sharpe</b>, max drawdown, win-rate, profit factor, exposición y comparación contra <b>comprar y aguantar</b>. Guarda cada estrategia con sus resultados (en tu navegador) y expórtalas. Long-only sobre spot (sin apalancamiento).
-      <br><b>Nota:</b> MACD/BMSB/MVRV Z usan la misma config que los paneles LMEC/Cowen (semanal). Los <b>derivados</b> (funding, IV/skew) entran como indicadores cuando conectemos esa fuente. <b>Uso educativo — la rentabilidad pasada no garantiza resultados; no es asesoramiento financiero.</b>
+      <b>Cómo funciona.</b> Construyes <b>señales de entrada y salida</b> combinando indicadores con operadores (<b>cruza al alza/baja, &gt;, &lt;, =, sube, baja</b>) contra otro indicador o un valor fijo, y combinas varias condiciones con <b>Y / O</b>. Indicadores disponibles:
+      <br>• <b>Técnicos:</b> precio, SMA/EMA(n), RSI, MACD (línea/señal/histograma), BMSB · <b>On-chain:</b> MVRV Z.
+      <br>• <b>Temporales (ciclo):</b> <b>Sem. desde halving</b> (para el «Bitcoin Halving Cycle Profit» de LMEC), <b>Mes</b> y <b>Año del ciclo (%4)</b> (para las señales <b>estacionales</b> de Cowen: comprar 2ª mitad del año midterm, vender Q4 del año pre-midterm).
+      <br>El motor entra/sale <b>al cierre semanal</b> de la señal, aplica comisión+slippage, y calcula métricas <b>profesionales</b>: ROI, CAGR, <b>Sharpe</b>, max drawdown, win-rate, profit factor, exposición y comparación contra <b>comprar y aguantar</b>. Los presets <b>🔄 Ciclos · agentes</b> traen las estrategias de <b>LMEC y Cowen ya prediseñadas</b> — selecciónalas para ver qué han dado históricamente. Guarda cada estrategia con sus resultados (en tu navegador) y expórtalas. Long-only sobre spot.
+      <br><b>Derivados</b> (funding, IV/skew) entrarán como indicadores más cuando conectemos esa fuente. <b>Uso educativo — la rentabilidad pasada no garantiza resultados; no es asesoramiento financiero.</b>
     </div>
   </footer>
 </div>
@@ -203,6 +214,10 @@ function ema(a,n){const o=Array(a.length).fill(null);const k=2/(n+1);let p=null,
 function rsi(c,n=14){const o=Array(c.length).fill(null);let g=0,l=0;for(let i=1;i<c.length;i++){const ch=c[i]-c[i-1],gg=Math.max(0,ch),ll=Math.max(0,-ch);if(i<=n){g+=gg;l+=ll;if(i===n){g/=n;l/=n;o[i]=100-100/(1+(l===0?1e9:g/l));}}else{g=(g*(n-1)+gg)/n;l=(l*(n-1)+ll)/n;o[i]=100-100/(1+(l===0?1e9:g/l));}}return o;}
 function macdParts(c,f,s,sig){const ef=ema(c,f),es=ema(c,s);const line=c.map((_,i)=>(ef[i]!=null&&es[i]!=null)?ef[i]-es[i]:null);const signal=ema(line.map(x=>x==null?null:x),sig);const hist=line.map((_,i)=>(line[i]!=null&&signal[i]!=null)?line[i]-signal[i]:null);return{line,signal,hist};}
 
+/* ---------- ciclo del halving (para señales temporales) ---------- */
+const HALVINGS=["2012-11-28","2016-07-09","2020-05-11","2024-04-19","2028-04-20"].map(d=>Date.parse(d));
+function halvSeries(){const WK=7*864e5;return DATA.t.map(ms=>{let H=HALVINGS[0];for(const h of HALVINGS)if(h<=ms)H=h;return (ms-H)/WK;});}
+
 /* ---------- registro de indicadores para el builder ---------- */
 const INDS={
   price:{lbl:"Precio",params:[],calc:()=>DATA.c},
@@ -214,9 +229,12 @@ const INDS={
   macdh:{lbl:"MACD histog.",params:[["f",12],["s",26],["sig",9]],calc:p=>macdParts(DATA.c,p.f,p.s,p.sig).hist},
   bmsb:{lbl:"BMSB (banda)",params:[],calc:()=>{const a=sma(DATA.c,20),b=ema(DATA.c,21);return DATA.c.map((_,i)=>(a[i]!=null&&b[i]!=null)?Math.max(a[i],b[i]):null);}},
   mvrvz:{lbl:"MVRV Z",params:[],calc:()=>OC?OC.z:DATA.c.map(()=>null)},
+  halvw:{lbl:"Sem. desde halving",params:[],calc:()=>halvSeries()},
+  month:{lbl:"Mes (1-12)",params:[],calc:()=>DATA.t.map(ms=>new Date(ms).getUTCMonth()+1)},
+  ymod4:{lbl:"Año del ciclo (%4)",params:[],calc:()=>DATA.t.map(ms=>new Date(ms).getUTCFullYear()%4)},
   value:{lbl:"Valor fijo",params:[["v",0]],isConst:true},
 };
-const OPS=[["cross_up","cruza ↑"],["cross_dn","cruza ↓"],["gt","&gt;"],["lt","&lt;"],["rise","sube"],["fall","baja"]];
+const OPS=[["cross_up","cruza ↑"],["cross_dn","cruza ↓"],["gt","&gt;"],["lt","&lt;"],["eq","="],["rise","sube"],["fall","baja"]];
 
 /* ---------- estado del builder ---------- */
 let ENTRY={logic:"all",conds:[]}, EXIT={logic:"all",conds:[]};
@@ -291,6 +309,7 @@ function evalCond(cond,i){
     case"cross_up":return lip!=null&&rip!=null&&lip<=rip&&li>ri;
     case"cross_dn":return lip!=null&&rip!=null&&lip>=rip&&li<ri;
     case"gt":return li>ri; case"lt":return li<ri;
+    case"eq":return Math.abs(li-ri)<1e-9;
     case"rise":return lip!=null&&li>lip; case"fall":return lip!=null&&li<lip;
   }return false;
 }
@@ -400,6 +419,36 @@ function paintChart(){
 
 /* ---------- presets ---------- */
 const PRESETS={
+  /* === Ciclos · agentes === */
+  // LMEC — pilar "Bitcoin Halving Cycle Profit": acumular hacia el suelo (~sem 90-160
+  // post-halving) y tomar beneficio en el techo (~sem 40-80). Señal 100% temporal.
+  lmec_cycle:{name:"LMEC · Ciclo del halving",e:{logic:"all",conds:[
+    {left:{ind:"halvw",params:{}},op:"gt",right:{ind:"value",params:{v:90}}},
+    {left:{ind:"halvw",params:{}},op:"lt",right:{ind:"value",params:{v:160}}}]},
+    x:{logic:"all",conds:[
+    {left:{ind:"halvw",params:{}},op:"gt",right:{ind:"value",params:{v:40}}},
+    {left:{ind:"halvw",params:{}},op:"lt",right:{ind:"value",params:{v:80}}}]}},
+  // LMEC — señal núcleo: recuperar la Bull Market Support Band = inicio de bull;
+  // perderla = fin de bull. Entra al reclaim, sale al perderla.
+  lmec_bmsb:{name:"LMEC · Ruptura BMSB",e:{logic:"all",conds:[
+    {left:{ind:"price",params:{}},op:"cross_up",right:{ind:"bmsb",params:{}}}]},
+    x:{logic:"all",conds:[
+    {left:{ind:"price",params:{}},op:"cross_dn",right:{ind:"bmsb",params:{}}}]}},
+  // Cowen — estacional: comprar 2ª mitad del año midterm (año%4=2, mes>=7),
+  // vender Q4 del año pre-midterm (año%4=1, mes>=10). Sus propias palabras.
+  cowen_seasonal:{name:"Cowen · Estacional midterm",e:{logic:"all",conds:[
+    {left:{ind:"ymod4",params:{}},op:"eq",right:{ind:"value",params:{v:2}}},
+    {left:{ind:"month",params:{}},op:"gt",right:{ind:"value",params:{v:6}}}]},
+    x:{logic:"all",conds:[
+    {left:{ind:"ymod4",params:{}},op:"eq",right:{ind:"value",params:{v:1}}},
+    {left:{ind:"month",params:{}},op:"gt",right:{ind:"value",params:{v:9}}}]}},
+  // Cowen — on-chain: comprar cuando el MVRV Z resetea por debajo de 0 (suelo),
+  // vender cuando se calienta (>7).
+  cowen_mvrv:{name:"Cowen · Reset MVRV Z",e:{logic:"all",conds:[
+    {left:{ind:"mvrvz",params:{}},op:"lt",right:{ind:"value",params:{v:0}}}]},
+    x:{logic:"all",conds:[
+    {left:{ind:"mvrvz",params:{}},op:"gt",right:{ind:"value",params:{v:7}}}]}},
+  /* === Indicadores clásicos === */
   gc:{name:"Golden/Death Cross 50/200",e:{logic:"all",conds:[{left:{ind:"sma",params:{n:50}},op:"cross_up",right:{ind:"sma",params:{n:200}}}]},x:{logic:"all",conds:[{left:{ind:"sma",params:{n:50}},op:"cross_dn",right:{ind:"sma",params:{n:200}}}]}},
   rsi:{name:"RSI sobreventa 34/70",e:{logic:"all",conds:[{left:{ind:"rsi",params:{n:14}},op:"cross_up",right:{ind:"value",params:{v:34}}}]},x:{logic:"all",conds:[{left:{ind:"rsi",params:{n:14}},op:"cross_dn",right:{ind:"value",params:{v:70}}}]}},
   mvrv:{name:"MVRV Z suelo",e:{logic:"all",conds:[{left:{ind:"mvrvz",params:{}},op:"cross_up",right:{ind:"value",params:{v:0}}}]},x:{logic:"all",conds:[{left:{ind:"mvrvz",params:{}},op:"gt",right:{ind:"value",params:{v:5}}}]}},
@@ -457,7 +506,7 @@ $("#addEntry").addEventListener("click",()=>{ENTRY.conds.push(newCond());renderB
 $("#addExit").addEventListener("click",()=>{EXIT.conds.push(newCond({ind:"price",params:{}},"cross_dn",{ind:"sma",params:{n:50}}));renderBuilder();});
 $("#entryLogic").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{ENTRY.logic=b.dataset.v;renderBuilder();}));
 $("#exitLogic").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{EXIT.logic=b.dataset.v;renderBuilder();}));
-$("#c_preset").addEventListener("change",e=>{if(e.target.value)loadPreset(e.target.value);});
+$("#c_preset").addEventListener("change",e=>{if(e.target.value){loadPreset(e.target.value);if(DATA)run();}});
 $("#runBtn").addEventListener("click",run);
 $("#saveBtn").addEventListener("click",saveCurrent);
 $("#expBtn").addEventListener("click",exportSaved);
