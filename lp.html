@@ -232,10 +232,10 @@ function renderPnl(){
   $("#summary").innerHTML=[
     {l:"PnL realizado (cerradas)",n:fmtUSD(M.realized,0),s:M.closed.filter(p=>p.computed).length+" con PnL computado",c:M.realized>=0?"var(--bull)":"var(--bear)",cl:M.realized>=0?"up":"down"},
     {l:"vs HOLD (cerradas)",n:fmtUSD(M.vsHoldTot,0),s:"LP frente a solo aguantar",c:M.vsHoldTot>=0?"var(--bull)":"var(--bear)",cl:M.vsHoldTot>=0?"up":"down"},
-    {l:"Posiciones (histórico)",n:String(M.P.length),s:(M.first?new Date(M.first).getFullYear():"")+" → hoy",c:"var(--accent)"},
-    {l:"Gas total",n:fmtUSD(M.gas,2),s:M.open.length+" abiertas · "+M.closed.length+" cerradas",c:"var(--muted)"},
+    {l:"Fees / rewards (total)",n:fmtUSD(M.fees,0),s:"solo collectFees (verificado vs CSV)",c:"var(--bull)"},
+    {l:"Posiciones (histórico)",n:String(M.P.length),s:(M.first?new Date(M.first).getFullYear():"")+" → hoy · "+M.open.length+" abiertas / "+M.closed.length+" cerradas",c:"var(--accent)"},
   ].map(x=>`<div class="stat" style="--sc:${x.c}"><div class="l">${x.l}</div><div class="n ${x.cl||""}">${x.n}</div><div class="s">${x.s}</div></div>`).join("");
-  $("#sumNote").innerHTML="⚠️ <b>Analítica del DeFi-Tracker en estado PARCIAL</b> (el pipeline aún no completa el pricing on-chain): <b>PnL realizado</b> y <b>vs HOLD</b> son fiables; el <b>desglose de fees está sobre-atribuido</b> (cuenta retiradas como fees), por eso no lo destaco aquí — para fees exactas, tu <b>CSV de Orca</b> es la verdad ($578). El <b>rango</b> y la <b>IL en abiertas</b> quedan cuando afinemos el pipeline (fees/pricing) o leamos el underlying on-chain.";
+  $("#sumNote").innerHTML="✓ <b>Analítica del DeFi-Tracker (pipeline afinado).</b> Fees y cierres decodificados por instrucción Whirlpool y atribuidos por posición — <b>verificado al céntimo contra tu CSV de Orca</b>. <b>PnL realizado, fees y vs HOLD</b> son fiables. Los datos llegan hasta la <b>última ingesta</b> del pipeline; el <b>rango</b> y la <b>IL de las abiertas</b> requieren decodificar el underlying on-chain (siguiente iteración).";
   // abiertas
   $("#openTag").textContent=fmtUSD(M.invOpen)+" invertido";
   $("#openPos").innerHTML=M.open.length?M.open.map(p=>`<div class="pos" style="--sc:${/USDC/.test(p.pair)?'var(--accum)':'var(--hot)'}">
