@@ -96,6 +96,37 @@ def clean_vtt(path):
     # une en párrafos legibles
     return re.sub(r"\n{3,}", "\n\n", "\n".join(out)).strip()
 
+def parse_json3(path):
+    d = json.load(open(path, encoding="utf-8", errors="ignore"))
+    out = []
+    for ev in d.get("events", []):
+        line = "".join(s.get("utf8", "") for s in (ev.get("segs") or [])).strip()
+        if line and (not out or out[-1] != line):
+            out.append(line)
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(out)).strip()
+
+def parse_xmlsubs(path):
+    raw = open(path, encoding="utf-8", errors="ignore").read()
+    chunks = re.findall(r"<(?:text|p)\b[^>]*>(.*?)</(?:text|p)>", raw, re.S)
+    out = []
+    for c in chunks:
+        c = re.sub(r"<[^>]+>", " ", c)
+        for a, b in (("&amp;","&"),("&lt;","<"),("&gt;",">"),("&#39;","'"),("&quot;",'"'),("&nbsp;"," ")):
+            c = c.replace(a, b)
+        c = re.sub(r"\s+", " ", c).strip()
+        if c and (not out or out[-1] != c):
+            out.append(c)
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(out)).strip()
+
+def parse_any(path):
+    p = path.lower()
+    if p.endswith((".json3", ".json")):
+        try: return parse_json3(path)
+        except Exception: return ""
+    if p.endswith((".srv1", ".srv2", ".srv3", ".ttml", ".xml")):
+        return parse_xmlsubs(path)
+    return clean_vtt(path)
+
 def fetch_one(v, persona, lang, force):
     outdir = os.path.join(REPO, "agentes", persona, "yt-transcripts")
     os.makedirs(outdir, exist_ok=True)
@@ -106,14 +137,19 @@ def fetch_one(v, persona, lang, force):
         print(f"  = ya existe, salto: {name}"); return False
     with tempfile.TemporaryDirectory() as td:
         cmd = YTDLP + ["--skip-download", "--write-subs", "--write-auto-subs",
-               "--sub-langs", f"{lang}.*,{lang}", "--sub-format", "vtt/srv3/best",
-               "--convert-subs", "vtt", "-o", os.path.join(td, "%(id)s.%(ext)s"),
-               "--ignore-errors", v["url"]]
-        run(cmd)
-        vtts = sorted(glob.glob(os.path.join(td, "*.vtt")))
-        if not vtts:
-            print(f"  ! sin subtítulos ({lang}) para: {v.get('title') or v['id']}"); return False
-        text = clean_vtt(vtts[0])
+               "--sub-langs", f"{lang}.*,{lang}", "--sub-format", "vtt/json3/srv3/srv1/best",
+               "-o", os.path.join(td, "%(id)s.%(ext)s"), "--ignore-errors", v["url"]]
+        res = run(cmd)
+        subs = []
+        for ext in ("*.vtt", "*.srt", "*.json3", "*.srv3", "*.srv2", "*.srv1", "*.ttml", "*.xml"):
+            subs += glob.glob(os.path.join(td, ext))
+        subs = sorted(subs)
+        if not subs:
+            errln = [x for x in (res.stderr or "").splitlines() if x.strip()]
+            tail = " | ".join(errln[-2:])[:300] if errln else "(yt-dlp no reportó error; ¿quizá no hay subs en ese idioma?)"
+            print(f"  ! sin subtítulos ({lang}) para: {v.get('title') or v['id']}  →  {tail}")
+            return False
+        text = parse_any(subs[0])
     if not text:
         print(f"  ! subtítulo vacío: {v.get('title') or v['id']}"); return False
     header = (
