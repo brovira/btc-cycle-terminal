@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BTC · Terminal de Ciclo (método LMEC)</title>
+<style>
+  :root{
+    --bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;
+    --ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#e8a13a;
+    --bull:#2fc39b;--bear:#f2606d;--accum:#3fa9f5;--hot:#f2a33f;
+    --grid:rgba(255,255,255,.06);--shadow:0 1px 0 rgba(255,255,255,.03),0 12px 32px -18px rgba(0,0,0,.7);
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Menlo","Consolas",monospace;--radius:14px;
+  }
+  @media (prefers-color-scheme: light){:root{
+    --bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;
+    --ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--accent:#b26a10;
+    --bull:#0e846a;--bear:#c93a48;--accum:#1f74c0;--hot:#b9791a;
+    --grid:rgba(16,24,34,.08);--shadow:0 1px 0 rgba(255,255,255,.6),0 14px 34px -20px rgba(20,40,70,.35);
+  }}
+  :root[data-theme="dark"]{--bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;--ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#e8a13a;--bull:#2fc39b;--bear:#f2606d;--accum:#3fa9f5;--hot:#f2a33f;--grid:rgba(255,255,255,.06)}
+  :root[data-theme="light"]{--bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;--ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--accent:#b26a10;--bull:#0e846a;--bear:#c93a48;--accum:#1f74c0;--hot:#b9791a;--grid:rgba(16,24,34,.08)}
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:radial-gradient(1200px 600px at 80% -10%,color-mix(in oklab,var(--accent) 9%,transparent),transparent 60%),linear-gradient(var(--bg),var(--bg2));color:var(--ink);font-family:var(--font);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+  .wrap{max-width:1240px;margin:0 auto;padding:26px 20px 70px}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:20px}
+  .kicker{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  h1{margin:4px 0 0;font-size:clamp(22px,3vw,30px);font-weight:750;letter-spacing:-.02em} h1 b{color:var(--accent)}
+  .price-now{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:6px}
+  .price-now .big{font-family:var(--mono);font-size:clamp(24px,3.6vw,34px);font-weight:700}
+  .chg{font-family:var(--mono);font-size:13px;font-weight:600;padding:3px 9px;border-radius:999px}
+  .chg.up{color:var(--bull);background:color-mix(in oklab,var(--bull) 14%,transparent)}
+  .chg.down{color:var(--bear);background:color-mix(in oklab,var(--bear) 14%,transparent)}
+  .meta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;color:var(--muted);font-size:12.5px;margin-top:6px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--bull)} .dot.warn{background:var(--accent)} .dot.err{background:var(--bear)}
+  .btn{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:8px 13px;border-radius:10px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;transition:.15s;text-decoration:none}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  .btn.pri{background:var(--accent);color:#111;border-color:var(--accent)} .btn.pri:hover{filter:brightness(1.05);color:#111}
+  .controls{display:flex;gap:9px;flex-wrap:wrap}
+  .err-banner{display:none;margin:12px 0;border:1px solid color-mix(in oklab,var(--bear) 40%,transparent);background:color-mix(in oklab,var(--bear) 10%,transparent);padding:13px 15px;border-radius:12px;font-size:13.5px}
+  /* verdict */
+  .regime{border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:var(--shadow);margin-top:6px;background:linear-gradient(120deg,var(--panel),color-mix(in oklab,var(--phase,var(--accent)) 12%,var(--panel)))}
+  .regime-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .phase-chip{font-family:var(--mono);font-weight:800;font-size:13px;padding:7px 13px;border-radius:11px;color:var(--phase);background:color-mix(in oklab,var(--phase) 16%,transparent);box-shadow:inset 0 0 0 1px color-mix(in oklab,var(--phase) 36%,transparent)}
+  .phase-word{font-size:clamp(21px,3vw,28px);font-weight:780;letter-spacing:-.02em;color:var(--phase)}
+  .regime-say{color:var(--ink2);font-size:14.5px;margin-top:12px;max-width:82ch;text-wrap:pretty}
+  .timeline{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  .tstep{flex:1;min-width:150px;background:color-mix(in oklab,var(--panel2) 70%,transparent);border:1px solid var(--line);border-radius:11px;padding:11px 13px}
+  .tstep.here{border-color:var(--phase);box-shadow:inset 0 0 0 1px var(--phase)}
+  .tstep .tn{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .tstep .tv{font-size:13.5px;font-weight:650;margin-top:3px}
+  .tstep .td{font-size:11.5px;color:var(--muted);margin-top:2px}
+  /* sections */
+  .section{margin-top:34px}
+  .sec-head{display:flex;align-items:center;gap:12px;margin:0 2px 14px}
+  .sec-head h2{margin:0;font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
+  .sec-head .rule{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+  .sec-head .tag{font-size:11px;font-weight:600;color:var(--muted);font-family:var(--mono)}
+  .src{font-size:10.5px;font-weight:700;font-family:var(--mono);color:var(--accent);background:color-mix(in oklab,var(--accent) 14%,transparent);padding:2px 8px;border-radius:999px;letter-spacing:.02em}
+  .rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
+  .rulecard{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+  .rulecard .rh{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .rulecard h3{margin:0;font-size:14px;font-weight:750} .rulecard .cap{font-size:12px;color:var(--muted);margin:3px 0 12px}
+  .row{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:13.5px} .row:first-of-type{border-top:none}
+  .led{width:9px;height:9px;border-radius:50%;flex:none;background:var(--muted)}
+  .led.on{background:var(--bull);box-shadow:0 0 0 3px color-mix(in oklab,var(--bull) 20%,transparent)}
+  .led.off{background:var(--bear);box-shadow:0 0 0 3px color-mix(in oklab,var(--bear) 20%,transparent)}
+  .led.na{background:var(--muted);opacity:.5}
+  .row .rn{color:var(--ink);font-weight:600} .row .rv{margin-left:auto;font-family:var(--mono);font-size:12.5px;font-weight:700;color:var(--ink2)}
+  /* chart */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px 10px 6px;margin-top:8px}
+  .phint{font-size:11.5px;color:var(--muted);font-family:var(--mono);padding:2px 8px 10px;line-height:1.7}
+  #chart{width:100%;height:920px} @media(max-width:700px){#chart{height:760px}}
+  /* buy ladder */
+  .ladder{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+  .lvl{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--lc,var(--muted));border-radius:12px;padding:13px 15px;box-shadow:var(--shadow)}
+  .lvl .lp{font-family:var(--mono);font-size:19px;font-weight:750}
+  .lvl .ls{font-size:11.5px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:6px}
+  .lvl.done{--lc:var(--bull)} .lvl.next{--lc:var(--accent)} .lvl.wait{--lc:var(--muted)}
+  .badge{font-size:10px;font-weight:800;font-family:var(--mono);padding:2px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:.04em}
+  .badge.done{color:var(--bull);background:color-mix(in oklab,var(--bull) 16%,transparent)}
+  .badge.next{color:var(--accent);background:color-mix(in oklab,var(--accent) 16%,transparent)}
+  .badge.wait{color:var(--muted);background:color-mix(in oklab,var(--muted) 16%,transparent)}
+  .ladnote{color:var(--muted);font-size:12px;line-height:1.6;margin-top:14px}
+  /* journal */
+  .jbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .jlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+  .jcard{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--sc,var(--muted));border-radius:12px;padding:13px 14px;cursor:pointer;transition:.12s}
+  .jcard:hover{border-color:var(--accent)}
+  .jcard .jt{display:flex;justify-content:space-between;gap:8px;align-items:center}
+  .jside{font-family:var(--mono);font-weight:800;font-size:12px;color:var(--sc)}
+  .jdate{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+  .jmeta{font-size:12px;color:var(--ink2);margin-top:6px;font-family:var(--mono)}
+  .jrat{font-size:12.5px;color:var(--ink2);margin-top:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .jempty{color:var(--muted);font-size:13px;padding:8px 2px}
+  .soonbox{background:var(--panel);border:1px dashed var(--line);border-radius:var(--radius);padding:16px 18px;color:var(--muted);font-size:13px;line-height:1.6}
+  .soonbox b{color:var(--ink2)}
+  /* modal */
+  .overlay{position:fixed;inset:0;background:rgba(4,8,14,.62);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:50;padding:18px}
+  .overlay.open{display:flex}
+  .modal{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);width:min(560px,100%);max-height:90vh;overflow:auto;padding:20px}
+  .modal h3{margin:0 0 14px;font-size:17px}
+  .fld{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+  .fld label{font-size:12px;color:var(--muted);font-weight:600}
+  .fld input,.fld select,.fld textarea{font:inherit;font-size:14px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+  .fld textarea{min-height:80px;resize:vertical} .frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .snap{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0;font-family:var(--mono);font-size:12.5px}
+  .snap .sr{display:flex;justify-content:space-between;padding:3px 0} .snap .sr b{color:var(--ink)}
+  .mact{display:flex;gap:9px;justify-content:flex-end;margin-top:6px;flex-wrap:wrap}
+  .link{color:var(--bear);background:none;border:none;font:inherit;cursor:pointer;font-size:12.5px;padding:0}
+  footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--line);display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
+  .note{color:var(--muted);font-size:12px;line-height:1.6}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+  .rz-handle{position:absolute;height:18px;transform:translateY(-50%);cursor:ns-resize;z-index:6;display:flex;align-items:center;justify-content:center}
+  .rz-handle .grip{font-size:12px;line-height:1;color:#fff;background:color-mix(in oklab,var(--accent) 88%,#000);border-radius:7px;padding:1px 10px;opacity:.30;transition:opacity .15s;user-select:none;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+  #chart:hover .rz-handle .grip,.rz-handle:hover .grip{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="kicker">Bitcoin · Semanal · Estrategia de ciclo — método LMEC</div>
+      <h1>🎯 <b>LMEC</b> · Ciclo BTC</h1>
+      <div class="price-now"><span class="big mono" id="price">—</span><span class="chg" id="chg">—</span></div>
+      <div class="meta"><span class="dot" id="statusDot"></span><span id="statusText">Cargando…</span></div>
+    </div>
+    <div class="controls">
+      <a class="btn" href="index.html" style="text-decoration:none">← Panel</a>
+      <a class="btn" href="lmec.html" style="text-decoration:none;border-color:var(--accent);color:var(--accent)">🎯 LMEC</a>
+      <a class="btn" href="cowen.html" style="text-decoration:none">📊 Cowen</a>
+      <button class="btn pri" id="addBtn">➕ Registrar</button>
+      <button class="btn" id="themeBtn">◐ Tema</button>
+      <button class="btn" id="refreshBtn">↻ Actualizar</button>
+    </div>
+  </header>
+
+  <div class="err-banner" id="errBanner"></div>
+
+  <div class="regime" id="regime" style="--phase:var(--accent)">
+    <div class="regime-top"><span class="phase-chip" id="phaseChip">—</span><span class="phase-word" id="phaseWord">Calculando…</span></div>
+    <div class="regime-say" id="phaseSay">&nbsp;</div>
+    <div class="timeline" id="timeline"></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Señales de LMEC</h2><div class="rule"></div><span class="tag" id="ocTag">on-chain: —</span></div>
+    <div class="rules" id="ruleGroups"></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Niveles de compra de BTC</h2><div class="rule"></div><span class="src">Fuente · LMEC</span></div>
+    <div class="ladder" id="ladder"></div>
+    <div class="ladnote">Compra <b>progresiva con órdenes límite</b>: cuanto más abajo, mayor tamaño. Nunca en números redondos. Cada nivel dista ~$5k. Las líneas discontinuas en el gráfico son estos niveles (verde = ya comprado por él, naranja = siguiente). La <b>artillería pesada</b> se reserva para cuando coincidan las 4 confirmaciones (~oct/nov 2026). <b>No es asesoramiento financiero.</b></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Gráfico</h2><div class="rule"></div><span class="tag" id="srcTag">—</span></div>
+    <div class="panel">
+      <div class="phint">Velas semanales desde ene-2015 · escala log · BMSB (SMA20+EMA21) · SMA200 · Realized price · niveles de compra LMEC (discontinuas) · rupturas BMSB (blanco=1ª/trampa, amarillo=2ª/COMPRA) · bandas Halving (verde=Profit, azul=DCA) · línea = suelo proyectado ~nov-2026 · Subpaneles: RSI (34 / zona 40-50), MACD, MVRV Z (franja verde = zona de compra) — arrastra=zoom · doble clic=reset · arrastra los tiradores ⇕ entre subpaneles para redimensionar · clic en una posición → su nota</div>
+      <div id="chart"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Journal de operaciones</h2><div class="rule"></div><span class="tag" id="jcount">0 entradas</span></div>
+    <div class="jbar">
+      <button class="btn pri" id="addBtn2">➕ Nueva entrada</button>
+      <button class="btn" id="expBtn">⭳ Exportar</button>
+      <button class="btn" id="impBtn">⭱ Importar</button>
+      <input type="file" id="impFile" accept="application/json" style="display:none">
+    </div>
+    <div class="jlist" id="jlist"></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Próximamente</h2><div class="rule"></div><span class="tag">otro analista</span></div>
+    <div class="soonbox"><b>Benjamin Cowen — <a href="cowen.html" style="color:var(--accent)">ver panel ›</a></b> Su marco de riesgo (risk metric 0–1, ROI de ciclo, realized/balanced price, MVRV Z reset, midterm → suelo 4T-2026). Fuente: sus reports. Este terminal sigue <b>solo el método de LMEC</b>; el de Cowen va aparte.</div>
+  </div>
+
+  <footer>
+    <div class="note" style="max-width:720px">
+      <b>Método (LMEC).</b> Indicadores SIEMPRE en velas semanales. Tendencia: precio vs Bull Market Support Band (SMA20/EMA21) y SMA200 (en bear siempre se visita, ~$58k). Señal de compra núcleo: <b>2ª ruptura al alza de la BMSB</b> (4/4 ciclos marcó el inicio del bull). Confirmaciones a la vez: MACD saliendo de negativo con histograma verde · RSI recuperando >34 (zona 40-50) · <b>MVRV Z saliendo de la franja verde</b> (única métrica on-chain, señal de suelo y cambio de régimen). Precio medio de holders / realized (~$44k): en bears siempre se perfora por abajo cerca del suelo. Suelo proyectado ~oct/nov 2026; primeras subidas ~mar/abr 2027. On-chain (MVRV, realized) vía <b>Coin Metrics Community</b> (gratis). Journal en tu navegador (localStorage). <b>Uso educativo — no es asesoramiento financiero.</b>
+    </div>
+    <div class="note" id="srcNote">Fuente: —</div>
+  </footer>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const fmtUSD=(v,d=0)=>v==null?"—":"$"+Number(v).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+
+/* niveles de compra BTC de LMEC (transcripts): progresivo, ~$5k, nunca redondos.
+   done = ya ejecutados en su log (feb/2026: 70.2k,65.2k · después 60k). Resto = pendientes. */
+const BTC_LEVELS=[
+  {p:70200,done:true},{p:65200,done:true},{p:60000,done:true},
+  {p:55300,done:false},{p:50400,done:false},{p:45300,done:false}
+];
+
+/* indicators */
+function sma(a,n){const o=Array(a.length).fill(null);let s=0;for(let i=0;i<a.length;i++){s+=a[i];if(i>=n)s-=a[i-n];if(i>=n-1)o[i]=s/n;}return o;}
+function ema(a,n){const o=Array(a.length).fill(null);const k=2/(n+1);let p=null,ss=0,sd=false;for(let i=0;i<a.length;i++){const v=a[i];if(v==null){o[i]=null;continue;}if(!sd){ss+=v;if(i>=n-1){p=ss/n;o[i]=p;sd=true;}continue;}p=v*k+p*(1-k);o[i]=p;}return o;}
+function rsi(c,n=14){const o=Array(c.length).fill(null);let g=0,l=0;for(let i=1;i<c.length;i++){const ch=c[i]-c[i-1],gg=Math.max(0,ch),ll=Math.max(0,-ch);if(i<=n){g+=gg;l+=ll;if(i===n){g/=n;l/=n;o[i]=100-100/(1+(l===0?1e9:g/l));}}else{g=(g*(n-1)+gg)/n;l=(l*(n-1)+ll)/n;o[i]=100-100/(1+(l===0?1e9:g/l));}}return o;}
+function macd(c){const f=ema(c,12),s=ema(c,26);const m=c.map((_,i)=>(f[i]!=null&&s[i]!=null)?f[i]-s[i]:null);const sig=ema(m.map(x=>x==null?null:x),9);const h=m.map((_,i)=>(m[i]!=null&&sig[i]!=null)?m[i]-sig[i]:null);return{m,sig,h};}
+
+/* data */
+let DATA=null,SRC="",IND=null,OC=null;
+var DOMAINS={y:[0.56,1],y2:[0.37,0.50],y3:[0.18,0.31],y4:[0,0.13]};
+async function fetchBinance(host){const r=await fetch(`https://${host}/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=1000`,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();return{t:j.map(k=>k[0]),o:j.map(k=>+k[1]),h:j.map(k=>+k[2]),l:j.map(k=>+k[3]),c:j.map(k=>+k[4]),src:"Binance ("+host.replace("api.","")+")"};}
+async function fetchCoinGecko(){const r=await fetch("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=max&interval=daily",{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();const px=j.prices||[];const t=[],o=[],h=[],l=[],c=[];const WK=7*864e5;let bs=null,bo,bh,bl,bc,bt;for(const[ms,p]of px){if(bs==null){bs=ms;bo=bh=bl=bc=p;bt=ms;continue;}if(ms-bs>=WK){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);bs=ms;bo=bh=bl=bc=p;bt=ms;}else{bh=Math.max(bh,p);bl=Math.min(bl,p);bc=p;bt=ms;}}if(bs!=null){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);}return{t,o,h,l,c,src:"CoinGecko"};}
+let CM=null;
+async function fetchCM(){
+  if(CM) return CM;
+  const url="https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=PriceUSD,CapMVRVCur,CapMrktCurUSD,CapRealUSD,SplyCur&frequency=1d&page_size=10000&start_time=2010-07-18";
+  const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);
+  const j=await r.json();const rows=j.data||[];if(!rows.length)throw new Error("sin filas");
+  const dt=[],price=[],mvrv=[],mkt=[],real=[],sply=[];
+  for(const x of rows){const t=Date.parse(x.time.slice(0,10));if(isNaN(t))continue;
+    dt.push(t);
+    price.push(x.PriceUSD!=null?+x.PriceUSD:null);
+    mvrv.push(x.CapMVRVCur!=null?+x.CapMVRVCur:null);
+    mkt.push(x.CapMrktCurUSD!=null?+x.CapMrktCurUSD:null);
+    real.push(x.CapRealUSD!=null?+x.CapRealUSD:null);
+    sply.push(x.SplyCur!=null?+x.SplyCur:null);}
+  CM={dt,price,mvrv,mkt,real,sply};return CM;
+}
+async function fetchCMPrice(){
+  const cm=await fetchCM();
+  const t=[],o=[],h=[],l=[],c=[];const WK=7*864e5;let bs=null,bo,bh,bl,bc,bt;
+  for(let i=0;i<cm.dt.length;i++){const ms=cm.dt[i],p=cm.price[i];if(p==null)continue;
+    if(bs==null){bs=ms;bo=bh=bl=bc=p;bt=ms;continue;}
+    if(ms-bs>=WK){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);bs=ms;bo=bh=bl=bc=p;bt=ms;}
+    else{bh=Math.max(bh,p);bl=Math.min(bl,p);bc=p;bt=ms;}}
+  if(bs!=null){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);}
+  return{t,o,h,l,c,src:"CoinMetrics"};
+}
+
+async function loadData(){
+  let bin=null,ext=null;
+  try{bin=await fetchBinance("api.binance.com");}catch(e){try{bin=await fetchBinance("api.binance.us");}catch(e2){}}
+  try{ext=await fetchCMPrice();}catch(e){try{ext=await fetchCoinGecko();}catch(e2){}}
+  if(bin&&ext){const b0=bin.t[0];const pt=[],po=[],ph=[],pl=[],pc=[];
+    for(let i=0;i<ext.t.length;i++){if(ext.t[i]<b0-3*864e5&&ext.t[i]>Date.parse("2010-01-01")){pt.push(ext.t[i]);po.push(ext.o[i]);ph.push(ext.h[i]);pl.push(ext.l[i]);pc.push(ext.c[i]);}}
+    DATA={t:[...pt,...bin.t],o:[...po,...bin.o],h:[...ph,...bin.h],l:[...pl,...bin.l],c:[...pc,...bin.c]};SRC=(ext.src||"hist")+"+Binance";return;}
+  if(bin){DATA=bin;SRC="Binance";return;}
+  if(ext){DATA=ext;SRC=ext.src;return;}
+  throw new Error("sin fuentes de precio");}
+
+/* on-chain: Coin Metrics community (free, no key) → MVRV Z + realized price. Única métrica on-chain. */
+let OC_STATUS="—";
+async function loadOnchain(){
+  try{
+    const cm=await fetchCM();const dt=cm.dt,mkt=cm.mkt,real=cm.real,mvrv=cm.mvrv,sply=cm.sply;
+    const valid=mkt.filter(v=>v!=null);const mean=valid.reduce((a,b)=>a+b,0)/valid.length;
+    const sd=Math.sqrt(valid.reduce((a,b)=>a+(b-mean)**2,0)/valid.length);
+    const zAt=i=>(mkt[i]!=null&&real[i]!=null&&sd>0)?(mkt[i]-real[i])/sd:null;
+    const n=DATA.t.length;const A={mvrv:Array(n).fill(null),z:Array(n).fill(null),real:Array(n).fill(null)};
+    let j2=0;
+    for(let i=0;i<n;i++){const wt=DATA.t[i];while(j2+1<dt.length&&dt[j2+1]<=wt)j2++;
+      if(dt[j2]<=wt+7*864e5){A.mvrv[i]=mvrv[j2];A.z[i]=zAt(j2);A.real[i]=(real[j2]!=null&&sply[j2])?real[j2]/sply[j2]:null;}}
+    OC=A;OC_STATUS="Coin Metrics \u2713";return;
+  }catch(e){OC=null;OC_STATUS="sin datos ("+((e&&e.message)||e)+")";}
+}
+
+/* plotly loader */
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("no se pudo cargar Plotly");}
+
+/* ---- señal 2ª ruptura BMSB (LMEC): bear anclado al techo del ciclo ---- */
+let BMS=null;
+function bmsbSignal(){
+  const n=DATA.c.length,c=DATA.c,s20=IND.s20,e21=IND.e21,rs=IND.rsi,M=IND.macd;
+  const hi=i=>(s20[i]!=null&&e21[i]!=null)?Math.max(s20[i],e21[i]):null;
+  const lb=i=>(s20[i]!=null&&e21[i]!=null)?Math.min(s20[i],e21[i]):null;
+  // Bear anclado al techo del ciclo: drawdown >=25% desde máximos + cierre bajo la banda.
+  // Si el precio hace nuevo ATH antes de completar las 2 rupturas al alza, era corrección
+  // (p.ej. may-2021) -> se cancela el bear y se borra la "trampa" espuria.
+  const first=[],second=[];
+  let peak=0,curInBear=false,curUps=0,bearFirst=null,state=null;
+  for(let i=1;i<n;i++){
+    if(c[i]>peak)peak=c[i];
+    const H=hi(i),L=lb(i);if(H==null)continue;
+    const aC=c[i]>H&&hi(i-1)!=null&&c[i-1]>hi(i-1);
+    const bC=c[i]<L&&lb(i-1)!=null&&c[i-1]<lb(i-1);
+    if(c[i]>=peak&&curInBear){if(bearFirst!=null){const k=first.indexOf(bearFirst);if(k>=0)first.splice(k,1);}curInBear=false;curUps=0;bearFirst=null;}
+    if(!curInBear&&peak>0&&c[i]<peak*0.75&&bC){curInBear=true;curUps=0;bearFirst=null;}
+    let upEvent=false;
+    if(aC&&state!=="up"){upEvent=true;state="up";}
+    else if(bC&&state!=="down"){state="down";}
+    else if(!state)state=c[i]>H?"up":c[i]<L?"down":null;
+    if(upEvent&&curInBear){curUps++;if(curUps===1){bearFirst=i;first.push(i);}else if(curUps===2){second.push(i);curInBear=false;bearFirst=null;}}
+  }
+  const i=n-1,rsiV=rs[i],mHist=M.h[i],mL=M.m[i],mLp=M.m[i-1];
+  const macdRecovGreen=mHist!=null&&mHist>0&&mL!=null&&mLp!=null&&mL>mLp;
+  const rsi4050=rsiV!=null&&rsiV>=40&&rsiV<=50;
+  const rsi34=rsiV!=null&&rsiV>34;
+  let stage,status;
+  if(curInBear){stage=curUps===0?"waiting1":"waiting2";status=curUps===0?"Bajista · esperando 1ª ruptura":"1ª ruptura hecha (trampa) · esperando 2ª";}
+  else{const sb=second.length?second[second.length-1]:-1;stage=(sb>=0&&(n-1-sb)<=26)?"confirmed":"outside";status=(sb>=0&&(n-1-sb)<=26)?"2ª ruptura reciente · alcista":"Fuera de estructura bajista";}
+  const secondRecent=second.length&&(n-1-second[second.length-1])<=8;
+  const buySignal=!!secondRecent&&macdRecovGreen&&rsi4050;
+  return{first,second,stage,status,curInBear,curUps,macdRecovGreen,rsi4050,rsi34,rsiV,secondBreakNow:!!secondRecent,buySignal};
+}
+
+/* ---- régimen (MVRV como señal de suelo/cambio de régimen, método LMEC) ---- */
+function regimeAt(i){
+  const c=DATA.c,price=c[i];
+  const s20=IND.s20[i],e21=IND.e21[i],s200=IND.s200[i],rsiV=IND.rsi[i],mHist=IND.macd.h[i];
+  const bandHi=(s20!=null&&e21!=null)?Math.max(s20,e21):null,bandLo=(s20!=null&&e21!=null)?Math.min(s20,e21):null;
+  const aboveBand=bandHi!=null&&price>bandHi,belowBand=bandLo!=null&&price<bandLo,above200=s200!=null&&price>s200;
+  const mL=IND.macd.m[i],mLp=IND.macd.m[i-1],mS=IND.macd.sig[i],mSp=IND.macd.sig[i-1];
+  const macdBuyCross=(mL!=null&&mS!=null&&mLp!=null&&mSp!=null)&&mL>mS&&mLp<=mSp&&mL<0;
+  const mvrv=OC?OC.mvrv[i]:null, z=OC?OC.z[i]:null, real=OC?OC.real[i]:null;
+  const belowReal=real!=null&&price<real;
+  const zGreen=z!=null&&z<0;            // franja verde = infravalorado (zona de compra LMEC)
+  let phase,cls,say;
+  if(belowBand){
+    if(rsiV<30 && (z==null||zGreen)){cls="accum";phase="Suelo / Acumulación";
+      say="Precio bajo la Bull Market Support Band (bajista) + RSI sobrevendido"+(z!=null?" + MVRV Z en la franja verde (infravalorado)":"")+". Es la zona donde LMEC acumula por tramos — la señal de compra fuerte llega con la 2ª ruptura al alza.";}
+    else{cls="bear";phase="Bajista";
+      say="Precio por debajo de la Bull Market Support Band: régimen bajista"+(belowReal?", y por debajo del realized price (~capitulación)":"")+". Se acumula progresivo; la artillería pesada se guarda para las 4 confirmaciones.";}
+  }else if(aboveBand){
+    if(mvrv!=null&&mvrv>3){cls="hot";phase="Euforia / Riesgo de techo";
+      say="Precio sobre la BMSB y MVRV>"+mvrv.toFixed(1)+" (sobrevalorado): zona de distribución. Para LMEC, el plan de VENTA es el siguiente ciclo, no éste.";}
+    else if(z!=null&&!zGreen){cls="bull";phase="Alcista (salió de la franja verde)";
+      say="Precio sobre la BMSB y MVRV Z FUERA de la franja verde: la confirmación on-chain que coincide con la 2ª ruptura al alza. Estructura de nuevo mercado alcista.";}
+    else{cls="neu";phase="Alcista temprano";say="Precio sobre la BMSB. Falta que el MVRV Z salga de la franja verde para confirmar el cambio de régimen.";}
+  }else{cls="neu";phase="Transición (dentro de la BMSB)";say="Precio DENTRO de la Bull Market Support Band: zona de decisión. Espera cierre claro por encima (alcista) o por debajo (bajista).";}
+  return{i,price,s20,e21,s200,bandHi,bandLo,aboveBand,belowBand,above200,rsiV,mHist,macdBuyCross,mvrv,z,real,belowReal,zGreen,phase,cls,say};
+}
+let R=null;
+function phaseColor(cls){return cls==="bull"?"var(--bull)":cls==="bear"?"var(--bear)":cls==="accum"?"var(--accum)":cls==="hot"?"var(--hot)":"var(--accent)";}
+
+/* ---- render verdict + timeline ---- */
+function renderRegime(){
+  const col=phaseColor(R.cls);
+  ["#regime","#phaseChip","#phaseWord"].forEach(s=>$(s).style.setProperty("--phase",col));
+  const c1=BMS.secondBreakNow,c2=BMS.macdRecovGreen,c3=BMS.rsi4050,c4=(R.z!=null&&!R.zGreen);
+  const conf=[c1,c2,c3,c4].filter(Boolean).length;
+  let verdict,vcol;
+  if(BMS.buySignal){verdict="🟢 COMPRA FUERTE — señal activa";vcol="var(--bull)";}
+  else if(BMS.stage==="confirmed"){verdict="🟡 Vigilar de cerca";vcol="var(--accum)";}
+  else{verdict="🔴 Aún NO es momento de comprar fuerte";vcol="var(--bear)";}
+  $("#phaseChip").textContent=(R.belowBand?"BAJISTA":R.aboveBand?"ALCISTA":"NEUTRO")+" · "+conf+"/4";
+  $("#phaseWord").textContent=verdict; $("#phaseWord").style.color=vcol;
+  $("#phaseSay").textContent="Fase actual: "+R.phase+". Confirmaciones de compra fuerte: "+conf+" de 4. "+R.say;
+  // timeline del plan LMEC
+  const stg=BMS?BMS.stage:"waiting1";
+  const steps=[
+    {k:"waiting1",n:"Hoy → suelo",v:"Acumular por tramos",d:"Compras progresivas, esperar 1ª ruptura"},
+    {k:"waiting2",n:"1ª ruptura (trampa)",v:"NO comprar fuerte",d:"Rebote falso, vienen más caídas"},
+    {k:"suelo",n:"Suelo del ciclo",v:"~oct/nov 2026",d:"53 sem. del techo · en tiempo, no precio"},
+    {k:"confirmed",n:"2ª ruptura = COMPRA",v:"Artillería pesada",d:"4 confirmaciones a la vez"},
+    {k:"bull",n:"Primeras subidas",v:"~mar/abr 2027",d:"~280 días tras la 2ª ruptura"},
+  ];
+  const hereKey=stg==="waiting1"?"waiting1":stg==="waiting2"?"waiting2":stg==="confirmed"?"confirmed":stg==="outside"&&R.aboveBand?"bull":"waiting1";
+  $("#timeline").innerHTML=steps.map(s=>`<div class="tstep ${s.k===hereKey?'here':''}" ${s.k===hereKey?'style="--phase:'+col+'"':''}><div class="tn">${s.n}</div><div class="tv">${s.v}</div><div class="td">${s.d}</div></div>`).join("");
+}
+
+/* ---- render rule groups (todas con Fuente: LMEC) ---- */
+function renderRules(){
+  const st=v=>v==null?"na":v?"on":"off";
+  const _conf=[BMS.secondBreakNow,BMS.macdRecovGreen,BMS.rsi4050,(R.z!=null&&!R.zGreen)].filter(Boolean).length;
+  const row=(name,s,val)=>`<div class="row"><span class="led ${s}"></span><span class="rn">${name}</span><span class="rv">${val}</span></div>`;
+  const cp=cyclePhase(DATA.t[DATA.c.length-1]);
+  const g=[
+    {h:"Señal núcleo",cap:"la 2ª ruptura al alza de la BMSB (4/4 ciclos)",rows:[
+      row("Estado del ciclo", "na", BMS.status),
+      row("Precio vs BMSB", st(R.aboveBand?true:R.belowBand?false:null), R.aboveBand?"encima ▲":R.belowBand?"debajo ▼":"dentro"),
+      row("2ª ruptura confirmada", st(BMS.secondBreakNow), BMS.secondBreakNow?"sí ✓":(BMS.stage==="waiting2"?"vas por la 1ª":"no")),
+    ]},
+    {h:"Confirmaciones de compra ("+_conf+"/4)",cap:"las 4 deben darse a la vez",rows:[
+      row("2ª ruptura BMSB", st(BMS.secondBreakNow), BMS.secondBreakNow?"sí":"no"),
+      row("MACD verde y girando", st(BMS.macdRecovGreen), BMS.macdRecovGreen?"sí":"no"),
+      row("RSI recupera >34 (40-50)", st(BMS.rsi34), BMS.rsiV!=null?BMS.rsiV.toFixed(0):"—"),
+      row("MVRV Z sale de franja verde", OC?st(R.z!=null&&!R.zGreen):"na", R.z!=null?R.z.toFixed(2):"—"),
+    ]},
+    {h:"Contexto de suelo",cap:"señales de que aún no se ha llegado",rows:[
+      row("Precio bajo SMA200 (~$58k)", st(!R.above200), R.above200?"aún encima":"tocada ✓"),
+      row("Precio bajo realized (~$44k)", OC?st(R.belowReal):"na", OC?(R.belowReal?"perforado ✓":"aún encima"):"—"),
+      row("MVRV Z en franja verde", OC?st(R.zGreen):"na", R.z!=null?R.z.toFixed(2):"—"),
+    ]},
+    {h:"Ciclo de Halving",cap:"su indicador pilar (verde=profit, azul=DCA)",rows:[
+      row("Último halving", "na", isoD(cp.H)),
+      row("Semanas desde halving", "na", cp.w.toFixed(0)+"s"),
+      row("Fase del ciclo", cp.ph==="DCA / Acumulación"?"on":cp.ph==="Toma de beneficio"?"off":"na", cp.ph),
+      row("Suelo proyectado", "na", "~nov 2026"),
+    ]},
+  ];
+  $("#ruleGroups").innerHTML=g.map(x=>`<div class="rulecard"><div class="rh"><h3>${x.h}</h3><span class="src">LMEC</span></div><div class="cap">${x.cap}</div>${x.rows.join("")}</div>`).join("");
+  $("#ocTag").textContent="on-chain: "+OC_STATUS;
+}
+
+/* ---- render buy ladder ---- */
+function renderLadder(){
+  const price=DATA.c[DATA.c.length-1];
+  // el "siguiente" nivel = el pendiente más alto por debajo del precio actual (o el más alto pendiente)
+  const pend=BTC_LEVELS.filter(l=>!l.done);
+  let nextP=null; const below=pend.filter(l=>l.p<=price); nextP=(below.length?Math.max(...below.map(l=>l.p)):(pend.length?Math.max(...pend.map(l=>l.p)):null));
+  $("#ladder").innerHTML=BTC_LEVELS.map(l=>{
+    const cls=l.done?"done":(l.p===nextP?"next":"wait");
+    const badge=l.done?'<span class="badge done">comprado</span>':(l.p===nextP?'<span class="badge next">siguiente</span>':'<span class="badge wait">pendiente</span>');
+    return `<div class="lvl ${cls}"><div class="lp">${fmtUSD(l.p)}</div><div class="ls">${badge}</div></div>`;
+  }).join("");
+}
+
+/* ---------- JOURNAL (localStorage) ---------- */
+const JKEY="btc-journal-v1";
+let JOURNAL=[];
+function jload(){try{JOURNAL=JSON.parse(localStorage.getItem(JKEY)||"[]");}catch(e){JOURNAL=[];}}
+function jsave(){localStorage.setItem(JKEY,JSON.stringify(JOURNAL));}
+const SIDES={plan:{lbl:"PLAN",c:"var(--hot)",sym:"star"},long:{lbl:"COMPRA",c:"var(--bull)",sym:"triangle-up"},short:{lbl:"VENTA",c:"var(--bear)",sym:"triangle-down"},lp:{lbl:"LP",c:"var(--accum)",sym:"diamond"},note:{lbl:"NOTA",c:"var(--accent)",sym:"circle"}};
+function idxForDate(iso){const t=Date.parse(iso);if(isNaN(t))return DATA.t.length-1;let best=0;for(let i=0;i<DATA.t.length;i++){if(DATA.t[i]<=t+3*864e5)best=i;else break;}return best;}
+function snapshotAt(iso){const i=idxForDate(iso);const r=regimeAt(i);
+  return{price:r.price,phase:r.phase,cls:r.cls,rsi:r.rsiV,macd:r.mHist,mvrv:r.mvrv,z:r.z,aboveBand:r.aboveBand,above200:r.above200,realized:r.real};}
+function jrender(){
+  $("#jcount").textContent=JOURNAL.length+(JOURNAL.length===1?" entrada":" entradas");
+  if(!JOURNAL.length){$("#jlist").innerHTML='<div class="jempty">Sin entradas todavía. Pulsa "➕ Registrar" cuando se cumplan tus indicadores para dejar la operación y tu rationale — se guardará un snapshot de cómo estaba el mercado ese día.</div>';return;}
+  const sorted=[...JOURNAL].sort((a,b)=>a.date<b.date?1:-1);
+  $("#jlist").innerHTML=sorted.map(e=>{const S=SIDES[e.side]||SIDES.note;const s=e.snapshot||{};
+    return `<div class="jcard" style="--sc:${S.c}" data-id="${e.id}">
+      <div class="jt"><span class="jside">${S.lbl}${e.price?" @ "+fmtUSD(e.price,e.price<10?2:0):""}</span><span class="jdate">${e.date}</span></div>
+      <div class="jmeta">${esc(s.phase||"")} · RSI ${s.rsi!=null?s.rsi.toFixed(0):"—"} · MVRV Z ${s.z!=null?s.z.toFixed(2):"—"}</div>
+      <div class="jrat">${esc(e.rationale||e.note||"")}</div></div>`;}).join("");
+  $("#jlist").querySelectorAll(".jcard").forEach(el=>el.addEventListener("click",()=>openDetail(el.dataset.id)));
+}
+
+/* modal */
+const ov=$("#overlay"),md=$("#modal");
+function closeModal(){ov.classList.remove("open");md.innerHTML="";}
+ov.addEventListener("click",e=>{if(e.target===ov)closeModal();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
+function openForm(presetDate){
+  const latest=new Date(DATA.t[DATA.t.length-1]).toISOString().slice(0,10);
+  const price=DATA.c[DATA.c.length-1];
+  md.innerHTML=`<h3>Registrar operación / nota</h3>
+    <div class="frow"><div class="fld"><label>Fecha</label><input type="date" id="f_date" value="${presetDate||latest}"></div>
+    <div class="fld"><label>Tipo</label><select id="f_side"><option value="plan">Plan (compra objetivo)</option><option value="long">Compra ejecutada</option><option value="short">Venta</option><option value="lp">LP (liquidez)</option><option value="note">Nota</option></select></div></div>
+    <div class="frow"><div class="fld"><label>Precio de entrada (USD)</label><input type="number" id="f_price" value="${price.toFixed(0)}" step="any"></div>
+    <div class="fld"><label>Tamaño / notas (opcional)</label><input type="text" id="f_size" placeholder="p.ej. 0.25 BTC / nivel 55.3k"></div></div>
+    <div class="fld"><label>Rationale — ¿por qué entras? ¿qué indicadores se cumplen?</label><textarea id="f_rat" placeholder="2ª ruptura BMSB, MACD verde, RSI 40-50, MVRV Z saliendo de la franja verde…"></textarea></div>
+    <div id="snapPrev"></div>
+    <div class="mact"><button class="btn" id="f_cancel">Cancelar</button><button class="btn pri" id="f_save">Guardar</button></div>`;
+  const upd=()=>{const s=snapshotAt($("#f_date").value);$("#snapPrev").innerHTML=snapHTML(s,"Snapshot que se guardará (indicadores ese día)");};
+  upd(); $("#f_date").addEventListener("change",upd);
+  $("#f_cancel").addEventListener("click",closeModal);
+  $("#f_save").addEventListener("click",()=>{
+    const e={id:"j"+Date.now()+Math.floor(performance.now()),date:$("#f_date").value,side:$("#f_side").value,
+      price:parseFloat($("#f_price").value)||null,size:$("#f_size").value.trim(),rationale:$("#f_rat").value.trim(),
+      snapshot:snapshotAt($("#f_date").value)};
+    JOURNAL.push(e);jsave();jrender();renderChart();closeModal();});
+  ov.classList.add("open");
+}
+function snapHTML(s,title){if(!s)return"";
+  return `<div class="snap"><div style="color:var(--muted);margin-bottom:6px">${title}</div>
+    <div class="sr"><span>Fase</span><b style="color:${phaseColor(s.cls)}">${esc(s.phase||"—")}</b></div>
+    <div class="sr"><span>Precio</span><b>${fmtUSD(s.price,s.price<10?2:0)}</b></div>
+    <div class="sr"><span>RSI</span><b>${s.rsi!=null?s.rsi.toFixed(0):"—"}</b></div>
+    <div class="sr"><span>MACD hist</span><b>${s.macd!=null?s.macd.toFixed(0):"—"}</b></div>
+    <div class="sr"><span>MVRV Z</span><b>${s.z!=null?s.z.toFixed(2):"—"}</b></div>
+    <div class="sr"><span>vs BMSB</span><b>${s.aboveBand?"por encima":"por debajo/dentro"}</b></div></div>`;
+}
+function openDetail(id){const e=JOURNAL.find(x=>x.id===id);if(!e)return;const S=SIDES[e.side]||SIDES.note;
+  md.innerHTML=`<h3><span style="color:${S.c}">${S.lbl}</span> · ${e.date}</h3>
+    <div class="snap" style="border-color:${S.c}">
+      ${e.price?`<div class="sr"><span>Entrada</span><b>${fmtUSD(e.price,e.price<10?2:0)}</b></div>`:""}
+      ${e.size?`<div class="sr"><span>Tamaño</span><b>${esc(e.size)}</b></div>`:""}</div>
+    <div class="fld"><label>Rationale</label><div style="font-size:14px;color:var(--ink);white-space:pre-wrap">${esc(e.rationale||e.note||"—")}</div></div>
+    ${snapHTML(e.snapshot,"Cómo estaban los indicadores ese día")}
+    <div class="mact"><button class="link" id="d_del">Eliminar</button><span style="flex:1"></span><button class="btn" id="d_close">Cerrar</button></div>`;
+  $("#d_close").addEventListener("click",closeModal);
+  $("#d_del").addEventListener("click",()=>{JOURNAL=JOURNAL.filter(x=>x.id!==id);jsave();jrender();renderChart();closeModal();});
+  ov.classList.add("open");
+}
+function exportJournal(){const blob=new Blob([JSON.stringify(JOURNAL,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="btc-journal.json";a.click();}
+function importJournal(file){const rd=new FileReader();rd.onload=()=>{try{const arr=JSON.parse(rd.result);
+  if(Array.isArray(arr)){JOURNAL=arr;jsave();jrender();renderChart();}}catch(e){alert("Archivo no válido");}};rd.readAsText(file);}
+
+/* ---------- chart ---------- */
+const HALVINGS=["2012-11-28","2016-07-09","2020-05-11","2024-04-19","2028-04-20"].map(d=>Date.parse(d));
+const WKMS=7*864e5;
+const isoD=ms=>new Date(ms).toISOString().slice(0,10);
+function cycleBands(){const s=[];for(const H of HALVINGS){
+  s.push({type:"rect",xref:"x",yref:"paper",x0:isoD(H+40*WKMS),x1:isoD(H+80*WKMS),y0:DOMAINS.y[0],y1:1,fillcolor:"rgba(47,195,155,.08)",line:{width:0},layer:"below"});
+  s.push({type:"rect",xref:"x",yref:"paper",x0:isoD(H+125*WKMS),x1:isoD(H+165*WKMS),y0:DOMAINS.y[0],y1:1,fillcolor:"rgba(63,169,245,.10)",line:{width:0},layer:"below"});}
+  return s;}
+function cyclePhase(nowMs){let H=HALVINGS[0];for(const h of HALVINGS)if(h<=nowMs)H=h;const w=(nowMs-H)/WKMS;
+  let ph;if(w>=40&&w<=80)ph="Toma de beneficio";else if(w>=125&&w<=165)ph="DCA / Acumulación";else if(w<40)ph="Post-halving";else if(w<125)ph="Bajando a suelo";else ph="Pre-halving";
+  return{H,w,ph};}
+
+let chartBound=false;
+function renderChart(){
+  const {t,o,h,l,c}=DATA,n=c.length;
+  const x=t.map(ms=>new Date(ms).toISOString().slice(0,10));
+  const s20=IND.s20,e21=IND.e21,s200=IND.s200,rs=IND.rsi,M=IND.macd;
+  const nul=a=>a.map(v=>v==null?null:v);
+  const cInk=cssv("--ink"),cMut=cssv("--muted"),cGrid=cssv("--grid"),cBull=cssv("--bull"),cBear=cssv("--bear"),cAcc=cssv("--accent"),cAccum=cssv("--accum"),cPanel=cssv("--panel");
+
+  const tr=[
+    {type:"candlestick",x,open:o,high:h,low:l,close:c,name:"BTC",yaxis:"y",increasing:{line:{color:cBull,width:1}},decreasing:{line:{color:cBear,width:1}},showlegend:false,hoverlabel:{bgcolor:cPanel}},
+    {type:"scatter",x,y:nul(s20),name:"SMA20",yaxis:"y",line:{color:"#e0574f",width:1.1},hoverinfo:"skip"},
+    {type:"scatter",x,y:nul(e21),name:"BMSB",yaxis:"y",line:{color:"#3fb27a",width:1.1},fill:"tonexty",fillcolor:"rgba(232,161,58,.15)"},
+    {type:"scatter",x,y:nul(s200),name:"SMA200",yaxis:"y",line:{color:cAcc,width:1.6}},
+  ];
+  if(OC) tr.push({type:"scatter",x,y:nul(OC.real),name:"Realized",yaxis:"y",line:{color:"#9b8cff",width:1.3,dash:"dot"}});
+  // journal positions
+  for(const key in SIDES){const S=SIDES[key];const px=[],py=[],cd=[];
+    JOURNAL.filter(e=>e.side===key&&e.price).forEach(e=>{px.push(e.date);py.push(e.price);cd.push(e.id);});
+    if(px.length)tr.push({type:"scatter",x:px,y:py,customdata:cd,name:S.lbl,mode:"markers",yaxis:"y",
+      marker:{symbol:S.sym,size:14,color:cssv(S.c)||S.c,line:{color:"#fff",width:1.2}},hovertemplate:"%{x} · "+S.lbl+" @ %{y:$,.0f}<extra>clic para ver nota</extra>"});}
+  // RSI
+  tr.push({type:"scatter",x,y:nul(rs),name:"RSI",yaxis:"y2",line:{color:"#9b8cff",width:1.2},showlegend:false});
+  // MACD
+  tr.push({type:"bar",x,y:nul(M.h),yaxis:"y3",showlegend:false,marker:{color:M.h.map(v=>v==null?cMut:v>=0?"rgba(47,195,155,.6)":"rgba(242,96,109,.6)")}});
+  tr.push({type:"scatter",x,y:nul(M.m),name:"MACD",yaxis:"y3",line:{color:cAcc,width:1.1},showlegend:false});
+  tr.push({type:"scatter",x,y:nul(M.sig),name:"sig",yaxis:"y3",line:{color:cMut,width:1},showlegend:false});
+  // MVRV Z (única on-chain)
+  if(OC)tr.push({type:"scatter",x,y:nul(OC.z),name:"MVRV Z",yaxis:"y4",line:{color:cAccum,width:1.3},showlegend:false});
+
+  const ax={gridcolor:cGrid,zerolinecolor:cGrid,linecolor:cGrid,color:cMut,tickfont:{size:10}};
+  // niveles de compra BTC (LMEC) como líneas horizontales + etiquetas
+  const lvlShapes=BTC_LEVELS.map(L=>({type:"line",xref:"paper",yref:"y",x0:0,x1:1,y0:L.p,y1:L.p,
+    line:{color:L.done?cBull:cAcc,width:1,dash:"dot"},opacity:.55,layer:"below"}));
+  const lvlAnn=BTC_LEVELS.map(L=>({xref:"paper",x:0.012,y:L.p,yref:"y",yanchor:"bottom",xanchor:"left",
+    text:fmtUSD(L.p)+(L.done?" ✓":""),showarrow:false,font:{size:9.5,color:L.done?cBull:cAcc,family:cssv("--mono")}}));
+
+  const layout={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:cInk,family:cssv("--font")},
+    margin:{l:60,r:16,t:10,b:24},dragmode:"zoom",hovermode:"x unified",
+    hoverlabel:{bgcolor:cPanel,bordercolor:cAcc,font:{color:cInk,size:11,family:cssv("--font")}},
+    legend:{orientation:"h",y:1.035,x:0,font:{size:10.5},bgcolor:"rgba(0,0,0,0)"},
+    xaxis:{...ax,anchor:"y4",type:"date",range:["2013-06-01","2027-06-01"]},
+    yaxis:{...ax,domain:DOMAINS.y,type:"log",title:{text:"Precio (log)",font:{size:11},standoff:8}},
+    yaxis2:{...ax,domain:DOMAINS.y2,range:[0,100],title:{text:"RSI",font:{size:11},standoff:8}},
+    yaxis3:{...ax,domain:DOMAINS.y3,title:{text:"MACD",font:{size:11},standoff:8}},
+    yaxis4:{...ax,domain:DOMAINS.y4,title:{text:"MVRV Z",font:{size:11},standoff:8}},
+    shapes:[
+      ...cycleBands(),
+      ...lvlShapes,
+      // franja verde MVRV (zona de compra): z<0
+      {type:"rect",xref:"paper",yref:"y4",x0:0,x1:1,y0:-99,y1:0,fillcolor:"rgba(47,195,155,.10)",line:{width:0},layer:"below"},
+      ...(BMS?BMS.first:[]).map(bi=>({type:"line",xref:"x",yref:"paper",x0:x[bi],x1:x[bi],y0:DOMAINS.y[0],y1:1,line:{color:"#e8eef7",width:.8,dash:"dot"}})),
+      ...(BMS?BMS.second:[]).map(bi=>({type:"line",xref:"x",yref:"paper",x0:x[bi],x1:x[bi],y0:DOMAINS.y[0],y1:1,line:{color:"#f5d20a",width:1.5}})),
+      {type:"line",xref:"paper",yref:"y2",x0:0,x1:1,y0:70,y1:70,line:{color:cBear,width:.7,dash:"dot"}},
+      {type:"line",xref:"paper",yref:"y2",x0:0,x1:1,y0:30,y1:30,line:{color:cAccum,width:.7,dash:"dot"}},
+      {type:"line",xref:"paper",yref:"y2",x0:0,x1:1,y0:34,y1:34,line:{color:cBull,width:.7,dash:"dot"}},
+      {type:"line",xref:"paper",yref:"y3",x0:0,x1:1,y0:0,y1:0,line:{color:cGrid,width:1}},
+      {type:"line",xref:"paper",yref:"y4",x0:0,x1:1,y0:0,y1:0,line:{color:cGrid,width:1}},
+      {type:"line",xref:"x",yref:"paper",x0:"2026-11-01",x1:"2026-11-01",y0:0,y1:1,line:{color:cAccum,width:1.5,dash:"dash"}},
+    ],
+    annotations:[
+      ...lvlAnn,
+      {x:"2026-11-01",xref:"x",y:1,yref:"paper",yanchor:"bottom",xanchor:"right",text:"Suelo proyectado ~nov-2026 (53 sem. del techo)",showarrow:false,font:{size:10,color:cAccum},bgcolor:cPanel,bordercolor:cAccum,borderpad:2},
+      {x:isoD(HALVINGS[3]+145*WKMS),xref:"x",y:0.57,yref:"paper",yanchor:"bottom",text:"DCA",showarrow:false,font:{size:10,color:cAccum}},
+      {x:isoD(HALVINGS[3]+60*WKMS),xref:"x",y:0.57,yref:"paper",yanchor:"bottom",text:"Profit",showarrow:false,font:{size:10,color:cBull}},
+    ]};
+  Plotly.react("chart",tr,layout,{responsive:true,scrollZoom:false,displaylogo:false,doubleClick:"reset",modeBarButtonsToRemove:["select2d","lasso2d","autoScale2d"]}).then(()=>{try{initHandles();positionHandles();}catch(e){}});
+  if(!chartBound){chartBound=true;$("#chart").on("plotly_click",ev=>{const p=ev.points&&ev.points[0];
+    if(p&&p.customdata){openDetail(p.customdata);}});}
+}
+
+/* orchestration */
+
+/* ---- paneles redimensionables (tiradores arrastrables entre subpaneles) ---- */
+let CUR_ORDER=["y","y2","y3","y4"];
+const _axisName=k=>k==="y"?"yaxis":"yaxis"+k.slice(1);
+let _handlesInit=false;
+function _plotGeom(){const gd=document.getElementById("chart");if(!gd||!gd._fullLayout)return null;const fl=gd._fullLayout;const H=fl.height||gd.clientHeight;const mt=fl.margin.t,mb=fl.margin.b;return{gd,fl,H,mt,mb,plotH:H-mt-mb};}
+function positionHandles(){const g=_plotGeom();if(!g)return;g.gd.querySelectorAll(".rz-handle").forEach(h=>{const i=+h.dataset.i;const up=DOMAINS[CUR_ORDER[i]],lo=DOMAINS[CUR_ORDER[i+1]];const m=(up[0]+lo[1])/2;h.style.top=(g.mt+(1-m)*g.plotH)+"px";h.style.left=g.fl.margin.l+"px";h.style.right=g.fl.margin.r+"px";});}
+function initHandles(){if(_handlesInit)return;const cont=document.getElementById("chart");if(!cont||!cont._fullLayout)return;_handlesInit=true;cont.style.position="relative";
+  for(let i=0;i<CUR_ORDER.length-1;i++){const h=document.createElement("div");h.className="rz-handle";h.dataset.i=i;h.innerHTML='<span class="grip">\u21d5</span>';cont.appendChild(h);
+    let drag=false;
+    const move=(ev)=>{if(!drag)return;const g=_plotGeom();if(!g)return;const y=ev.touches?ev.touches[0].clientY:ev.clientY;const rect=g.gd.getBoundingClientRect();
+      let m=1-((y-rect.top-g.mt)/g.plotH);const up=DOMAINS[CUR_ORDER[i]],lo=DOMAINS[CUR_ORDER[i+1]];const gap=up[0]-lo[1];const MIN=0.07;
+      let ul=m+gap/2,lh=m-gap/2;ul=Math.min(ul,up[1]-MIN);lh=Math.max(lh,lo[0]+MIN);ul=Math.max(ul,lo[0]+MIN+gap);lh=Math.min(lh,up[1]-MIN-gap);
+      up[0]=ul;lo[1]=lh;const rl={};rl[_axisName(CUR_ORDER[i])+".domain"]=up.slice();rl[_axisName(CUR_ORDER[i+1])+".domain"]=lo.slice();
+      Plotly.relayout(g.gd,rl).then(positionHandles);ev.preventDefault();};
+    h.addEventListener("mousedown",e=>{drag=true;e.preventDefault();});
+    h.addEventListener("touchstart",()=>{drag=true;},{passive:true});
+    window.addEventListener("mousemove",move);window.addEventListener("touchmove",move,{passive:false});
+    window.addEventListener("mouseup",()=>drag=false);window.addEventListener("touchend",()=>drag=false);}
+  positionHandles();
+}
+window.addEventListener("resize",()=>{try{positionHandles();}catch(e){}});
+
+function renderAll(){
+  IND={s20:sma(DATA.c,20),e21:ema(DATA.c,21),s200:sma(DATA.c,200),rsi:rsi(DATA.c),macd:macd(DATA.c)};
+  R=regimeAt(DATA.c.length-1);
+  BMS=bmsbSignal();
+  const c=DATA.c,n=c.length;
+  $("#price").textContent=fmtUSD(c[n-1],c[n-1]<10?2:0);
+  const ch=(c[n-1]/c[n-2]-1)*100;const e=$("#chg");e.textContent=(ch>=0?"+":"")+ch.toFixed(1)+"% · 7d";e.className="chg "+(ch>=0?"up":"down");
+  $("#statusDot").className="dot";
+  $("#statusText").textContent=n+" semanas · "+new Date().toLocaleString("es-ES",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+  $("#srcTag").textContent=SRC;$("#srcNote").innerHTML="Precio: <b>"+SRC+"</b> · On-chain: <b>"+OC_STATUS+"</b>";
+  renderRegime();renderRules();renderLadder();jrender();renderChart();
+}
+async function boot(){
+  $("#statusDot").className="dot warn";$("#statusText").textContent="Cargando…";$("#errBanner").style.display="none";jload();
+  try{await Promise.all([loadPlotly(),loadData()]);await loadOnchain();renderAll();}
+  catch(err){$("#statusDot").className="dot err";$("#statusText").textContent="Error al cargar";
+    const b=$("#errBanner");b.style.display="block";b.innerHTML="<b>No se pudo cargar.</b> "+((err&&err.message)||err)+". Si es el precio, tu red puede bloquear Binance/CoinGecko — prueba otra red y pulsa ↻.";}
+}
+$("#addBtn").addEventListener("click",()=>openForm());
+$("#addBtn2").addEventListener("click",()=>openForm());
+$("#expBtn").addEventListener("click",exportJournal);
+$("#impBtn").addEventListener("click",()=>$("#impFile").click());
+$("#impFile").addEventListener("change",e=>{if(e.target.files[0])importJournal(e.target.files[0]);});
+$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);if(DATA&&window.Plotly){renderRegime();renderRules();renderLadder();jrender();renderChart();}});
+$("#refreshBtn").addEventListener("click",boot);
+(function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
+boot();
+</script>
+</body>
+</html>
