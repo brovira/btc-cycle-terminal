@@ -80,8 +80,8 @@
     </div>
     <div class="controls">
       <a class="btn" href="index.html">← Panel</a>
-      <label class="btn pri" for="csvFile">⭱ Cargar CSV</label>
-      <input type="file" id="csvFile" accept=".csv,text/csv" style="display:none">
+      <label class="btn pri" for="csvFile">⭱ Cargar (JSON/CSV)</label>
+      <input type="file" id="csvFile" accept=".json,.csv,application/json,text/csv" style="display:none">
       <button class="btn" id="clearBtn" style="display:none">✕ Borrar</button>
       <button class="btn" id="themeBtn">◐ Tema</button>
     </div>
@@ -90,9 +90,13 @@
   <!-- ESTADO INICIAL / DROP -->
   <div class="section" id="loadSec">
     <div class="drop" id="drop">
-      <div style="font-size:15px;margin-bottom:6px"><b>Arrastra aquí tu CSV de Orca</b> o pulsa «Cargar CSV».</div>
+      <div style="font-size:15px;margin-bottom:6px"><b>Arrastra aquí tu archivo</b> o pulsa «Cargar».</div>
       <div>Se procesa <b>en tu navegador</b> (no se sube a ningún sitio) y se recuerda en este dispositivo.</div>
-      <div class="note" style="margin-top:12px">Cómo exportarlo: Orca → <b>Portfolio</b> → tu posición → <b>Position History</b> → <b>Export CSV</b>. Vale el archivo <code>orcapositionhistory….csv</code>.</div>
+      <div class="note" style="margin-top:12px;text-align:left;max-width:640px;margin-left:auto;margin-right:auto">
+        Acepta dos fuentes:<br>
+        • <b><code>orca_pnl.json</code></b> — del <b>DeFi-Tracker</b> (histórico on-chain <b>completo desde 2024</b>, con PnL, fees, gas, IL y benchmark vs HOLD). <b>Recomendado.</b> Está en <code>data/normalized/orca_pnl.json</code> de tu repo privado.<br>
+        • <b><code>orcapositionhistory….csv</code></b> — export de Orca (Portfolio → Position History → Export CSV; solo desde que empezaste a exportar).
+      </div>
     </div>
   </div>
 
@@ -100,7 +104,7 @@
   <div class="section" id="sumSec" style="display:none">
     <div class="sec-head"><h2>Resumen de cartera</h2><div class="rule"></div><span class="tag" id="rangeTag">—</span></div>
     <div class="cards" id="summary"></div>
-    <div class="note" style="margin-top:10px">Cifras <b>ciertas</b> del CSV: capital desplegado (coste), <b>fees cobradas</b>, PnL <b>realizado</b> (posiciones cerradas) y APR de fees. El <b>valor de mercado actual</b>, el <b>rango</b> y la <b>pérdida impermanente</b> viven on-chain y no están en el CSV — los añadimos con la lectura en vivo de tu wallet (siguiente paso).</div>
+    <div class="note" id="sumNote" style="margin-top:10px"></div>
   </div>
 
   <!-- POSICIONES ABIERTAS -->
@@ -160,7 +164,7 @@ function parseCSV(text){
 const num=v=>{const n=parseFloat(v);return isNaN(n)?0:n;};
 
 /* ---------- agregación por posición ---------- */
-let MODEL=null;
+let MODEL=null, MODE="csv", PNL=null;
 function build(rows){
   const pos={};const collects=[];
   for(const r of rows){
@@ -193,7 +197,75 @@ function build(rows){
     first:rows.map(r=>r["Date"]).reduce((m,d)=>d<m?d:m),last:rows.map(r=>r["Date"]).reduce((m,d)=>d>m?d:m),rows};
 }
 
-/* ---------- render ---------- */
+/* ========== MODO JSON: orca_pnl.json del DeFi-Tracker (histórico completo on-chain) ========== */
+function primaryPair(tokens){const s=(tokens||[]).map(t=>t.symbol).filter(Boolean);
+  if(s.includes("cbBTC")&&s.includes("USDC"))return"cbBTC / USDC";
+  if(s.includes("WBTC")&&s.includes("cbBTC"))return"WBTC / cbBTC";
+  return s.slice(0,2).join(" / ")||"Orca";}
+function buildPnl(data){
+  const all=Array.isArray(data)?data:(data.pnl||data.positions||[]);
+  const conf=all.filter(p=>p&&p.isConfirmedPosition!==false&&p.status!=="non_position"&&(p.positionKind==="confirmed_position"||p.status==="open"||p.status==="closed"));
+  const P=conf.map(p=>{const pf=p.performance||{};const vs=(p.benchmarks||{}).vsHold||{};
+    return{mint:p.positionMint,pair:primaryPair(p.tokens),status:p.status||"?",computed:(p.analyticsStatus||{}).pnl==="computed",
+      first:(p.firstSeen||0)*1000,last:(p.lastSeen||0)*1000,days:Math.max(1,((p.lastSeen-p.firstSeen)||0)/86400),
+      invested:pf.investedValueUsd,withdrawn:pf.withdrawnValueUsd,fees:pf.feeLikeValueUsd,gas:pf.gasValueUsd,
+      pnl:pf.netPnlUsd,pnlPct:pf.netPnlPct,vsHold:(vs.complete?vs.pnlUsd:null),current:pf.currentValueUsd};});
+  P.sort((a,b)=>b.last-a.last);
+  const open=P.filter(p=>p.status==="open"),closed=P.filter(p=>p.status==="closed");
+  const realized=closed.filter(p=>p.computed).reduce((s,p)=>s+(p.pnl||0),0);
+  const fees=P.reduce((s,p)=>s+(p.fees||0),0);
+  const gas=P.reduce((s,p)=>s+(p.gas||0),0);
+  const vsHoldTot=closed.filter(p=>p.vsHold!=null).reduce((s,p)=>s+p.vsHold,0);
+  const invOpen=open.reduce((s,p)=>s+(p.invested||0),0);
+  return{P,open,closed,realized,fees,gas,vsHoldTot,invOpen,
+    first:P.length?Math.min(...P.map(p=>p.first)):0,last:P.length?Math.max(...P.map(p=>p.last)):0};
+}
+function renderPnl(){
+  const M=PNL;
+  $("#loadSec").style.display="none";$("#clearBtn").style.display="";
+  ["sumSec","openSec","feeSec","closedSec","liveSec"].forEach(id=>$("#"+id).style.display="");
+  $("#actSec").style.display="none";
+  $("#statusDot").className="dot";
+  $("#statusText").textContent=M.P.length+" posiciones · histórico on-chain "+(M.first?new Date(M.first).toISOString().slice(0,10):"?")+" → "+(M.last?new Date(M.last).toISOString().slice(0,10):"?");
+  $("#rangeTag").textContent=M.open.length+" abiertas · "+M.closed.length+" cerradas";
+  // resumen
+  $("#summary").innerHTML=[
+    {l:"PnL realizado (cerradas)",n:fmtUSD(M.realized,0),s:M.closed.filter(p=>p.computed).length+" con PnL computado",c:M.realized>=0?"var(--bull)":"var(--bear)",cl:M.realized>=0?"up":"down"},
+    {l:"vs HOLD (cerradas)",n:fmtUSD(M.vsHoldTot,0),s:"LP frente a solo aguantar",c:M.vsHoldTot>=0?"var(--bull)":"var(--bear)",cl:M.vsHoldTot>=0?"up":"down"},
+    {l:"Posiciones (histórico)",n:String(M.P.length),s:(M.first?new Date(M.first).getFullYear():"")+" → hoy",c:"var(--accent)"},
+    {l:"Gas total",n:fmtUSD(M.gas,2),s:M.open.length+" abiertas · "+M.closed.length+" cerradas",c:"var(--muted)"},
+  ].map(x=>`<div class="stat" style="--sc:${x.c}"><div class="l">${x.l}</div><div class="n ${x.cl||""}">${x.n}</div><div class="s">${x.s}</div></div>`).join("");
+  $("#sumNote").innerHTML="⚠️ <b>Analítica del DeFi-Tracker en estado PARCIAL</b> (el pipeline aún no completa el pricing on-chain): <b>PnL realizado</b> y <b>vs HOLD</b> son fiables; el <b>desglose de fees está sobre-atribuido</b> (cuenta retiradas como fees), por eso no lo destaco aquí — para fees exactas, tu <b>CSV de Orca</b> es la verdad ($578). El <b>rango</b> y la <b>IL en abiertas</b> quedan cuando afinemos el pipeline (fees/pricing) o leamos el underlying on-chain.";
+  // abiertas
+  $("#openTag").textContent=fmtUSD(M.invOpen)+" invertido";
+  $("#openPos").innerHTML=M.open.length?M.open.map(p=>`<div class="pos" style="--sc:${/USDC/.test(p.pair)?'var(--accum)':'var(--hot)'}">
+    <div class="ph"><h3>${esc(p.pair)}</h3><span class="badge open">abierta</span></div>
+    <div class="kv"><span class="k">Invertido</span><span class="v">${fmtUSD(p.invested)}</span></div>
+    <div class="kv"><span class="k">Fees/rewards</span><span class="v up">${fmtUSD(p.fees,0)}</span></div>
+    <div class="kv"><span class="k">PnL</span><span class="v ${(p.pnl||0)>=0?'up':'down'}">${p.computed?fmtUSD(p.pnl,0):'parcial'}</span></div>
+    <div class="kv"><span class="k">Días activa</span><span class="v">${p.days.toFixed(0)}d</span></div>
+    <div class="kv"><span class="k">Desde</span><span class="v">${p.first?new Date(p.first).toISOString().slice(0,10):'—'}</span></div>
+  </div>`).join(""):'<div class="note">Ninguna posición abierta detectada en el JSON.</div>';
+  // grafico: PnL realizado acumulado por fecha de cierre
+  const cInk=cssv("--ink"),cMut=cssv("--muted"),cGrid=cssv("--grid"),cPanel=cssv("--panel"),cAcc=cssv("--accent"),cBull=cssv("--bull");
+  const cl=M.closed.filter(p=>p.computed).slice().sort((a,b)=>a.last-b.last);
+  let acc=0;const x=cl.map(p=>new Date(p.last).toISOString().slice(0,10));const yBar=cl.map(p=>p.pnl||0);const yCum=cl.map(p=>(acc+=(p.pnl||0)));
+  $("#feeSec .sec-head h2").textContent="PnL realizado (acumulado)";
+  Plotly.react("feeChart",[
+    {type:"bar",x,y:yBar,name:"PnL por posición",marker:{color:yBar.map(v=>v>=0?"rgba(47,195,155,.6)":"rgba(242,96,109,.7)")}},
+    {type:"scatter",x,y:yCum,name:"acumulado",line:{color:cAcc,width:2},yaxis:"y2"},
+  ],{paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:cInk,family:cssv("--font")},margin:{l:52,r:48,t:10,b:26},hovermode:"x unified",
+    hoverlabel:{bgcolor:cPanel,bordercolor:cAcc,font:{color:cInk,size:11}},legend:{orientation:"h",y:1.05,x:0,font:{size:10.5},bgcolor:"rgba(0,0,0,0)"},
+    xaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,type:"date"},yaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,title:{text:"$",font:{size:10}}},
+    yaxis2:{overlaying:"y",side:"right",gridcolor:"rgba(0,0,0,0)",color:cMut,title:{text:"acum. $",font:{size:10}}}},
+    {responsive:true,displaylogo:false,scrollZoom:false,modeBarButtonsToRemove:["select2d","lasso2d"]});
+  // cerradas
+  $("#closedTag").textContent=fmtUSD(M.realized,0)+" realizado";
+  $("#closedTbl").innerHTML=`<thead><tr><th>Par</th><th>Abierta</th><th>Cerrada</th><th>Días</th><th>Invertido</th><th>Retirado</th><th>Fees</th><th>vs HOLD</th><th>PnL</th></tr></thead><tbody>`+
+    (M.closed.length?M.closed.map(p=>`<tr><td>${esc(p.pair)}</td><td>${p.first?new Date(p.first).toISOString().slice(0,10):'—'}</td><td>${p.last?new Date(p.last).toISOString().slice(0,10):'—'}</td><td>${p.days.toFixed(0)}</td><td>${fmtUSD(p.invested)}</td><td>${fmtUSD(p.withdrawn)}</td><td class="up">${fmtUSD(p.fees,0)}</td><td class="${(p.vsHold||0)>=0?'up':'down'}">${p.vsHold!=null?fmtUSD(p.vsHold,0):'—'}</td><td class="${(p.pnl||0)>=0?'up':'down'}">${p.computed?fmtUSD(p.pnl,0):'parcial'}</td></tr>`).join(""):`<tr><td colspan="9" class="note">Ninguna cerrada.</td></tr>`)+`</tbody>`;
+}
+
+/* ---------- render (CSV) ---------- */
 function poolColor(pool){return /USDC/.test(pool)?"var(--accum)":"var(--hot)";}
 function render(){
   const M=MODEL;
@@ -212,6 +284,7 @@ function render(){
     {l:"APR de fees (abiertas)",n:(function(){const w=M.open.filter(p=>p.aprFee!=null);if(!w.length)return"—";const tot=w.reduce((s,p)=>s+p.costMax,0);const wa=w.reduce((s,p)=>s+p.aprFee*p.costMax,0)/tot;return pct(wa,1);})(),s:"ponderado por capital",c:"var(--hot)"},
   ].map(x=>`<div class="stat" style="--sc:${x.c}"><div class="l">${x.l}</div><div class="n ${x.cl||""}">${x.n}</div><div class="s">${x.s}</div></div>`).join("");
 
+  $("#sumNote").innerHTML="Cifras <b>ciertas</b> del CSV: capital desplegado, <b>fees cobradas</b>, PnL <b>realizado</b> y APR. Para el <b>histórico on-chain completo desde 2024</b> (con vs HOLD e IL), carga tu <code>orca_pnl.json</code> del DeFi-Tracker.";
   // abiertas
   $("#openTag").textContent=fmtUSD(M.deployed)+" desplegado";
   $("#openPos").innerHTML=M.open.map(p=>`<div class="pos" style="--sc:${poolColor(p.pool)}">
@@ -253,12 +326,19 @@ function render(){
 
 /* ---------- carga ---------- */
 function loadText(text){
+  const t=(text||"").trim();
+  if(t[0]==="["||t[0]==="{"){ // JSON del DeFi-Tracker (orca_pnl.json) = histórico on-chain completo
+    try{const data=JSON.parse(t);MODE="pnl";PNL=buildPnl(data);localStorage.setItem(LKEY,text);
+      if(window.Plotly)renderPnl();else loadPlotly().then(renderPnl);return;}
+    catch(e){$("#statusDot").className="dot err";$("#statusText").textContent="JSON no válido: "+((e&&e.message)||e);return;}
+  }
   try{const rows=parseCSV(text);
-    if(!rows.length||!rows[0]["Position Address"]){throw new Error("No parece un CSV de Position History de Orca (falta 'Position Address').");}
-    MODEL=build(rows);localStorage.setItem(LKEY,text);
+    if(!rows.length||!rows[0]["Position Address"]){throw new Error("No reconozco el archivo (ni CSV de Orca ni orca_pnl.json del DeFi-Tracker).");}
+    MODE="csv";MODEL=build(rows);localStorage.setItem(LKEY,text);
     if(window.Plotly)render();else loadPlotly().then(render);
-  }catch(e){$("#statusDot").className="dot err";$("#statusText").textContent="CSV no válido: "+((e&&e.message)||e);}
+  }catch(e){$("#statusDot").className="dot err";$("#statusText").textContent="Archivo no válido: "+((e&&e.message)||e);}
 }
+function redraw(){if(!window.Plotly)return;if(MODE==="pnl"&&PNL)renderPnl();else if(MODEL)render();}
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("no se pudo cargar Plotly");}
 
@@ -268,7 +348,7 @@ const drop=$("#drop");
 ["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("over");}));
 drop.addEventListener("drop",e=>{const f=e.dataTransfer.files[0];if(f){const r=new FileReader();r.onload=()=>loadText(r.result);r.readAsText(f);}});
 $("#clearBtn").addEventListener("click",()=>{localStorage.removeItem(LKEY);location.reload();});
-$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);if(MODEL&&window.Plotly)render();});
+$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);redraw();});
 (function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);
   const saved=localStorage.getItem(LKEY);if(saved){loadPlotly().then(()=>loadText(saved));}})();
 </script>
