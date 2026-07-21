@@ -46,6 +46,14 @@
   .phase-chip{font-family:var(--mono);font-weight:800;font-size:13px;padding:7px 13px;border-radius:11px;color:var(--phase);background:color-mix(in oklab,var(--phase) 16%,transparent);box-shadow:inset 0 0 0 1px color-mix(in oklab,var(--phase) 36%,transparent)}
   .phase-word{font-size:clamp(21px,3vw,28px);font-weight:780;letter-spacing:-.02em;color:var(--phase)}
   .regime-say{color:var(--ink2);font-size:14.5px;margin-top:12px;max-width:82ch;text-wrap:pretty}
+  .vbox{border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow);background:linear-gradient(120deg,var(--panel),color-mix(in oklab,var(--vc,var(--accent)) 11%,var(--panel)))}
+  .vverd{font-size:clamp(18px,2.4vw,24px);font-weight:800;letter-spacing:-.01em}
+  .vsub{font-size:13.5px;color:var(--ink2);margin-top:5px;max-width:86ch}
+  .vchecks{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;margin-top:14px}
+  .vchk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2)}
+  .vled{width:10px;height:10px;border-radius:50%;flex:none}
+  .vled.on{background:var(--bull);box-shadow:0 0 0 3px color-mix(in oklab,var(--bull) 20%,transparent)}
+  .vled.off{background:var(--muted);opacity:.45}
   .timeline{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
   .tstep{flex:1;min-width:150px;background:color-mix(in oklab,var(--panel2) 70%,transparent);border:1px solid var(--line);border-radius:11px;padding:11px 13px}
   .tstep.here{border-color:var(--phase);box-shadow:inset 0 0 0 1px var(--phase)}
@@ -146,7 +154,12 @@
   </div>
 
   <div class="section">
-    <div class="sec-head"><h2>Señales de LMEC</h2><div class="rule"></div><span class="tag" id="ocTag">on-chain: —</span></div>
+    <div class="sec-head"><h2>¿Comprar o esperar?</h2><div class="rule"></div><span class="src">método LMEC · en vivo</span></div>
+    <div class="vbox" id="verdict">Calculando…</div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Detalle de señales</h2><div class="rule"></div><span class="tag" id="ocTag">on-chain: —</span></div>
     <div class="rules" id="ruleGroups"></div>
   </div>
 
@@ -604,7 +617,25 @@ function renderAll(){
   $("#statusDot").className="dot";
   $("#statusText").textContent=n+" semanas · "+new Date().toLocaleString("es-ES",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
   $("#srcTag").textContent=SRC;$("#srcNote").innerHTML="Precio: <b>"+SRC+"</b> · On-chain: <b>"+OC_STATUS+"</b>";
-  renderRegime();renderRules();renderLadder();jrender();renderChart();
+  renderRegime();renderVerdict();renderRules();renderLadder();jrender();renderChart();
+}
+function renderVerdict(){
+  const c1=BMS.secondBreakNow,c2=BMS.macdRecovGreen,c3=BMS.rsi4050,c4=(R.z!=null&&!R.zGreen);
+  const conf=[c1,c2,c3,c4].filter(Boolean).length;
+  let verd,sub,col;
+  if(BMS.buySignal){verd="🟢 COMPRA FUERTE — señal activa";col="var(--bull)";sub="Las 4 confirmaciones de LMEC se dan a la vez: es su momento de compra fuerte.";}
+  else if(BMS.stage==="confirmed"){verd="🟡 VIGILAR DE CERCA";col="var(--accum)";sub="2ª ruptura reciente, pero sin las 4 confirmaciones. Prepara órdenes límite, no dispares la artillería aún.";}
+  else{verd="🔴 AÚN NO — acumular por tramos";col="var(--bear)";sub="No es el momento de compra fuerte. LMEC acumula progresivo y guarda la artillería para las 4 señales a la vez (~oct/nov 2026).";}
+  const chk=(on,t,v)=>`<div class="vchk"><span class="vled ${on?'on':'off'}"></span><span>${t}</span><b style="margin-left:auto;font-family:var(--mono);color:var(--ink)">${v}</b></div>`;
+  const el=$("#verdict");el.style.setProperty("--vc",col);
+  el.innerHTML=`<div class="vverd" style="color:${col}">${verd}</div><div class="vsub">${sub}</div>
+    <div class="vchecks">
+      ${chk(c1,"1) 2ª ruptura BMSB al alza",c1?"sí ✓":(BMS.stage==="waiting2"?"vas por la 1ª":"no"))}
+      ${chk(c2,"2) MACD verde y girando",c2?"sí":"no")}
+      ${chk(c3,"3) RSI recupera 40-50",BMS.rsiV!=null?BMS.rsiV.toFixed(0):"—")}
+      ${chk(c4,"4) MVRV Z sale de franja verde",R.z!=null?R.z.toFixed(2):(OC?"—":"n/d"))}
+    </div>
+    <div class="note" style="margin-top:10px"><b>${conf}/4 señales</b> de compra fuerte cumplidas — deben darse <b>las 4 a la vez</b> (~oct/nov 2026). <b>No es asesoramiento financiero.</b></div>`;
 }
 async function boot(){
   $("#statusDot").className="dot warn";$("#statusText").textContent="Cargando…";$("#errBanner").style.display="none";jload();
@@ -617,7 +648,7 @@ $("#addBtn2").addEventListener("click",()=>openForm());
 $("#expBtn").addEventListener("click",exportJournal);
 $("#impBtn").addEventListener("click",()=>$("#impFile").click());
 $("#impFile").addEventListener("change",e=>{if(e.target.files[0])importJournal(e.target.files[0]);});
-$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);if(DATA&&window.Plotly){renderRegime();renderRules();renderLadder();jrender();renderChart();}});
+$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);if(DATA&&window.Plotly){renderRegime();renderVerdict();renderRules();renderLadder();jrender();renderChart();}});
 $("#refreshBtn").addEventListener("click",boot);
 (function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
 boot();
