@@ -1,1 +1,13 @@
-{}
+{
+  "date": "2026-07-20",
+  "phase": "Bajista",
+  "signals": {
+    "strong_buy": false,
+    "macd_bull_cross_neg": true,
+    "rsi_reclaim_34": false,
+    "mvrv_z_out_of_green": false,
+    "reclaim_bmsb": false
+  },
+  "price": 66375.11,
+  "checked_at": "2026-07-21T10:24:59.055376Z"
+}
