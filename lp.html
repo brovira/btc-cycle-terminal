@@ -83,6 +83,17 @@
   .soon{border:1px dashed var(--line);border-radius:var(--radius);padding:14px 16px;color:var(--muted);font-size:12.5px;line-height:1.6}
   footer{margin-top:34px;padding-top:18px;border-top:1px solid var(--line)}
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+  .jl{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+  .jl input,.jl select,.jl textarea{padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:13px;font-family:inherit}
+  .jl textarea{resize:vertical}
+  .jcard{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;background:var(--panel)}
+  .jcard .jhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+  .jbadge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;background:var(--panel2);color:var(--ink2)}
+  .jcard h3{font-size:15px;margin:0}
+  .jcard p{margin:6px 0;font-size:13.5px;line-height:1.5;color:var(--ink2)}
+  .jcard .jlabel{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700;margin-top:8px}
+  .jchips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .jchip{font-size:11px;padding:2px 8px;border-radius:7px;background:var(--panel2);color:var(--muted)}
 </style>
 </head>
 <body>
@@ -95,7 +106,8 @@
     </div>
     <div class="controls">
       <a class="btn" href="index.html">← Panel</a>
-      <label class="btn pri" for="csvFile">⭱ Cargar (JSON/CSV)</label>
+      <button class="btn pri" id="privBtn">🔒 Mis datos</button>
+      <label class="btn" for="csvFile">⭱ Cargar archivo</label>
       <input type="file" id="csvFile" accept=".json,.csv,application/json,text/csv" style="display:none">
       <button class="btn" id="clearBtn" style="display:none">✕ Borrar</button>
       <button class="btn" id="themeBtn">◐ Tema</button>
@@ -104,6 +116,21 @@
 
   <!-- ESTADO INICIAL / DROP -->
   <div class="section" id="loadSec">
+    <!-- GATE: cargar mis datos privados con contraseña -->
+    <div class="panel" id="privBox" style="padding:16px;margin-bottom:14px">
+      <div style="font-size:15px;margin-bottom:4px">🔒 <b>Cargar mis datos privados</b> (DeFi-Tracker)</div>
+      <div class="note" style="margin-bottom:10px">Tus posiciones y PnL viven en tu <b>repo privado</b> (nunca en esta web pública). Se traen al momento, cifrados por contraseña — no tienes que descargar ni subir nada.</div>
+      <form id="privForm" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <input type="password" id="privPw" placeholder="Contraseña" autocomplete="current-password"
+          style="flex:1;min-width:180px;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:14px">
+        <button class="btn pri" type="submit" id="privGo">Entrar</button>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer">
+          <input type="checkbox" id="privRemember" checked> recordar en este dispositivo
+        </label>
+      </form>
+      <div class="note" id="privMsg" style="margin-top:8px;display:none"></div>
+    </div>
+
     <div class="drop" id="drop">
       <div style="font-size:15px;margin-bottom:6px"><b>Arrastra aquí tu archivo</b> o pulsa «Cargar».</div>
       <div>Se procesa <b>en tu navegador</b> (no se sube a ningún sitio) y se recuerda en este dispositivo.</div>
@@ -135,6 +162,30 @@
       <div class="panel" style="overflow:auto;padding:6px"><div id="tabClosed"></div></div>
       <div class="note" style="margin-top:10px">Benchmarks: <b>vs HOLD USD</b> = LP frente a dejar el valor depositado quieto en dólares · <b>vs HOLD tokens</b> = frente a haber guardado en cartera los tokens que depositaste (sumando re-adds) · <b>vs HOLD BTC</b> = frente a haber convertido todo a BTC al entrar. Positivo = el LP lo hizo mejor que esa alternativa. Calculado desde tus cashflows on-chain (precios en el momento de cada tx).</div>
     </div>
+  </div>
+
+  <!-- DIARIO DE OPERATIVA (privado) -->
+  <div class="section" id="journalSec" style="display:none">
+    <div class="sec-head"><h2>📓 Diario de operativa</h2><div class="rule"></div>
+      <button class="btn pri" id="journalNew" style="padding:5px 12px">＋ Nueva entrada</button></div>
+    <div class="panel" id="journalFormWrap" style="display:none;padding:14px;margin-bottom:12px">
+      <div style="display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+        <label class="jl">Fecha<input type="date" id="jDate"></label>
+        <label class="jl">Tipo<select id="jType"><option>LP</option><option>Compra</option><option>Venta</option><option>Loop</option><option>Nota</option></select></label>
+        <label class="jl">Acción<input id="jAction" placeholder="Retirada parcial de liquidez"></label>
+        <label class="jl">Activo<input id="jAsset" placeholder="BTC / USDC"></label>
+        <label class="jl">Sitio<input id="jVenue" placeholder="Orca (Solana)"></label>
+        <label class="jl">Resultado<input id="jResult" placeholder="+~5% en ~1 mes"></label>
+      </div>
+      <label class="jl" style="margin-top:8px">Razonamiento (¿por qué?)<textarea id="jRationale" rows="4" placeholder="Tu tesis: qué esperas del precio, por qué entras/sales ahora, qué dicen tus agentes…"></textarea></label>
+      <label class="jl" style="margin-top:8px">Plan / siguiente paso<textarea id="jPlan" rows="2" placeholder="Cuándo actuarás de nuevo y con qué condición"></textarea></label>
+      <div style="display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap">
+        <button class="btn pri" id="jSave">Guardar en mi diario</button>
+        <button class="btn" id="jCancel">Cancelar</button>
+        <span class="note" id="jMsg"></span>
+      </div>
+    </div>
+    <div id="journalList"></div>
   </div>
 
   <!-- POSICIONES ABIERTAS -->
@@ -425,16 +476,17 @@ function render(){
 }
 
 /* ---------- carga ---------- */
-function loadText(text){
+function loadText(text,persist){
+  if(persist===undefined)persist=true; // datos privados: persist=false (no se cachean en el dispositivo)
   const t=(text||"").trim();
   if(t[0]==="["||t[0]==="{"){ // JSON del DeFi-Tracker (orca_pnl.json) = histórico on-chain completo
-    try{const data=JSON.parse(t);MODE="pnl";PNL=buildPnl(data);localStorage.setItem(LKEY,text);
+    try{const data=JSON.parse(t);MODE="pnl";PNL=buildPnl(data);if(persist)localStorage.setItem(LKEY,text);
       if(window.Plotly)renderPnl();else loadPlotly().then(renderPnl);return;}
     catch(e){$("#statusDot").className="dot err";$("#statusText").textContent="JSON no válido: "+((e&&e.message)||e);return;}
   }
   try{const rows=parseCSV(text);
     if(!rows.length||!rows[0]["Position Address"]){throw new Error("No reconozco el archivo (ni CSV de Orca ni orca_pnl.json del DeFi-Tracker).");}
-    MODE="csv";MODEL=build(rows);localStorage.setItem(LKEY,text);
+    MODE="csv";MODEL=build(rows);if(persist)localStorage.setItem(LKEY,text);
     if(window.Plotly)render();else loadPlotly().then(render);
   }catch(e){$("#statusDot").className="dot err";$("#statusText").textContent="Archivo no válido: "+((e&&e.message)||e);}
 }
@@ -442,15 +494,99 @@ function redraw(){if(!window.Plotly)return;if(MODE==="pnl"&&PNL)renderPnl();else
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("no se pudo cargar Plotly");}
 
+/* ---------- carga privada (repo privado vía /api/private, con contraseña) ---------- */
+const PWKEY="lp-dash-pw";
+function privMsg(txt,err){const el=$("#privMsg");el.style.display="block";el.innerHTML=txt;el.style.color=err?"var(--bear)":"var(--muted)";}
+async function loadPrivate(pw,remember){
+  if(!pw){privMsg("Escribe tu contraseña.",true);return false;}
+  $("#privGo").disabled=true;$("#privGo").textContent="…";
+  try{
+    const r=await fetch("/api/private?file=orca_pnl",{cache:"no-store",headers:{"x-dash-pw":pw}});
+    if(r.status===401){privMsg("Contraseña incorrecta.",true);sessionStorage.removeItem(PWKEY);localStorage.removeItem(PWKEY);return false;}
+    if(r.status===503){const j=await r.json().catch(()=>({}));privMsg("Falta configurar el servidor: <code>"+esc(j.error||"config")+"</code>. "+esc(j.message||""),true);return false;}
+    if(!r.ok){const j=await r.json().catch(()=>({}));privMsg("No se pudo cargar ("+r.status+"): "+esc(j.message||j.error||"error"),true);return false;}
+    const text=await r.text();
+    // guarda la contraseña (no los datos) si el usuario lo pide
+    if(remember)localStorage.setItem(PWKEY,pw);else sessionStorage.setItem(PWKEY,pw);
+    PW=pw; // habilita el diario (lectura/escritura) con la misma contraseña
+    privMsg("✓ Datos privados cargados.",false);
+    loadText(text,false); // NO cachear datos personales en el dispositivo: se re-piden con la contraseña
+    loadJournal();
+    return true;
+  }catch(e){privMsg("Error de red: "+esc((e&&e.message)||e),true);return false;}
+  finally{$("#privGo").disabled=false;$("#privGo").textContent="Entrar";}
+}
+$("#privForm").addEventListener("submit",e=>{e.preventDefault();loadPrivate($("#privPw").value,$("#privRemember").checked);});
+$("#privBtn").addEventListener("click",()=>{$("#loadSec").scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>$("#privPw").focus(),200);});
+
+/* ---------- diario de operativa (privado, /api/journal) ---------- */
+let PW=""; // contraseña activa (en memoria) — permite leer/escribir el diario
+const TYPE_ICON={LP:"💧",Compra:"🟢",Venta:"🔴",Loop:"🔁",Nota:"📝"};
+function jfmt(t){return esc(t).replace(/\n/g,"<br>");}
+function levelsLine(lv){if(!lv||typeof lv!=="object")return"";const map={ma_200w:"200W MA",bmsb:"BMSB",position_top:"Techo posición",sth:"STH cost basis",target:"Objetivo"};
+  const parts=Object.keys(lv).map(k=>`${map[k]||k}: <b>${typeof lv[k]==="number"?fmtUSD(lv[k],0):esc(lv[k])}</b>`);
+  return parts.length?`<div class="jchips">${parts.map(p=>`<span class="jchip">${p}</span>`).join("")}</div>`:"";}
+function renderJournal(doc){
+  const list=(doc&&Array.isArray(doc.entries))?doc.entries:[];
+  const el=$("#journalList");
+  if(!list.length){el.innerHTML=`<div class="note">Aún no hay entradas. Pulsa «＋ Nueva entrada» para registrar tu primera operativa y su razonamiento.</div>`;return;}
+  el.innerHTML=list.map(e=>{
+    const ic=TYPE_ICON[e.type]||"•";
+    const meta=[e.asset,e.venue].filter(Boolean).join(" · ");
+    return `<div class="jcard">
+      <div class="jhead">
+        <span class="jbadge">${ic} ${esc(e.type||"Nota")}</span>
+        <h3>${esc(e.action||e.type||"Entrada")}</h3>
+        <span class="rule" style="flex:1"></span>
+        <span class="note">${esc((e.date||"").slice(0,10))}</span>
+      </div>
+      ${meta?`<div class="note">${esc(meta)}${e.position?` — ${esc(e.position)}`:""}${e.result?` · <b style="color:var(--bull)">${esc(e.result)}</b>`:""}</div>`:""}
+      ${e.rationale?`<div class="jlabel">Razonamiento</div><p>${jfmt(e.rationale)}</p>`:""}
+      ${e.plan?`<div class="jlabel">Plan</div><p>${jfmt(e.plan)}</p>`:""}
+      ${levelsLine(e.levels)}
+      ${(e.agents&&e.agents.length)?`<div class="jchips">${e.agents.map(a=>`<span class="jchip">🧠 ${esc(a)}</span>`).join("")}</div>`:""}
+      ${(e.tags&&e.tags.length)?`<div class="jchips">${e.tags.map(t=>`<span class="jchip">#${esc(t)}</span>`).join("")}</div>`:""}
+    </div>`;
+  }).join("");
+}
+async function loadJournal(){
+  if(!PW)return;
+  try{const r=await fetch("/api/journal",{cache:"no-store",headers:{"x-dash-pw":PW}});
+    if(!r.ok)return; // sin diario configurado: no molestamos
+    const doc=await r.json();$("#journalSec").style.display="";renderJournal(doc);
+  }catch(e){}
+}
+$("#journalNew").addEventListener("click",()=>{const w=$("#journalFormWrap");w.style.display=w.style.display==="none"?"":"none";
+  if(w.style.display===""){if(!$("#jDate").value)$("#jDate").value=new Date().toISOString().slice(0,10);$("#jAction").focus();}});
+$("#jCancel").addEventListener("click",()=>{$("#journalFormWrap").style.display="none";});
+$("#jSave").addEventListener("click",async()=>{
+  const body={date:$("#jDate").value,type:$("#jType").value,action:$("#jAction").value.trim(),asset:$("#jAsset").value.trim(),
+    venue:$("#jVenue").value.trim(),result:$("#jResult").value.trim(),rationale:$("#jRationale").value.trim(),plan:$("#jPlan").value.trim()};
+  if(!body.action&&!body.rationale){$("#jMsg").textContent="Escribe al menos la acción o el razonamiento.";$("#jMsg").style.color="var(--bear)";return;}
+  $("#jSave").disabled=true;$("#jMsg").style.color="var(--muted)";$("#jMsg").textContent="Guardando…";
+  try{const r=await fetch("/api/journal",{method:"POST",headers:{"x-dash-pw":PW,"Content-Type":"application/json"},body:JSON.stringify(body)});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok){$("#jMsg").style.color="var(--bear)";$("#jMsg").textContent="No se pudo guardar: "+esc(j.message||j.error||r.status);return;}
+    $("#jMsg").textContent="✓ Guardado.";["jAction","jAsset","jVenue","jResult","jRationale","jPlan"].forEach(id=>$("#"+id).value="");
+    $("#journalFormWrap").style.display="none";loadJournal();
+  }catch(e){$("#jMsg").style.color="var(--bear)";$("#jMsg").textContent="Error de red.";}
+  finally{$("#jSave").disabled=false;}
+});
+
 $("#csvFile").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>loadText(r.result);r.readAsText(f);});
 const drop=$("#drop");
 ["dragover","dragenter"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("over");}));
 ["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("over");}));
 drop.addEventListener("drop",e=>{const f=e.dataTransfer.files[0];if(f){const r=new FileReader();r.onload=()=>loadText(r.result);r.readAsText(f);}});
-$("#clearBtn").addEventListener("click",()=>{localStorage.removeItem(LKEY);location.reload();});
+$("#clearBtn").addEventListener("click",()=>{localStorage.removeItem(LKEY);localStorage.removeItem(PWKEY);sessionStorage.removeItem(PWKEY);location.reload();});
 $("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);redraw();});
 (function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);
   fetchBtc().then(()=>redraw());
+  // 1) si hay contraseña guardada → auto-carga tus datos privados (sin descargar/subir nada)
+  const pw=localStorage.getItem(PWKEY)||sessionStorage.getItem(PWKEY);
+  if(pw){$("#privPw").value=pw;$("#privRemember").checked=!!localStorage.getItem(PWKEY);
+    loadPlotly().then(()=>loadPrivate(pw,!!localStorage.getItem(PWKEY)));return;}
+  // 2) si no, restaura lo último cargado a mano en este dispositivo (CSV/JSON público)
   const saved=localStorage.getItem(LKEY);if(saved){loadPlotly().then(()=>loadText(saved));}})();
 </script>
 </body>
