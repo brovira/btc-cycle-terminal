@@ -219,9 +219,12 @@ async function fetchCoinGecko(){const r=await fetch("https://api.coingecko.com/a
 let CM=null;
 async function fetchCM(){
   if(CM) return CM;
-  const url="https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=PriceUSD,CapMVRVCur,CapMrktCurUSD,CapRealUSD,SplyCur&frequency=1d&page_size=10000&start_time=2010-07-18";
-  const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);
-  const j=await r.json();const rows=j.data||[];if(!rows.length)throw new Error("sin filas");
+  const q="assets=btc&metrics=PriceUSD,CapMVRVCur,CapMrktCurUSD,CapRealUSD,SplyCur&frequency=1d&page_size=10000&start_time=2010-07-18";
+  let j=null;
+  for(const u of ["/api/coinmetrics?"+q,"https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?"+q]){
+    try{const r=await fetch(u,{cache:"no-store"});if(r.ok){j=await r.json();break;}}catch(e){}}
+  if(!j)throw new Error("on-chain no disponible");
+  const rows=j.data||[];if(!rows.length)throw new Error("sin filas");
   const dt=[],price=[],mvrv=[],mkt=[],real=[],sply=[];
   for(const x of rows){const t=Date.parse(x.time.slice(0,10));if(isNaN(t))continue;
     dt.push(t);

@@ -287,8 +287,11 @@ let DATA=null,SRC="",OC=null,OC_STATUS="—";
 async function fetchBinance(host){const r=await fetch(`https://${host}/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=1000`,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();return{t:j.map(k=>k[0]),o:j.map(k=>+k[1]),h:j.map(k=>+k[2]),l:j.map(k=>+k[3]),c:j.map(k=>+k[4])};}
 let CM=null;
 async function fetchCM(){if(CM)return CM;
-  const url="https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=PriceUSD,CapMrktCurUSD,CapRealUSD&frequency=1d&page_size=10000&start_time=2010-07-18";
-  const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();const rows=j.data||[];if(!rows.length)throw new Error("sin filas");
+  const q="assets=btc&metrics=PriceUSD,CapMrktCurUSD,CapRealUSD&frequency=1d&page_size=10000&start_time=2010-07-18";
+  let j=null;
+  for(const u of ["/api/coinmetrics?"+q,"https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?"+q]){
+    try{const r=await fetch(u,{cache:"no-store"});if(r.ok){j=await r.json();break;}}catch(e){}}
+  if(!j)throw new Error("on-chain no disponible");const rows=j.data||[];if(!rows.length)throw new Error("sin filas");
   const dt=[],price=[],mkt=[],real=[];for(const x of rows){const t=Date.parse(x.time.slice(0,10));if(isNaN(t))continue;dt.push(t);price.push(x.PriceUSD!=null?+x.PriceUSD:null);mkt.push(x.CapMrktCurUSD!=null?+x.CapMrktCurUSD:null);real.push(x.CapRealUSD!=null?+x.CapRealUSD:null);}
   CM={dt,price,mkt,real};return CM;}
 function weeklyC(dt,px){const t=[],o=[],h=[],l=[],c=[];const WK=7*864e5;let bs=null,bo,bh,bl,bc,bt;for(let i=0;i<dt.length;i++){const ms=dt[i],p=px[i];if(p==null)continue;if(bs==null){bs=ms;bo=bh=bl=bc=p;bt=ms;continue;}if(ms-bs>=WK){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);bs=ms;bo=bh=bl=bc=p;bt=ms;}else{bh=Math.max(bh,p);bl=Math.min(bl,p);bc=p;bt=ms;}}if(bs!=null){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);}return{t,o,h,l,c};}

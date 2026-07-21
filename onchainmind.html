@@ -45,6 +45,14 @@
   .phase-word{font-size:clamp(20px,2.6vw,26px);font-weight:780;letter-spacing:-.02em;color:var(--phase)}
   .regime-say{color:var(--ink2);font-size:14.5px;margin-top:12px;max-width:88ch;text-wrap:pretty}
   .cite{font-family:var(--mono);font-size:10.5px;color:var(--accent);opacity:.92}
+  .vbox{border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow);background:linear-gradient(120deg,var(--panel),color-mix(in oklab,var(--vc,var(--accent)) 11%,var(--panel)))}
+  .vverd{font-size:clamp(18px,2.4vw,24px);font-weight:800;letter-spacing:-.01em}
+  .vsub{font-size:13.5px;color:var(--ink2);margin-top:5px;max-width:86ch}
+  .vchecks{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px;margin-top:14px}
+  .vchk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2)}
+  .vled{width:10px;height:10px;border-radius:50%;flex:none}
+  .vled.on{background:var(--bull);box-shadow:0 0 0 3px color-mix(in oklab,var(--bull) 20%,transparent)}
+  .vled.off{background:var(--muted);opacity:.45}
   .timeline{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
   .tstep{flex:1;min-width:140px;background:color-mix(in oklab,var(--panel2) 70%,transparent);border:1px solid var(--line);border-radius:11px;padding:11px 13px}
   .tstep.here{border-color:var(--phase);box-shadow:inset 0 0 0 1px var(--phase)}
@@ -112,6 +120,11 @@
     <div class="regime-top"><span class="phase-chip">BEAR · PROCESO DE SUELO</span><span class="phase-word">«El suelo está cerca, no aquí»</span></div>
     <div class="regime-say">Lleva <b>~6 meses en bear market</b>; BTC está en <b>modo recuperación, no en bull confirmado</b>. Espera una <b>capitulación por TIEMPO, no por precio</b> («dolor por aburrimiento, no por desplome»). Ventana del suelo estimada: <b>finales de agosto → octubre 2026</b> (media de bear 327 días + convergencia STH/LTH ~sep/oct). Zona de precio del suelo que baraja: <b>~$55k–$65k</b>; descarta $30k/$20k por «matemáticamente insostenible» (metería &gt;70% del supply en pérdida). Método: <b>DCA guiado por RIESGO</b>, comprar la <b>zona</b>, no clavar el mínimo exacto. <span class="cite">[20260630 · 20260609 · 20260526]</span></div>
     <div class="timeline" id="timeline"></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>¿Comprar o esperar?</h2><div class="rule"></div><span class="src">según su método · en vivo</span></div>
+    <div class="vbox" id="verdict">Calculando…</div>
   </div>
 
   <div class="section">
@@ -202,8 +215,11 @@ async function fetchBinance(host){const r=await fetch(`https://${host}/api/v3/kl
 async function fetchCoinGecko(){const r=await fetch("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=max&interval=daily",{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();const px=j.prices||[];const t=[],o=[],h=[],l=[],c=[];const WK=7*864e5;let bs=null,bo,bh,bl,bc,bt;for(const[ms,p]of px){if(bs==null){bs=ms;bo=bh=bl=bc=p;bt=ms;continue;}if(ms-bs>=WK){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);bs=ms;bo=bh=bl=bc=p;bt=ms;}else{bh=Math.max(bh,p);bl=Math.min(bl,p);bc=p;bt=ms;}}if(bs!=null){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);}return{t,o,h,l,c,src:"CoinGecko"};}
 let CM=null;
 async function fetchCM(){if(CM)return CM;
-  const url="https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=PriceUSD,CapMVRVCur,CapMrktCurUSD,CapRealUSD,SplyCur&frequency=1d&page_size=10000&start_time=2010-07-18";
-  const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();const rows=j.data||[];if(!rows.length)throw new Error("sin filas");
+  const q="assets=btc&metrics=PriceUSD,CapMVRVCur,CapMrktCurUSD,CapRealUSD,SplyCur&frequency=1d&page_size=10000&start_time=2010-07-18";
+  let j=null;
+  for(const u of ["/api/coinmetrics?"+q,"https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?"+q]){
+    try{const r=await fetch(u,{cache:"no-store"});if(r.ok){j=await r.json();break;}}catch(e){}}
+  if(!j)throw new Error("on-chain no disponible");const rows=j.data||[];if(!rows.length)throw new Error("sin filas");
   const dt=[],price=[],mvrv=[],mkt=[],real=[],sply=[];
   for(const x of rows){const t=Date.parse(x.time.slice(0,10));if(isNaN(t))continue;dt.push(t);price.push(x.PriceUSD!=null?+x.PriceUSD:null);mvrv.push(x.CapMVRVCur!=null?+x.CapMVRVCur:null);mkt.push(x.CapMrktCurUSD!=null?+x.CapMrktCurUSD:null);real.push(x.CapRealUSD!=null?+x.CapRealUSD:null);sply.push(x.SplyCur!=null?+x.SplyCur:null);}
   CM={dt,price,mvrv,mkt,real,sply};return CM;}
@@ -294,7 +310,30 @@ function renderAll(){
   const ch=(c[n-1]/c[n-2]-1)*100;const e=$("#chg");e.textContent=(ch>=0?"+":"")+ch.toFixed(1)+"% · 7d";e.className="chg "+(ch>=0?"up":"down");
   $("#statusDot").className="dot";$("#statusText").textContent=n+" semanas · "+new Date().toLocaleString("es-ES",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
   $("#srcTag").textContent=SRC;$("#srcNote").innerHTML="Precio: <b>"+SRC+"</b> · On-chain: <b>"+OC_STATUS+"</b> · F&G: <b>"+(FNG?"alternative.me ✓":"n/d")+"</b>";
-  renderTimeline();renderLive();renderMetrics();renderChart();
+  renderTimeline();renderVerdict();renderLive();renderMetrics();renderChart();
+}
+function renderVerdict(){
+  const price=DATA.c[DATA.c.length-1];
+  const z=OC?OC.z[OC.z.length-1]:null, real=OC?OC.real[OC.real.length-1]:null;
+  const fng=FNG?FNG.now:null, cad=FNG?FNG.cadence:null;
+  const s=sma(DATA.c,29);const ma=s[s.length-1];
+  const c1=fng!=null&&fng<30, c2=cad!=null&&cad>0, c3=z!=null&&z<0, c4=real!=null&&price<real;
+  const buySignal=cad!=null&&cad>0&&fng!=null&&fng>20&&ma!=null&&price>ma;
+  const n=[c1,c2,c3,c4].filter(Boolean).length;
+  let verd,sub,col;
+  if(buySignal){verd="🟢 COMPRA — señal F&G Cadence activa";sub="Cadencia F&G cruzando al alza + precio &gt; MA200 + F&G &gt; 20: su gatillo de compra sistemático (el que «batió al DCA 10× desde 2019»).";col="var(--bull)";}
+  else if(c1||c3){verd="🟢 ACUMULAR (DCA por riesgo)";sub="Zona de descuento (miedo extremo o MVRV Z reseteado). Su método: DCA cuando el riesgo es bajo, «comprar la zona, no clavar el mínimo».";col="var(--bull)";}
+  else{verd="⚪ ESPERAR / DCA suave";sub="Sin gatillo de compra ni miedo extremo. «Bears sound smart but bulls make money» — pero sin prisa.";col="var(--muted)";}
+  const chk=(on,t)=>`<div class="vchk"><span class="vled ${on?'on':'off'}"></span>${t}</div>`;
+  const el=$("#verdict");el.style.setProperty("--vc",col);
+  el.innerHTML=`<div class="vverd" style="color:${col}">${verd}</div><div class="vsub">${sub}</div>
+    <div class="vchecks">
+      ${chk(c1,"Fear &amp; Greed &lt; 30 (miedo extremo)")}
+      ${chk(c2,"Cadencia F&amp;G al alza (gatillo)")}
+      ${chk(c3,"MVRV Z &lt; 0 (reset on-chain)")}
+      ${chk(c4,"Precio &lt; realized (~$53k)")}
+    </div>
+    <div class="note" style="margin-top:10px">${n}/4 condiciones de su método a favor. <b>No es asesoramiento financiero.</b></div>`;
 }
 async function boot(){
   $("#statusDot").className="dot warn";$("#statusText").textContent="Cargando…";$("#errBanner").style.display="none";

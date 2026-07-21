@@ -138,8 +138,11 @@ const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).tri
 /* ---------- datos ---------- */
 let DATA=null,SRC="";
 async function fetchBinance(host){const r=await fetch(`https://${host}/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=1000`,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();return{t:j.map(k=>k[0]),c:j.map(k=>+k[4])};}
-async function fetchCM(){const url="https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=PriceUSD&frequency=1d&page_size=10000&start_time=2010-07-18";
-  const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();const rows=j.data||[];
+async function fetchCM(){const q="assets=btc&metrics=PriceUSD&frequency=1d&page_size=10000&start_time=2010-07-18";
+  let j=null;
+  for(const u of ["/api/coinmetrics?"+q,"https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?"+q]){
+    try{const r=await fetch(u,{cache:"no-store"});if(r.ok){j=await r.json();break;}}catch(e){}}
+  if(!j)throw new Error("on-chain no disponible");const rows=j.data||[];
   const dt=[],px=[];for(const x of rows){const t=Date.parse(x.time.slice(0,10));if(isNaN(t)||x.PriceUSD==null)continue;dt.push(t);px.push(+x.PriceUSD);}
   const t=[],c=[];const WK=7*864e5;let bs=null,bc,bt;for(let i=0;i<dt.length;i++){const ms=dt[i],p=px[i];if(bs==null){bs=ms;bc=p;bt=ms;continue;}if(ms-bs>=WK){t.push(bt);c.push(bc);bs=ms;bc=p;bt=ms;}else{bc=p;bt=ms;}}if(bs!=null){t.push(bt);c.push(bc);}return{t,c};}
 async function loadData(){
