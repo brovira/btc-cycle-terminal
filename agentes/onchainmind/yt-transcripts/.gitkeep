@@ -1,0 +1,2 @@
+# Los transcripts de On Chain Mind se generan aquí con:
+#   python3 agentes/tools/fetch_captions.py --persona onchainmind --lang en --since 20210101 "https://www.youtube.com/@OnChainMind/videos"

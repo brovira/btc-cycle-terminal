@@ -8,7 +8,7 @@
   :root{
     --bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;
     --ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#e8a13a;
-    --cycles:#e8a13a;--lps:#3fa9f5;--trading:#2fc39b;
+    --cycles:#e8a13a;--lps:#3fa9f5;--trading:#2fc39b;--tools:#9b8cff;
     --shadow:0 1px 0 rgba(255,255,255,.03),0 12px 32px -18px rgba(0,0,0,.7);
     --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     --mono:ui-monospace,"SF Mono","JetBrains Mono","Menlo","Consolas",monospace;--radius:16px;
@@ -16,11 +16,11 @@
   @media (prefers-color-scheme: light){:root{
     --bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;
     --ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--accent:#b26a10;
-    --cycles:#b26a10;--lps:#1f74c0;--trading:#0e846a;
+    --cycles:#b26a10;--lps:#1f74c0;--trading:#0e846a;--tools:#6a4bd6;
     --shadow:0 1px 0 rgba(255,255,255,.6),0 14px 34px -20px rgba(20,40,70,.35);
   }}
-  :root[data-theme="dark"]{--bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;--ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#e8a13a;--cycles:#e8a13a;--lps:#3fa9f5;--trading:#2fc39b}
-  :root[data-theme="light"]{--bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;--ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--accent:#b26a10;--cycles:#b26a10;--lps:#1f74c0;--trading:#0e846a}
+  :root[data-theme="dark"]{--bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;--ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#e8a13a;--cycles:#e8a13a;--lps:#3fa9f5;--trading:#2fc39b;--tools:#9b8cff}
+  :root[data-theme="light"]{--bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;--ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--accent:#b26a10;--cycles:#b26a10;--lps:#1f74c0;--trading:#0e846a;--tools:#6a4bd6}
   *{box-sizing:border-box} html,body{margin:0}
   body{background:radial-gradient(1200px 600px at 80% -10%,color-mix(in oklab,var(--accent) 9%,transparent),transparent 60%),linear-gradient(var(--bg),var(--bg2));color:var(--ink);font-family:var(--font);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
   .wrap{max-width:1180px;margin:0 auto;padding:30px 20px 70px}
@@ -84,6 +84,11 @@
         <p>Marco de riesgo (0–1), ROI de ciclo, realized/balanced price, 200w/50w SMA, MVRV Z reset → suelo 4T-2026.</p>
         <div class="tags"><span class="tag">Risk metric</span><span class="tag">200w/50w</span><span class="tag">realized</span><span class="tag">midterm</span></div>
       </a>
+      <div class="dash soon" style="--c:var(--cycles)">
+        <div class="dt"><h3>🧠 On Chain Mind</h3><span class="status soon">agente listo</span></div>
+        <p>Lectura <b>on-chain</b> del ciclo: cohortes STH/LTH, flujos de exchange, SOPR/NUPL, oferta en beneficio. Agente cargado — dashboard próximamente.</p>
+        <div class="tags"><span class="tag">on-chain</span><span class="tag">cohortes</span><span class="tag">flujos</span><span class="tag">SOPR/NUPL</span></div>
+      </div>
     </div>
   </section>
 
@@ -108,6 +113,23 @@
         <p>Funding rate y open interest (Binance/Bybit), liquidaciones (Coinglass) e <b>IV / DVOL / skew</b> de opciones (Deribit). Empezamos gratis con APIs de exchange.</p>
         <div class="tags"><span class="tag">funding</span><span class="tag">OI</span><span class="tag">IV/skew</span><span class="tag">liquidaciones</span></div>
       </div>
+    </div>
+  </section>
+
+  <!-- HERRAMIENTAS -->
+  <section class="cat" style="--c:var(--tools)">
+    <div class="cat-head"><span class="ic">🧪</span><h2>Herramientas</h2><span class="cd">diseña y estresa estrategias antes de arriesgar capital</span><span class="rule"></span></div>
+    <div class="grid">
+      <a class="dash" href="backtest.html" style="--c:var(--tools)">
+        <div class="dt"><h3>🧪 Backtesting</h3><span class="status on">activo</span></div>
+        <p>Compara estrategias sobre el histórico real: Hold vs DCA fija vs <b>DCA + dip (MVRV Z/RSI)</b> vs tendencia BMSB. ROI, coste medio, drawdown y curva de capital.</p>
+        <div class="tags"><span class="tag">DCA</span><span class="tag">MVRV Z</span><span class="tag">ROI</span><span class="tag">drawdown</span></div>
+      </a>
+      <a class="dash" href="montecarlo.html" style="--c:var(--tools)">
+        <div class="dt"><h3>🎲 Monte Carlo</h3><span class="status on">activo</span></div>
+        <p>Miles de escenarios de precio a futuro (bootstrap histórico o GBM). Abanico de percentiles, distribución final y <b>probabilidad</b> de alcanzar objetivos o tocar suelos.</p>
+        <div class="tags"><span class="tag">bootstrap</span><span class="tag">GBM</span><span class="tag">percentiles</span><span class="tag">probabilidad</span></div>
+      </a>
     </div>
   </section>
 

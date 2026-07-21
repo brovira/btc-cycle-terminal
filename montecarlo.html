@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BTC · Monte Carlo</title>
+<style>
+  :root{
+    --bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;
+    --ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#3fa9f5;
+    --bull:#2fc39b;--bear:#f2606d;--accum:#3fa9f5;--hot:#f2a33f;
+    --grid:rgba(255,255,255,.06);--shadow:0 1px 0 rgba(255,255,255,.03),0 12px 32px -18px rgba(0,0,0,.7);
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Menlo","Consolas",monospace;--radius:14px;
+  }
+  @media (prefers-color-scheme: light){:root{
+    --bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;
+    --ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--accent:#1f74c0;
+    --bull:#0e846a;--bear:#c93a48;--accum:#1f74c0;--hot:#b9791a;
+    --grid:rgba(16,24,34,.08);--shadow:0 1px 0 rgba(255,255,255,.6),0 14px 34px -20px rgba(20,40,70,.35);
+  }}
+  :root[data-theme="dark"]{--bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;--ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#3fa9f5;--bull:#2fc39b;--bear:#f2606d;--accum:#3fa9f5;--hot:#f2a33f;--grid:rgba(255,255,255,.06)}
+  :root[data-theme="light"]{--bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;--ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--accent:#1f74c0;--bull:#0e846a;--bear:#c93a48;--accum:#1f74c0;--hot:#b9791a;--grid:rgba(16,24,34,.08)}
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:radial-gradient(1200px 600px at 80% -10%,color-mix(in oklab,var(--accent) 9%,transparent),transparent 60%),linear-gradient(var(--bg),var(--bg2));color:var(--ink);font-family:var(--font);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+  .wrap{max-width:1240px;margin:0 auto;padding:26px 20px 70px}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:18px}
+  .kicker{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  h1{margin:4px 0 0;font-size:clamp(22px,3vw,30px);font-weight:750;letter-spacing:-.02em} h1 b{color:var(--accent)}
+  .meta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;color:var(--muted);font-size:12.5px;margin-top:6px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--bull)} .dot.warn{background:var(--accent)} .dot.err{background:var(--bear)}
+  .btn{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:8px 13px;border-radius:10px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;transition:.15s;text-decoration:none}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  .btn.pri{background:var(--accent);color:#111;border-color:var(--accent)} .btn.pri:hover{filter:brightness(1.05);color:#111}
+  .controls{display:flex;gap:9px;flex-wrap:wrap}
+  .err-banner{display:none;margin:12px 0;border:1px solid color-mix(in oklab,var(--bear) 40%,transparent);background:color-mix(in oklab,var(--bear) 10%,transparent);padding:13px 15px;border-radius:12px;font-size:13.5px}
+  .section{margin-top:26px}
+  .sec-head{display:flex;align-items:center;gap:12px;margin:0 2px 14px}
+  .sec-head h2{margin:0;font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
+  .sec-head .rule{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+  .sec-head .tag{font-size:11px;font-weight:600;color:var(--muted);font-family:var(--mono)}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+  .cfg{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px}
+  .fld{display:flex;flex-direction:column;gap:5px}
+  .fld label{font-size:12px;color:var(--muted);font-weight:600}
+  .fld input,.fld select{font:inherit;font-size:14px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+  .fld .hint{font-size:11px;color:var(--muted)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--sc,var(--muted));border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
+  .stat .l{font-size:11.5px;color:var(--muted);font-weight:600}
+  .stat .n{font-family:var(--mono);font-size:20px;font-weight:750;margin-top:4px}
+  .stat .s{font-size:11.5px;color:var(--muted);margin-top:2px}
+  #fan,#hist{width:100%;height:440px}
+  .up{color:var(--bull)} .down{color:var(--bear)}
+  .note{color:var(--muted);font-size:12px;line-height:1.6}
+  footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--line)}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="kicker">Herramientas · Simulación de escenarios</div>
+      <h1>🎲 <b>Monte Carlo</b> · precio BTC</h1>
+      <div class="meta"><span class="dot" id="statusDot"></span><span id="statusText">Cargando datos…</span></div>
+    </div>
+    <div class="controls">
+      <a class="btn" href="index.html">← Panel</a>
+      <a class="btn" href="backtest.html">🧪 Backtesting</a>
+      <button class="btn" id="themeBtn">◐ Tema</button>
+      <button class="btn" id="refreshBtn">↻ Datos</button>
+    </div>
+  </header>
+
+  <div class="err-banner" id="errBanner"></div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Parámetros</h2><div class="rule"></div><span class="tag" id="srcTag">—</span></div>
+    <div class="panel">
+      <div class="cfg">
+        <div class="fld"><label>Modelo</label><select id="p_model">
+          <option value="boot">Bootstrap histórico (remuestreo)</option>
+          <option value="gbm">GBM (lognormal μ/σ)</option>
+          <option value="block">Bootstrap por bloques (8 sem)</option>
+        </select><span class="hint">boot = usa retornos reales; GBM = paramétrico</span></div>
+        <div class="fld"><label>Horizonte (semanas)</label><input type="number" id="p_h" value="104" step="1"><span class="hint">104 = ~2 años</span></div>
+        <div class="fld"><label>Nº de simulaciones</label><input type="number" id="p_paths" value="2000" step="100"><span class="hint">más = más preciso, más lento</span></div>
+        <div class="fld"><label>Precio de partida (USD)</label><input type="number" id="p_start" value="" step="any"><span class="hint">vacío = último cierre</span></div>
+        <div class="fld"><label>Ajuste de deriva (μ)</label><input type="number" id="p_drift" value="35" step="5"><span class="hint">% de la μ histórica (crypto histórica exagera; 100=sin ajuste)</span></div>
+        <div class="fld"><label>Ventana histórica</label><select id="p_look">
+          <option value="0">Todo el histórico</option>
+          <option value="208" selected>Últimas 208 sem (~4 años)</option>
+          <option value="104">Últimas 104 sem (~2 años)</option>
+        </select><span class="hint">de dónde salen μ/σ y los retornos</span></div>
+        <div class="fld"><label>Objetivo alcista (USD)</label><input type="number" id="p_tgt" value="250000" step="any"><span class="hint">prob. de superarlo</span></div>
+        <div class="fld"><label>Suelo / stop (USD)</label><input type="number" id="p_floor" value="50000" step="any"><span class="hint">prob. de tocarlo en el camino</span></div>
+        <div class="fld"><label>Semilla</label><input type="number" id="p_seed" value="42" step="1"><span class="hint">reproducible</span></div>
+      </div>
+      <div style="margin-top:16px"><button class="btn pri" id="runBtn">🎲 Simular</button>
+        <span class="note" id="calNote" style="margin-left:10px"></span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Resultado a horizonte</h2><div class="rule"></div><span class="tag" id="hzTag">—</span></div>
+    <div class="cards" id="stats"></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Abanico de escenarios</h2><div class="rule"></div><span class="tag">percentiles + rutas de muestra (log)</span></div>
+    <div class="panel" style="padding:12px 10px 6px"><div id="fan"></div></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Distribución final</h2><div class="rule"></div><span class="tag">histograma del precio a horizonte</span></div>
+    <div class="panel" style="padding:12px 10px 6px"><div id="hist"></div></div>
+    <div class="panel" style="margin-top:14px"><div class="note">
+      <b>Cómo leerlo.</b> Cada simulación proyecta un camino de precio semana a semana. El <b>abanico</b> muestra los percentiles (la banda p5–p95 contiene el 90% de los escenarios; la línea es la mediana). <b>Bootstrap</b> = remuestrea retornos semanales reales del histórico (respeta las colas gordas de BTC); <b>GBM</b> = asume retornos lognormales con μ/σ constantes (más suave, subestima cracks). El <b>ajuste de deriva</b> baja la μ histórica porque la rentabilidad pasada de BTC es enorme y no es realista extrapolarla al 100%. <b>Esto NO predice el precio</b> — dibuja el rango de incertidumbre bajo unos supuestos. <b>Uso educativo — no es asesoramiento financiero.</b>
+    </div></div>
+  </div>
+
+  <footer>
+    <div class="note" style="max-width:900px">
+      Datos de precio: <b id="srcNote">—</b> (velas semanales). μ/σ y los retornos remuestreados salen de la ventana histórica elegida. Simulación 100% en tu navegador. Próximo paso natural: alimentar la deriva/vol con <b>IV de opciones (Deribit)</b> para escenarios implícitos por el mercado, no solo históricos.
+    </div>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const fmtUSD=(v,d=0)=>v==null||isNaN(v)?"—":"$"+Number(v).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtPct=v=>v==null||isNaN(v)?"—":(v>=0?"+":"")+v.toFixed(0)+"%";
+const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+/* ---------- datos ---------- */
+let DATA=null,SRC="";
+async function fetchBinance(host){const r=await fetch(`https://${host}/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=1000`,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();return{t:j.map(k=>k[0]),c:j.map(k=>+k[4])};}
+async function fetchCM(){const url="https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=PriceUSD&frequency=1d&page_size=10000&start_time=2010-07-18";
+  const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();const rows=j.data||[];
+  const dt=[],px=[];for(const x of rows){const t=Date.parse(x.time.slice(0,10));if(isNaN(t)||x.PriceUSD==null)continue;dt.push(t);px.push(+x.PriceUSD);}
+  const t=[],c=[];const WK=7*864e5;let bs=null,bc,bt;for(let i=0;i<dt.length;i++){const ms=dt[i],p=px[i];if(bs==null){bs=ms;bc=p;bt=ms;continue;}if(ms-bs>=WK){t.push(bt);c.push(bc);bs=ms;bc=p;bt=ms;}else{bc=p;bt=ms;}}if(bs!=null){t.push(bt);c.push(bc);}return{t,c};}
+async function loadData(){
+  let bin=null,cm=null;
+  try{bin=await fetchBinance("api.binance.com");}catch(e){try{bin=await fetchBinance("api.binance.us");}catch(e2){}}
+  try{cm=await fetchCM();}catch(e){}
+  if(bin&&cm){const b0=bin.t[0];const pt=[],pc=[];for(let i=0;i<cm.t.length;i++){if(cm.t[i]<b0-3*864e5&&cm.t[i]>Date.parse("2010-01-01")){pt.push(cm.t[i]);pc.push(cm.c[i]);}}
+    DATA={t:[...pt,...bin.t],c:[...pc,...bin.c]};SRC="Coin Metrics + Binance";return;}
+  if(bin){DATA={t:bin.t,c:bin.c};SRC="Binance";return;}
+  if(cm){DATA={t:cm.t,c:cm.c};SRC="Coin Metrics";return;}
+  throw new Error("sin fuentes de precio");
+}
+
+/* ---------- RNG con semilla (mulberry32) + normal (Box-Muller) ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+let RND=Math.random;
+function randn(){let u=0,v=0;while(u===0)u=RND();while(v===0)v=RND();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+
+/* ---------- retornos log semanales de la ventana ---------- */
+function logReturns(look){const c=DATA.c;let i0=1;if(look>0)i0=Math.max(1,c.length-look);const r=[];for(let i=i0;i<c.length;i++){if(c[i]>0&&c[i-1]>0)r.push(Math.log(c[i]/c[i-1]));}return r;}
+function meanStd(a){const m=a.reduce((x,y)=>x+y,0)/a.length;const s=Math.sqrt(a.reduce((x,y)=>x+(y-m)**2,0)/a.length);return{m,s};}
+
+/* ---------- simulación ---------- */
+let SIM=null;
+function simulate(){
+  const model=$("#p_model").value;const H=Math.max(1,parseInt($("#p_h").value)||104);
+  const N=Math.max(100,Math.min(20000,parseInt($("#p_paths").value)||2000));
+  const look=parseInt($("#p_look").value)||0;const driftAdj=(parseFloat($("#p_drift").value)||0)/100;
+  const seed=parseInt($("#p_seed").value); RND=isNaN(seed)?Math.random:mulberry32(seed>>>0);
+  const S0=parseFloat($("#p_start").value)||DATA.c[DATA.c.length-1];
+  const rets=logReturns(look);if(rets.length<10)throw new Error("pocos datos para simular");
+  const {m,s}=meanStd(rets);
+  const muW=m*driftAdj;          // deriva semanal ajustada
+  const muA=(Math.exp(muW*52)-1)*100, volA=s*Math.sqrt(52)*100; // anualizadas (aprox)
+  // paths[i] = precio en cada semana (H+1 puntos, incluye S0)
+  const term=new Float64Array(N);const mins=new Float64Array(N);
+  const steps=[];for(let k=0;k<=H;k++)steps.push([]);
+  const SAMPLE=Math.min(60,N);const samplePaths=[];
+  const bl=8; // bloque para block bootstrap
+  for(let i=0;i<N;i++){
+    let p=S0;let mn=p;const keep=i<SAMPLE;const path=keep?[p]:null;
+    let bi=0,bpos=bl; // estado block bootstrap
+    for(let k=1;k<=H;k++){
+      let r;
+      if(model==="gbm"){r=muW-0.5*s*s+s*randn();}
+      else if(model==="block"){if(bpos>=bl){bi=Math.floor(RND()*rets.length);bpos=0;}r=rets[(bi+bpos)%rets.length];bpos++; r=r-m+muW;}
+      else{r=rets[Math.floor(RND()*rets.length)]; r=r-m+muW;} // bootstrap iid, recentrado a muW
+      p=p*Math.exp(r);if(p<mn)mn=p;
+      steps[k].push(p);if(keep)path.push(p);
+    }
+    term[i]=p;mins[i]=mn;if(keep)samplePaths.push(path);
+  }
+  // percentiles por semana
+  const P=[5,25,50,75,95];const bands={};P.forEach(q=>bands[q]=[S0]);
+  for(let k=1;k<=H;k++){const arr=steps[k];arr.sort((a,b)=>a-b);P.forEach(q=>bands[q].push(quantile(arr,q/100)));}
+  const ts=term.slice().sort();const mn=mins.slice().sort();
+  const tgt=parseFloat($("#p_tgt").value),floor=parseFloat($("#p_floor").value);
+  const pAbove=isNaN(tgt)?null:100*count(term,v=>v>=tgt)/N;
+  const pFloor=isNaN(floor)?null:100*count(mins,v=>v<=floor)/N;
+  SIM={H,N,S0,model,bands,term:ts,samplePaths,muA,volA,volAdj:driftAdj,
+    med:quantile(ts,0.5),p5:quantile(ts,0.05),p95:quantile(ts,0.95),p25:quantile(ts,0.25),p75:quantile(ts,0.75),
+    pAbove,pFloor,tgt,floor};
+  return SIM;
+}
+function quantile(sorted,q){const n=sorted.length;if(!n)return null;const idx=(n-1)*q;const lo=Math.floor(idx),hi=Math.ceil(idx);if(lo===hi)return sorted[lo];return sorted[lo]+(sorted[hi]-sorted[lo])*(idx-lo);}
+function count(arr,fn){let c=0;for(let i=0;i<arr.length;i++)if(fn(arr[i]))c++;return c;}
+
+/* ---------- render ---------- */
+function futureDates(H){const last=DATA.t[DATA.t.length-1];const out=[];for(let k=0;k<=H;k++)out.push(new Date(last+k*7*864e5).toISOString().slice(0,10));return out;}
+function paint(){
+  const S=SIM;const roiMed=(S.med/S.S0-1)*100,roi5=(S.p5/S.S0-1)*100,roi95=(S.p95/S.S0-1)*100;
+  $("#hzTag").textContent=`${S.H} sem · ${S.N.toLocaleString()} sims`;
+  $("#calNote").textContent=`μ anual ≈ ${S.muA.toFixed(0)}% (ajustada ×${S.volAdj}) · vol anual ≈ ${S.volA.toFixed(0)}%`;
+  $("#stats").innerHTML=[
+    {l:"Mediana (p50)",n:fmtUSD(S.med),s:fmtPct(roiMed),c:"var(--accent)"},
+    {l:"Pesimista (p5)",n:fmtUSD(S.p5),s:fmtPct(roi5),c:"var(--bear)"},
+    {l:"Optimista (p95)",n:fmtUSD(S.p95),s:fmtPct(roi95),c:"var(--bull)"},
+    {l:"Rango medio (p25–p75)",n:fmtUSD(S.p25)+" – "+fmtUSD(S.p75),s:"50% de escenarios",c:"var(--muted)"},
+    {l:`P(≥ ${fmtUSD(S.tgt)})`,n:S.pAbove!=null?S.pAbove.toFixed(0)+"%":"—",s:"a horizonte",c:"var(--bull)"},
+    {l:`P(toca ${fmtUSD(S.floor)})`,n:S.pFloor!=null?S.pFloor.toFixed(0)+"%":"—",s:"en algún momento",c:"var(--bear)"},
+  ].map(x=>`<div class="stat" style="--sc:${x.c}"><div class="l">${x.l}</div><div class="n">${x.n}</div><div class="s">${x.s}</div></div>`).join("");
+
+  const cGrid=cssv("--grid"),cMut=cssv("--muted"),cInk=cssv("--ink"),cPanel=cssv("--panel"),cAcc=cssv("--accent"),cBull=cssv("--bull"),cBear=cssv("--bear");
+  // histórico reciente (para contexto) + futuro
+  const HISTW=Math.min(156,DATA.t.length);const hx=[],hy=[];for(let i=DATA.t.length-HISTW;i<DATA.t.length;i++){hx.push(new Date(DATA.t[i]).toISOString().slice(0,10));hy.push(DATA.c[i]);}
+  const fx=futureDates(S.H);
+  const band=(q,color,name,fill)=>({type:"scatter",x:fx,y:S.bands[q],name,line:{color,width:q===50?2:0},
+    fill:fill||"none",fillcolor:fill?color:undefined,showlegend:q===50||q===95||q===5,hoverinfo:q===50?"x+y":"skip"});
+  const tr=[
+    {type:"scatter",x:hx,y:hy,name:"histórico",line:{color:cMut,width:1.4},hoverinfo:"skip"},
+  ];
+  // sample paths (tenues)
+  S.samplePaths.forEach((p,idx)=>tr.push({type:"scatter",x:fx,y:p,mode:"lines",line:{color:cAcc,width:.5},opacity:.10,showlegend:false,hoverinfo:"skip"}));
+  // bandas p5-p95 y p25-p75 como relleno
+  tr.push({type:"scatter",x:fx,y:S.bands[95],line:{width:0},showlegend:false,hoverinfo:"skip",name:"p95"});
+  tr.push({type:"scatter",x:fx,y:S.bands[5],line:{width:0},fill:"tonexty",fillcolor:"rgba(63,169,245,.13)",showlegend:true,name:"p5–p95 (90%)",hoverinfo:"skip"});
+  tr.push({type:"scatter",x:fx,y:S.bands[75],line:{width:0},showlegend:false,hoverinfo:"skip"});
+  tr.push({type:"scatter",x:fx,y:S.bands[25],line:{width:0},fill:"tonexty",fillcolor:"rgba(63,169,245,.22)",showlegend:true,name:"p25–p75 (50%)",hoverinfo:"skip"});
+  tr.push({type:"scatter",x:fx,y:S.bands[50],name:"mediana",line:{color:cAcc,width:2.2}});
+  // target/floor
+  const shapes=[];
+  if(!isNaN(S.tgt))shapes.push({type:"line",xref:"paper",x0:0,x1:1,yref:"y",y0:S.tgt,y1:S.tgt,line:{color:cBull,width:1,dash:"dash"}});
+  if(!isNaN(S.floor))shapes.push({type:"line",xref:"paper",x0:0,x1:1,yref:"y",y0:S.floor,y1:S.floor,line:{color:cBear,width:1,dash:"dash"}});
+  const layout={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:cInk,family:cssv("--font")},
+    margin:{l:64,r:14,t:10,b:28},hovermode:"x unified",shapes,
+    hoverlabel:{bgcolor:cPanel,bordercolor:cAcc,font:{color:cInk,size:11}},
+    legend:{orientation:"h",y:1.04,x:0,font:{size:11},bgcolor:"rgba(0,0,0,0)"},
+    xaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,type:"date"},
+    yaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,type:"log",title:{text:"Precio BTC (log)",font:{size:11}}}};
+  Plotly.react("fan",tr,layout,{responsive:true,displaylogo:false,scrollZoom:false,modeBarButtonsToRemove:["select2d","lasso2d"]});
+
+  // histograma terminal (log-bins)
+  const t=SIM.term;const lo=Math.log10(t[0]),hi=Math.log10(t[t.length-1]);const NB=40;const edges=[],mids=[],cnt=new Array(NB).fill(0);
+  for(let i=0;i<=NB;i++)edges.push(Math.pow(10,lo+(hi-lo)*i/NB));
+  for(const v of t){let b=Math.floor((Math.log10(v)-lo)/(hi-lo)*NB);if(b<0)b=0;if(b>=NB)b=NB-1;cnt[b]++;}
+  for(let i=0;i<NB;i++)mids.push(Math.sqrt(edges[i]*edges[i+1]));
+  const htr=[{type:"bar",x:mids,y:cnt.map(v=>100*v/t.length),marker:{color:cAcc,opacity:.75},hovertemplate:"%{x:$,.0f} · %{y:.1f}%<extra></extra>"}];
+  const hshapes=[{type:"line",yref:"paper",y0:0,y1:1,xref:"x",x0:SIM.med,x1:SIM.med,line:{color:cInk,width:1.5,dash:"dash"}}];
+  if(!isNaN(S.tgt))hshapes.push({type:"line",yref:"paper",y0:0,y1:1,xref:"x",x0:S.tgt,x1:S.tgt,line:{color:cBull,width:1,dash:"dot"}});
+  if(!isNaN(S.floor))hshapes.push({type:"line",yref:"paper",y0:0,y1:1,xref:"x",x0:S.floor,x1:S.floor,line:{color:cBear,width:1,dash:"dot"}});
+  const hlay={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:cInk,family:cssv("--font")},
+    margin:{l:52,r:14,t:24,b:34},bargap:.02,shapes:hshapes,
+    annotations:[{x:SIM.med,y:1,yref:"paper",xref:"x",yanchor:"bottom",text:"mediana "+fmtUSD(SIM.med),showarrow:false,font:{size:10,color:cInk}}],
+    xaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,type:"log",title:{text:"Precio a horizonte (log)",font:{size:11}}},
+    yaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,title:{text:"% de escenarios",font:{size:11}}}};
+  Plotly.react("hist",htr,hlay,{responsive:true,displaylogo:false,scrollZoom:false,modeBarButtonsToRemove:["select2d","lasso2d"]});
+}
+
+/* ---------- plotly loader ---------- */
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("no se pudo cargar Plotly");}
+
+function run(){try{simulate();paint();}catch(e){const b=$("#errBanner");b.style.display="block";b.textContent=(e&&e.message)||e;}}
+async function boot(){
+  $("#statusDot").className="dot warn";$("#statusText").textContent="Cargando datos…";$("#errBanner").style.display="none";
+  try{await Promise.all([loadPlotly(),loadData()]);
+    $("#statusDot").className="dot";$("#statusText").textContent=DATA.t.length+" semanas · "+SRC;$("#srcTag").textContent=SRC;$("#srcNote").textContent=SRC;
+    if(!$("#p_start").value)$("#p_start").placeholder=fmtUSD(DATA.c[DATA.c.length-1]);
+    run();}
+  catch(err){$("#statusDot").className="dot err";$("#statusText").textContent="Error";
+    const b=$("#errBanner");b.style.display="block";b.innerHTML="<b>No se pudo cargar.</b> "+((err&&err.message)||err)+". Tu red puede bloquear Binance/Coin Metrics — prueba otra red y pulsa ↻.";}
+}
+$("#runBtn").addEventListener("click",run);
+$("#refreshBtn").addEventListener("click",boot);
+$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);if(SIM)paint();});
+(function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
+boot();
+</script>
+</body>
+</html>

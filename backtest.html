@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BTC · Backtesting de estrategias</title>
+<style>
+  :root{
+    --bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;
+    --ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#9b8cff;
+    --bull:#2fc39b;--bear:#f2606d;--accum:#3fa9f5;--hot:#f2a33f;
+    --grid:rgba(255,255,255,.06);--shadow:0 1px 0 rgba(255,255,255,.03),0 12px 32px -18px rgba(0,0,0,.7);
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Menlo","Consolas",monospace;--radius:14px;
+  }
+  @media (prefers-color-scheme: light){:root{
+    --bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;
+    --ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--accent:#6a4bd6;
+    --bull:#0e846a;--bear:#c93a48;--accum:#1f74c0;--hot:#b9791a;
+    --grid:rgba(16,24,34,.08);--shadow:0 1px 0 rgba(255,255,255,.6),0 14px 34px -20px rgba(20,40,70,.35);
+  }}
+  :root[data-theme="dark"]{--bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;--ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#9b8cff;--bull:#2fc39b;--bear:#f2606d;--accum:#3fa9f5;--hot:#f2a33f;--grid:rgba(255,255,255,.06)}
+  :root[data-theme="light"]{--bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;--ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--accent:#6a4bd6;--bull:#0e846a;--bear:#c93a48;--accum:#1f74c0;--hot:#b9791a;--grid:rgba(16,24,34,.08)}
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:radial-gradient(1200px 600px at 80% -10%,color-mix(in oklab,var(--accent) 9%,transparent),transparent 60%),linear-gradient(var(--bg),var(--bg2));color:var(--ink);font-family:var(--font);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+  .wrap{max-width:1240px;margin:0 auto;padding:26px 20px 70px}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:18px}
+  .kicker{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  h1{margin:4px 0 0;font-size:clamp(22px,3vw,30px);font-weight:750;letter-spacing:-.02em} h1 b{color:var(--accent)}
+  .meta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;color:var(--muted);font-size:12.5px;margin-top:6px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--bull)} .dot.warn{background:var(--accent)} .dot.err{background:var(--bear)}
+  .btn{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:8px 13px;border-radius:10px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;transition:.15s;text-decoration:none}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  .btn.pri{background:var(--accent);color:#111;border-color:var(--accent)} .btn.pri:hover{filter:brightness(1.05);color:#111}
+  .controls{display:flex;gap:9px;flex-wrap:wrap}
+  .err-banner{display:none;margin:12px 0;border:1px solid color-mix(in oklab,var(--bear) 40%,transparent);background:color-mix(in oklab,var(--bear) 10%,transparent);padding:13px 15px;border-radius:12px;font-size:13.5px}
+  .section{margin-top:26px}
+  .sec-head{display:flex;align-items:center;gap:12px;margin:0 2px 14px}
+  .sec-head h2{margin:0;font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
+  .sec-head .rule{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+  .sec-head .tag{font-size:11px;font-weight:600;color:var(--muted);font-family:var(--mono)}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+  /* config grid */
+  .cfg{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+  .fld{display:flex;flex-direction:column;gap:5px}
+  .fld label{font-size:12px;color:var(--muted);font-weight:600}
+  .fld input,.fld select{font:inherit;font-size:14px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+  .fld .hint{font-size:11px;color:var(--muted)}
+  .toggles{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .chk{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;padding:7px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);cursor:pointer}
+  .chk input{accent-color:var(--sc,var(--accent))}
+  /* cards */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .scard{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--sc,var(--muted));border-radius:12px;padding:15px 16px;box-shadow:var(--shadow)}
+  .scard .sh{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .scard h3{margin:0;font-size:14.5px;font-weight:750;color:var(--sc)}
+  .scard .win{font-size:10px;font-weight:800;font-family:var(--mono);padding:2px 7px;border-radius:999px;color:var(--bull);background:color-mix(in oklab,var(--bull) 16%,transparent);text-transform:uppercase}
+  .kv{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--line);font-size:13px} .kv:first-of-type{border-top:none;margin-top:8px}
+  .kv .k{color:var(--muted)} .kv .v{font-family:var(--mono);font-weight:700}
+  .kv .v.big{font-size:16px;color:var(--ink)}
+  .up{color:var(--bull)} .down{color:var(--bear)}
+  #eq,#acc{width:100%;height:420px}
+  table.cmp{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
+  table.cmp th,table.cmp td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--line)}
+  table.cmp th:first-child,table.cmp td:first-child{text-align:left}
+  table.cmp th{color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em}
+  table.cmp td{font-family:var(--mono)}
+  table.cmp tr td:first-child{font-family:var(--font);font-weight:650}
+  .swatch{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:7px;vertical-align:middle}
+  .note{color:var(--muted);font-size:12px;line-height:1.6}
+  footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--line)}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="kicker">Herramientas · Simulación de estrategias</div>
+      <h1>🧪 <b>Backtesting</b> de estrategias BTC</h1>
+      <div class="meta"><span class="dot" id="statusDot"></span><span id="statusText">Cargando datos…</span></div>
+    </div>
+    <div class="controls">
+      <a class="btn" href="index.html">← Panel</a>
+      <a class="btn" href="montecarlo.html">🎲 Monte Carlo</a>
+      <button class="btn" id="themeBtn">◐ Tema</button>
+      <button class="btn" id="refreshBtn">↻ Datos</button>
+    </div>
+  </header>
+
+  <div class="err-banner" id="errBanner"></div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Configuración</h2><div class="rule"></div><span class="tag" id="srcTag">—</span></div>
+    <div class="panel">
+      <div class="cfg">
+        <div class="fld"><label>Desde</label><input type="date" id="c_start" value="2018-01-01"><span class="hint">inicio del backtest</span></div>
+        <div class="fld"><label>Aporte semanal (USD)</label><input type="number" id="c_week" value="100" step="any"><span class="hint">para las estrategias DCA</span></div>
+        <div class="fld"><label>Umbral MVRV Z para «dip»</label><input type="number" id="c_zdip" value="0" step="0.1"><span class="hint">compra reforzada si Z &lt; umbral (franja verde = 0)</span></div>
+        <div class="fld"><label>Multiplicador en «dip»</label><input type="number" id="c_zmult" value="3" step="0.5"><span class="hint">×aporte cuando Z bajo umbral</span></div>
+        <div class="fld"><label>Umbral RSI sobreventa</label><input type="number" id="c_rsi" value="40" step="1"><span class="hint">refuerza si RSI semanal &lt; umbral</span></div>
+      </div>
+      <div class="toggles" id="toggles"></div>
+      <div style="margin-top:16px"><button class="btn pri" id="runBtn">▶ Ejecutar backtest</button>
+        <span class="note" id="rangeNote" style="margin-left:10px"></span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Resultados</h2><div class="rule"></div><span class="tag">al último precio · mismo periodo</span></div>
+    <div class="cards" id="cards"></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Valor de la cartera</h2><div class="rule"></div><span class="tag">equity curve (log)</span></div>
+    <div class="panel" style="padding:12px 10px 6px"><div id="eq"></div></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Comparativa</h2><div class="rule"></div><span class="tag">ROI = normalizado por capital</span></div>
+    <div class="panel"><div style="overflow:auto"><table class="cmp" id="cmp"></table></div>
+      <div class="note" style="margin-top:12px">Comparación justa = <b>ROI %</b> y <b>coste medio</b> (independientes del capital). El «valor final» depende del total invertido, que difiere entre estrategias (el DCA con refuerzo despliega más capital en las caídas — ese es justo su punto). <b>Max DD</b> = peor caída del valor de la cartera. Datos de precio: Binance + Coin Metrics (histórico). On-chain (MVRV Z): Coin Metrics Community. <b>Uso educativo — no es asesoramiento financiero; rentabilidad pasada no garantiza resultados.</b></div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="note" style="max-width:900px">
+      <b>Estrategias.</b>
+      <b>Hold</b> = invertir de golpe todo el capital (aporte × nº semanas) el primer día y aguantar ·
+      <b>DCA fija</b> = mismo aporte cada semana pase lo que pase ·
+      <b>DCA + dip (estilo LMEC)</b> = aporte base semanal, <b>reforzado ×N</b> cuando el MVRV Z entra en la franja verde y/o el RSI está sobrevendido (comprar más fuerte abajo) ·
+      <b>Tendencia BMSB</b> = solo acumula (aporta) cuando el precio está por encima de la Bull Market Support Band; en bajista guarda el aporte en «liquidez» y lo despliega al recuperar la banda.
+      Los indicadores (RSI 14, MACD 12/26/9, BMSB SMA20/EMA21, MVRV Z) son semanales, igual que en el panel LMEC. <b>Derivados (funding, IV/skew) llegarán</b> cuando conectemos esa fuente — hoy el backtest usa precio + on-chain.
+    </div>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const fmtUSD=(v,d=0)=>v==null||isNaN(v)?"—":"$"+Number(v).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtPct=v=>v==null||isNaN(v)?"—":(v>=0?"+":"")+v.toFixed(1)+"%";
+const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+/* ---------- indicadores (idénticos al panel LMEC) ---------- */
+function sma(a,n){const o=Array(a.length).fill(null);let s=0;for(let i=0;i<a.length;i++){s+=a[i];if(i>=n)s-=a[i-n];if(i>=n-1)o[i]=s/n;}return o;}
+function ema(a,n){const o=Array(a.length).fill(null);const k=2/(n+1);let p=null,ss=0,sd=false;for(let i=0;i<a.length;i++){const v=a[i];if(v==null){o[i]=null;continue;}if(!sd){ss+=v;if(i>=n-1){p=ss/n;o[i]=p;sd=true;}continue;}p=v*k+p*(1-k);o[i]=p;}return o;}
+function rsi(c,n=14){const o=Array(c.length).fill(null);let g=0,l=0;for(let i=1;i<c.length;i++){const ch=c[i]-c[i-1],gg=Math.max(0,ch),ll=Math.max(0,-ch);if(i<=n){g+=gg;l+=ll;if(i===n){g/=n;l/=n;o[i]=100-100/(1+(l===0?1e9:g/l));}}else{g=(g*(n-1)+gg)/n;l=(l*(n-1)+ll)/n;o[i]=100-100/(1+(l===0?1e9:g/l));}}return o;}
+
+/* ---------- datos: Binance + Coin Metrics (histórico) + MVRV Z ---------- */
+let DATA=null,SRC="",IND=null,OC=null,OC_STATUS="—";
+async function fetchBinance(host){const r=await fetch(`https://${host}/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=1000`,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();return{t:j.map(k=>k[0]),o:j.map(k=>+k[1]),h:j.map(k=>+k[2]),l:j.map(k=>+k[3]),c:j.map(k=>+k[4])};}
+let CM=null;
+async function fetchCM(){
+  if(CM) return CM;
+  const url="https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=PriceUSD,CapMrktCurUSD,CapRealUSD&frequency=1d&page_size=10000&start_time=2010-07-18";
+  const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);
+  const j=await r.json();const rows=j.data||[];if(!rows.length)throw new Error("sin filas");
+  const dt=[],price=[],mkt=[],real=[];
+  for(const x of rows){const t=Date.parse(x.time.slice(0,10));if(isNaN(t))continue;
+    dt.push(t);price.push(x.PriceUSD!=null?+x.PriceUSD:null);
+    mkt.push(x.CapMrktCurUSD!=null?+x.CapMrktCurUSD:null);real.push(x.CapRealUSD!=null?+x.CapRealUSD:null);}
+  CM={dt,price,mkt,real};return CM;
+}
+function weeklyFrom(dt,px){const t=[],c=[];const WK=7*864e5;let bs=null,bc,bt;
+  for(let i=0;i<dt.length;i++){const ms=dt[i],p=px[i];if(p==null)continue;
+    if(bs==null){bs=ms;bc=p;bt=ms;continue;}
+    if(ms-bs>=WK){t.push(bt);c.push(bc);bs=ms;bc=p;bt=ms;}else{bc=p;bt=ms;}}
+  if(bs!=null){t.push(bt);c.push(bc);}return{t,c};}
+async function loadData(){
+  let bin=null,cm=null;
+  try{bin=await fetchBinance("api.binance.com");}catch(e){try{bin=await fetchBinance("api.binance.us");}catch(e2){}}
+  try{cm=await fetchCM();}catch(e){}
+  if(bin&&cm){const w=weeklyFrom(cm.dt,cm.price);const b0=bin.t[0];const pt=[],pc=[];
+    for(let i=0;i<w.t.length;i++){if(w.t[i]<b0-3*864e5&&w.t[i]>Date.parse("2010-01-01")){pt.push(w.t[i]);pc.push(w.c[i]);}}
+    DATA={t:[...pt,...bin.t],c:[...pc,...bin.c]};SRC="Coin Metrics + Binance";return;}
+  if(bin){DATA={t:bin.t,c:bin.c};SRC="Binance";return;}
+  if(cm){const w=weeklyFrom(cm.dt,cm.price);DATA={t:w.t,c:w.c};SRC="Coin Metrics";return;}
+  throw new Error("sin fuentes de precio");
+}
+async function loadOnchain(){
+  try{const cm=await fetchCM();const dt=cm.dt,mkt=cm.mkt,real=cm.real;
+    const valid=mkt.filter(v=>v!=null);const mean=valid.reduce((a,b)=>a+b,0)/valid.length;
+    const sd=Math.sqrt(valid.reduce((a,b)=>a+(b-mean)**2,0)/valid.length);
+    const zAt=i=>(mkt[i]!=null&&real[i]!=null&&sd>0)?(mkt[i]-real[i])/sd:null;
+    const n=DATA.t.length;const z=Array(n).fill(null);let j2=0;
+    for(let i=0;i<n;i++){const wt=DATA.t[i];while(j2+1<dt.length&&dt[j2+1]<=wt)j2++;if(dt[j2]<=wt+7*864e5)z[i]=zAt(j2);}
+    OC={z};OC_STATUS="Coin Metrics ✓";return;
+  }catch(e){OC=null;OC_STATUS="sin datos";}
+}
+
+/* ---------- motor de backtest ---------- */
+function startIdx(){const t0=Date.parse($("#c_start").value)||DATA.t[0];let i=0;while(i<DATA.t.length&&DATA.t[i]<t0)i++;return Math.min(i,DATA.t.length-1);}
+// simula aportaciones semanales; contribFn(i) devuelve el USD a invertir esa semana.
+function runContrib(i0,contribFn){
+  const c=DATA.c,n=c.length;let btc=0,invested=0,peak=0,maxdd=0,cash=0;
+  const val=Array(n).fill(null);const buys=[];
+  for(let i=i0;i<n;i++){
+    const r=contribFn(i,{btc,cash,px:c[i]});
+    const amt=r.buy||0, keep=r.cash||0;
+    if(amt>0){btc+=amt/c[i];invested+=amt;buys.push({i,amt});}
+    if(keep>0){cash+=keep;invested+=keep;}
+    if(r.deployCash&&cash>0){btc+=cash/c[i];buys.push({i,amt:cash,fromCash:true});cash=0;}
+    const v=btc*c[i]+cash;val[i]=v;
+    if(v>peak)peak=v;const dd=peak>0?(v/peak-1):0;if(dd<maxdd)maxdd=dd;
+  }
+  const last=c[n-1];const finalVal=btc*last+cash;
+  return{btc,invested,cash,val,buys,finalVal,avg:btc>0?(invested-cash)/btc:null,
+    roi:invested>0?(finalVal/invested-1)*100:null,maxdd:maxdd*100};
+}
+function backtest(){
+  const i0=startIdx();const week=parseFloat($("#c_week").value)||0;
+  const zdip=parseFloat($("#c_zdip").value),zmult=parseFloat($("#c_zmult").value)||1,rsiTh=parseFloat($("#c_rsi").value);
+  const n=DATA.c.length,weeks=n-i0;
+  const S={};
+  // Hold: lump sum = week*weeks el primer día
+  S.hold=runContrib(i0,(i)=>i===i0?{buy:week*weeks}:{});
+  // DCA fija
+  S.dca=runContrib(i0,()=>({buy:week}));
+  // DCA + dip
+  S.dip=runContrib(i0,(i)=>{let m=1;const z=OC?OC.z[i]:null;if(z!=null&&z<zdip)m=Math.max(m,zmult);
+    if(IND.rsi[i]!=null&&IND.rsi[i]<rsiTh)m=Math.max(m,1+(zmult-1)*0.5);return{buy:week*m};});
+  // Tendencia BMSB: aporta a BTC si precio>banda; si no, guarda en cash; al recuperar banda despliega
+  S.bmsb=runContrib(i0,(i,st)=>{const s20=IND.s20[i],e21=IND.e21[i];const band=(s20!=null&&e21!=null)?Math.max(s20,e21):null;
+    if(band==null)return{buy:week};
+    if(DATA.c[i]>band)return{buy:week,deployCash:true};
+    return{cash:week};});
+  return{i0,weeks,S};
+}
+
+/* ---------- render ---------- */
+const STRAT=[
+  {k:"hold",name:"Hold",col:"var(--muted)",plot:"#8aa0bd"},
+  {k:"dca",name:"DCA fija",col:"var(--accum)",plot:"#3fa9f5"},
+  {k:"dip",name:"DCA + dip (LMEC)",col:"var(--bull)",plot:"#2fc39b"},
+  {k:"bmsb",name:"Tendencia BMSB",col:"var(--accent)",plot:"#9b8cff"},
+];
+let SEL={hold:true,dca:true,dip:true,bmsb:true};
+function renderToggles(){$("#toggles").innerHTML=STRAT.map(s=>
+  `<label class="chk" style="--sc:${s.plot}"><input type="checkbox" data-k="${s.k}" ${SEL[s.k]?"checked":""}><span class="swatch" style="background:${s.plot}"></span>${s.name}</label>`).join("");
+  $("#toggles").querySelectorAll("input").forEach(el=>el.addEventListener("change",()=>{SEL[el.dataset.k]=el.checked;if(LAST)paint(LAST);}));}
+let LAST=null;
+function paint(res){
+  const {i0,weeks,S}=res;
+  $("#rangeNote").textContent=`${weeks} semanas · desde ${new Date(DATA.t[i0]).toISOString().slice(0,10)} · ${OC_STATUS==="Coin Metrics ✓"?"on-chain ✓":"on-chain no disponible (dip usa solo RSI)"}`;
+  const active=STRAT.filter(s=>SEL[s.k]);
+  // mejor ROI
+  let bestROI=-1e9,bestK=null;active.forEach(s=>{const r=S[s.k].roi;if(r!=null&&r>bestROI){bestROI=r;bestK=s.k;}});
+  // cards
+  $("#cards").innerHTML=active.map(s=>{const r=S[s.k];
+    return `<div class="scard" style="--sc:${s.plot}">
+      <div class="sh"><h3>${s.name}</h3>${s.k===bestK?'<span class="win">mejor ROI</span>':""}</div>
+      <div class="kv"><span class="k">ROI</span><span class="v big ${r.roi>=0?"up":"down"}">${fmtPct(r.roi)}</span></div>
+      <div class="kv"><span class="k">Invertido</span><span class="v">${fmtUSD(r.invested)}</span></div>
+      <div class="kv"><span class="k">Valor final</span><span class="v">${fmtUSD(r.finalVal)}</span></div>
+      <div class="kv"><span class="k">BTC acumulado</span><span class="v">${r.btc.toFixed(4)}</span></div>
+      <div class="kv"><span class="k">Coste medio</span><span class="v">${fmtUSD(r.avg)}</span></div>
+      <div class="kv"><span class="k">Max drawdown</span><span class="v down">${r.maxdd.toFixed(0)}%</span></div>
+    </div>`;}).join("");
+  // tabla
+  $("#cmp").innerHTML=`<thead><tr><th>Estrategia</th><th>ROI</th><th>Invertido</th><th>Valor final</th><th>BTC</th><th>Coste medio</th><th>Max DD</th></tr></thead><tbody>`+
+    active.map(s=>{const r=S[s.k];return `<tr><td><span class="swatch" style="background:${s.plot}"></span>${s.name}</td>
+      <td class="${r.roi>=0?"up":"down"}">${fmtPct(r.roi)}</td><td>${fmtUSD(r.invested)}</td><td>${fmtUSD(r.finalVal)}</td>
+      <td>${r.btc.toFixed(4)}</td><td>${fmtUSD(r.avg)}</td><td class="down">${r.maxdd.toFixed(0)}%</td></tr>`;}).join("")+`</tbody>`;
+  // equity chart
+  const x=DATA.t.map(ms=>new Date(ms).toISOString().slice(0,10));
+  const cGrid=cssv("--grid"),cMut=cssv("--muted"),cInk=cssv("--ink"),cPanel=cssv("--panel"),cAcc=cssv("--accent");
+  const tr=active.map(s=>({type:"scatter",x,y:S[s.k].val,name:s.name,line:{color:s.plot,width:1.8},connectgaps:false}));
+  // invertido acumulado (línea de referencia, gris)
+  if(active.length){const ref=S[active[0].k].val.map((_,i)=>{ // usa DCA fija como coste referencia si está
+      const base=S[SEL.dca?"dca":active[0].k];return null;});}
+  const layout={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:cInk,family:cssv("--font")},
+    margin:{l:64,r:14,t:10,b:28},hovermode:"x unified",
+    hoverlabel:{bgcolor:cPanel,bordercolor:cAcc,font:{color:cInk,size:11}},
+    legend:{orientation:"h",y:1.04,x:0,font:{size:11},bgcolor:"rgba(0,0,0,0)"},
+    xaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,type:"date"},
+    yaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,type:"log",title:{text:"Valor cartera (log, USD)",font:{size:11}}}};
+  Plotly.react("eq",tr,layout,{responsive:true,displaylogo:false,scrollZoom:false,modeBarButtonsToRemove:["select2d","lasso2d"]});
+}
+
+/* ---------- plotly loader ---------- */
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("no se pudo cargar Plotly");}
+
+function run(){if(!DATA)return;IND={s20:sma(DATA.c,20),e21:ema(DATA.c,21),rsi:rsi(DATA.c)};LAST=backtest();paint(LAST);}
+async function boot(){
+  $("#statusDot").className="dot warn";$("#statusText").textContent="Cargando datos…";$("#errBanner").style.display="none";
+  renderToggles();
+  try{await Promise.all([loadPlotly(),loadData()]);await loadOnchain();
+    $("#statusDot").className="dot";$("#statusText").textContent=DATA.t.length+" semanas · "+SRC;$("#srcTag").textContent=SRC;
+    run();}
+  catch(err){$("#statusDot").className="dot err";$("#statusText").textContent="Error";
+    const b=$("#errBanner");b.style.display="block";b.innerHTML="<b>No se pudo cargar.</b> "+((err&&err.message)||err)+". Tu red puede bloquear Binance/Coin Metrics — prueba otra red y pulsa ↻.";}
+}
+$("#runBtn").addEventListener("click",run);
+$("#refreshBtn").addEventListener("click",boot);
+$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);if(LAST)paint(LAST);});
+(function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
+boot();
+</script>
+</body>
+</html>
