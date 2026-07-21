@@ -139,6 +139,7 @@
       <a class="btn" href="index.html" style="text-decoration:none">← Panel</a>
       <a class="btn" href="lmec.html" style="text-decoration:none;border-color:var(--accent);color:var(--accent)">🎯 LMEC</a>
       <a class="btn" href="cowen.html" style="text-decoration:none">📊 Cowen</a>
+      <a class="btn" href="onchainmind.html" style="text-decoration:none">🧠 OnChainMind</a>
       <button class="btn pri" id="addBtn">➕ Registrar</button>
       <button class="btn" id="themeBtn">◐ Tema</button>
       <button class="btn" id="refreshBtn">↻ Actualizar</button>
@@ -230,22 +231,25 @@ var DOMAINS={y:[0.56,1],y2:[0.37,0.50],y3:[0.18,0.31],y4:[0,0.13]};
 async function fetchBinance(host){const r=await fetch(`https://${host}/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=1000`,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();return{t:j.map(k=>k[0]),o:j.map(k=>+k[1]),h:j.map(k=>+k[2]),l:j.map(k=>+k[3]),c:j.map(k=>+k[4]),src:"Binance ("+host.replace("api.","")+")"};}
 async function fetchCoinGecko(){const r=await fetch("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=max&interval=daily",{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();const px=j.prices||[];const t=[],o=[],h=[],l=[],c=[];const WK=7*864e5;let bs=null,bo,bh,bl,bc,bt;for(const[ms,p]of px){if(bs==null){bs=ms;bo=bh=bl=bc=p;bt=ms;continue;}if(ms-bs>=WK){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);bs=ms;bo=bh=bl=bc=p;bt=ms;}else{bh=Math.max(bh,p);bl=Math.min(bl,p);bc=p;bt=ms;}}if(bs!=null){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);}return{t,o,h,l,c,src:"CoinGecko"};}
 let CM=null;
+async function cmGet(metrics){ // pide un set de métricas; proxy primero, directo después
+  const q="assets=btc&metrics="+metrics+"&frequency=1d&page_size=10000&start_time=2010-07-18";
+  for(const u of ["/api/coinmetrics?"+q,"https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?"+q]){
+    try{const r=await fetch(u,{cache:"no-store"});if(r.ok){const j=await r.json();if(j&&j.data&&j.data.length)return j.data;}}catch(e){}}
+  return null;
+}
 async function fetchCM(){
   if(CM) return CM;
-  const q="assets=btc&metrics=PriceUSD,CapMVRVCur,CapMrktCurUSD,CapRealUSD,SplyCur&frequency=1d&page_size=10000&start_time=2010-07-18";
-  let j=null;
-  for(const u of ["/api/coinmetrics?"+q,"https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?"+q]){
-    try{const r=await fetch(u,{cache:"no-store"});if(r.ok){j=await r.json();break;}}catch(e){}}
-  if(!j)throw new Error("on-chain no disponible");
-  const rows=j.data||[];if(!rows.length)throw new Error("sin filas");
+  // si CapMVRVCur estuviera restringido, tumbaría toda la petición → reintento SIN ella y derivo MVRV=mkt/real
+  let rows=await cmGet("PriceUSD,CapMVRVCur,CapMrktCurUSD,CapRealUSD,SplyCur")
+        || await cmGet("PriceUSD,CapMrktCurUSD,CapRealUSD,SplyCur");
+  if(!rows)throw new Error("on-chain no disponible (Coin Metrics)");
   const dt=[],price=[],mvrv=[],mkt=[],real=[],sply=[];
   for(const x of rows){const t=Date.parse(x.time.slice(0,10));if(isNaN(t))continue;
+    const m=x.CapMrktCurUSD!=null?+x.CapMrktCurUSD:null, rl=x.CapRealUSD!=null?+x.CapRealUSD:null;
     dt.push(t);
     price.push(x.PriceUSD!=null?+x.PriceUSD:null);
-    mvrv.push(x.CapMVRVCur!=null?+x.CapMVRVCur:null);
-    mkt.push(x.CapMrktCurUSD!=null?+x.CapMrktCurUSD:null);
-    real.push(x.CapRealUSD!=null?+x.CapRealUSD:null);
-    sply.push(x.SplyCur!=null?+x.SplyCur:null);}
+    mvrv.push(x.CapMVRVCur!=null?+x.CapMVRVCur:(m!=null&&rl?m/rl:null));
+    mkt.push(m);real.push(rl);sply.push(x.SplyCur!=null?+x.SplyCur:null);}
   CM={dt,price,mvrv,mkt,real,sply};return CM;
 }
 async function fetchCMPrice(){
