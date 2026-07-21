@@ -49,6 +49,11 @@
   .stat .rd{font-size:11.5px;font-weight:700;margin-top:6px}
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px 10px 6px;margin-top:8px}
   .phint{font-size:11.5px;color:var(--muted);font-family:var(--mono);padding:2px 8px 10px;line-height:1.7}
+  .explain{font-size:12.5px;color:var(--ink2);line-height:1.62;padding:4px 8px 12px}
+  .explain b{color:var(--ink)}
+  .explain .ex-how{margin-top:4px;color:var(--muted)}
+  .explain .ex-now{margin-top:9px;padding:8px 11px;border-radius:9px;background:var(--panel2);border:1px solid var(--line);font-weight:650;font-size:12.5px;color:var(--ink)}
+  .explain .ex-now b{font-weight:800}
   .chart{width:100%;height:340px}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px} @media(max-width:880px){.grid2{grid-template-columns:1fr}}
   .cardnote{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);font-size:13px;color:var(--ink2);line-height:1.65}
@@ -87,18 +92,27 @@
   <!-- FUNDING -->
   <div class="section">
     <div class="sec-head"><h2>Funding rate (perp BTCUSDT)</h2><div class="rule"></div><span class="tag">Binance · media diaria</span></div>
-    <div class="panel"><div class="phint">Coste de mantener largos apalancados. <b>Positivo alto</b> = largos saturados (euforia, cautela) · <b>negativo</b> = cortos pagando (miedo, suele darse cerca de suelos). Para tu horizonte: mira el <b>régimen</b> (semanas en positivo/negativo), no el pico de un día.</div><div id="fundChart" class="chart"></div></div>
+    <div class="panel"><div class="explain">
+      <div><b>Qué es:</b> el pago periódico (cada 8h) entre largos y cortos en los perpetuos. Mantiene el precio del perp pegado al spot. Positivo = los largos pagan a los cortos; negativo = al revés.</div>
+      <div class="ex-how"><b>Cómo leerlo:</b> 🔴 positivo alto = demasiados largos apalancados (euforia, riesgo de purga) · 🟢 negativo = cortos pagando (miedo, típico cerca de suelos) · para semanas/meses mira el <b>régimen</b>, no el pico de un día.</div>
+      <div class="ex-now" id="fundRead">Ahora: —</div></div><div id="fundChart" class="chart"></div></div>
   </div>
 
   <!-- DVOL + SKEW -->
   <div class="grid2 section">
     <div>
       <div class="sec-head"><h2>Volatilidad implícita (DVOL)</h2><div class="rule"></div><span class="tag">Deribit</span></div>
-      <div class="panel"><div class="phint">Índice de vol. implícita de BTC (como el «VIX» de cripto). <b>Baja</b> = complacencia · <b>alta</b> = miedo/estrés. Percentil abajo.</div><div id="dvolChart" class="chart"></div></div>
+      <div class="panel"><div class="explain">
+        <div><b>Qué es:</b> el índice de volatilidad implícita de BTC de Deribit — cuánta oscilación esperan las opciones para los próximos 30 días. Es el «VIX» de Bitcoin.</div>
+        <div class="ex-how"><b>Cómo leerlo:</b> 🟢 baja (percentil bajo) = complacencia/calma; los grandes movimientos suelen nacer desde aquí · 🔴 alta = miedo/estrés, frecuente en capitulaciones. No es dirección, es <b>magnitud</b> esperada.</div>
+        <div class="ex-now" id="dvolRead">Ahora: —</div></div><div id="dvolChart" class="chart"></div></div>
     </div>
     <div>
       <div class="sec-head"><h2>Skew de opciones (25Δ risk reversal)</h2><div class="rule"></div><span class="tag">Deribit</span></div>
-      <div class="panel"><div class="phint">IV(puts OTM) − IV(calls OTM), vencimiento cercano. <b>Positivo</b> = se paga más por protección a la baja (miedo, típico de suelos) · <b>negativo</b> = demanda de calls (codicia).</div><div id="skewChart" class="chart"></div></div>
+      <div class="panel"><div class="explain">
+        <div><b>Qué es:</b> compara lo que cuesta un seguro a la baja (put OTM) contra una apuesta al alza (call OTM), al mismo vencimiento. Skew = IV(put) − IV(call).</div>
+        <div class="ex-how"><b>Cómo leerlo:</b> 🟢 positivo = la gente paga más por protegerse de caídas (miedo) → suele verse en <b>suelos</b> · 🔴 negativo = pagan más por calls (codicia) → típico de <b>techos</b>. Es el sesgo emocional del mercado de opciones.</div>
+        <div class="ex-now" id="skewRead">Ahora: —</div></div><div id="skewChart" class="chart"></div></div>
     </div>
   </div>
 
@@ -106,18 +120,30 @@
   <div class="grid2 section">
     <div>
       <div class="sec-head"><h2>Open Interest</h2><div class="rule"></div><span class="tag">Binance · ~30d</span></div>
-      <div class="panel"><div class="phint">Contratos abiertos. <b>OI sube con precio</b> = tendencia con convicción · <b>OI se desploma</b> = desapalancamiento (flush). Binance solo sirve ~30 días de histórico gratis.</div><div id="oiChart" class="chart"></div></div>
+      <div class="panel"><div class="explain">
+        <div><b>Qué es:</b> el valor total de contratos de futuros abiertos (posiciones vivas). Mide cuánto apalancamiento hay en el mercado.</div>
+        <div class="ex-how"><b>Cómo leerlo:</b> 🟢 OI sube <b>con</b> el precio = tendencia con convicción (dinero nuevo) · 🔴 OI sube <b>sin</b> que suba el precio = apalancamiento cargado (riesgo de purga) · ⚪ OI se desploma = desapalancamiento/flush (reset, a menudo sano). Binance solo da ~30 días gratis.</div>
+        <div class="ex-now" id="oiRead">Ahora: —</div></div><div id="oiChart" class="chart"></div></div>
     </div>
     <div>
       <div class="sec-head"><h2>Ratio long/short (cuentas)</h2><div class="rule"></div><span class="tag">Binance · ~30d</span></div>
-      <div class="panel"><div class="phint">% de cuentas largas vs cortas. Útil como <b>contra-indicador</b> en extremos (todos largos → techo local; todos cortos → suelo local).</div><div id="lsChart" class="chart"></div></div>
+      <div class="panel"><div class="explain">
+        <div><b>Qué es:</b> cuántas cuentas están posicionadas largas frente a cortas (ratio). 2,0 = el doble de cuentas largas que cortas.</div>
+        <div class="ex-how"><b>Cómo leerlo:</b> es un <b>contra-indicador</b> en extremos: 🔴 casi todos largos → suele preceder un techo local (todos ya comprados) · 🟢 casi todos cortos → suele preceder un suelo local (todos ya vendidos). En zona neutra, poco informativo.</div>
+        <div class="ex-now" id="lsRead">Ahora: —</div></div><div id="lsChart" class="chart"></div></div>
     </div>
   </div>
 
-  <!-- LIQUIDACIONES: pendiente Coinglass -->
+  <!-- LIQUIDACIONES: Coinglass vía backend -->
   <div class="section">
-    <div class="sec-head"><h2>Liquidaciones agregadas</h2><div class="rule"></div><span class="tag">próximamente</span></div>
-    <div class="soon"><b>Liquidaciones agregadas de todos los exchanges = Coinglass.</b> Su API necesita <b>API key</b> (aunque el plan sea gratis) y no puede ir en este frontend público. Lo conectamos vía un <b>backend</b> (serverless con el key como secret) en el siguiente paso — y ahí también podríamos meter el <b>heatmap de liquidaciones</b> y funding/OI agregado de todos los exchanges, no solo Binance.</div>
+    <div class="sec-head"><h2>Liquidaciones agregadas</h2><div class="rule"></div><span class="tag" id="liqTag">Coinglass · backend</span></div>
+    <div class="panel"><div class="explain">
+      <div><b>Qué es:</b> el volumen de posiciones apalancadas cerradas <b>a la fuerza</b> (liquidadas) al moverse el precio en su contra, sumando todos los exchanges. Verde = cortos liquidados (subida forzada); rojo = largos liquidados (caída forzada).</div>
+      <div class="ex-how"><b>Cómo leerlo:</b> 🟢 un <b>pico de largos liquidados</b> (cascada a la baja) suele marcar <b>suelos locales</b> — sacude a los apalancados y limpia el mercado · 🔴 un pico de cortos liquidados marca techos locales / short squeezes. Importan los <b>picos</b>, no el nivel de fondo.</div>
+      <div class="ex-now" id="liqRead">Ahora: —</div></div>
+      <div id="liqChart" class="chart"></div>
+      <div id="liqStatus" class="soon" style="display:none;margin:6px 8px"></div>
+    </div>
   </div>
 
   <footer>
@@ -133,6 +159,7 @@ const $=s=>document.querySelector(s);
 const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const fmtUSD=(v,d=0)=>v==null||isNaN(v)?"—":"$"+Number(v).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
 const iso=ms=>new Date(ms).toISOString().slice(0,10);
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
 
 async function jget(url){const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);return r.json();}
 
@@ -253,6 +280,63 @@ function cMutColor(){return cssv("--muted");}
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("no se pudo cargar Plotly");}
 
+/* ---------- Coinglass (backend /api/coinglass) ---------- */
+async function loadLiq(){
+  const r=await fetch("/api/coinglass?metric=liquidation_history&symbol=BTC&interval=1d",{cache:"no-store"});
+  let j=null;try{j=await r.json();}catch(e){}
+  if(r.status===503||(j&&j.error==="no_key"))return{noKey:true};
+  if(!r.ok)return{error:(j&&(j.message||j.error))||("HTTP "+r.status)};
+  return{data:j};
+}
+function parseLiq(j){
+  let arr=null;
+  if(Array.isArray(j))arr=j;else if(j&&Array.isArray(j.data))arr=j.data;else if(j&&j.data&&Array.isArray(j.data.list))arr=j.data.list;
+  if(!arr||!arr.length)return null;
+  const k=Object.keys(arr[0]);
+  const kt=k.find(x=>/time|ts|date/i.test(x))||k.find(x=>/^t$/i.test(x));
+  const kl=k.find(x=>/long/i.test(x)&&/liq/i.test(x))||k.find(x=>/long/i.test(x));
+  const ks=k.find(x=>/short/i.test(x)&&/liq/i.test(x))||k.find(x=>/short/i.test(x));
+  if(!kt||!kl||!ks)return{unparsed:k};
+  const t=[],lo=[],sh=[];
+  for(const r of arr){let ts=+r[kt];if(ts&&ts<1e12)ts*=1000;t.push(ts);lo.push(Math.abs(+r[kl]||0));sh.push(Math.abs(+r[ks]||0));}
+  return{t,long:lo,short:sh};
+}
+function renderLiq(){
+  const st=$("#liqStatus"),chart=$("#liqChart"),L=D.liq;if(!L)return;
+  const show=(html,tag)=>{chart.style.display="none";st.style.display="block";st.innerHTML=html;if(tag)$("#liqTag").textContent=tag;};
+  if(L.noKey)return show("<b>Falta configurar tu API key de Coinglass.</b> En Vercel → proyecto <code>btc-cycle-terminal</code> → Settings → Environment Variables, añade <code>COINGLASS_API_KEY</code> y haz redeploy. El resto de derivados funciona sin key. Pasos completos en <code>api/README.md</code>.","Coinglass · sin key");
+  if(L.error)return show("<b>Backend OK, pero Coinglass devolvió error:</b> "+esc(L.error)+". Suele ser el endpoint/plan — ajusta <code>PATHS</code> (o el header v3/v4) en <code>api/coinglass.js</code>.","Coinglass · error");
+  const p=parseLiq(L.data);
+  if(!p)return show("<b>Coinglass respondió sin datos</b> para este endpoint.","Coinglass · vacío");
+  if(p.unparsed)return show("<b>Datos recibidos, pero no reconozco el formato.</b> Campos: <code>"+esc(p.unparsed.join(", "))+"</code>. Dímelos y ajusto el parser.","Coinglass · formato");
+  st.style.display="none";chart.style.display="block";$("#liqTag").textContent="Coinglass ✓";
+  const x=p.t.map(iso);
+  const tr=[{type:"bar",x,y:p.short,name:"cortos liquidados",marker:{color:"rgba(47,195,155,.7)"}},
+            {type:"bar",x,y:p.long.map(v=>-v),name:"largos liquidados",marker:{color:"rgba(242,96,109,.7)"}}];
+  const pt=priceTrace();if(pt)tr.push(pt);
+  const ly=baseLayout();ly.barmode="relative";ly.yaxis.title={text:"USD liquidados",font:{size:10}};
+  Plotly.react("liqChart",tr,ly,{responsive:true,displaylogo:false,scrollZoom:false,modeBarButtonsToRemove:["select2d","lasso2d"]});
+  D._liqP=p;
+}
+
+/* ---------- lecturas en vivo "Ahora dice" ---------- */
+function setReads(){
+  const set=(id,txt)=>{const el=$("#"+id);if(el)el.innerHTML="<b>Ahora:</b> "+txt;};
+  if(D.curFund){const f=D.curFund.rate;set("fundRead",f>0.03?"🔴 largos saturados — funding caro; cautela con perseguir subidas.":f<0?"🟢 funding negativo — los cortos pagan; contexto de suelo/rebote.":"⚪ funding neutro — apalancamiento equilibrado, sin sesgo claro.");}
+  if(D.dvol&&D.dvol.v.length){const p=pct(D.dvol.v,D.dvol.v[D.dvol.v.length-1]);set("dvolRead",p<25?"🟢 vol. implícita baja (percentil "+p.toFixed(0)+"%) — calma; suele preceder movimientos grandes.":p>75?"🔴 vol. alta (percentil "+p.toFixed(0)+"%) — miedo/estrés; frecuente en capitulaciones.":"⚪ vol. media (percentil "+p.toFixed(0)+"%).");}
+  if(D.skew){const s=D.skew.skew;set("skewRead",s>3?"🟢 puts más caras que calls (+"+s.toFixed(1)+" pts) — se paga por cobertura; sesgo de miedo, típico de suelos.":s<-3?"🔴 calls más caras que puts ("+s.toFixed(1)+" pts) — codicia, típico de techos.":"⚪ skew equilibrado ("+(s>=0?"+":"")+s.toFixed(1)+" pts).");}
+  if(D.oi&&D.oi.usd.length){const cur=D.oi.usd[D.oi.usd.length-1],first=D.oi.usd[0];const oich=(cur/first-1)*100;
+    let pch=0;if(D.spot&&D.spot.c.length>31){const c=D.spot.c;pch=(c[c.length-1]/c[c.length-31]-1)*100;}
+    let msg;if(oich>5&&pch>3)msg="🟢 OI +"+oich.toFixed(0)+"% con precio +"+pch.toFixed(0)+"% — tendencia con convicción.";
+    else if(oich>5&&pch<-3)msg="🔴 OI +"+oich.toFixed(0)+"% con precio "+pch.toFixed(0)+"% — apalancamiento cargado en corto, riesgo de squeeze.";
+    else if(oich<-5)msg="⚪ OI "+oich.toFixed(0)+"% en 30d — desapalancamiento/flush (reset).";
+    else msg="⚪ OI "+(oich>=0?"+":"")+oich.toFixed(0)+"% en 30d — sin extremo claro.";
+    set("oiRead",msg);}
+  if(D.ls&&D.ls.v.length){const c=D.ls.v[D.ls.v.length-1];set("lsRead",c>2.5?"🔴 casi todos largos ("+c.toFixed(2)+") — contra-indicador de techo local.":c<1?"🟢 casi todos cortos ("+c.toFixed(2)+") — contra-indicador de suelo local.":"⚪ equilibrado ("+c.toFixed(2)+") — poco informativo.");}
+  if(D._liqP){const p=D._liqP,n=p.t.length;const avgLong=p.long.reduce((a,b)=>a+b,0)/n;
+    set("liqRead",p.long[n-1]>avgLong*2?"🟢 pico de largos liquidados — cascada bajista; suele acompañar suelos locales.":p.short[n-1]>p.long[n-1]?"🔴 dominan cortos liquidados — presión al alza (squeeze).":"⚪ liquidaciones en rango normal.");}
+}
+
 async function boot(){
   $("#statusDot").className="dot warn";$("#statusText").textContent="Cargando…";$("#errBanner").style.display="none";
   try{await loadPlotly();}catch(e){$("#errBanner").style.display="block";$("#errBanner").textContent="No se pudo cargar Plotly.";return;}
@@ -265,16 +349,17 @@ async function boot(){
     loadSkew().then(r=>D.skew=r).catch(()=>{}),
     loadOI().then(r=>D.oi=r).catch(()=>{}),
     loadLS().then(r=>D.ls=r).catch(()=>{}),
+    loadLiq().then(r=>D.liq=r).catch(e=>D.liq={error:String((e&&e.message)||e)}),
   ];
   await Promise.all(tasks);
   const ok=["fund","dvol","skew","oi","ls"].filter(k=>D[k]).length;
   $("#statusDot").className=ok?"dot":"dot err";
   $("#statusText").textContent=ok?(ok+"/5 fuentes · "+new Date().toLocaleString("es-ES",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})):"Sin datos";
   if(!ok){$("#errBanner").style.display="block";$("#errBanner").innerHTML="<b>No se pudo cargar ninguna métrica.</b> Tu red/país puede bloquear Binance Futures o Deribit — prueba otra red/VPN y pulsa ↻.";}
-  renderStrip();drawAll();
+  renderStrip();drawAll();renderLiq();setReads();
 }
 $("#refreshBtn").addEventListener("click",boot);
-$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);if(window.Plotly){renderStrip();drawAll();}});
+$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);if(window.Plotly){renderStrip();drawAll();renderLiq();setReads();}});
 (function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
 boot();
 </script>
