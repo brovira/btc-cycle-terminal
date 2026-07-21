@@ -31,6 +31,9 @@ REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 # Llamamos a yt-dlp como MÓDULO del mismo Python que ejecuta este script,
 # así funciona aunque el binario 'yt-dlp' no esté en el PATH.
 YTDLP = [sys.executable, "-m", "yt_dlp"]
+# YouTube bloquea el cliente "web" (SABR / "page needs to be reloaded", issue #12482).
+# Forzamos clientes que sí funcionan para extraer + subtítulos.
+CLIENT = ["--extractor-args", "youtube:player_client=web_safari,mweb,tv,android"]
 
 def run(cmd):
     return subprocess.run(cmd, capture_output=True, text=True)
@@ -46,7 +49,7 @@ def slug(s):
 def list_videos(url, limit=0, since=None):
     """Expande vídeo/playlist/canal a una lista de {id,title,url,date}."""
     if since:  # filtra por fecha (más lento: extrae cada vídeo, pero respeta --dateafter)
-        cmd = YTDLP + ["--dateafter", since, "--skip-download", "--ignore-errors",
+        cmd = YTDLP + CLIENT + ["--dateafter", since, "--skip-download", "--ignore-errors",
                        "--print", "%(id)s|||%(title)s|||%(upload_date)s"]
         if limit:
             cmd += ["--playlist-end", str(limit)]
@@ -60,7 +63,7 @@ def list_videos(url, limit=0, since=None):
                             "url": f"https://www.youtube.com/watch?v={vid}",
                             "date": (p[2] if len(p) > 2 else "")})
         return out
-    cmd = YTDLP + ["-J", "--flat-playlist", "--ignore-errors"]
+    cmd = YTDLP + CLIENT + ["-J", "--flat-playlist", "--ignore-errors"]
     if limit:
         cmd += ["--playlist-end", str(limit)]
     r = run(cmd + [url])
@@ -151,7 +154,7 @@ def fetch_one(v, persona, lang, force):
     if os.path.exists(out) and not force:
         print(f"  = ya existe, salto: {name}"); return False
     with tempfile.TemporaryDirectory() as td:
-        cmd = YTDLP + ["--skip-download", "--write-subs", "--write-auto-subs",
+        cmd = YTDLP + CLIENT + ["--skip-download", "--write-subs", "--write-auto-subs",
                "--sub-langs", f"{lang}.*,{lang}", "--sub-format", "vtt/json3/srv3/srv1/best",
                "-o", os.path.join(td, "%(id)s.%(ext)s"), "--ignore-errors", v["url"]]
         res = run(cmd)
