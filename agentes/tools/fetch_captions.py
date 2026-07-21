@@ -43,8 +43,23 @@ def slug(s):
     s = re.sub(r"[^A-Za-z0-9]+", "-", s or "").strip("-").lower()
     return (s or "video")[:70]
 
-def list_videos(url, limit=0):
+def list_videos(url, limit=0, since=None):
     """Expande vídeo/playlist/canal a una lista de {id,title,url,date}."""
+    if since:  # filtra por fecha (más lento: extrae cada vídeo, pero respeta --dateafter)
+        cmd = YTDLP + ["--dateafter", since, "--skip-download", "--ignore-errors",
+                       "--print", "%(id)s|||%(title)s|||%(upload_date)s"]
+        if limit:
+            cmd += ["--playlist-end", str(limit)]
+        r = run(cmd + [url])
+        out = []
+        for ln in (r.stdout or "").splitlines():
+            p = ln.split("|||")
+            if p and p[0].strip():
+                vid = p[0].strip()
+                out.append({"id": vid, "title": (p[1] if len(p) > 1 else vid),
+                            "url": f"https://www.youtube.com/watch?v={vid}",
+                            "date": (p[2] if len(p) > 2 else "")})
+        return out
     cmd = YTDLP + ["-J", "--flat-playlist", "--ignore-errors"]
     if limit:
         cmd += ["--playlist-end", str(limit)]
@@ -169,12 +184,13 @@ def main():
     ap.add_argument("--lang", default="es", help="idioma de subtítulos (por defecto es)")
     ap.add_argument("--force", action="store_true", help="rehacer aunque ya exista")
     ap.add_argument("--max", type=int, default=0, help="limitar a los N vídeos más recientes por URL (0 = todos)")
+    ap.add_argument("--since", default=None, help="solo vídeos desde esta fecha YYYYMMDD (p.ej. 20210101)")
     ap.add_argument("urls", nargs="+", help="vídeo(s), playlist(s) o canal(es)")
     a = ap.parse_args()
     check_ytdlp()
     total = 0
     for url in a.urls:
-        vids = list_videos(url, a.max)
+        vids = list_videos(url, a.max, a.since)
         print(f"{url} → {len(vids)} vídeo(s)")
         for v in (vids[:a.max] if a.max else vids):
             if fetch_one(v, a.persona, a.lang, a.force):

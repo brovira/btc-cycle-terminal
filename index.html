@@ -215,12 +215,26 @@ let DATA=null,SRC="",IND=null,OC=null;
 var DOMAINS={y:[0.56,1],y2:[0.37,0.50],y3:[0.18,0.31],y4:[0,0.13]};
 async function fetchBinance(host){const r=await fetch(`https://${host}/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=1000`,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();return{t:j.map(k=>k[0]),o:j.map(k=>+k[1]),h:j.map(k=>+k[2]),l:j.map(k=>+k[3]),c:j.map(k=>+k[4]),src:"Binance ("+host.replace("api.","")+")"};}
 async function fetchCoinGecko(){const r=await fetch("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=max&interval=daily",{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();const px=j.prices||[];const t=[],o=[],h=[],l=[],c=[];const WK=7*864e5;let bs=null,bo,bh,bl,bc,bt;for(const[ms,p]of px){if(bs==null){bs=ms;bo=bh=bl=bc=p;bt=ms;continue;}if(ms-bs>=WK){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);bs=ms;bo=bh=bl=bc=p;bt=ms;}else{bh=Math.max(bh,p);bl=Math.min(bl,p);bc=p;bt=ms;}}if(bs!=null){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);}return{t,o,h,l,c,src:"CoinGecko"};}
-async function fetchCMPrice(){
-  const url="https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=PriceUSD&frequency=1d&page_size=10000&start_time=2010-07-18";
+let CM=null;
+async function fetchCM(){
+  if(CM) return CM;
+  const url="https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=PriceUSD,CapMVRVCur,CapMrktCurUSD,CapRealUSD,SplyCur&frequency=1d&page_size=10000&start_time=2010-07-18";
   const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);
   const j=await r.json();const rows=j.data||[];if(!rows.length)throw new Error("sin filas");
+  const dt=[],price=[],mvrv=[],mkt=[],real=[],sply=[];
+  for(const x of rows){const t=Date.parse(x.time.slice(0,10));if(isNaN(t))continue;
+    dt.push(t);
+    price.push(x.PriceUSD!=null?+x.PriceUSD:null);
+    mvrv.push(x.CapMVRVCur!=null?+x.CapMVRVCur:null);
+    mkt.push(x.CapMrktCurUSD!=null?+x.CapMrktCurUSD:null);
+    real.push(x.CapRealUSD!=null?+x.CapRealUSD:null);
+    sply.push(x.SplyCur!=null?+x.SplyCur:null);}
+  CM={dt,price,mvrv,mkt,real,sply};return CM;
+}
+async function fetchCMPrice(){
+  const cm=await fetchCM();
   const t=[],o=[],h=[],l=[],c=[];const WK=7*864e5;let bs=null,bo,bh,bl,bc,bt;
-  for(const x of rows){const ms=Date.parse(x.time.slice(0,10));const p=x.PriceUSD!=null?+x.PriceUSD:null;if(p==null||isNaN(ms))continue;
+  for(let i=0;i<cm.dt.length;i++){const ms=cm.dt[i],p=cm.price[i];if(p==null)continue;
     if(bs==null){bs=ms;bo=bh=bl=bc=p;bt=ms;continue;}
     if(ms-bs>=WK){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);bs=ms;bo=bh=bl=bc=p;bt=ms;}
     else{bh=Math.max(bh,p);bl=Math.min(bl,p);bc=p;bt=ms;}}
@@ -243,25 +257,16 @@ async function loadData(){
 let OC_STATUS="—";
 async function loadOnchain(){
   try{
-    const url="https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=CapMVRVCur,CapMrktCurUSD,CapRealUSD,SplyCur&frequency=1d&page_size=10000&start_time=2011-01-01";
-    const r=await fetch(url,{cache:"no-store"}); if(!r.ok) throw new Error("HTTP "+r.status);
-    const j=await r.json(); const rows=j.data||[]; if(!rows.length) throw new Error("sin filas");
-    const dt=[],mvrv=[],mkt=[],real=[];
-    for(const x of rows){const t=Date.parse(x.time.slice(0,10)); if(isNaN(t))continue;
-      dt.push(t); mvrv.push(x.CapMVRVCur!=null?+x.CapMVRVCur:null);
-      mkt.push(x.CapMrktCurUSD!=null?+x.CapMrktCurUSD:null); real.push(x.CapRealUSD!=null?+x.CapRealUSD:null);}
-    // MVRV Z-score = (mkt-real)/stdev(mkt) sobre toda la historia
-    const valid=mkt.filter(v=>v!=null); const mean=valid.reduce((a,b)=>a+b,0)/valid.length;
+    const cm=await fetchCM();const dt=cm.dt,mkt=cm.mkt,real=cm.real,mvrv=cm.mvrv,sply=cm.sply;
+    const valid=mkt.filter(v=>v!=null);const mean=valid.reduce((a,b)=>a+b,0)/valid.length;
     const sd=Math.sqrt(valid.reduce((a,b)=>a+(b-mean)**2,0)/valid.length);
     const zAt=i=>(mkt[i]!=null&&real[i]!=null&&sd>0)?(mkt[i]-real[i])/sd:null;
-    const sply=rows.map(x=>x.SplyCur!=null?+x.SplyCur:null);
-    const n=DATA.t.length; const A={mvrv:Array(n).fill(null),z:Array(n).fill(null),real:Array(n).fill(null)};
+    const n=DATA.t.length;const A={mvrv:Array(n).fill(null),z:Array(n).fill(null),real:Array(n).fill(null)};
     let j2=0;
-    for(let i=0;i<n;i++){const wt=DATA.t[i]; while(j2+1<dt.length&&dt[j2+1]<=wt)j2++;
-      if(dt[j2]<=wt+7*864e5){A.mvrv[i]=mvrv[j2]; A.z[i]=zAt(j2);
-        A.real[i]=(real[j2]!=null&&sply[j2])?real[j2]/sply[j2]:null;}}
-    OC=A; OC_STATUS="Coin Metrics ✓"; return;
-  }catch(e){OC=null; OC_STATUS="sin datos ("+((e&&e.message)||e)+")";}
+    for(let i=0;i<n;i++){const wt=DATA.t[i];while(j2+1<dt.length&&dt[j2+1]<=wt)j2++;
+      if(dt[j2]<=wt+7*864e5){A.mvrv[i]=mvrv[j2];A.z[i]=zAt(j2);A.real[i]=(real[j2]!=null&&sply[j2])?real[j2]/sply[j2]:null;}}
+    OC=A;OC_STATUS="Coin Metrics \u2713";return;
+  }catch(e){OC=null;OC_STATUS="sin datos ("+((e&&e.message)||e)+")";}
 }
 
 /* plotly loader */
