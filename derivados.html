@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BTC · Derivados</title>
+<style>
+  :root{
+    --bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;
+    --ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#2fc39b;
+    --bull:#2fc39b;--bear:#f2606d;--accum:#3fa9f5;--hot:#f2a33f;
+    --grid:rgba(255,255,255,.06);--shadow:0 1px 0 rgba(255,255,255,.03),0 12px 32px -18px rgba(0,0,0,.7);
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Menlo","Consolas",monospace;--radius:14px;
+  }
+  @media (prefers-color-scheme: light){:root{
+    --bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;
+    --ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--accent:#0e846a;
+    --bull:#0e846a;--bear:#c93a48;--accum:#1f74c0;--hot:#b9791a;
+    --grid:rgba(16,24,34,.08);--shadow:0 1px 0 rgba(255,255,255,.6),0 14px 34px -20px rgba(20,40,70,.35);
+  }}
+  :root[data-theme="dark"]{--bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;--ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#2fc39b;--bull:#2fc39b;--bear:#f2606d;--accum:#3fa9f5;--hot:#f2a33f;--grid:rgba(255,255,255,.06)}
+  :root[data-theme="light"]{--bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;--ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--accent:#0e846a;--bull:#0e846a;--bear:#c93a48;--accum:#1f74c0;--hot:#b9791a;--grid:rgba(16,24,34,.08)}
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:radial-gradient(1200px 600px at 80% -10%,color-mix(in oklab,var(--accent) 9%,transparent),transparent 60%),linear-gradient(var(--bg),var(--bg2));color:var(--ink);font-family:var(--font);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+  .wrap{max-width:1240px;margin:0 auto;padding:26px 20px 70px}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:18px}
+  .kicker{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  h1{margin:4px 0 0;font-size:clamp(22px,3vw,30px);font-weight:750;letter-spacing:-.02em} h1 b{color:var(--accent)}
+  .meta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;color:var(--muted);font-size:12.5px;margin-top:6px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--bull)} .dot.warn{background:var(--accent)} .dot.err{background:var(--bear)}
+  .btn{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:8px 13px;border-radius:10px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;transition:.15s;text-decoration:none}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  .controls{display:flex;gap:9px;flex-wrap:wrap}
+  .err-banner{display:none;margin:12px 0;border:1px solid color-mix(in oklab,var(--bear) 40%,transparent);background:color-mix(in oklab,var(--bear) 10%,transparent);padding:13px 15px;border-radius:12px;font-size:13.5px}
+  .section{margin-top:30px}
+  .sec-head{display:flex;align-items:center;gap:12px;margin:0 2px 14px}
+  .sec-head h2{margin:0;font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
+  .sec-head .rule{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+  .sec-head .tag{font-size:11px;font-weight:600;color:var(--muted);font-family:var(--mono)}
+  .src{font-size:10.5px;font-weight:700;font-family:var(--mono);color:var(--accent);background:color-mix(in oklab,var(--accent) 14%,transparent);padding:2px 8px;border-radius:999px}
+  .strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--sc,var(--muted));border-radius:12px;padding:15px 16px;box-shadow:var(--shadow)}
+  .stat .l{font-size:11.5px;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;gap:8px}
+  .stat .src2{font-size:9.5px;color:var(--muted);font-family:var(--mono)}
+  .stat .n{font-family:var(--mono);font-size:22px;font-weight:750;margin-top:5px}
+  .stat .s{font-size:12px;color:var(--ink2);margin-top:4px}
+  .stat .rd{font-size:11.5px;font-weight:700;margin-top:6px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px 10px 6px;margin-top:8px}
+  .phint{font-size:11.5px;color:var(--muted);font-family:var(--mono);padding:2px 8px 10px;line-height:1.7}
+  .chart{width:100%;height:340px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px} @media(max-width:880px){.grid2{grid-template-columns:1fr}}
+  .cardnote{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);font-size:13px;color:var(--ink2);line-height:1.65}
+  .cardnote b{color:var(--ink)}
+  .note{color:var(--muted);font-size:12px;line-height:1.6}
+  .soon{border:1px dashed var(--line);border-radius:var(--radius);padding:14px 16px;color:var(--muted);font-size:12.5px;line-height:1.6}
+  footer{margin-top:34px;padding-top:18px;border-top:1px solid var(--line)}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="kicker">Trading · Derivados · vista semanas/meses (no intradía)</div>
+      <h1>📈 <b>Derivados</b> BTC</h1>
+      <div class="meta"><span class="dot" id="statusDot"></span><span id="statusText">Cargando…</span></div>
+    </div>
+    <div class="controls">
+      <a class="btn" href="index.html">← Panel</a>
+      <a class="btn" href="backtest.html">🧪 Backtesting</a>
+      <button class="btn" id="themeBtn">◐ Tema</button>
+      <button class="btn" id="refreshBtn">↻ Actualizar</button>
+    </div>
+  </header>
+
+  <div class="err-banner" id="errBanner"></div>
+
+  <!-- ESTADO ACTUAL -->
+  <div class="section">
+    <div class="sec-head"><h2>Estado actual del apalancamiento y la volatilidad</h2><div class="rule"></div><span class="src">gratis · sin API key</span></div>
+    <div class="strip" id="strip"></div>
+    <div class="note" style="margin-top:12px">Semáforo pensado para <b>posicionarte, no para intradía</b>: 🟢 = condición que suele acompañar suelos/entradas de tendencia · 🔴 = froth/apalancamiento caro (cautela) · ⚪ = neutro. No son señales de compra por sí solas; son <b>confirmación de contexto</b>.</div>
+  </div>
+
+  <!-- FUNDING -->
+  <div class="section">
+    <div class="sec-head"><h2>Funding rate (perp BTCUSDT)</h2><div class="rule"></div><span class="tag">Binance · media diaria</span></div>
+    <div class="panel"><div class="phint">Coste de mantener largos apalancados. <b>Positivo alto</b> = largos saturados (euforia, cautela) · <b>negativo</b> = cortos pagando (miedo, suele darse cerca de suelos). Para tu horizonte: mira el <b>régimen</b> (semanas en positivo/negativo), no el pico de un día.</div><div id="fundChart" class="chart"></div></div>
+  </div>
+
+  <!-- DVOL + SKEW -->
+  <div class="grid2 section">
+    <div>
+      <div class="sec-head"><h2>Volatilidad implícita (DVOL)</h2><div class="rule"></div><span class="tag">Deribit</span></div>
+      <div class="panel"><div class="phint">Índice de vol. implícita de BTC (como el «VIX» de cripto). <b>Baja</b> = complacencia · <b>alta</b> = miedo/estrés. Percentil abajo.</div><div id="dvolChart" class="chart"></div></div>
+    </div>
+    <div>
+      <div class="sec-head"><h2>Skew de opciones (25Δ risk reversal)</h2><div class="rule"></div><span class="tag">Deribit</span></div>
+      <div class="panel"><div class="phint">IV(puts OTM) − IV(calls OTM), vencimiento cercano. <b>Positivo</b> = se paga más por protección a la baja (miedo, típico de suelos) · <b>negativo</b> = demanda de calls (codicia).</div><div id="skewChart" class="chart"></div></div>
+    </div>
+  </div>
+
+  <!-- OI + LONG/SHORT -->
+  <div class="grid2 section">
+    <div>
+      <div class="sec-head"><h2>Open Interest</h2><div class="rule"></div><span class="tag">Binance · ~30d</span></div>
+      <div class="panel"><div class="phint">Contratos abiertos. <b>OI sube con precio</b> = tendencia con convicción · <b>OI se desploma</b> = desapalancamiento (flush). Binance solo sirve ~30 días de histórico gratis.</div><div id="oiChart" class="chart"></div></div>
+    </div>
+    <div>
+      <div class="sec-head"><h2>Ratio long/short (cuentas)</h2><div class="rule"></div><span class="tag">Binance · ~30d</span></div>
+      <div class="panel"><div class="phint">% de cuentas largas vs cortas. Útil como <b>contra-indicador</b> en extremos (todos largos → techo local; todos cortos → suelo local).</div><div id="lsChart" class="chart"></div></div>
+    </div>
+  </div>
+
+  <!-- LIQUIDACIONES: pendiente Coinglass -->
+  <div class="section">
+    <div class="sec-head"><h2>Liquidaciones agregadas</h2><div class="rule"></div><span class="tag">próximamente</span></div>
+    <div class="soon"><b>Liquidaciones agregadas de todos los exchanges = Coinglass.</b> Su API necesita <b>API key</b> (aunque el plan sea gratis) y no puede ir en este frontend público. Lo conectamos vía un <b>backend</b> (serverless con el key como secret) en el siguiente paso — y ahí también podríamos meter el <b>heatmap de liquidaciones</b> y funding/OI agregado de todos los exchanges, no solo Binance.</div>
+  </div>
+
+  <footer>
+    <div class="note" style="max-width:960px">
+      <b>Fuentes (100% gratis, sin key, desde tu navegador):</b> funding · open interest · long/short = <b>Binance Futures</b> (público) · DVOL e IV/skew de opciones = <b>Deribit</b> (público) · precio de referencia = Binance. Todo se calcula en tu navegador. Enfoque <b>semanas/meses</b>: contexto de apalancamiento y volatilidad para tus entradas de ciclo/tendencia, no señales intradía. <b>Siguiente:</b> Coinglass (liquidaciones agregadas) vía backend con key. <b>Uso educativo — no es asesoramiento financiero.</b>
+    </div>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const fmtUSD=(v,d=0)=>v==null||isNaN(v)?"—":"$"+Number(v).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+const iso=ms=>new Date(ms).toISOString().slice(0,10);
+
+async function jget(url){const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);return r.json();}
+
+/* ---------- precio spot diario (overlay) ---------- */
+async function loadSpot(){for(const host of["api.binance.com","api.binance.us"]){try{
+  const j=await jget(`https://${host}/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=1000`);
+  return{t:j.map(k=>k[0]),c:j.map(k=>+k[4])};}catch(e){}}
+  return null;}
+
+/* ---------- Binance futures: funding, OI, long/short ---------- */
+async function loadFunding(){
+  const j=await jget("https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=1000"); // 8h → ~333d
+  // agrega a media diaria (%)
+  const byDay={};for(const r of j){const d=iso(r.fundingTime);(byDay[d]=byDay[d]||[]).push(+r.fundingRate);}
+  const days=Object.keys(byDay).sort();const t=days.map(d=>Date.parse(d));const v=days.map(d=>byDay[d].reduce((a,b)=>a+b,0)/byDay[d].length*100);
+  return{t,v};
+}
+async function currentFunding(){try{const j=await jget("https://fapi.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT");return{rate:+j.lastFundingRate*100,mark:+j.markPrice};}catch(e){return null;}}
+async function loadOI(){try{const j=await jget("https://fapi.binance.com/futures/data/openInterestHist?symbol=BTCUSDT&period=1d&limit=90");
+  return{t:j.map(r=>+r.timestamp),v:j.map(r=>+r.sumOpenInterest),usd:j.map(r=>+r.sumOpenInterestValue)};}catch(e){return null;}}
+async function loadLS(){try{const j=await jget("https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol=BTCUSDT&period=1d&limit=90");
+  return{t:j.map(r=>+r.timestamp),v:j.map(r=>+r.longShortRatio),lo:j.map(r=>+r.longAccount*100)};}catch(e){return null;}}
+
+/* ---------- Deribit: DVOL + skew opciones ---------- */
+async function loadDVOL(){
+  const now=Date.now();const start=now-1000*864e5;
+  const j=await jget(`https://www.deribit.com/api/v2/public/get_volatility_index_data?currency=BTC&start_timestamp=${start}&end_timestamp=${now}&resolution=86400`);
+  const d=(j.result&&j.result.data)||[];return{t:d.map(r=>r[0]),v:d.map(r=>r[4])}; // close
+}
+async function loadSkew(){
+  const j=await jget("https://www.deribit.com/api/v2/public/get_book_summary_by_currency?currency=BTC&kind=option");
+  const rows=(j.result||[]).filter(r=>r.mark_iv&&r.underlying_price);
+  if(!rows.length)return null;
+  const U=rows[0].underlying_price;
+  // parse: BTC-25JUL26-60000-C
+  const MON={JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11};
+  const byExp={};
+  for(const r of rows){const p=r.instrument_name.split("-");if(p.length<4)continue;
+    const m=p[1].match(/^(\d+)([A-Z]{3})(\d{2})$/);if(!m)continue;
+    const exp=Date.UTC(2000+ +m[3],MON[m[2]],+m[1]);const strike=+p[2];const cp=p[3];
+    (byExp[exp]=byExp[exp]||[]).push({strike,cp,iv:r.mark_iv});}
+  const now=Date.now();const exps=Object.keys(byExp).map(Number).filter(e=>e>now+5*864e5).sort((a,b)=>a-b);
+  if(!exps.length)return null;const E=exps[0];const opts=byExp[E];
+  const puts=opts.filter(o=>o.cp==="P"),calls=opts.filter(o=>o.cp==="C");
+  const near=(arr,tgt)=>arr.reduce((best,o)=>Math.abs(o.strike-tgt)<Math.abs(best.strike-tgt)?o:best,arr[0]);
+  if(!puts.length||!calls.length)return null;
+  const put=near(puts,U*0.90),call=near(calls,U*1.10),atmC=near(calls,U),atmP=near(puts,U);
+  const skew=put.iv-call.iv;const atm=(atmC.iv+atmP.iv)/2;
+  return{U,E,skew,atm,putIv:put.iv,callIv:call.iv,expDays:Math.round((E-now)/864e5)};
+}
+
+/* ---------- percentil ---------- */
+function pct(arr,v){const s=arr.filter(x=>x!=null).slice().sort((a,b)=>a-b);if(!s.length)return null;let c=0;for(const x of s)if(x<=v)c++;return 100*c/s.length;}
+
+/* ---------- estado ---------- */
+const D={};
+function renderStrip(){
+  const items=[];
+  // funding
+  if(D.curFund){const f=D.curFund.rate;const rd=f>0.03?["🔴 caro (largos saturados)","var(--bear)"]:f<0?["🟢 negativo (miedo)","var(--bull)"]:["⚪ neutro","var(--muted)"];
+    items.push({l:"Funding actual (8h)",src:"Binance",n:(f>=0?"+":"")+f.toFixed(4)+"%",s:"anualizado ≈ "+(f*3*365).toFixed(0)+"%",rd,c:rd[1]});}
+  // DVOL
+  if(D.dvol&&D.dvol.v.length){const cur=D.dvol.v[D.dvol.v.length-1];const p=pct(D.dvol.v,cur);
+    const rd=p<25?["🟢 vol. baja (complacencia)","var(--bull)"]:p>75?["🔴 vol. alta (estrés)","var(--bear)"]:["⚪ media","var(--muted)"];
+    items.push({l:"DVOL (vol. implícita)",src:"Deribit",n:cur.toFixed(1),s:"percentil "+(p!=null?p.toFixed(0):"—")+"% (2y)",rd,c:rd[1]});}
+  // skew
+  if(D.skew){const sk=D.skew.skew;const rd=sk>3?["🟢 miedo (puts caras)","var(--bull)"]:sk<-3?["🔴 codicia (calls caras)","var(--bear)"]:["⚪ equilibrado","var(--muted)"];
+    items.push({l:"Skew 25Δ ("+D.skew.expDays+"d)",src:"Deribit",n:(sk>=0?"+":"")+sk.toFixed(1),s:"ATM IV "+D.skew.atm.toFixed(0)+"%",rd,c:rd[1]});}
+  // OI
+  if(D.oi&&D.oi.usd.length){const cur=D.oi.usd[D.oi.usd.length-1];const first=D.oi.usd[0];const ch=(cur/first-1)*100;
+    items.push({l:"Open Interest (30d)",src:"Binance",n:fmtUSD(cur/1e9,1)+"B",s:(ch>=0?"+":"")+ch.toFixed(0)+"% en 30d",rd:["⚪ contexto","var(--muted)"],c:"var(--accum)"});}
+  // long/short
+  if(D.ls&&D.ls.v.length){const cur=D.ls.v[D.ls.v.length-1];const rd=cur>2.5?["🔴 casi todos largos","var(--bear)"]:cur<1?["🟢 casi todos cortos","var(--bull)"]:["⚪ equilibrado","var(--muted)"];
+    items.push({l:"Long/Short (cuentas)",src:"Binance",n:cur.toFixed(2),s:(D.ls.lo[D.ls.lo.length-1]).toFixed(0)+"% largas",rd,c:rd[1]});}
+  $("#strip").innerHTML=items.map(x=>`<div class="stat" style="--sc:${x.c}"><div class="l"><span>${x.l}</span><span class="src2">${x.src}</span></div><div class="n" style="color:${x.c}">${x.n}</div><div class="s">${x.s}</div><div class="rd" style="color:${x.rd[1]}">${x.rd[0]}</div></div>`).join("")
+    ||'<div class="note">No se pudo cargar ninguna métrica (tu red puede bloquear Binance/Deribit).</div>';
+}
+
+/* ---------- charts ---------- */
+function baseLayout(y2title){const cGrid=cssv("--grid"),cMut=cssv("--muted"),cInk=cssv("--ink"),cPanel=cssv("--panel"),cAcc=cssv("--accent");
+  return{paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:cInk,family:cssv("--font")},
+    margin:{l:56,r:52,t:8,b:24},hovermode:"x unified",hoverlabel:{bgcolor:cPanel,bordercolor:cAcc,font:{color:cInk,size:11}},
+    legend:{orientation:"h",y:1.06,x:0,font:{size:10},bgcolor:"rgba(0,0,0,0)"},
+    xaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,type:"date"},
+    yaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut},
+    yaxis2:{overlaying:"y",side:"right",gridcolor:"rgba(0,0,0,0)",color:cMut,title:{text:y2title||"BTC",font:{size:10}},type:"log"}};
+}
+function priceTrace(){const cMut=cssv("--muted");return D.spot?{type:"scatter",x:D.spot.t.map(iso),y:D.spot.c,name:"BTC",yaxis:"y2",line:{color:cMut,width:1,dash:"dot"},hoverinfo:"skip"}:null;}
+function drawAll(){
+  const cBull=cssv("--bull"),cBear=cssv("--bear"),cAcc=cssv("--accent"),cAccum=cssv("--accum"),cHot=cssv("--hot"),cGrid=cssv("--grid");
+  const opt={responsive:true,displaylogo:false,scrollZoom:false,modeBarButtonsToRemove:["select2d","lasso2d"]};
+  // funding
+  if(D.fund){const x=D.fund.t.map(iso);const col=D.fund.v.map(v=>v>=0?"rgba(47,195,155,.6)":"rgba(242,96,109,.7)");
+    const tr=[{type:"bar",x,y:D.fund.v,name:"funding % (día)",marker:{color:col}}];const pt=priceTrace();if(pt)tr.push(pt);
+    const ly=baseLayout();ly.yaxis.title={text:"funding %/día",font:{size:10}};ly.shapes=[{type:"line",xref:"paper",x0:0,x1:1,yref:"y",y0:0,y1:0,line:{color:cGrid,width:1}}];
+    Plotly.react("fundChart",tr,ly,opt);}
+  // dvol
+  if(D.dvol){const x=D.dvol.t.map(iso);const tr=[{type:"scatter",x,y:D.dvol.v,name:"DVOL",line:{color:cAccum,width:1.6}}];const pt=priceTrace();if(pt)tr.push(pt);
+    Plotly.react("dvolChart",tr,baseLayout(),opt);}
+  // skew (barra única + contexto)
+  if(D.skew){const tr=[{type:"bar",x:["puts 90%","ATM","calls 110%"],y:[D.skew.putIv,D.skew.atm,D.skew.callIv],
+    marker:{color:[cBull,cMutColor(),cBear]},text:[D.skew.putIv.toFixed(0)+"%","ATM "+D.skew.atm.toFixed(0)+"%",D.skew.callIv.toFixed(0)+"%"],textposition:"outside"}];
+    const cMut=cssv("--muted"),cInk=cssv("--ink"),cPanel=cssv("--panel");
+    Plotly.react("skewChart",tr,{paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:cInk,family:cssv("--font")},margin:{l:44,r:14,t:24,b:24},
+      annotations:[{x:0.5,xref:"paper",y:1,yref:"paper",yanchor:"bottom",text:"Skew "+(D.skew.skew>=0?"+":"")+D.skew.skew.toFixed(1)+" pts · vto "+D.skew.expDays+"d",showarrow:false,font:{size:11,color:cInk}}],
+      xaxis:{color:cMut},yaxis:{color:cMut,gridcolor:cssv("--grid"),title:{text:"IV %",font:{size:10}}}},opt);}
+  // oi
+  if(D.oi){const x=D.oi.t.map(iso);const tr=[{type:"scatter",x,y:D.oi.usd.map(v=>v/1e9),name:"OI (miles M$)",line:{color:cHot,width:1.6},fill:"tozeroy",fillcolor:"rgba(242,163,63,.12)"}];const pt=priceTrace();if(pt)tr.push(pt);
+    Plotly.react("oiChart",tr,baseLayout(),opt);}
+  // long/short
+  if(D.ls){const x=D.ls.t.map(iso);const tr=[{type:"scatter",x,y:D.ls.v,name:"long/short",line:{color:cAcc,width:1.6}}];const pt=priceTrace();if(pt)tr.push(pt);
+    const ly=baseLayout();ly.shapes=[{type:"line",xref:"paper",x0:0,x1:1,yref:"y",y0:1,y1:1,line:{color:cssv("--grid"),width:1,dash:"dot"}}];
+    Plotly.react("lsChart",tr,ly,opt);}
+}
+function cMutColor(){return cssv("--muted");}
+
+/* ---------- plotly ---------- */
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("no se pudo cargar Plotly");}
+
+async function boot(){
+  $("#statusDot").className="dot warn";$("#statusText").textContent="Cargando…";$("#errBanner").style.display="none";
+  try{await loadPlotly();}catch(e){$("#errBanner").style.display="block";$("#errBanner").textContent="No se pudo cargar Plotly.";return;}
+  // cada fuente por separado: si una falla, las demás siguen
+  const tasks=[
+    loadSpot().then(r=>D.spot=r).catch(()=>{}),
+    loadFunding().then(r=>D.fund=r).catch(()=>{}),
+    currentFunding().then(r=>D.curFund=r).catch(()=>{}),
+    loadDVOL().then(r=>D.dvol=r).catch(()=>{}),
+    loadSkew().then(r=>D.skew=r).catch(()=>{}),
+    loadOI().then(r=>D.oi=r).catch(()=>{}),
+    loadLS().then(r=>D.ls=r).catch(()=>{}),
+  ];
+  await Promise.all(tasks);
+  const ok=["fund","dvol","skew","oi","ls"].filter(k=>D[k]).length;
+  $("#statusDot").className=ok?"dot":"dot err";
+  $("#statusText").textContent=ok?(ok+"/5 fuentes · "+new Date().toLocaleString("es-ES",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})):"Sin datos";
+  if(!ok){$("#errBanner").style.display="block";$("#errBanner").innerHTML="<b>No se pudo cargar ninguna métrica.</b> Tu red/país puede bloquear Binance Futures o Deribit — prueba otra red/VPN y pulsa ↻.";}
+  renderStrip();drawAll();
+}
+$("#refreshBtn").addEventListener("click",boot);
+$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);if(window.Plotly){renderStrip();drawAll();}});
+(function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
+boot();
+</script>
+</body>
+</html>

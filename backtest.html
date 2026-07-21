@@ -117,6 +117,7 @@
             <option value="lmec_bmsb">LMEC · Ruptura de la BMSB</option>
             <option value="cowen_seasonal">Cowen · Estacional midterm (compra H2 midterm / vende Q4 pre-midterm)</option>
             <option value="cowen_mvrv">Cowen · Reset MVRV Z (&lt;0 dentro / &gt;7 fuera)</option>
+            <option value="onchainmind_fng">OnChainMind · F&amp;G Cadence (batió al DCA 10× desde 2019)</option>
           </optgroup>
           <optgroup label="📐 Indicadores clásicos">
             <option value="gc">Golden/Death Cross 50/200</option>
@@ -192,7 +193,7 @@
   <footer>
     <div class="note" style="max-width:960px">
       <b>Cómo funciona.</b> Construyes <b>señales de entrada y salida</b> combinando indicadores con operadores (<b>cruza al alza/baja, &gt;, &lt;, =, sube, baja</b>) contra otro indicador o un valor fijo, y combinas varias condiciones con <b>Y / O</b>. Indicadores disponibles:
-      <br>• <b>Técnicos:</b> precio, SMA/EMA(n), RSI, MACD (línea/señal/histograma), BMSB · <b>On-chain:</b> MVRV Z.
+      <br>• <b>Técnicos:</b> precio, SMA/EMA(n), RSI, MACD (línea/señal/histograma), BMSB · <b>On-chain:</b> MVRV Z · <b>Sentimiento:</b> Fear &amp; Greed y su <b>cadencia a 90 días</b> (la estrategia insignia de OnChainMind).
       <br>• <b>Temporales (ciclo):</b> <b>Sem. desde halving</b> (para el «Bitcoin Halving Cycle Profit» de LMEC), <b>Mes</b> y <b>Año del ciclo (%4)</b> (para las señales <b>estacionales</b> de Cowen: comprar 2ª mitad del año midterm, vender Q4 del año pre-midterm).
       <br>El motor entra/sale <b>al cierre semanal</b> de la señal, aplica comisión+slippage, y calcula métricas <b>profesionales</b>: ROI, CAGR, <b>Sharpe</b>, max drawdown, win-rate, profit factor, exposición y comparación contra <b>comprar y aguantar</b>. Los presets <b>🔄 Ciclos · agentes</b> traen las estrategias de <b>LMEC y Cowen ya prediseñadas</b> — selecciónalas para ver qué han dado históricamente. Guarda cada estrategia con sus resultados (en tu navegador) y expórtalas. Long-only sobre spot.
       <br><b>Derivados</b> (funding, IV/skew) entrarán como indicadores más cuando conectemos esa fuente. <b>Uso educativo — la rentabilidad pasada no garantiza resultados; no es asesoramiento financiero.</b>
@@ -229,11 +230,19 @@ const INDS={
   macdh:{lbl:"MACD histog.",params:[["f",12],["s",26],["sig",9]],calc:p=>macdParts(DATA.c,p.f,p.s,p.sig).hist},
   bmsb:{lbl:"BMSB (banda)",params:[],calc:()=>{const a=sma(DATA.c,20),b=ema(DATA.c,21);return DATA.c.map((_,i)=>(a[i]!=null&&b[i]!=null)?Math.max(a[i],b[i]):null);}},
   mvrvz:{lbl:"MVRV Z",params:[],calc:()=>OC?OC.z:DATA.c.map(()=>null)},
+  fng:{lbl:"Fear & Greed",params:[],calc:()=>FNG?FNG.slice():DATA.c.map(()=>null)},
+  fngcad:{lbl:"F&G cadencia 90d",params:[],calc:()=>fngCadence()},
   halvw:{lbl:"Sem. desde halving",params:[],calc:()=>halvSeries()},
   month:{lbl:"Mes (1-12)",params:[],calc:()=>DATA.t.map(ms=>new Date(ms).getUTCMonth()+1)},
   ymod4:{lbl:"Año del ciclo (%4)",params:[],calc:()=>DATA.t.map(ms=>new Date(ms).getUTCFullYear()%4)},
   value:{lbl:"Valor fijo",params:[["v",0]],isConst:true},
 };
+/* Fear & Greed (alternative.me) alineado a las velas semanales + su cadencia (cambio a 90 días, suavizada) */
+function fngCadence(){if(!FNG)return DATA.c.map(()=>null);const n=FNG.length;const raw=Array(n).fill(null);
+  for(let i=13;i<n;i++){if(FNG[i]!=null&&FNG[i-13]!=null)raw[i]=FNG[i]-FNG[i-13];} // 90d ≈ 13 semanas
+  const out=Array(n).fill(null),W=4;
+  for(let i=0;i<n;i++){let s=0,cnt=0;for(let k=i-W+1;k<=i;k++){if(k>=0&&raw[k]!=null){s+=raw[k];cnt++;}}if(cnt>=W)out[i]=s/cnt;}
+  return out;}
 const OPS=[["cross_up","cruza ↑"],["cross_dn","cruza ↓"],["gt","&gt;"],["lt","&lt;"],["eq","="],["rise","sube"],["fall","baja"]];
 
 /* ---------- estado del builder ---------- */
@@ -292,6 +301,12 @@ async function loadData(){
   if(bin){DATA=bin;SRC="Binance";return;}
   if(cm){DATA=weeklyC(cm.dt,cm.price);SRC="Coin Metrics";return;}
   throw new Error("sin fuentes de precio");}
+let FNG=null; // Fear&Greed alineado a DATA.t (null antes de 2018)
+async function loadFNG(){try{const r=await fetch("https://api.alternative.me/fng/?limit=0&format=json",{cache:"no-store"});if(!r.ok)throw 0;
+  const j=await r.json();const d=(j.data||[]).map(x=>({v:+x.value,t:+x.timestamp*1000})).sort((a,b)=>a.t-b.t);
+  if(!d.length){FNG=null;return;}const n=DATA.t.length;const arr=Array(n).fill(null);let k=0;
+  for(let i=0;i<n;i++){const wt=DATA.t[i];while(k+1<d.length&&d[k+1].t<=wt+3*864e5)k++;if(d[k].t<=wt+3*864e5)arr[i]=d[k].v;}
+  FNG=arr;}catch(e){FNG=null;}}
 async function loadOnchain(){try{const cm=await fetchCM();const dt=cm.dt,mkt=cm.mkt,real=cm.real;
   const valid=mkt.filter(v=>v!=null);const mean=valid.reduce((a,b)=>a+b,0)/valid.length;const sd=Math.sqrt(valid.reduce((a,b)=>a+(b-mean)**2,0)/valid.length);
   const zAt=i=>(mkt[i]!=null&&real[i]!=null&&sd>0)?(mkt[i]-real[i])/sd:null;
@@ -448,6 +463,15 @@ const PRESETS={
     {left:{ind:"mvrvz",params:{}},op:"lt",right:{ind:"value",params:{v:0}}}]},
     x:{logic:"all",conds:[
     {left:{ind:"mvrvz",params:{}},op:"gt",right:{ind:"value",params:{v:7}}}]}},
+  // OnChainMind — su estrategia insignia "Fear & Greed Cadence" (bat​ió al DCA 10x
+  // desde 2019). Compra: cadencia F&G cruza al alza de 0 + precio>MA200 (aprox 29
+  // sem.) + F&G>20. Venta: cadencia cruza a la baja de 0. Reglas textuales suyas.
+  onchainmind_fng:{name:"OnChainMind · F&G Cadence",e:{logic:"all",conds:[
+    {left:{ind:"fngcad",params:{}},op:"cross_up",right:{ind:"value",params:{v:0}}},
+    {left:{ind:"price",params:{}},op:"gt",right:{ind:"sma",params:{n:29}}},
+    {left:{ind:"fng",params:{}},op:"gt",right:{ind:"value",params:{v:20}}}]},
+    x:{logic:"all",conds:[
+    {left:{ind:"fngcad",params:{}},op:"cross_dn",right:{ind:"value",params:{v:0}}}]}},
   /* === Indicadores clásicos === */
   gc:{name:"Golden/Death Cross 50/200",e:{logic:"all",conds:[{left:{ind:"sma",params:{n:50}},op:"cross_up",right:{ind:"sma",params:{n:200}}}]},x:{logic:"all",conds:[{left:{ind:"sma",params:{n:50}},op:"cross_dn",right:{ind:"sma",params:{n:200}}}]}},
   rsi:{name:"RSI sobreventa 34/70",e:{logic:"all",conds:[{left:{ind:"rsi",params:{n:14}},op:"cross_up",right:{ind:"value",params:{v:34}}}]},x:{logic:"all",conds:[{left:{ind:"rsi",params:{n:14}},op:"cross_dn",right:{ind:"value",params:{v:70}}}]}},
@@ -498,7 +522,7 @@ async function boot(){
   $("#statusDot").className="dot warn";$("#statusText").textContent="Cargando datos…";$("#errBanner").style.display="none";
   sload();renderSaved();
   if(!ENTRY.conds.length)loadPreset("gc");else renderBuilder();
-  try{await Promise.all([loadPlotly(),loadData()]);await loadOnchain();
+  try{await Promise.all([loadPlotly(),loadData()]);await Promise.all([loadOnchain(),loadFNG()]);
     $("#statusDot").className="dot";$("#statusText").textContent=DATA.t.length+" semanas · "+SRC;$("#srcTag").textContent=SRC;run();}
   catch(err){$("#statusDot").className="dot err";$("#statusText").textContent="Error";const b=$("#errBanner");b.style.display="block";b.innerHTML="<b>No se pudo cargar.</b> "+((err&&err.message)||err)+". Tu red puede bloquear Binance/Coin Metrics — prueba otra red y pulsa ↻.";}
 }

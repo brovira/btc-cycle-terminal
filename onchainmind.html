@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>On Chain Mind · Ciclo BTC</title>
+<style>
+  :root{
+    --bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;
+    --ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#22d3ee;
+    --bull:#2fc39b;--bear:#f2606d;--accum:#3fa9f5;--hot:#f2a33f;
+    --grid:rgba(255,255,255,.06);--shadow:0 1px 0 rgba(255,255,255,.03),0 12px 32px -18px rgba(0,0,0,.7);
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Menlo","Consolas",monospace;--radius:14px;
+  }
+  @media (prefers-color-scheme: light){:root{
+    --bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;
+    --ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--accent:#0e7490;
+    --bull:#0e846a;--bear:#c93a48;--accum:#1f74c0;--hot:#b9791a;
+    --grid:rgba(16,24,34,.08);--shadow:0 1px 0 rgba(255,255,255,.6),0 14px 34px -20px rgba(20,40,70,.35);
+  }}
+  :root[data-theme="dark"]{--bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;--ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#22d3ee;--bull:#2fc39b;--bear:#f2606d;--accum:#3fa9f5;--hot:#f2a33f;--grid:rgba(255,255,255,.06)}
+  :root[data-theme="light"]{--bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;--ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--accent:#0e7490;--bull:#0e846a;--bear:#c93a48;--accum:#1f74c0;--hot:#b9791a;--grid:rgba(16,24,34,.08)}
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:radial-gradient(1200px 600px at 80% -10%,color-mix(in oklab,var(--accent) 9%,transparent),transparent 60%),linear-gradient(var(--bg),var(--bg2));color:var(--ink);font-family:var(--font);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+  .wrap{max-width:1240px;margin:0 auto;padding:26px 20px 70px}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:20px}
+  .kicker{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  h1{margin:4px 0 0;font-size:clamp(22px,3vw,30px);font-weight:750;letter-spacing:-.02em} h1 b{color:var(--accent)}
+  .price-now{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:6px}
+  .price-now .big{font-family:var(--mono);font-size:clamp(24px,3.6vw,34px);font-weight:700}
+  .chg{font-family:var(--mono);font-size:13px;font-weight:600;padding:3px 9px;border-radius:999px}
+  .chg.up{color:var(--bull);background:color-mix(in oklab,var(--bull) 14%,transparent)}
+  .chg.down{color:var(--bear);background:color-mix(in oklab,var(--bear) 14%,transparent)}
+  .meta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;color:var(--muted);font-size:12.5px;margin-top:6px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--bull)} .dot.warn{background:var(--accent)} .dot.err{background:var(--bear)}
+  .btn{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:8px 13px;border-radius:10px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;transition:.15s;text-decoration:none}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  .controls{display:flex;gap:9px;flex-wrap:wrap}
+  .err-banner{display:none;margin:12px 0;border:1px solid color-mix(in oklab,var(--bear) 40%,transparent);background:color-mix(in oklab,var(--bear) 10%,transparent);padding:13px 15px;border-radius:12px;font-size:13.5px}
+  .regime{border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:var(--shadow);margin-top:6px;background:linear-gradient(120deg,var(--panel),color-mix(in oklab,var(--phase,var(--accent)) 12%,var(--panel)))}
+  .regime-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .phase-chip{font-family:var(--mono);font-weight:800;font-size:13px;padding:7px 13px;border-radius:11px;color:var(--phase);background:color-mix(in oklab,var(--phase) 16%,transparent);box-shadow:inset 0 0 0 1px color-mix(in oklab,var(--phase) 36%,transparent)}
+  .phase-word{font-size:clamp(20px,2.6vw,26px);font-weight:780;letter-spacing:-.02em;color:var(--phase)}
+  .regime-say{color:var(--ink2);font-size:14.5px;margin-top:12px;max-width:88ch;text-wrap:pretty}
+  .cite{font-family:var(--mono);font-size:10.5px;color:var(--accent);opacity:.92}
+  .timeline{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  .tstep{flex:1;min-width:140px;background:color-mix(in oklab,var(--panel2) 70%,transparent);border:1px solid var(--line);border-radius:11px;padding:11px 13px}
+  .tstep.here{border-color:var(--phase);box-shadow:inset 0 0 0 1px var(--phase)}
+  .tstep .tn{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .tstep .tv{font-size:13.5px;font-weight:650;margin-top:3px}
+  .tstep .td{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .section{margin-top:34px}
+  .sec-head{display:flex;align-items:center;gap:12px;margin:0 2px 14px}
+  .sec-head h2{margin:0;font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
+  .sec-head .rule{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+  .sec-head .tag{font-size:11px;font-weight:600;color:var(--muted);font-family:var(--mono)}
+  .src{font-size:10.5px;font-weight:700;font-family:var(--mono);color:var(--accent);background:color-mix(in oklab,var(--accent) 14%,transparent);padding:2px 8px;border-radius:999px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+  .card h3{margin:0 0 4px;font-size:15px;font-weight:750}
+  .card p{margin:8px 0 0;font-size:13.5px;color:var(--ink2)}
+  .card .foot{margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  .tblwrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  tr:last-child td{border-bottom:none}
+  .pill{font-family:var(--mono);font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+  .pill.live{color:var(--accum);background:color-mix(in oklab,var(--accum) 15%,transparent)}
+  .pill.said{color:var(--hot);background:color-mix(in oklab,var(--hot) 15%,transparent)}
+  .strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--sc,var(--muted));border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
+  .stat .l{font-size:11.5px;color:var(--muted);font-weight:600}
+  .stat .n{font-family:var(--mono);font-size:19px;font-weight:750;margin-top:4px}
+  .stat .s{font-size:11.5px;color:var(--ink2);margin-top:3px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px 10px 6px;margin-top:8px}
+  .phint{font-size:11.5px;color:var(--muted);font-family:var(--mono);padding:2px 8px 10px;line-height:1.7}
+  #chart{width:100%;height:720px} @media(max-width:700px){#chart{height:600px}}
+  .signalbox{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--sc,var(--accent));border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow)}
+  .signalbox h3{margin:0 0 8px;font-size:14.5px;font-weight:750}
+  .sigrule{font-size:13px;color:var(--ink2);margin:5px 0}
+  .sigrule b{color:var(--ink)} .buy{color:var(--bull);font-weight:700} .sell{color:var(--bear);font-weight:700}
+  .note{color:var(--muted);font-size:12px;line-height:1.6}
+  footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--line)}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="kicker">Bitcoin · Análisis on-chain · On Chain Mind (@OnChainMind) — a partir de sus vídeos</div>
+      <h1>🧠 <b>On Chain Mind</b> · Ciclo BTC</h1>
+      <div class="price-now"><span class="big mono" id="price">—</span><span class="chg" id="chg">—</span></div>
+      <div class="meta"><span class="dot" id="statusDot"></span><span id="statusText">Cargando…</span></div>
+    </div>
+    <div class="controls">
+      <a class="btn" href="index.html" style="text-decoration:none">← Panel</a>
+      <a class="btn" href="lmec.html" style="text-decoration:none">🎯 LMEC</a>
+      <a class="btn" href="cowen.html" style="text-decoration:none">📊 Cowen</a>
+      <a class="btn" href="onchainmind.html" style="text-decoration:none;border-color:var(--accent);color:var(--accent)">🧠 OnChainMind</a>
+      <button class="btn" id="themeBtn">◐ Tema</button>
+      <button class="btn" id="refreshBtn">↻ Actualizar</button>
+    </div>
+  </header>
+
+  <div class="err-banner" id="errBanner"></div>
+
+  <div class="regime" id="regime" style="--phase:var(--hot)">
+    <div class="regime-top"><span class="phase-chip">BEAR · PROCESO DE SUELO</span><span class="phase-word">«El suelo está cerca, no aquí»</span></div>
+    <div class="regime-say">Lleva <b>~6 meses en bear market</b>; BTC está en <b>modo recuperación, no en bull confirmado</b>. Espera una <b>capitulación por TIEMPO, no por precio</b> («dolor por aburrimiento, no por desplome»). Ventana del suelo estimada: <b>finales de agosto → octubre 2026</b> (media de bear 327 días + convergencia STH/LTH ~sep/oct). Zona de precio del suelo que baraja: <b>~$55k–$65k</b>; descarta $30k/$20k por «matemáticamente insostenible» (metería &gt;70% del supply en pérdida). Método: <b>DCA guiado por RIESGO</b>, comprar la <b>zona</b>, no clavar el mínimo exacto. <span class="cite">[20260630 · 20260609 · 20260526]</span></div>
+    <div class="timeline" id="timeline"></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Tesis actual (solo BTC)</h2><div class="rule"></div><span class="src">Vídeos · 2026</span></div>
+    <div class="cards">
+      <div class="card"><h3>«Bottom is near. Not here, but near»</h3><p>Postura constante en 2026: estamos <b>en la zona</b> donde el proceso de suelo «se vuelve muy real», pero no necesariamente el mínimo exacto hoy. Confluencia on-chain, no un único disparador.</p><div class="foot cite">[yt-transcripts/20260630-the-crowd-is-wrong-about-the-bitcoin-bottom.md] · [20260609-...most-reliable-bottom-signal.md]</div></div>
+      <div class="card"><h3>Capitulación por tiempo</h3><p>Espera <b>«pain by boredom, not by price»</b> el resto del año: lateralidad tediosa más que un desplome. El <b>cash extracted</b> (beneficio realizado 30d) se ha colapsado y el <b>revived supply</b> «cayó por un precipicio» → los viejos ya no venden.</p><div class="foot cite">[yt-transcripts/20260609-...] · [20260520-bitcoin-is-running-out-of-sellers.md]</div></div>
+      <div class="card"><h3>Ciclo de 4 años decreciente · power law</h3><p>El halving pesa cada vez menos (&gt;95% del supply ya emitido); el ciclo lo mueve más la <b>liquidez global (M2)</b>. Retornos decrecientes cada ciclo. Estructuralmente alcista: <b>power law fair value ~$100k</b>; a 3 años, «99,3% de probabilidad de estar en verde».</p><div class="foot cite">[yt-transcripts/20260714-...tom-matt-tristan-live.md] · [20260424-the-bitcoin-model-most-people-ignore.md]</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Estado en vivo (lo que SÍ podemos calcular)</h2><div class="rule"></div><span class="src">en vivo</span></div>
+    <div class="strip" id="liveStrip"></div>
+    <div class="note" style="margin-top:12px">El <b>Fear &amp; Greed</b> y su <b>cadencia</b> (cambio a 90 días) son la base de su estrategia sistemática (abajo). MVRV Z y realized se calculan con Coin Metrics. El resto de sus métricas (Omega Score, Z-Score Waves, STH/LTH realized, supply in profit/loss, HODL waves) son <b>propietarias/Glassnode</b> — las mostramos como <b>lo que él dijo</b>, no en vivo. <span class="cite">[F&amp;G: alternative.me · on-chain: Coin Metrics]</span></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Sus métricas on-chain de suelo</h2><div class="rule"></div><span class="src">lecturas dichas · 2026</span></div>
+    <div class="tblwrap"><table>
+      <thead><tr><th>Métrica (como él la llama)</th><th>Umbral de suelo</th><th>Su lectura ahora</th><th></th><th>Cita</th></tr></thead>
+      <tbody id="metricsBody"></tbody>
+    </table></div>
+    <div class="note" style="margin-top:10px">Todas son <span class="pill said">dicho</span> (lecturas que da hablando en sus vídeos; speech-to-text, aproximadas). Las usa como <b>confluencia</b> de zona de suelo, no como un disparador binario. <span class="cite">[20260609 · 20260707 · 20260616 · 20260408 · 20260526]</span></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Sus señales (reglas que él enuncia)</h2><div class="rule"></div><span class="src">reglas suyas</span></div>
+    <div class="cards">
+      <div class="signalbox" style="--sc:var(--bull)"><h3>⭐ Fear &amp; Greed Cadence</h3>
+        <p class="note" style="margin:0 0 8px">Su estrategia insignia («batió al DCA 10× desde 2019»). Cadence = F&amp;G hoy − F&amp;G hace 90 días.</p>
+        <div class="sigrule"><span class="buy">COMPRA</span>: la cadencia cruza de negativo a positivo <b>Y</b> precio &gt; MA200 <b>Y</b> F&amp;G &gt; 20</div>
+        <div class="sigrule"><span class="sell">VENTA</span>: la cadencia cruza de nuevo por debajo de 0 (salida inmediata)</div>
+        <div class="note" style="margin-top:8px">Backtest suyo desde 2019: +3.800% vs +237% del DCA · 86% aciertos · en mercado solo 39% del tiempo. <b><a href="backtest.html" style="color:var(--accent)">Probarla en el backtester ›</a></b></div>
+        <div class="foot cite">[yt-transcripts/20260325-the-bitcoin-strategy-that-beat-dca-10x-since-2019.md]</div></div>
+      <div class="signalbox" style="--sc:var(--accent)"><h3>Omega Score (DCA por riesgo)</h3>
+        <p class="note" style="margin:0 0 8px">Su score de riesgo 0–100% (sintetiza &gt;12 métricas). Su herramienta de DCA principal. <b>Propietario</b> — no reproducible aquí.</p>
+        <div class="sigrule"><span class="buy">DCA IN</span>: Omega &lt; 50% · «ramp up» &lt; 20% · «ballistic» &lt; 10%</div>
+        <div class="sigrule"><span class="sell">DCA OUT</span>: Omega &gt; 85%</div>
+        <div class="sigrule">Lectura ahora: <b>~11%</b> (jun-2026) = zona de suelo histórica.</div>
+        <div class="foot cite">[yt-transcripts/20260616-this-only-happens-near-bitcoin-bottoms.md]</div></div>
+      <div class="signalbox" style="--sc:var(--accum)"><h3>Banda de confirmación de bull</h3>
+        <p class="note" style="margin:0 0 8px">Cuatro modelos convergen en el nivel donde «el bear termina matemáticamente».</p>
+        <div class="sigrule"><b>~$93k–$96k</b>: regime divider (MA365) ~95k · cruce MVRV ~96k · Z-Score cero ~94k · Omega&gt;50% ~93k</div>
+        <div class="sigrule">Recuperar esa banda = <span class="buy">nuevo bull</span>. Retorno medio histórico tras el flip: +571%.</div>
+        <div class="foot cite">[yt-transcripts/20260526-the-exact-price-bitcoin-s-bull-market-returns.md]</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Gráfico</h2><div class="rule"></div><span class="tag" id="srcTag">—</span></div>
+    <div class="panel">
+      <div class="phint">Velas semanales · log · <b>Realized price</b> (~$53k; MVRV bajo 1 cuando el precio lo perfora) · líneas citadas: <b>banda bull $93–96k</b>, <b>zona de suelo $55–65k</b>, <b>soporte URPD ~$60–62k</b> · Subpanel: <b>MVRV Z</b> (suelo cuando resetea bajo 0) · arrastra=zoom, doble clic=reset</div>
+      <div id="chart"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Su estrategia</h2><div class="rule"></div><span class="src">On Chain Mind</span></div>
+    <div class="cards">
+      <div class="card"><h3>DCA guiado por riesgo</h3><p>«<i>Anchor my mind to risk</i>»: piensa en <b>niveles de riesgo</b>, no en un número redondo. DCA continuo mientras el riesgo (Omega) es bajo; acelera cuanto más cae. <b>Comprar la zona</b>, no clavar el mínimo.</p><div class="foot cite">[yt-transcripts/20260616-...] · [20260714-...live.md]</div></div>
+      <div class="card"><h3>Sistemas mecánicos (Strategy Lab)</h3><p>Además del DCA: la <b>F&amp;G Cadence</b> (arriba), el <b>Omega</b> (&lt;15/&gt;85, +386.000% en 13 años en su backtest) y <b>Alpha Flow</b> (seguimiento de tendencia por bandas de volatilidad; primera señal bajist​a en años a ~$106k en nov-2025).</p><div class="foot cite">[yt-transcripts/20260616-...] · [20251121-...beats-buy-hold.md]</div></div>
+      <div class="card"><h3>Filosofía</h3><p><b>Contrarian</b>: «hacer lo contrario de la multitud», pensar en probabilidades y horizonte largo. «<i>Bears sound smart but bulls make money</i>» · «<i>the edge isn't in one indicator, it's having a repeatable process</i>».</p><div class="foot cite">[yt-transcripts/20260714-...live.md] · [20260325-...]</div></div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="note" style="max-width:840px">
+      <b>Fuentes.</b> Resume el análisis <b>on-chain de On Chain Mind</b> (@OnChainMind, presenta Tom) SOBRE BITCOIN, a partir de sus <b>vídeos</b> (2026) en <code>agentes/onchainmind/yt-transcripts/</code>. Las cifras «dichas» son transcripciones de voz (aproximadas) y muchas de sus métricas son <b>propietarias/Glassnode</b> — no reproducibles aquí; se muestran como lo que él dijo, citando el vídeo. En vivo: Fear&amp;Greed (alternative.me), precio y MVRV Z (Binance/Coin Metrics). Es un <b>resumen de SU criterio</b>, no la realidad ni un consejo. <b>Uso educativo — no es asesoramiento financiero.</b>
+    </div>
+    <div class="note" id="srcNote" style="margin-top:8px">Fuente datos vivos: —</div>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const fmtUSD=(v,d=0)=>v==null?"—":"$"+Number(v).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+/* Niveles citados (aprox, de sus vídeos) */
+const BULL_LO=93000, BULL_HI=96000, FLOOR_LO=55000, FLOOR_HI=65000, URPD=61000, REALIZED_SAID=53000;
+
+function sma(a,n){const o=Array(a.length).fill(null);let s=0;for(let i=0;i<a.length;i++){s+=a[i];if(i>=n)s-=a[i-n];if(i>=n-1)o[i]=s/n;}return o;}
+
+let DATA=null,SRC="",IND=null,OC=null,OC_STATUS="—",FNG=null;
+async function fetchBinance(host){const r=await fetch(`https://${host}/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=1000`,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();return{t:j.map(k=>k[0]),o:j.map(k=>+k[1]),h:j.map(k=>+k[2]),l:j.map(k=>+k[3]),c:j.map(k=>+k[4]),src:"Binance"};}
+async function fetchCoinGecko(){const r=await fetch("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=max&interval=daily",{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();const px=j.prices||[];const t=[],o=[],h=[],l=[],c=[];const WK=7*864e5;let bs=null,bo,bh,bl,bc,bt;for(const[ms,p]of px){if(bs==null){bs=ms;bo=bh=bl=bc=p;bt=ms;continue;}if(ms-bs>=WK){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);bs=ms;bo=bh=bl=bc=p;bt=ms;}else{bh=Math.max(bh,p);bl=Math.min(bl,p);bc=p;bt=ms;}}if(bs!=null){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);}return{t,o,h,l,c,src:"CoinGecko"};}
+let CM=null;
+async function fetchCM(){if(CM)return CM;
+  const url="https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=PriceUSD,CapMVRVCur,CapMrktCurUSD,CapRealUSD,SplyCur&frequency=1d&page_size=10000&start_time=2010-07-18";
+  const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();const rows=j.data||[];if(!rows.length)throw new Error("sin filas");
+  const dt=[],price=[],mvrv=[],mkt=[],real=[],sply=[];
+  for(const x of rows){const t=Date.parse(x.time.slice(0,10));if(isNaN(t))continue;dt.push(t);price.push(x.PriceUSD!=null?+x.PriceUSD:null);mvrv.push(x.CapMVRVCur!=null?+x.CapMVRVCur:null);mkt.push(x.CapMrktCurUSD!=null?+x.CapMrktCurUSD:null);real.push(x.CapRealUSD!=null?+x.CapRealUSD:null);sply.push(x.SplyCur!=null?+x.SplyCur:null);}
+  CM={dt,price,mvrv,mkt,real,sply};return CM;}
+async function fetchCMPrice(){const cm=await fetchCM();const t=[],o=[],h=[],l=[],c=[];const WK=7*864e5;let bs=null,bo,bh,bl,bc,bt;
+  for(let i=0;i<cm.dt.length;i++){const ms=cm.dt[i],p=cm.price[i];if(p==null)continue;if(bs==null){bs=ms;bo=bh=bl=bc=p;bt=ms;continue;}if(ms-bs>=WK){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);bs=ms;bo=bh=bl=bc=p;bt=ms;}else{bh=Math.max(bh,p);bl=Math.min(bl,p);bc=p;bt=ms;}}
+  if(bs!=null){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);}return{t,o,h,l,c,src:"CoinMetrics"};}
+async function loadData(){let bin=null,ext=null;
+  try{bin=await fetchBinance("api.binance.com");}catch(e){try{bin=await fetchBinance("api.binance.us");}catch(e2){}}
+  try{ext=await fetchCMPrice();}catch(e){try{ext=await fetchCoinGecko();}catch(e2){}}
+  if(bin&&ext){const b0=bin.t[0];const pt=[],po=[],ph=[],pl=[],pc=[];for(let i=0;i<ext.t.length;i++){if(ext.t[i]<b0-3*864e5&&ext.t[i]>Date.parse("2010-01-01")){pt.push(ext.t[i]);po.push(ext.o[i]);ph.push(ext.h[i]);pl.push(ext.l[i]);pc.push(ext.c[i]);}}
+    DATA={t:[...pt,...bin.t],o:[...po,...bin.o],h:[...ph,...bin.h],l:[...pl,...bin.l],c:[...pc,...bin.c]};SRC=(ext.src||"hist")+"+Binance";return;}
+  if(bin){DATA=bin;SRC="Binance";return;}if(ext){DATA=ext;SRC=ext.src;return;}throw new Error("sin fuentes de precio");}
+async function loadOnchain(){try{const cm=await fetchCM();const dt=cm.dt,mkt=cm.mkt,real=cm.real,mvrv=cm.mvrv,sply=cm.sply;
+  const valid=mkt.filter(v=>v!=null);const mean=valid.reduce((a,b)=>a+b,0)/valid.length;const sd=Math.sqrt(valid.reduce((a,b)=>a+(b-mean)**2,0)/valid.length);
+  const zAt=i=>(mkt[i]!=null&&real[i]!=null&&sd>0)?(mkt[i]-real[i])/sd:null;
+  const n=DATA.t.length;const A={mvrv:Array(n).fill(null),z:Array(n).fill(null),real:Array(n).fill(null)};let j2=0;
+  for(let i=0;i<n;i++){const wt=DATA.t[i];while(j2+1<dt.length&&dt[j2+1]<=wt)j2++;if(dt[j2]<=wt+7*864e5){A.mvrv[i]=mvrv[j2];A.z[i]=zAt(j2);A.real[i]=(real[j2]!=null&&sply[j2])?real[j2]/sply[j2]:null;}}
+  OC=A;OC_STATUS="Coin Metrics ✓";}catch(e){OC=null;OC_STATUS="sin datos";}}
+async function loadFNG(){try{const r=await fetch("https://api.alternative.me/fng/?limit=120&format=json",{cache:"no-store"});if(!r.ok)throw 0;const j=await r.json();
+  const d=(j.data||[]).map(x=>({v:+x.value,t:+x.timestamp*1000})).sort((a,b)=>a.t-b.t);
+  if(!d.length){FNG=null;return;}const now=d[d.length-1];const ago=d.find(x=>x.t>=now.t-90*864e5)||d[0];
+  FNG={now:now.v,cadence:now.v-ago.v,cls:d[d.length-1]};}catch(e){FNG=null;}}
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("no se pudo cargar Plotly");}
+
+function renderLive(){
+  const z=OC?OC.z[OC.z.length-1]:null, real=OC?OC.real[OC.real.length-1]:null, price=DATA.c[DATA.c.length-1];
+  const items=[];
+  if(FNG){const fng=FNG.now, cad=FNG.cadence;
+    items.push({l:"Fear & Greed",n:fng+" · "+(fng<25?"miedo extremo":fng<45?"miedo":fng<55?"neutral":fng<75?"codicia":"codicia extrema"),s:"alternative.me",c:fng<30?"var(--bull)":fng>70?"var(--bear)":"var(--muted)"});
+    items.push({l:"Cadencia F&G (90d)",n:(cad>=0?"+":"")+cad,s:cad>0?"cruzando al alza = sesgo compra":"negativa",c:cad>0?"var(--bull)":"var(--bear)"});}
+  items.push({l:"MVRV Z (en vivo)",n:z!=null?z.toFixed(2):"—",s:"suelo tras resetear <0",c:z!=null&&z<0?"var(--bull)":"var(--hot)"});
+  items.push({l:"Realized price",n:real!=null?fmtUSD(real):"~"+fmtUSD(REALIZED_SAID),s:real!=null&&price<real?"precio por debajo (suelo)":"él lo cita ~$53k",c:"var(--accum)"});
+  $("#liveStrip").innerHTML=items.map(x=>`<div class="stat" style="--sc:${x.c}"><div class="l">${x.l}</div><div class="n" style="color:${x.c}">${x.n}</div><div class="s">${x.s}</div></div>`).join("");
+}
+const METRICS=[
+  ["Supply in profit/loss","~50–55% en pérdida","Saltó 34%→>50% en un mes","said"],
+  ["LTH supply in loss","umbral decreciente (2022 ~40%)","~41% («altísimo para esta fase»)","said"],
+  ["Cruce STH/LTH realized price","convergencia = suelo","STH ~69k ↓ · LTH ~49k ↑ → ~sep/oct","said"],
+  ["MVRV (mean)","< 1 en suelo","aún no <1 (realized ~53k)","said"],
+  ["Realized Cap HODL Waves (STH)","< 40% (ideal 20–30%)","~26% (jul) = «generational buy»","said"],
+  ["Omega Score (0–100%)","< 15% = zona de suelo","~11% (jun, desde 24%)","said"],
+  ["Z-Score Probability Waves","cero = fin de bear ~94k","en rojo profundo (mar)","said"],
+  ["365-day MA (regime divider)","reclamar = bull","~95k","said"],
+  ["URPD (soporte)","muro de soporte","~$60–62k · siguiente ~43k","said"],
+  ["Cash extracted (30d)","colapso = suelo","de ~55B a ~3B","said"],
+];
+function renderMetrics(){
+  $("#metricsBody").innerHTML=METRICS.map(r=>`<tr><td>${r[0]}</td><td style="color:var(--ink2)">${r[1]}</td><td class="mono">${r[2]}</td><td><span class="pill said">dicho</span></td><td class="cite" style="font-family:var(--mono);font-size:10px">vídeo</td></tr>`).join("");
+}
+function renderTimeline(){
+  const steps=[
+    {n:"Techo",v:"nov-2025 ~$106k",d:"1ª señal bajista Alpha Flow",here:false},
+    {n:"Ahora",v:"Bear · proceso de suelo",d:"«near, not here»",here:true},
+    {n:"Capitulación",v:"por tiempo",d:"«pain by boredom»",here:false},
+    {n:"Ventana de suelo",v:"fin-ago → oct 2026",d:"cruce STH/LTH ~sep/oct",here:false},
+    {n:"Fin del bear",v:"recuperar ~$93–96k",d:"4 modelos convergen",here:false},
+  ];
+  $("#timeline").innerHTML=steps.map(s=>`<div class="tstep ${s.here?'here':''}" ${s.here?'style="--phase:var(--hot)"':''}><div class="tn">${s.n}</div><div class="tv">${s.v}</div><div class="td">${s.d}</div></div>`).join("");
+}
+function renderChart(){
+  const {t,c}=DATA,n=c.length;const x=t.map(ms=>new Date(ms).toISOString().slice(0,10));const nul=a=>a.map(v=>v==null?null:v);
+  const cInk=cssv("--ink"),cMut=cssv("--muted"),cGrid=cssv("--grid"),cBull=cssv("--bull"),cBear=cssv("--bear"),cAcc=cssv("--accent"),cAccum=cssv("--accum"),cPanel=cssv("--panel"),cHot=cssv("--hot");
+  const tr=[{type:"candlestick",x,open:DATA.o,high:DATA.h,low:DATA.l,close:c,name:"BTC",yaxis:"y",increasing:{line:{color:cBull,width:1}},decreasing:{line:{color:cBear,width:1}},showlegend:false,hoverlabel:{bgcolor:cPanel}}];
+  if(OC) tr.push({type:"scatter",x,y:nul(OC.real),name:"Realized",yaxis:"y",line:{color:"#9b8cff",width:1.3,dash:"dot"}});
+  if(OC) tr.push({type:"scatter",x,y:nul(OC.z),name:"MVRV Z",yaxis:"y2",line:{color:cAccum,width:1.3},showlegend:false});
+  const ax={gridcolor:cGrid,zerolinecolor:cGrid,linecolor:cGrid,color:cMut,tickfont:{size:10}};
+  const lab=(y,txt,col)=>({xref:"paper",x:0.012,y,yref:"y",yanchor:"bottom",xanchor:"left",text:txt,showarrow:false,font:{size:9.5,color:col,family:cssv("--mono")}});
+  const layout={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:cInk,family:cssv("--font")},
+    margin:{l:60,r:16,t:10,b:24},dragmode:"zoom",hovermode:"x unified",hoverlabel:{bgcolor:cPanel,bordercolor:cAcc,font:{color:cInk,size:11,family:cssv("--font")}},
+    legend:{orientation:"h",y:1.04,x:0,font:{size:10.5},bgcolor:"rgba(0,0,0,0)"},
+    xaxis:{...ax,anchor:"y2",type:"date",range:["2014-06-01","2027-06-01"]},
+    yaxis:{...ax,domain:[0.34,1],type:"log",title:{text:"Precio (log)",font:{size:11},standoff:8}},
+    yaxis2:{...ax,domain:[0,0.26],title:{text:"MVRV Z",font:{size:11},standoff:8}},
+    shapes:[
+      {type:"rect",xref:"paper",yref:"y",x0:0,x1:1,y0:BULL_LO,y1:BULL_HI,fillcolor:"rgba(63,169,245,.10)",line:{width:0},layer:"below"},
+      {type:"rect",xref:"paper",yref:"y",x0:0,x1:1,y0:FLOOR_LO,y1:FLOOR_HI,fillcolor:"rgba(47,195,155,.10)",line:{width:0},layer:"below"},
+      {type:"line",xref:"paper",yref:"y",x0:0,x1:1,y0:URPD,y1:URPD,line:{color:cHot,width:1,dash:"dash"},opacity:.6},
+      {type:"rect",xref:"paper",yref:"y2",x0:0,x1:1,y0:-99,y1:0,fillcolor:"rgba(47,195,155,.10)",line:{width:0},layer:"below"},
+      {type:"line",xref:"paper",yref:"y2",x0:0,x1:1,y0:0,y1:0,line:{color:cGrid,width:1}},
+    ],
+    annotations:[lab(BULL_HI,"Fin del bear $93–96k",cAccum),lab(FLOOR_HI,"Zona suelo $55–65k",cBull),lab(URPD,"Soporte URPD ~$61k",cHot)]};
+  Plotly.react("chart",tr,layout,{responsive:true,scrollZoom:false,displaylogo:false,doubleClick:"reset",modeBarButtonsToRemove:["select2d","lasso2d","autoScale2d"]});
+}
+function renderAll(){
+  IND={};const c=DATA.c,n=c.length;
+  $("#price").textContent=fmtUSD(c[n-1],c[n-1]<10?2:0);
+  const ch=(c[n-1]/c[n-2]-1)*100;const e=$("#chg");e.textContent=(ch>=0?"+":"")+ch.toFixed(1)+"% · 7d";e.className="chg "+(ch>=0?"up":"down");
+  $("#statusDot").className="dot";$("#statusText").textContent=n+" semanas · "+new Date().toLocaleString("es-ES",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+  $("#srcTag").textContent=SRC;$("#srcNote").innerHTML="Precio: <b>"+SRC+"</b> · On-chain: <b>"+OC_STATUS+"</b> · F&G: <b>"+(FNG?"alternative.me ✓":"n/d")+"</b>";
+  renderTimeline();renderLive();renderMetrics();renderChart();
+}
+async function boot(){
+  $("#statusDot").className="dot warn";$("#statusText").textContent="Cargando…";$("#errBanner").style.display="none";
+  try{await Promise.all([loadPlotly(),loadData()]);await Promise.all([loadOnchain(),loadFNG()]);renderAll();}
+  catch(err){$("#statusDot").className="dot err";$("#statusText").textContent="Error al cargar";const b=$("#errBanner");b.style.display="block";b.innerHTML="<b>No se pudo cargar.</b> "+((err&&err.message)||err)+". Prueba otra red y pulsa ↻.";}
+}
+$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);if(DATA&&window.Plotly){renderLive();renderMetrics();renderChart();}});
+$("#refreshBtn").addEventListener("click",boot);
+(function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
+boot();
+</script>
+</body>
+</html>
