@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>¿Qué hago hoy? · Decisión de ciclo</title>
+<style>
+  :root{
+    --bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;
+    --ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#e8a13a;
+    --bull:#2fc39b;--bear:#f2606d;--accum:#3fa9f5;--hot:#f2a33f;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Menlo","Consolas",monospace;--radius:16px;
+  }
+  @media (prefers-color-scheme: light){:root{--bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;--ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--accent:#b26a10;--bull:#0e846a;--bear:#c93a48;--accum:#1f74c0;--hot:#b9791a}}
+  :root[data-theme="dark"]{--bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;--ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#e8a13a;--bull:#2fc39b;--bear:#f2606d;--accum:#3fa9f5;--hot:#f2a33f}
+  :root[data-theme="light"]{--bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;--ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--accent:#b26a10;--bull:#0e846a;--bear:#c93a48;--accum:#1f74c0;--hot:#b9791a}
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:radial-gradient(1200px 600px at 80% -10%,color-mix(in oklab,var(--accent) 9%,transparent),transparent 60%),linear-gradient(var(--bg),var(--bg2));color:var(--ink);font-family:var(--font);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+  .wrap{max-width:1080px;margin:0 auto;padding:26px 18px 70px}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+  .kicker{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  h1{margin:5px 0 0;font-size:clamp(23px,3.2vw,32px);font-weight:800;letter-spacing:-.02em}
+  .meta{color:var(--muted);font-size:12.5px;margin-top:6px}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted);margin-right:6px;vertical-align:middle}
+  .dot.ok{background:var(--bull)} .dot.err{background:var(--bear)}
+  .controls{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:8px 12px;border-radius:10px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;transition:.15s;text-decoration:none}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  /* verdict */
+  .verdict{border:1px solid var(--line);border-radius:var(--radius);padding:22px;background:linear-gradient(180deg,color-mix(in oklab,var(--vc,var(--accent)) 10%,var(--panel)),var(--panel));border-top:3px solid var(--vc,var(--accent))}
+  .verdict .act{font-size:clamp(22px,3.4vw,30px);font-weight:850;letter-spacing:-.02em;color:var(--vc,var(--ink));margin:2px 0 4px}
+  .verdict .sub{font-size:14.5px;color:var(--ink2);max-width:70ch}
+  .meter{display:flex;align-items:center;gap:12px;margin:14px 0 2px;flex-wrap:wrap}
+  .beads{display:flex;gap:6px}
+  .bead{width:16px;height:16px;border-radius:50%;background:var(--panel2);box-shadow:inset 0 0 0 1px var(--line)}
+  .bead.on{background:var(--vc,var(--accent));box-shadow:none}
+  .mtxt{font-family:var(--mono);font-size:13px;color:var(--muted)}
+  .mtxt b{color:var(--ink);font-size:15px}
+  /* signals grid */
+  .sec-head{display:flex;align-items:center;gap:10px;margin:26px 2px 12px}
+  .sec-head h2{margin:0;font-size:15px;font-weight:750}
+  .sec-head .rule{flex:1;height:1px;background:var(--line)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+  .sig{border:1px solid var(--line);border-radius:13px;padding:13px 14px;background:var(--panel)}
+  .sig .r1{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .sig .nm{font-size:13.5px;font-weight:700}
+  .sig .st{font-size:11px;font-weight:800;font-family:var(--mono);padding:2px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.03em}
+  .st.on{color:var(--bull);background:color-mix(in oklab,var(--bull) 16%,transparent)}
+  .st.off{color:var(--muted);background:color-mix(in oklab,var(--muted) 16%,transparent)}
+  .st.nd{color:var(--hot);background:color-mix(in oklab,var(--hot) 16%,transparent)}
+  .sig .val{font-family:var(--mono);font-size:18px;font-weight:700;margin:7px 0 2px}
+  .sig .ds{font-size:12px;color:var(--muted);line-height:1.45}
+  /* levels */
+  .levels{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .lv{border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:var(--panel2)}
+  .lv .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .lv .n{font-family:var(--mono);font-size:16px;font-weight:700;margin-top:2px}
+  .note{font-size:12.5px;color:var(--muted);line-height:1.6}
+  footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;line-height:1.6}
+  .banner{display:none;margin:14px 0 0;padding:10px 13px;border-radius:11px;background:color-mix(in oklab,var(--hot) 14%,var(--panel));border:1px solid color-mix(in oklab,var(--hot) 40%,var(--line));font-size:12.5px;color:var(--ink2)}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="kicker">Ciclos · Decisión</div>
+      <h1>🧭 ¿Qué hago hoy?</h1>
+      <div class="meta"><span class="dot" id="statusDot"></span><span id="statusText">Cargando señales…</span></div>
+    </div>
+    <div class="controls">
+      <a class="btn" href="index.html">← Panel</a>
+      <a class="btn" href="lmec.html">🎯 LMEC</a>
+      <a class="btn" href="cowen.html">📊 Cowen</a>
+      <a class="btn" href="onchainmind.html">🧠 OnChainMind</a>
+      <button class="btn" id="themeBtn">◐ Tema</button>
+    </div>
+  </header>
+
+  <div class="verdict" id="verdict">
+    <div class="kicker" id="regime">—</div>
+    <div class="act" id="action">Calculando…</div>
+    <div class="sub" id="actionSub"></div>
+    <div class="meter">
+      <div class="beads" id="beads"></div>
+      <div class="mtxt"><b id="litN">—</b> <span id="litTot"></span> señales de compra encendidas</div>
+    </div>
+  </div>
+  <div class="banner" id="banner"></div>
+
+  <div class="sec-head"><h2>Señales</h2><div class="rule"></div></div>
+  <div class="grid" id="sigs"></div>
+
+  <div class="sec-head"><h2>Niveles en vivo</h2><div class="rule"></div></div>
+  <div class="levels" id="levels"></div>
+
+  <div class="sec-head"><h2>Cómo se decide</h2><div class="rule"></div></div>
+  <div class="note" id="logic"></div>
+
+  <footer>
+    Agrega las señales que los tres analistas (LMEC · Cowen · OnChainMind) usan para el <b>largo plazo del ciclo</b> y las traduce a una acción. Precio y BMSB/RSI vía Binance; F&amp;G vía alternative.me; MVRV Z vía Coin Metrics (si el on-chain está disponible). <b>No mide timing intradía ni derivados.</b> Uso educativo — <b>no es asesoramiento financiero.</b>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const fmtUSD=(v,d=0)=>v==null||isNaN(v)?"—":"$"+Number(v).toLocaleString("en-US",{maximumFractionDigits:d,minimumFractionDigits:d});
+(function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
+$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);});
+
+/* ---------- indicadores ---------- */
+function sma(a,n){const o=Array(a.length).fill(null);let s=0,c=0;for(let i=0;i<a.length;i++){if(a[i]==null){o[i]=null;continue;}s+=a[i];c++;if(i>=n){s-=a[i-n];}if(i>=n-1)o[i]=s/n;}return o;}
+function ema(a,n){const o=Array(a.length).fill(null);const k=2/(n+1);let p=null,ss=0,cnt=0,sd=false;for(let i=0;i<a.length;i++){const v=a[i];if(v==null){o[i]=null;continue;}if(!sd){ss+=v;cnt++;if(cnt>=n){p=ss/n;o[i]=p;sd=true;}continue;}p=v*k+p*(1-k);o[i]=p;}return o;}
+function rsi(c,n=14){const o=Array(c.length).fill(null);let g=0,l=0;for(let i=1;i<c.length;i++){const ch=c[i]-c[i-1],gg=Math.max(0,ch),ll=Math.max(0,-ch);if(i<=n){g+=gg;l+=ll;if(i===n){g/=n;l/=n;o[i]=100-100/(1+(l===0?1e9:g/l));}}else{g=(g*(n-1)+gg)/n;l=(l*(n-1)+ll)/n;o[i]=100-100/(1+(l===0?1e9:g/l));}}return o;}
+
+/* ---------- datos ---------- */
+async function fetchWeekly(){
+  for(const host of["api.binance.com","api.binance.us"]){
+    try{const r=await fetch(`https://${host}/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=1000`,{cache:"no-store"});
+      if(r.ok){const j=await r.json();return{t:j.map(k=>k[0]),c:j.map(k=>+k[4])};}}catch(e){}}
+  // fallback CoinGecko diario → semanal
+  try{const r=await fetch("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=max&interval=daily",{cache:"no-store"});
+    if(r.ok){const j=await r.json();const px=j.prices||[];const t=[],c=[];const WK=7*864e5;let bs=null,bc,bt;
+      for(const[ms,p]of px){if(bs==null){bs=ms;bc=p;bt=ms;continue;}if(ms-bs>=WK){t.push(bt);c.push(bc);bs=ms;bc=p;bt=ms;}else{bc=p;bt=ms;}}
+      if(bs!=null){t.push(bt);c.push(bc);}return{t,c};}}catch(e){}
+  throw new Error("sin precio");
+}
+async function cmGet(metrics){
+  const q="assets=btc&metrics="+metrics+"&frequency=1d&page_size=10000&start_time=2011-01-01";
+  for(const u of["/api/coinmetrics?"+q,"https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?"+q]){
+    try{const r=await fetch(u,{cache:"no-store"});if(r.ok){const j=await r.json();if(j&&j.data&&j.data.length)return j.data;}}catch(e){}}
+  return null;
+}
+async function fetchMVRVZ(){ // MVRV Z actual = (mktcap-realizedcap)/desv.est(mktcap)
+  const rows=await cmGet("CapMrktCurUSD,CapRealUSD");if(!rows)return null;
+  const mkt=[],real=[];for(const x of rows){if(x.CapMrktCurUSD!=null&&x.CapRealUSD!=null){mkt.push(+x.CapMrktCurUSD);real.push(+x.CapRealUSD);}}
+  if(mkt.length<50)return null;
+  const mean=mkt.reduce((a,b)=>a+b,0)/mkt.length;const sd=Math.sqrt(mkt.reduce((a,b)=>a+(b-mean)**2,0)/mkt.length);
+  if(!(sd>0))return null;return (mkt[mkt.length-1]-real[real.length-1])/sd;
+}
+async function fetchFNG(){
+  try{const r=await fetch("https://api.alternative.me/fng/?limit=1&format=json",{cache:"no-store"});
+    if(r.ok){const j=await r.json();const d=(j.data||[])[0];if(d)return +d.value;}}catch(e){}
+  return null;
+}
+
+/* ---------- ciclo del halving ---------- */
+const HALVINGS=["2012-11-28","2016-07-09","2020-05-11","2024-04-19","2028-04-20"].map(d=>Date.parse(d));
+function halvWeeks(nowMs){let H=HALVINGS[0];for(const h of HALVINGS)if(h<=nowMs)H=h;return (nowMs-H)/(7*864e5);}
+
+/* ---------- evaluación ---------- */
+function evaluate(D){
+  const c=D.c,n=c.length,price=c[n-1];
+  const s20=sma(c,20),e21=ema(c,21),s200=sma(c,200),rsiA=rsi(c,14);
+  const bmsbHi=(()=>{const a=s20[n-1],b=e21[n-1];return(a!=null&&b!=null)?Math.max(a,b):null;})();
+  const bmsbLo=(()=>{const a=s20[n-1],b=e21[n-1];return(a!=null&&b!=null)?Math.min(a,b):null;})();
+  const ma200=s200[n-1], rsiV=rsiA[n-1];
+  const now=D.t[n-1];const hw=halvWeeks(now);const d=new Date(now);const ymod4=d.getUTCFullYear()%4,month=d.getUTCMonth()+1;
+  const z=D.z, fng=D.fng;
+
+  // ventana de ciclo favorable a compra: acumulación LMEC (sem 120-180) o estacional Cowen (año midterm, 2ª mitad)
+  const accumWindow = hw>=120&&hw<=180;
+  const cowenSeason = ymod4===2&&month>=7;
+  const distWindow = hw>=70&&hw<=110; // techo del ciclo → distribución, NO compra
+  const cycleBuy = accumWindow||cowenSeason;
+
+  const belowBMSB = bmsbHi!=null? price<bmsbHi : null;
+  const near200 = ma200!=null? price<=ma200*1.05 : null;
+  const zLow = z!=null? z<0.5 : null;
+  const rsiLow = rsiV!=null? rsiV<45 : null;
+  const fngFear = fng!=null? fng<30 : null;
+
+  const SIG=[
+    {key:"bmsb",nm:"Precio bajo la BMSB",on:belowBMSB,val:bmsbHi!=null?fmtUSD(bmsbHi):"—",
+     ds:belowBMSB?"Por debajo de la Bull Market Support Band = zona de acumulación (LMEC).":"Por encima de la BMSB: tendencia alcista, no zona de acumulación barata."},
+    {key:"ma200",nm:"Cerca/bajo 200W MA",on:near200,val:ma200!=null?fmtUSD(ma200):"—",
+     ds:near200?"A ≤5% de la media de 200 semanas = soporte estructural profundo.":"Lejos del soporte de 200 semanas."},
+    {key:"mvrv",nm:"MVRV Z infravalorado",on:zLow,nd:z==null,val:z!=null?z.toFixed(2):"n/d",
+     ds:z==null?"On-chain no disponible (Coin Metrics). No cuenta.":(zLow?"MVRV Z en franja baja (<0,5) = infravalorado on-chain.":"MVRV Z fuera de la franja de suelo.")},
+    {key:"rsi",nm:"RSI semanal débil",on:rsiLow,val:rsiV!=null?rsiV.toFixed(0):"—",
+     ds:rsiLow?"RSI semanal <45 = sin sobrecompra, margen para acumular.":"RSI semanal alto: momentum caliente, no descuento."},
+    {key:"fng",nm:"Miedo (Fear & Greed)",on:fngFear,nd:fng==null,val:fng!=null?String(fng):"n/d",
+     ds:fng==null?"F&G no disponible.":(fngFear?"Miedo (<30): históricamente buenas zonas de compra.":"Sin miedo extremo.")},
+    {key:"cycle",nm:"Ventana de ciclo",on:cycleBuy,val:"sem "+Math.round(hw),
+     ds:accumWindow?"En la ventana de acumulación post-halving (sem 120-180).":(cowenSeason?"2ª mitad del año midterm (estacional de Cowen).":(distWindow?"Sem 70-110 = zona de techo/distribución del ciclo.":"Fuera de ventana de acumulación."))},
+  ];
+  const withData=SIG.filter(s=>s.on!=null);
+  const lit=withData.filter(s=>s.on).length;
+  const tot=withData.length;
+
+  // ---- decisión ----
+  let action,sub,vc,regime;
+  const expensive = belowBMSB===false; // por encima de la BMSB
+  if(distWindow && (expensive || (z!=null&&z>2))){
+    action="Tomar beneficio";vc="var(--hot)";regime="Ciclo · zona de techo/distribución";
+    sub="Estás en la ventana de techo del ciclo (sem 70-110 tras el halving) y el precio no está barato. Es zona de reducir, no de comprar. Retira liquidez/toma beneficio por tramos.";
+  }else if(lit>=Math.ceil(tot*0.66) && belowBMSB){
+    action="Comprar por niveles";vc="var(--bull)";regime="Ciclo · acumulación (señales alineadas)";
+    sub="Mayoría de señales de compra encendidas y precio bajo la BMSB. DCA + añadir en tramos hacia los niveles de soporte (BMSB y 200W MA). Es donde LMEC acumula.";
+  }else if(cycleBuy && expensive){
+    action="Esperar dip a nivel";vc="var(--accum)";regime="Ciclo · ventana favorable, precio caro";
+    sub="La ventana del ciclo acompaña, pero el precio está por encima de la BMSB. Deja órdenes límite escalonadas en la BMSB / 200W MA y compra en la caída, no aquí.";
+  }else if(cowenSeason && lit>=2){
+    action="Esperar seasonality";vc="var(--accum)";regime="Ciclo · estacional (Cowen)";
+    sub="Estacionalidad de Cowen a favor (2ª mitad de año midterm). Acumula con DCA suave y guarda pólvora para dips; la fuerza estacional suele llegar hacia Q4.";
+  }else if(lit>=2){
+    action="DCA base";vc="var(--accent)";regime="Ciclo · neutral";
+    sub="Señales mixtas. Mantén el DCA base sin acelerar; añade extra solo si se encienden más señales (precio bajo BMSB, miedo, MVRV bajo).";
+  }else{
+    action="Esperar dip";vc="var(--muted)";regime="Ciclo · sin descuento";
+    sub="Pocas señales de compra y precio sin descuento. Paciencia: deja límites en soportes y espera a que se enciendan las señales.";
+  }
+  return {SIG,lit,tot,action,sub,vc,regime,price,bmsbHi,bmsbLo,ma200,rsiV,z,fng,hw};
+}
+
+function render(R){
+  const V=$("#verdict");V.style.setProperty("--vc",R.vc);
+  $("#regime").textContent=R.regime;
+  $("#action").textContent=R.action;
+  $("#actionSub").textContent=R.sub;
+  $("#litN").textContent=R.lit+"/"+R.tot;$("#litTot").textContent="";
+  $("#beads").innerHTML=Array.from({length:R.tot},(_,i)=>`<span class="bead ${i<R.lit?"on":""}"></span>`).join("");
+  $("#sigs").innerHTML=R.SIG.map(s=>{
+    const cls=s.nd?"nd":(s.on?"on":"off");const lbl=s.nd?"n/d":(s.on==null?"—":(s.on?"✓ sí":"✗ no"));
+    return `<div class="sig"><div class="r1"><span class="nm">${s.nm}</span><span class="st ${cls}">${lbl}</span></div>
+      <div class="val">${s.val}</div><div class="ds">${s.ds}</div></div>`;}).join("");
+  const lv=[
+    ["Precio BTC",fmtUSD(R.price)],
+    ["BMSB (banda alta)",R.bmsbHi!=null?fmtUSD(R.bmsbHi):"—"],
+    ["200W MA",R.ma200!=null?fmtUSD(R.ma200):"—"],
+    ["MVRV Z",R.z!=null?R.z.toFixed(2):"n/d"],
+    ["RSI semanal",R.rsiV!=null?R.rsiV.toFixed(0):"—"],
+    ["Fear & Greed",R.fng!=null?String(R.fng):"n/d"],
+    ["Semana del halving",Math.round(R.hw)],
+  ];
+  $("#levels").innerHTML=lv.map(x=>`<div class="lv"><div class="l">${x[0]}</div><div class="n">${x[1]}</div></div>`).join("");
+  $("#logic").innerHTML=`Se cuentan <b>6 señales de compra</b> (las que tienen dato): precio bajo la <b>BMSB</b>, cerca de la <b>200W MA</b>, <b>MVRV Z</b> infravalorado, <b>RSI</b> semanal débil, <b>miedo</b> (F&amp;G&lt;30) y <b>ventana de ciclo</b> (acumulación post-halving sem 120-180, o estacional midterm de Cowen). La acción sale de combinarlas: <b>Tomar beneficio</b> en la ventana de techo (sem 70-110) si el precio no está barato · <b>Comprar por niveles</b> si ≥⅔ encendidas y precio &lt; BMSB · <b>Esperar dip</b> si la ventana acompaña pero el precio está caro · <b>Esperar seasonality</b> en año midterm · <b>DCA base</b> si están mixtas.`;
+  const nd=R.SIG.some(s=>s.nd);
+  if(nd){$("#banner").style.display="block";$("#banner").innerHTML="⚠️ Alguna señal on-chain (MVRV / F&amp;G) no cargó y no cuenta en el marcador. Si el MVRV sale <b>n/d</b> de forma persistente, el proveedor on-chain (Coin Metrics) está bloqueado — se arregla con el proxy <code>/api/coinmetrics</code> o Glassnode.";}
+}
+
+(async function(){
+  try{
+    const D=await fetchWeekly();
+    const [z,fng]=await Promise.all([fetchMVRVZ().catch(()=>null),fetchFNG().catch(()=>null)]);
+    D.z=z;D.fng=fng;
+    const R=evaluate(D);render(R);
+    $("#statusDot").className="dot ok";
+    $("#statusText").textContent="Actualizado · "+new Date().toISOString().slice(0,10)+" · fuente: Binance"+(z!=null?" + Coin Metrics":"");
+  }catch(e){
+    $("#statusDot").className="dot err";$("#statusText").textContent="No se pudieron cargar los datos: "+((e&&e.message)||e);
+    $("#action").textContent="Sin datos";$("#actionSub").textContent="Reintenta en un momento.";
+  }
+})();
+</script>
+</body>
+</html>

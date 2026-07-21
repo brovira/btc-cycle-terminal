@@ -55,6 +55,19 @@
   .tags{margin-top:12px;display:flex;gap:6px;flex-wrap:wrap}
   .tag{font-size:10.5px;font-family:var(--mono);color:var(--muted);background:var(--panel2);border:1px solid var(--line);padding:2px 7px;border-radius:999px}
   footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;line-height:1.6}
+  /* hero ¿Qué hago hoy? */
+  .hero{margin-top:22px;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;
+    text-decoration:none;color:inherit;background:linear-gradient(180deg,color-mix(in oklab,var(--hc,var(--cycles)) 12%,var(--panel)),var(--panel));
+    border:1px solid var(--line);border-top:3px solid var(--hc,var(--cycles));border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);transition:.15s}
+  .hero:hover{transform:translateY(-2px);border-color:color-mix(in oklab,var(--hc,var(--cycles)) 55%,var(--line))}
+  .hero .haction{font-size:clamp(20px,3vw,26px);font-weight:850;letter-spacing:-.02em;color:var(--hc,var(--ink));margin:3px 0 3px}
+  .hero .hsub{font-size:13px;color:var(--ink2);max-width:52ch}
+  .hero .hright{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:150px}
+  .hbeads{display:flex;gap:5px}
+  .hbead{width:14px;height:14px;border-radius:50%;background:var(--panel2);box-shadow:inset 0 0 0 1px var(--line)}
+  .hbead.on{background:var(--hc,var(--cycles));box-shadow:none}
+  .hero .hn{font-family:var(--mono);font-size:15px;color:var(--ink);font-weight:700}
+  .hero .hgo{font-size:12px;font-weight:700;color:var(--muted)}
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
@@ -69,6 +82,20 @@
     </div>
     <div><button class="btn" id="themeBtn">◐ Tema</button></div>
   </header>
+
+  <!-- HERO: ¿Qué hago hoy? -->
+  <a class="hero" href="decision.html" id="hero">
+    <div class="hleft">
+      <div class="kicker">Ciclos · Decisión</div>
+      <div class="haction" id="hAction">🧭 ¿Qué hago hoy?</div>
+      <div class="hsub" id="hSub">Agrega BMSB · 200W · MVRV Z · RSI · Fear&amp;Greed · ventana del ciclo → una acción clara.</div>
+    </div>
+    <div class="hright">
+      <div class="hbeads" id="hBeads"></div>
+      <div class="hn" id="hN">calculando…</div>
+      <div class="hgo">Ver desglose →</div>
+    </div>
+  </a>
 
   <!-- CICLOS -->
   <section class="cat" style="--c:var(--cycles)">
@@ -155,6 +182,43 @@ document.getElementById("themeBtn").addEventListener("click",()=>{const r=docume
     if(!p){const r=await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true",{cache:"no-store"});if(r.ok){const j=await r.json();p={px:j.bitcoin.usd,ch:j.bitcoin.usd_24h_change};}}
     if(p){const c=p.ch>=0?"▲":"▼";document.getElementById("price").innerHTML="BTC <b>"+fmt(p.px)+"</b> <span style='color:"+(p.ch>=0?"var(--trading)":"#f2606d")+"'>"+c+" "+Math.abs(p.ch).toFixed(1)+"% · 24h</span>";}
   }catch(e){document.getElementById("price").textContent="BTC —";}
+})();
+
+/* ---------- resumen "¿Qué hago hoy?" (misma lógica que decision.html, compacto) ---------- */
+(async function(){
+  const sma=(a,n)=>{const o=Array(a.length).fill(null);let s=0;for(let i=0;i<a.length;i++){if(a[i]==null)continue;s+=a[i];if(i>=n)s-=a[i-n];if(i>=n-1)o[i]=s/n;}return o;};
+  const ema=(a,n)=>{const o=Array(a.length).fill(null);const k=2/(n+1);let p=null,ss=0,cnt=0,sd=false;for(let i=0;i<a.length;i++){const v=a[i];if(v==null)continue;if(!sd){ss+=v;cnt++;if(cnt>=n){p=ss/n;o[i]=p;sd=true;}continue;}p=v*k+p*(1-k);o[i]=p;}return o;};
+  const rsi=(c,n=14)=>{const o=Array(c.length).fill(null);let g=0,l=0;for(let i=1;i<c.length;i++){const ch=c[i]-c[i-1],gg=Math.max(0,ch),ll=Math.max(0,-ch);if(i<=n){g+=gg;l+=ll;if(i===n){g/=n;l/=n;o[i]=100-100/(1+(l===0?1e9:g/l));}}else{g=(g*(n-1)+gg)/n;l=(l*(n-1)+ll)/n;o[i]=100-100/(1+(l===0?1e9:g/l));}}return o;};
+  const HALV=["2012-11-28","2016-07-09","2020-05-11","2024-04-19","2028-04-20"].map(d=>Date.parse(d));
+  const hW=ms=>{let H=HALV[0];for(const h of HALV)if(h<=ms)H=h;return(ms-H)/(7*864e5);};
+  async function weekly(){for(const h of["api.binance.com","api.binance.us"]){try{const r=await fetch(`https://${h}/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=1000`,{cache:"no-store"});if(r.ok){const j=await r.json();return{t:j.map(k=>k[0]),c:j.map(k=>+k[4])};}}catch(e){}}return null;}
+  async function fng(){try{const r=await fetch("https://api.alternative.me/fng/?limit=1&format=json",{cache:"no-store"});if(r.ok){const j=await r.json();const d=(j.data||[])[0];if(d)return +d.value;}}catch(e){}return null;}
+  async function mvrvz(){try{const q="assets=btc&metrics=CapMrktCurUSD,CapRealUSD&frequency=1d&page_size=10000&start_time=2011-01-01";
+    for(const u of["/api/coinmetrics?"+q,"https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?"+q]){try{const r=await fetch(u,{cache:"no-store"});if(r.ok){const j=await r.json();const rows=(j&&j.data)||[];if(!rows.length)continue;
+      const mk=[],re=[];for(const x of rows){if(x.CapMrktCurUSD!=null&&x.CapRealUSD!=null){mk.push(+x.CapMrktCurUSD);re.push(+x.CapRealUSD);}}if(mk.length<50)continue;
+      const m=mk.reduce((a,b)=>a+b,0)/mk.length,sd=Math.sqrt(mk.reduce((a,b)=>a+(b-m)**2,0)/mk.length);if(sd>0)return(mk[mk.length-1]-re[re.length-1])/sd;}}catch(e){}}}catch(e){}return null;}
+  try{
+    const D=await weekly();if(!D){document.getElementById("hN").textContent="";return;}
+    const [z,fg]=await Promise.all([mvrvz(),fng()]);
+    const c=D.c,n=c.length,price=c[n-1];const s20=sma(c,20),e21=ema(c,21),s200=sma(c,200),rs=rsi(c,14);
+    const bh=(s20[n-1]!=null&&e21[n-1]!=null)?Math.max(s20[n-1],e21[n-1]):null;const ma=s200[n-1],rv=rs[n-1];
+    const now=D.t[n-1],hw=hW(now),d=new Date(now),ym=d.getUTCFullYear()%4,mo=d.getUTCMonth()+1;
+    const accum=hw>=120&&hw<=180,cowen=ym===2&&mo>=7,dist=hw>=70&&hw<=110,cycleBuy=accum||cowen;
+    const below=bh!=null?price<bh:null;
+    const S=[below, ma!=null?price<=ma*1.05:null, z!=null?z<0.5:null, rv!=null?rv<45:null, fg!=null?fg<30:null, cycleBuy];
+    const withData=S.filter(x=>x!=null);const lit=withData.filter(Boolean).length,tot=withData.length;
+    let action,hc;const expensive=below===false;
+    if(dist&&(expensive||(z!=null&&z>2))){action="Tomar beneficio";hc="var(--hot)";}
+    else if(lit>=Math.ceil(tot*0.66)&&below){action="Comprar por niveles";hc="var(--trading)";}
+    else if(cycleBuy&&expensive){action="Esperar dip a nivel";hc="var(--lps)";}
+    else if(cowen&&lit>=2){action="Esperar seasonality";hc="var(--lps)";}
+    else if(lit>=2){action="DCA base";hc="var(--cycles)";}
+    else{action="Esperar dip";hc="var(--muted)";}
+    const hero=document.getElementById("hero");hero.style.setProperty("--hc",hc);
+    document.getElementById("hAction").textContent=action;
+    document.getElementById("hN").textContent=lit+"/"+tot+" señales";
+    document.getElementById("hBeads").innerHTML=Array.from({length:tot},(_,i)=>`<span class="hbead ${i<lit?"on":""}"></span>`).join("");
+  }catch(e){document.getElementById("hN").textContent="";}
 })();
 </script>
 </body>
