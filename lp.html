@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LP · Posiciones (Orca)</title>
+<style>
+  :root{
+    --bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;
+    --ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#3fa9f5;
+    --bull:#2fc39b;--bear:#f2606d;--accum:#3fa9f5;--hot:#f2a33f;
+    --grid:rgba(255,255,255,.06);--shadow:0 1px 0 rgba(255,255,255,.03),0 12px 32px -18px rgba(0,0,0,.7);
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Menlo","Consolas",monospace;--radius:14px;
+  }
+  @media (prefers-color-scheme: light){:root{
+    --bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;
+    --ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--accent:#1f74c0;
+    --bull:#0e846a;--bear:#c93a48;--accum:#1f74c0;--hot:#b9791a;
+    --grid:rgba(16,24,34,.08);--shadow:0 1px 0 rgba(255,255,255,.6),0 14px 34px -20px rgba(20,40,70,.35);
+  }}
+  :root[data-theme="dark"]{--bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;--ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#3fa9f5;--bull:#2fc39b;--bear:#f2606d;--accum:#3fa9f5;--hot:#f2a33f;--grid:rgba(255,255,255,.06)}
+  :root[data-theme="light"]{--bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;--ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--accent:#1f74c0;--bull:#0e846a;--bear:#c93a48;--accum:#1f74c0;--hot:#b9791a;--grid:rgba(16,24,34,.08)}
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:radial-gradient(1200px 600px at 80% -10%,color-mix(in oklab,var(--accent) 9%,transparent),transparent 60%),linear-gradient(var(--bg),var(--bg2));color:var(--ink);font-family:var(--font);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+  .wrap{max-width:1240px;margin:0 auto;padding:26px 20px 70px}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:18px}
+  .kicker{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  h1{margin:4px 0 0;font-size:clamp(22px,3vw,30px);font-weight:750;letter-spacing:-.02em} h1 b{color:var(--accent)}
+  .meta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;color:var(--muted);font-size:12.5px;margin-top:6px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--bull)} .dot.warn{background:var(--accent)} .dot.err{background:var(--bear)}
+  .btn{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:8px 13px;border-radius:10px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;transition:.15s;text-decoration:none}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  .btn.pri{background:var(--accent);color:#111;border-color:var(--accent)} .btn.pri:hover{filter:brightness(1.05);color:#111}
+  .controls{display:flex;gap:9px;flex-wrap:wrap}
+  .section{margin-top:26px}
+  .sec-head{display:flex;align-items:center;gap:12px;margin:0 2px 14px}
+  .sec-head h2{margin:0;font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
+  .sec-head .rule{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+  .sec-head .tag{font-size:11px;font-weight:600;color:var(--muted);font-family:var(--mono)}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+  .drop{border:1px dashed var(--line);border-radius:var(--radius);padding:26px;text-align:center;color:var(--muted);font-size:13.5px;background:var(--panel);transition:.15s}
+  .drop.over{border-color:var(--accent);color:var(--ink)}
+  .drop b{color:var(--ink)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--sc,var(--muted));border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
+  .stat .l{font-size:11.5px;color:var(--muted);font-weight:600}
+  .stat .n{font-family:var(--mono);font-size:21px;font-weight:750;margin-top:4px}
+  .stat .s{font-size:11.5px;color:var(--ink2);margin-top:3px}
+  .up{color:var(--bull)} .down{color:var(--bear)}
+  .poscards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+  .pos{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--sc,var(--accent));border-radius:12px;padding:15px 16px;box-shadow:var(--shadow)}
+  .pos .ph{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .pos h3{margin:0;font-size:15px;font-weight:750}
+  .badge{font-size:10px;font-weight:800;font-family:var(--mono);text-transform:uppercase;letter-spacing:.04em;padding:2px 8px;border-radius:999px}
+  .badge.open{color:var(--bull);background:color-mix(in oklab,var(--bull) 16%,transparent)}
+  .badge.closed{color:var(--muted);background:color-mix(in oklab,var(--muted) 16%,transparent)}
+  .kv{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid var(--line);font-size:13px} .kv:first-of-type{border-top:none;margin-top:8px}
+  .kv .k{color:var(--muted)} .kv .v{font-family:var(--mono);font-weight:700}
+  #feeChart{width:100%;height:340px}
+  table.t{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.t th,table.t td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  table.t th:first-child,table.t td:first-child,table.t th:nth-child(2),table.t td:nth-child(2){text-align:left}
+  table.t th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+  table.t td{font-family:var(--mono)}
+  .note{color:var(--muted);font-size:12px;line-height:1.6}
+  .soon{border:1px dashed var(--line);border-radius:var(--radius);padding:14px 16px;color:var(--muted);font-size:12.5px;line-height:1.6}
+  footer{margin-top:34px;padding-top:18px;border-top:1px solid var(--line)}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="kicker">LPs · Liquidez concentrada · Orca (Solana)</div>
+      <h1>💧 <b>Posiciones LP</b></h1>
+      <div class="meta"><span class="dot" id="statusDot"></span><span id="statusText">Carga tu CSV de Orca</span></div>
+    </div>
+    <div class="controls">
+      <a class="btn" href="index.html">← Panel</a>
+      <label class="btn pri" for="csvFile">⭱ Cargar CSV</label>
+      <input type="file" id="csvFile" accept=".csv,text/csv" style="display:none">
+      <button class="btn" id="clearBtn" style="display:none">✕ Borrar</button>
+      <button class="btn" id="themeBtn">◐ Tema</button>
+    </div>
+  </header>
+
+  <!-- ESTADO INICIAL / DROP -->
+  <div class="section" id="loadSec">
+    <div class="drop" id="drop">
+      <div style="font-size:15px;margin-bottom:6px"><b>Arrastra aquí tu CSV de Orca</b> o pulsa «Cargar CSV».</div>
+      <div>Se procesa <b>en tu navegador</b> (no se sube a ningún sitio) y se recuerda en este dispositivo.</div>
+      <div class="note" style="margin-top:12px">Cómo exportarlo: Orca → <b>Portfolio</b> → tu posición → <b>Position History</b> → <b>Export CSV</b>. Vale el archivo <code>orcapositionhistory….csv</code>.</div>
+    </div>
+  </div>
+
+  <!-- RESUMEN -->
+  <div class="section" id="sumSec" style="display:none">
+    <div class="sec-head"><h2>Resumen de cartera</h2><div class="rule"></div><span class="tag" id="rangeTag">—</span></div>
+    <div class="cards" id="summary"></div>
+    <div class="note" style="margin-top:10px">Cifras <b>ciertas</b> del CSV: capital desplegado (coste), <b>fees cobradas</b>, PnL <b>realizado</b> (posiciones cerradas) y APR de fees. El <b>valor de mercado actual</b>, el <b>rango</b> y la <b>pérdida impermanente</b> viven on-chain y no están en el CSV — los añadimos con la lectura en vivo de tu wallet (siguiente paso).</div>
+  </div>
+
+  <!-- POSICIONES ABIERTAS -->
+  <div class="section" id="openSec" style="display:none">
+    <div class="sec-head"><h2>Posiciones abiertas</h2><div class="rule"></div><span class="tag" id="openTag">—</span></div>
+    <div class="poscards" id="openPos"></div>
+  </div>
+
+  <!-- FEES EN EL TIEMPO -->
+  <div class="section" id="feeSec" style="display:none">
+    <div class="sec-head"><h2>Fees cobradas (acumulado)</h2><div class="rule"></div><span class="tag">todas las posiciones</span></div>
+    <div class="panel" style="padding:12px 10px 6px"><div id="feeChart"></div></div>
+  </div>
+
+  <!-- CERRADAS -->
+  <div class="section" id="closedSec" style="display:none">
+    <div class="sec-head"><h2>Posiciones cerradas</h2><div class="rule"></div><span class="tag" id="closedTag">—</span></div>
+    <div class="panel" style="overflow:auto"><table class="t" id="closedTbl"></table></div>
+  </div>
+
+  <!-- ACTIVIDAD -->
+  <div class="section" id="actSec" style="display:none">
+    <div class="sec-head"><h2>Actividad reciente</h2><div class="rule"></div><span class="tag">últimos movimientos</span></div>
+    <div class="panel" style="overflow:auto"><table class="t" id="actTbl"></table></div>
+  </div>
+
+  <!-- LIVE next -->
+  <div class="section" id="liveSec" style="display:none">
+    <div class="sec-head"><h2>En vivo desde tu wallet</h2><div class="rule"></div><span class="tag">próximamente</span></div>
+    <div class="soon"><b>Lectura on-chain de tu wallet de Solana</b> (rango actual, valor de mercado, pérdida impermanente, fees pendientes) = necesita un <b>backend con una API de datos de Solana</b> (Helius o Birdeye, con free tier) — misma arquitectura que Coinglass (key como secret, nunca en el frontend). Cuando quieras lo montamos y este panel pasa de "histórico del CSV" a "estado en vivo".</div>
+  </div>
+
+  <footer>
+    <div class="note" style="max-width:900px">
+      Análisis de tu <b>Position History de Orca</b> (Solana). Todo se calcula en tu navegador; el CSV no sale de tu dispositivo (se guarda en localStorage). Muestra lo que el CSV contiene con certeza — capital, fees, PnL realizado — no el valor de mercado ni el rango actuales (eso es on-chain). <b>Uso educativo — no es asesoramiento financiero.</b>
+    </div>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const fmtUSD=(v,d=0)=>v==null||isNaN(v)?"—":(v<0?"-$":"$")+Math.abs(Number(v)).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+const pct=(v,d=1)=>v==null||isNaN(v)?"—":(v>=0?"+":"")+v.toFixed(d)+"%";
+const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+const LKEY="orca-csv-v1";
+
+/* ---------- CSV parse ---------- */
+function parseCSV(text){
+  const lines=text.replace(/\r/g,"").split("\n").filter(l=>l.trim());
+  if(!lines.length)return[];
+  const split=l=>{const o=[];let cur="",q=false;for(let i=0;i<l.length;i++){const c=l[i];if(c==='"'){q=!q;}else if(c===","&&!q){o.push(cur);cur="";}else cur+=c;}o.push(cur);return o;};
+  const head=split(lines[0]);
+  return lines.slice(1).map(l=>{const p=split(l);const o={};head.forEach((h,i)=>o[h.trim()]=(p[i]||"").trim());return o;});
+}
+const num=v=>{const n=parseFloat(v);return isNaN(n)?0:n;};
+
+/* ---------- agregación por posición ---------- */
+let MODEL=null;
+function build(rows){
+  const pos={};const collects=[];
+  for(const r of rows){
+    const addr=r["Position Address"]||"?";
+    const p=pos[addr]||(pos[addr]={addr,pool:r["Pool"]||"",tA:r["Token A Symbol"],tB:r["Token B Symbol"],cost:0,fees:0,realized:0,closed:false,dates:[],rows:[]});
+    p.rows.push(r); p.dates.push(r["Date"]);
+    const act=r["Action"], usd=num(r["Total USD Value"]);
+    if(act==="Open Position"||act==="Increase Liquidity"){const cb=num(r["Cost Basis (USD)"]);if(cb>0)p.cost=cb;}
+    if(act==="Collect Fees"){p.fees+=usd;collects.push({date:r["Date"],usd,pool:p.pool});}
+    if(act==="Close Position"){p.closed=true;p.realized+=num(r["Realized PnL (USD)"]);p.cost=0;
+      // en el cierre, el cost basis previo lo tomamos del último row con cost basis>0
+    }
+  }
+  // el CSV viene en orden inverso (reciente→antiguo): coste = Cost Basis de la fila MÁS reciente
+  for(const a in pos){const p=pos[a];
+    let mx=0;for(const r of p.rows){const cb=num(r["Cost Basis (USD)"]);if(cb>mx)mx=cb;}p.costMax=mx;
+    const latest=p.rows.reduce((m,r)=>Date.parse(r["Date"])>Date.parse(m["Date"])?r:m,p.rows[0]);
+    p.cost=p.closed?0:num(latest["Cost Basis (USD)"]);
+    p.first=p.dates.reduce((m,d)=>d<m?d:m); p.last=p.dates.reduce((m,d)=>d>m?d:m);
+    p.days=Math.max(1,(Date.parse(p.last)-Date.parse(p.first))/864e5);
+    p.aprFee=p.costMax>0?(p.fees/p.costMax)/p.days*365*100:null;
+  }
+  collects.sort((a,b)=>Date.parse(a.date)-Date.parse(b.date));
+  const open=Object.values(pos).filter(p=>!p.closed).sort((a,b)=>b.cost-a.cost);
+  const closed=Object.values(pos).filter(p=>p.closed).sort((a,b)=>Date.parse(b.last)-Date.parse(a.last));
+  const deployed=open.reduce((s,p)=>s+p.cost,0);
+  const feesAll=collects.reduce((s,c)=>s+c.usd,0);
+  const realized=closed.reduce((s,p)=>s+p.realized,0);
+  return{pos,open,closed,collects,deployed,feesAll,realized,
+    first:rows.map(r=>r["Date"]).reduce((m,d)=>d<m?d:m),last:rows.map(r=>r["Date"]).reduce((m,d)=>d>m?d:m),rows};
+}
+
+/* ---------- render ---------- */
+function poolColor(pool){return /USDC/.test(pool)?"var(--accum)":"var(--hot)";}
+function render(){
+  const M=MODEL;
+  $("#loadSec").style.display="none";$("#clearBtn").style.display="";
+  ["sumSec","openSec","feeSec","closedSec","actSec","liveSec"].forEach(id=>$("#"+id).style.display="");
+  $("#statusDot").className="dot";
+  $("#statusText").textContent=M.rows.length+" movimientos · "+M.first.slice(0,10)+" → "+M.last.slice(0,10);
+  $("#rangeTag").textContent=M.open.length+" abiertas · "+M.closed.length+" cerradas";
+
+  // resumen
+  const netReal=M.realized; // fees ya están dentro del realized de cerradas + fees de abiertas cobradas
+  $("#summary").innerHTML=[
+    {l:"Capital desplegado",n:fmtUSD(M.deployed),s:M.open.length+" posiciones abiertas",c:"var(--accent)"},
+    {l:"Fees cobradas (total)",n:fmtUSD(M.feesAll,0),s:"histórico completo",c:"var(--bull)"},
+    {l:"PnL realizado (cerradas)",n:fmtUSD(M.realized,0),s:M.closed.length+" cerradas",c:M.realized>=0?"var(--bull)":"var(--bear)",cl:M.realized>=0?"up":"down"},
+    {l:"APR de fees (abiertas)",n:(function(){const w=M.open.filter(p=>p.aprFee!=null);if(!w.length)return"—";const tot=w.reduce((s,p)=>s+p.costMax,0);const wa=w.reduce((s,p)=>s+p.aprFee*p.costMax,0)/tot;return pct(wa,1);})(),s:"ponderado por capital",c:"var(--hot)"},
+  ].map(x=>`<div class="stat" style="--sc:${x.c}"><div class="l">${x.l}</div><div class="n ${x.cl||""}">${x.n}</div><div class="s">${x.s}</div></div>`).join("");
+
+  // abiertas
+  $("#openTag").textContent=fmtUSD(M.deployed)+" desplegado";
+  $("#openPos").innerHTML=M.open.map(p=>`<div class="pos" style="--sc:${poolColor(p.pool)}">
+    <div class="ph"><h3>${esc(p.pool)}</h3><span class="badge open">abierta</span></div>
+    <div class="kv"><span class="k">Coste base</span><span class="v">${fmtUSD(p.cost)}</span></div>
+    <div class="kv"><span class="k">Fees cobradas</span><span class="v up">${fmtUSD(p.fees,0)}</span></div>
+    <div class="kv"><span class="k">APR de fees</span><span class="v">${pct(p.aprFee,1)}</span></div>
+    <div class="kv"><span class="k">Días activa</span><span class="v">${p.days.toFixed(0)}d</span></div>
+    <div class="kv"><span class="k">Desde</span><span class="v">${p.first.slice(0,10)}</span></div>
+  </div>`).join("");
+
+  // fees acumuladas
+  const cCol=cssv("--bull"),cMut=cssv("--muted"),cInk=cssv("--ink"),cGrid=cssv("--grid"),cPanel=cssv("--panel"),cAcc=cssv("--accent");
+  let acc=0;const fx=M.collects.map(c=>c.date.slice(0,10));const fy=M.collects.map(c=>(acc+=c.usd));
+  const bars={};M.collects.forEach(c=>{const d=c.date.slice(0,10);bars[d]=(bars[d]||0)+c.usd;});
+  const bx=Object.keys(bars),by=bx.map(d=>bars[d]);
+  const tr=[
+    {type:"bar",x:bx,y:by,name:"fees por día",marker:{color:"rgba(63,169,245,.55)"},yaxis:"y"},
+    {type:"scatter",x:fx,y:fy,name:"acumulado",line:{color:cCol,width:2},yaxis:"y2"},
+  ];
+  Plotly.react("feeChart",tr,{paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:cInk,family:cssv("--font")},
+    margin:{l:52,r:48,t:10,b:26},hovermode:"x unified",hoverlabel:{bgcolor:cPanel,bordercolor:cAcc,font:{color:cInk,size:11}},
+    legend:{orientation:"h",y:1.05,x:0,font:{size:10.5},bgcolor:"rgba(0,0,0,0)"},
+    xaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,type:"date"},
+    yaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,title:{text:"$/día",font:{size:10}}},
+    yaxis2:{overlaying:"y",side:"right",gridcolor:"rgba(0,0,0,0)",color:cMut,title:{text:"acum. $",font:{size:10}}}},
+    {responsive:true,displaylogo:false,scrollZoom:false,modeBarButtonsToRemove:["select2d","lasso2d"]});
+
+  // cerradas
+  $("#closedTag").textContent=fmtUSD(M.realized,0)+" realizado";
+  $("#closedTbl").innerHTML=`<thead><tr><th>Pool</th><th>Abierta</th><th>Cerrada</th><th>Días</th><th>Coste</th><th>Fees</th><th>PnL realizado</th></tr></thead><tbody>`+
+    (M.closed.length?M.closed.map(p=>`<tr><td>${esc(p.pool)}</td><td>${p.first.slice(0,10)}</td><td>${p.last.slice(0,10)}</td><td>${p.days.toFixed(0)}</td><td>${fmtUSD(p.costMax)}</td><td class="up">${fmtUSD(p.fees,0)}</td><td class="${p.realized>=0?"up":"down"}">${fmtUSD(p.realized,0)}</td></tr>`).join(""):`<tr><td colspan="7" class="note">Ninguna cerrada.</td></tr>`)+`</tbody>`;
+
+  // actividad
+  const acts=[...M.rows].sort((a,b)=>Date.parse(b["Date"])-Date.parse(a["Date"])).slice(0,20);
+  $("#actTbl").innerHTML=`<thead><tr><th>Fecha</th><th>Acción</th><th>Pool</th><th>Valor</th><th>Fee (tx)</th></tr></thead><tbody>`+
+    acts.map(r=>`<tr><td>${r["Date"].slice(0,10)}</td><td>${esc(r["Action"])}</td><td>${esc(r["Pool"])}</td><td>${fmtUSD(num(r["Total USD Value"]),0)}</td><td>${r["Action"]==="Collect Fees"?'<span class="up">'+fmtUSD(num(r["Total USD Value"]),2)+'</span>':"—"}</td></tr>`).join("")+`</tbody>`;
+}
+
+/* ---------- carga ---------- */
+function loadText(text){
+  try{const rows=parseCSV(text);
+    if(!rows.length||!rows[0]["Position Address"]){throw new Error("No parece un CSV de Position History de Orca (falta 'Position Address').");}
+    MODEL=build(rows);localStorage.setItem(LKEY,text);
+    if(window.Plotly)render();else loadPlotly().then(render);
+  }catch(e){$("#statusDot").className="dot err";$("#statusText").textContent="CSV no válido: "+((e&&e.message)||e);}
+}
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("no se pudo cargar Plotly");}
+
+$("#csvFile").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>loadText(r.result);r.readAsText(f);});
+const drop=$("#drop");
+["dragover","dragenter"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("over");}));
+["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("over");}));
+drop.addEventListener("drop",e=>{const f=e.dataTransfer.files[0];if(f){const r=new FileReader();r.onload=()=>loadText(r.result);r.readAsText(f);}});
+$("#clearBtn").addEventListener("click",()=>{localStorage.removeItem(LKEY);location.reload();});
+$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);if(MODEL&&window.Plotly)render();});
+(function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);
+  const saved=localStorage.getItem(LKEY);if(saved){loadPlotly().then(()=>loadText(saved));}})();
+</script>
+</body>
+</html>
