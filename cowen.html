@@ -183,15 +183,28 @@ function ema(a,n){const o=Array(a.length).fill(null);const k=2/(n+1);let p=null,
 let DATA=null,SRC="",IND=null,OC=null,OC_STATUS="—";
 async function fetchBinance(host){const r=await fetch(`https://${host}/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=1000`,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();return{t:j.map(k=>k[0]),o:j.map(k=>+k[1]),h:j.map(k=>+k[2]),l:j.map(k=>+k[3]),c:j.map(k=>+k[4]),src:"Binance"};}
 async function fetchCoinGecko(){const r=await fetch("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=max&interval=daily",{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();const px=j.prices||[];const t=[],o=[],h=[],l=[],c=[];const WK=7*864e5;let bs=null,bo,bh,bl,bc,bt;for(const[ms,p]of px){if(bs==null){bs=ms;bo=bh=bl=bc=p;bt=ms;continue;}if(ms-bs>=WK){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);bs=ms;bo=bh=bl=bc=p;bt=ms;}else{bh=Math.max(bh,p);bl=Math.min(bl,p);bc=p;bt=ms;}}if(bs!=null){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);}return{t,o,h,l,c,src:"CoinGecko"};}
+async function fetchCMPrice(){
+  const url="https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=PriceUSD&frequency=1d&page_size=10000&start_time=2010-07-18";
+  const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);
+  const j=await r.json();const rows=j.data||[];if(!rows.length)throw new Error("sin filas");
+  const t=[],o=[],h=[],l=[],c=[];const WK=7*864e5;let bs=null,bo,bh,bl,bc,bt;
+  for(const x of rows){const ms=Date.parse(x.time.slice(0,10));const p=x.PriceUSD!=null?+x.PriceUSD:null;if(p==null||isNaN(ms))continue;
+    if(bs==null){bs=ms;bo=bh=bl=bc=p;bt=ms;continue;}
+    if(ms-bs>=WK){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);bs=ms;bo=bh=bl=bc=p;bt=ms;}
+    else{bh=Math.max(bh,p);bl=Math.min(bl,p);bc=p;bt=ms;}}
+  if(bs!=null){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);}
+  return{t,o,h,l,c,src:"CoinMetrics"};
+}
+
 async function loadData(){
-  let bin=null,gecko=null;
+  let bin=null,ext=null;
   try{bin=await fetchBinance("api.binance.com");}catch(e){try{bin=await fetchBinance("api.binance.us");}catch(e2){}}
-  try{gecko=await fetchCoinGecko();}catch(e){}
-  if(bin&&gecko){const b0=bin.t[0];const pt=[],po=[],ph=[],pl=[],pc=[];
-    for(let i=0;i<gecko.t.length;i++){if(gecko.t[i]<b0-3*864e5&&gecko.t[i]>Date.parse("2011-01-01")){pt.push(gecko.t[i]);po.push(gecko.o[i]);ph.push(gecko.h[i]);pl.push(gecko.l[i]);pc.push(gecko.c[i]);}}
-    DATA={t:[...pt,...bin.t],o:[...po,...bin.o],h:[...ph,...bin.h],l:[...pl,...bin.l],c:[...pc,...bin.c]};SRC="CoinGecko+Binance";return;}
+  try{ext=await fetchCMPrice();}catch(e){try{ext=await fetchCoinGecko();}catch(e2){}}
+  if(bin&&ext){const b0=bin.t[0];const pt=[],po=[],ph=[],pl=[],pc=[];
+    for(let i=0;i<ext.t.length;i++){if(ext.t[i]<b0-3*864e5&&ext.t[i]>Date.parse("2010-01-01")){pt.push(ext.t[i]);po.push(ext.o[i]);ph.push(ext.h[i]);pl.push(ext.l[i]);pc.push(ext.c[i]);}}
+    DATA={t:[...pt,...bin.t],o:[...po,...bin.o],h:[...ph,...bin.h],l:[...pl,...bin.l],c:[...pc,...bin.c]};SRC=(ext.src||"hist")+"+Binance";return;}
   if(bin){DATA=bin;SRC="Binance";return;}
-  if(gecko){DATA=gecko;SRC="CoinGecko";return;}
+  if(ext){DATA=ext;SRC=ext.src;return;}
   throw new Error("sin fuentes de precio");}
 async function loadOnchain(){
   try{
@@ -270,7 +283,7 @@ function renderChart(){
     margin:{l:60,r:16,t:10,b:24},dragmode:"zoom",hovermode:"x unified",
     hoverlabel:{bgcolor:cPanel,bordercolor:cAcc,font:{color:cInk,size:11,family:cssv("--font")}},
     legend:{orientation:"h",y:1.04,x:0,font:{size:10.5},bgcolor:"rgba(0,0,0,0)"},
-    xaxis:{...ax,anchor:"y2",type:"date",range:["2015-06-01","2027-06-01"]},
+    xaxis:{...ax,anchor:"y2",type:"date",range:["2013-06-01","2027-06-01"]},
     yaxis:{...ax,domain:[0.34,1],type:"log",title:{text:"Precio (log)",font:{size:11},standoff:8}},
     yaxis2:{...ax,domain:[0,0.26],title:{text:"MVRV Z",font:{size:11},standoff:8}},
     shapes:[

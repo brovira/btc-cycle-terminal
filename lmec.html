@@ -62,6 +62,9 @@
   .method b{color:var(--ink)}
   .note{color:var(--muted);font-size:12px;line-height:1.6;margin-top:22px}
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+  .rz-handle{position:absolute;height:18px;transform:translateY(-50%);cursor:ns-resize;z-index:6;display:flex;align-items:center;justify-content:center}
+  .rz-handle .grip{font-size:12px;line-height:1;color:#fff;background:color-mix(in oklab,var(--accent) 88%,#000);border-radius:7px;padding:1px 10px;opacity:.30;transition:opacity .15s;user-select:none;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+  #chart:hover .rz-handle .grip,.rz-handle:hover .grip{opacity:1}
 </style>
 </head>
 <body>
@@ -93,7 +96,7 @@
   <div class="section">
     <div class="sec-head"><h2>Gráfico — BMSB, rupturas, RSI y MACD (semanal)</h2><div class="rule"></div></div>
     <div class="panel">
-      <div class="phint">Velas semanales · log · Bull Market Support Band (SMA20+EMA21) · líneas blancas = 1ª ruptura (trampa) · amarillas = 2ª ruptura (COMPRA) · RSI (zona 40-50) · MACD — arrastra=zoom, doble clic=reset</div>
+      <div class="phint">Velas semanales · log · Bull Market Support Band (SMA20+EMA21) · líneas blancas = 1ª ruptura (trampa) · amarillas = 2ª ruptura (COMPRA) · RSI (zona 40-50) · MACD — arrastra=zoom · doble clic=reset · arrastra los tiradores ⇕ entre subpaneles para redimensionar</div>
       <div id="chart"></div>
     </div>
   </div>
@@ -122,17 +125,31 @@ function rsi(c,n=14){const o=Array(c.length).fill(null);let g=0,l=0;for(let i=1;
 function macd(c){const f=ema(c,12),s=ema(c,26);const m=c.map((_,i)=>(f[i]!=null&&s[i]!=null)?f[i]-s[i]:null);const sig=ema(m.map(x=>x==null?null:x),9);const h=m.map((_,i)=>(m[i]!=null&&sig[i]!=null)?m[i]-sig[i]:null);return{m,sig,h};}
 
 let DATA=null,SRC="",IND=null;
+var DOMAINS={y:[0.42,1],y2:[0.22,0.39],y3:[0,0.19]};
 async function fetchBinance(host){const r=await fetch(`https://${host}/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=1000`,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();return{t:j.map(k=>k[0]),o:j.map(k=>+k[1]),h:j.map(k=>+k[2]),l:j.map(k=>+k[3]),c:j.map(k=>+k[4]),src:"Binance"};}
 async function fetchCoinGecko(){const r=await fetch("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=max&interval=daily",{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();const px=j.prices||[];const t=[],o=[],h=[],l=[],c=[];const WK=7*864e5;let bs=null,bo,bh,bl,bc,bt;for(const[ms,p]of px){if(bs==null){bs=ms;bo=bh=bl=bc=p;bt=ms;continue;}if(ms-bs>=WK){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);bs=ms;bo=bh=bl=bc=p;bt=ms;}else{bh=Math.max(bh,p);bl=Math.min(bl,p);bc=p;bt=ms;}}if(bs!=null){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);}return{t,o,h,l,c,src:"CoinGecko"};}
+async function fetchCMPrice(){
+  const url="https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=PriceUSD&frequency=1d&page_size=10000&start_time=2010-07-18";
+  const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);
+  const j=await r.json();const rows=j.data||[];if(!rows.length)throw new Error("sin filas");
+  const t=[],o=[],h=[],l=[],c=[];const WK=7*864e5;let bs=null,bo,bh,bl,bc,bt;
+  for(const x of rows){const ms=Date.parse(x.time.slice(0,10));const p=x.PriceUSD!=null?+x.PriceUSD:null;if(p==null||isNaN(ms))continue;
+    if(bs==null){bs=ms;bo=bh=bl=bc=p;bt=ms;continue;}
+    if(ms-bs>=WK){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);bs=ms;bo=bh=bl=bc=p;bt=ms;}
+    else{bh=Math.max(bh,p);bl=Math.min(bl,p);bc=p;bt=ms;}}
+  if(bs!=null){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);}
+  return{t,o,h,l,c,src:"CoinMetrics"};
+}
+
 async function loadData(){
-  let bin=null,gecko=null;
+  let bin=null,ext=null;
   try{bin=await fetchBinance("api.binance.com");}catch(e){try{bin=await fetchBinance("api.binance.us");}catch(e2){}}
-  try{gecko=await fetchCoinGecko();}catch(e){}
-  if(bin&&gecko){const b0=bin.t[0];const pt=[],po=[],ph=[],pl=[],pc=[];
-    for(let i=0;i<gecko.t.length;i++){if(gecko.t[i]<b0-3*864e5&&gecko.t[i]>Date.parse("2011-01-01")){pt.push(gecko.t[i]);po.push(gecko.o[i]);ph.push(gecko.h[i]);pl.push(gecko.l[i]);pc.push(gecko.c[i]);}}
-    DATA={t:[...pt,...bin.t],o:[...po,...bin.o],h:[...ph,...bin.h],l:[...pl,...bin.l],c:[...pc,...bin.c]};SRC="CoinGecko+Binance";return;}
+  try{ext=await fetchCMPrice();}catch(e){try{ext=await fetchCoinGecko();}catch(e2){}}
+  if(bin&&ext){const b0=bin.t[0];const pt=[],po=[],ph=[],pl=[],pc=[];
+    for(let i=0;i<ext.t.length;i++){if(ext.t[i]<b0-3*864e5&&ext.t[i]>Date.parse("2010-01-01")){pt.push(ext.t[i]);po.push(ext.o[i]);ph.push(ext.h[i]);pl.push(ext.l[i]);pc.push(ext.c[i]);}}
+    DATA={t:[...pt,...bin.t],o:[...po,...bin.o],h:[...ph,...bin.h],l:[...pl,...bin.l],c:[...pc,...bin.c]};SRC=(ext.src||"hist")+"+Binance";return;}
   if(bin){DATA=bin;SRC="Binance";return;}
-  if(gecko){DATA=gecko;SRC="CoinGecko";return;}
+  if(ext){DATA=ext;SRC=ext.src;return;}
   throw new Error("sin fuentes de precio");}
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("no se pudo cargar Plotly");}
@@ -226,8 +243,8 @@ function renderChart(){
   ];
   const ax={gridcolor:cGrid,zerolinecolor:cGrid,linecolor:cGrid,color:cMut,tickfont:{size:10}};
   const shapes=[
-    ...(BMS?BMS.first:[]).map(bi=>({type:"line",xref:"x",yref:"paper",x0:x[bi],x1:x[bi],y0:0.45,y1:1,line:{color:"#e8eef7",width:.9,dash:"dot"}})),
-    ...(BMS?BMS.second:[]).map(bi=>({type:"line",xref:"x",yref:"paper",x0:x[bi],x1:x[bi],y0:0.45,y1:1,line:{color:"#f5d20a",width:1.6}})),
+    ...(BMS?BMS.first:[]).map(bi=>({type:"line",xref:"x",yref:"paper",x0:x[bi],x1:x[bi],y0:DOMAINS.y[0],y1:1,line:{color:"#e8eef7",width:.9,dash:"dot"}})),
+    ...(BMS?BMS.second:[]).map(bi=>({type:"line",xref:"x",yref:"paper",x0:x[bi],x1:x[bi],y0:DOMAINS.y[0],y1:1,line:{color:"#f5d20a",width:1.6}})),
     {type:"line",xref:"paper",yref:"y2",x0:0,x1:1,y0:70,y1:70,line:{color:cBear,width:.7,dash:"dot"}},
     {type:"rect",xref:"paper",yref:"y2",x0:0,x1:1,y0:40,y1:50,fillcolor:"rgba(63,169,245,.14)",line:{width:0},layer:"below"},
     {type:"line",xref:"paper",yref:"y2",x0:0,x1:1,y0:30,y1:30,line:{color:cAccum,width:.7,dash:"dot"}},
@@ -237,13 +254,36 @@ function renderChart(){
     margin:{l:56,r:12,t:8,b:22},dragmode:"zoom",hovermode:"x unified",
     hoverlabel:{bgcolor:cPanel,bordercolor:cAcc,font:{color:cInk,size:11,family:cssv("--font")}},
     legend:{orientation:"h",y:1.04,x:0,font:{size:11},bgcolor:"rgba(0,0,0,0)"},
-    xaxis:{...ax,anchor:"y3",type:"date",range:["2015-06-01","2027-06-01"]},
-    yaxis:{...ax,domain:[0.42,1],type:"log",title:{text:"Precio (log)",font:{size:11}}},
-    yaxis2:{...ax,domain:[0.22,0.39],range:[0,100],title:{text:"RSI",font:{size:11}}},
-    yaxis3:{...ax,domain:[0,0.19],title:{text:"MACD",font:{size:11}}},
+    xaxis:{...ax,anchor:"y3",type:"date",range:["2013-06-01","2027-06-01"]},
+    yaxis:{...ax,domain:DOMAINS.y,type:"log",title:{text:"Precio (log)",font:{size:11}}},
+    yaxis2:{...ax,domain:DOMAINS.y2,range:[0,100],title:{text:"RSI",font:{size:11}}},
+    yaxis3:{...ax,domain:DOMAINS.y3,title:{text:"MACD",font:{size:11}}},
     shapes};
-  Plotly.react("chart",tr,layout,{responsive:true,scrollZoom:false,displaylogo:false,doubleClick:"reset",modeBarButtonsToRemove:["select2d","lasso2d","autoScale2d"]});
+  Plotly.react("chart",tr,layout,{responsive:true,scrollZoom:false,displaylogo:false,doubleClick:"reset",modeBarButtonsToRemove:["select2d","lasso2d","autoScale2d"]}).then(()=>{try{initHandles();positionHandles();}catch(e){}});
 }
+
+
+/* ---- paneles redimensionables (tiradores arrastrables entre subpaneles) ---- */
+let CUR_ORDER=["y","y2","y3"];
+const _axisName=k=>k==="y"?"yaxis":"yaxis"+k.slice(1);
+let _handlesInit=false;
+function _plotGeom(){const gd=document.getElementById("chart");if(!gd||!gd._fullLayout)return null;const fl=gd._fullLayout;const H=fl.height||gd.clientHeight;const mt=fl.margin.t,mb=fl.margin.b;return{gd,fl,H,mt,mb,plotH:H-mt-mb};}
+function positionHandles(){const g=_plotGeom();if(!g)return;g.gd.querySelectorAll(".rz-handle").forEach(h=>{const i=+h.dataset.i;const up=DOMAINS[CUR_ORDER[i]],lo=DOMAINS[CUR_ORDER[i+1]];const m=(up[0]+lo[1])/2;h.style.top=(g.mt+(1-m)*g.plotH)+"px";h.style.left=g.fl.margin.l+"px";h.style.right=g.fl.margin.r+"px";});}
+function initHandles(){if(_handlesInit)return;const cont=document.getElementById("chart");if(!cont||!cont._fullLayout)return;_handlesInit=true;cont.style.position="relative";
+  for(let i=0;i<CUR_ORDER.length-1;i++){const h=document.createElement("div");h.className="rz-handle";h.dataset.i=i;h.innerHTML='<span class="grip">\u21d5</span>';cont.appendChild(h);
+    let drag=false;
+    const move=(ev)=>{if(!drag)return;const g=_plotGeom();if(!g)return;const y=ev.touches?ev.touches[0].clientY:ev.clientY;const rect=g.gd.getBoundingClientRect();
+      let m=1-((y-rect.top-g.mt)/g.plotH);const up=DOMAINS[CUR_ORDER[i]],lo=DOMAINS[CUR_ORDER[i+1]];const gap=up[0]-lo[1];const MIN=0.07;
+      let ul=m+gap/2,lh=m-gap/2;ul=Math.min(ul,up[1]-MIN);lh=Math.max(lh,lo[0]+MIN);ul=Math.max(ul,lo[0]+MIN+gap);lh=Math.min(lh,up[1]-MIN-gap);
+      up[0]=ul;lo[1]=lh;const rl={};rl[_axisName(CUR_ORDER[i])+".domain"]=up.slice();rl[_axisName(CUR_ORDER[i+1])+".domain"]=lo.slice();
+      Plotly.relayout(g.gd,rl).then(positionHandles);ev.preventDefault();};
+    h.addEventListener("mousedown",e=>{drag=true;e.preventDefault();});
+    h.addEventListener("touchstart",()=>{drag=true;},{passive:true});
+    window.addEventListener("mousemove",move);window.addEventListener("touchmove",move,{passive:false});
+    window.addEventListener("mouseup",()=>drag=false);window.addEventListener("touchend",()=>drag=false);}
+  positionHandles();
+}
+window.addEventListener("resize",()=>{try{positionHandles();}catch(e){}});
 
 async function boot(){
   $("#statusDot").className="dot warn";$("#statusText").textContent="Cargando…";$("#errBanner").style.display="none";
