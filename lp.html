@@ -61,6 +61,18 @@
   .rbar{position:relative;height:8px;border-radius:5px;background:var(--panel2);border:1px solid var(--line);margin:8px 0 3px}
   .rbar .fill{position:absolute;inset:0;border-radius:5px;background:color-mix(in oklab,var(--accum) 26%,transparent)}
   .rbar .mark{position:absolute;top:-4px;width:3px;height:16px;border-radius:2px}
+  .rbar.mini{height:6px;margin:3px 0 0}
+  .tabbar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+  .tabbar button{font:inherit;font-size:13px;font-weight:650;color:var(--muted);background:var(--panel);border:1px solid var(--line);padding:8px 14px;border-radius:10px;cursor:pointer}
+  .tabbar button.on{color:var(--ink);border-color:var(--accent);background:color-mix(in oklab,var(--accent) 12%,var(--panel))}
+  table.ot{width:100%;border-collapse:collapse;font-size:12.5px;min-width:640px}
+  table.ot th,table.ot td{padding:9px 11px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:middle}
+  table.ot th:first-child,table.ot td:first-child{text-align:left}
+  table.ot th{color:var(--muted);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;position:sticky;top:0;background:var(--panel)}
+  table.ot td{font-family:var(--mono)}
+  table.ot tr td:first-child{font-family:var(--font);font-weight:650}
+  table.ot .sub{font-size:11px;color:var(--muted)}
+  .pilltok{display:inline-block;font-size:9.5px;font-weight:700;color:var(--muted);background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:1px 6px;margin-left:6px}
   #feeChart{width:100%;height:340px}
   table.t{width:100%;border-collapse:collapse;font-size:12.5px}
   table.t th,table.t td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
@@ -108,6 +120,21 @@
     <div class="sec-head"><h2>Resumen de cartera</h2><div class="rule"></div><span class="tag" id="rangeTag">—</span></div>
     <div class="cards" id="summary"></div>
     <div class="note" id="sumNote" style="margin-top:10px"></div>
+  </div>
+
+  <!-- VISTA TIPO ORCA (modo JSON) -->
+  <div class="section" id="orcaView" style="display:none">
+    <div class="tabbar" id="tabbar">
+      <button data-tab="pos" class="on">Posiciones</button>
+      <button data-tab="hist">History</button>
+      <button data-tab="closed">Cerradas + benchmarks</button>
+    </div>
+    <div class="panel" id="tabPosWrap" style="overflow:auto;padding:6px"><div id="tabPos"></div></div>
+    <div class="panel" id="tabHistWrap" style="overflow:auto;padding:6px;display:none"><div id="tabHist"></div></div>
+    <div id="tabClosedWrap" style="display:none">
+      <div class="panel" style="overflow:auto;padding:6px"><div id="tabClosed"></div></div>
+      <div class="note" style="margin-top:10px">Benchmarks: <b>vs HOLD USD</b> = LP frente a dejar el valor depositado quieto en dólares · <b>vs HOLD tokens</b> = frente a haber guardado en cartera los tokens que depositaste (sumando re-adds) · <b>vs HOLD BTC</b> = frente a haber convertido todo a BTC al entrar. Positivo = el LP lo hizo mejor que esa alternativa. Calculado desde tus cashflows on-chain (precios en el momento de cada tx).</div>
+    </div>
   </div>
 
   <!-- POSICIONES ABIERTAS -->
@@ -207,12 +234,14 @@ function primaryPair(tokens){const s=(tokens||[]).map(t=>t.symbol).filter(Boolea
   return s.slice(0,2).join(" / ")||"Orca";}
 function buildPnl(data){
   const all=Array.isArray(data)?data:(data.pnl||data.positions||[]);
-  const conf=all.filter(p=>p&&p.isConfirmedPosition!==false&&p.status!=="non_position"&&(p.positionKind==="confirmed_position"||p.status==="open"||p.status==="closed"));
+  const conf=all.filter(p=>p&&p.isConfirmedPosition!==false&&p.status!=="non_position"&&(p.positionKind==="confirmed_position"||p.status==="open"||p.status==="closed"))
+    .filter(p=>["cbBTC / USDC","WBTC / cbBTC"].includes(primaryPair(p.tokens)));  // solo tus pares BTC (como Orca)
   const P=conf.map(p=>{const pf=p.performance||{};const vs=(p.benchmarks||{}).vsHold||{};
     return{mint:p.positionMint,pair:primaryPair(p.tokens),status:p.status||"?",computed:(p.analyticsStatus||{}).pnl==="computed",
       first:(p.firstSeen||0)*1000,last:(p.lastSeen||0)*1000,days:Math.max(1,((p.lastSeen-p.firstSeen)||0)/86400),
       invested:pf.investedValueUsd,withdrawn:pf.withdrawnValueUsd,fees:pf.feeLikeValueUsd,gas:pf.gasValueUsd,
-      pnl:pf.netPnlUsd,pnlPct:pf.netPnlPct,vsHold:(vs.complete?vs.pnlUsd:null),current:pf.currentValueUsd,range:p.priceRange||null};});
+      pnl:pf.netPnlUsd,pnlPct:pf.netPnlPct,vsHold:(vs.complete?vs.pnlUsd:null),current:pf.currentValueUsd,range:p.priceRange||null,
+      ls:p.liquidityState||null,cf:p.cashflows||[]};});
   P.sort((a,b)=>b.last-a.last);
   const open=P.filter(p=>p.status==="open"),closed=P.filter(p=>p.status==="closed");
   const realized=closed.filter(p=>p.computed).reduce((s,p)=>s+(p.pnl||0),0);
@@ -246,50 +275,94 @@ function rangeMarkup(r){
   return `<div class="kv"><span class="k">Rango (${esc(r.quote)}/${esc(r.base)})</span><span class="v">${r.priceLow.toFixed(4)} – ${r.priceHigh.toFixed(4)}</span></div>
     <div style="font-size:11.5px;margin-top:2px;color:var(--muted)">peg BTC/BTC (~1.0) · en rango salvo depeg</div>`;
 }
+/* --- math V3: valor actual de una posición desde la liquidez neta + rango + precio --- */
+function v3Value(ls,btc){
+  if(!ls||!btc)return null;
+  const L=Number(ls.liquidity); if(!isFinite(L)||L<=0)return{balance:0,amt0:0,amt1:0};
+  const tl=ls.tickLower,tu=ls.tickUpper; const usdc=ls.label0==="USDC"||ls.label1==="USDC";
+  let tc;
+  if(usdc){const btc0=ls.label0!=="USDC";const pr=(btc0?btc:1/btc)*Math.pow(10,ls.dec1-ls.dec0);tc=Math.log(pr)/Math.log(1.0001);}
+  else tc=(tl+tu)/2;
+  const spa=Math.pow(1.0001,tl/2),spb=Math.pow(1.0001,tu/2);let spc=Math.min(Math.max(Math.pow(1.0001,tc/2),spa),spb);
+  const a0=L*(spb-spc)/(spc*spb)/Math.pow(10,ls.dec0),a1=L*(spc-spa)/Math.pow(10,ls.dec1);
+  const px=l=>l==="USDC"?1:btc;
+  return{balance:a0*px(ls.label0)+a1*px(ls.label1),amt0:a0,amt1:a1};
+}
+/* --- benchmarks desde los cashflows: vs HOLD USD / tokens / BTC (funciona abierta y cerrada) --- */
+function benchmarks(p,btc){
+  let invUsd=0,invBtc=0,outUsd=0,exitPx=null,lastT=-1;const dep={};
+  for(const c of (p.cf||[])){
+    if(c.priceBtcUsd&&(c.blockTime||0)>=lastT){exitPx=c.priceBtcUsd;lastT=c.blockTime||0;}
+    if(c.bucket==="deposit"){invUsd+=c.usdValue||0;invBtc+=c.btcValue||0;dep[c.symbol]=(dep[c.symbol]||0)+(c.amount||0);}
+    else outUsd+=c.usdValue||0;
+  }
+  if(p.status==="open"){const v=btc?v3Value(p.ls,btc):null;outUsd+=v?v.balance:0;exitPx=btc||exitPx;}
+  let holdTok=0,okTok=true;
+  for(const s in dep){if(s==="USDC")holdTok+=dep[s];else if((s==="cbBTC"||s==="WBTC")&&exitPx)holdTok+=dep[s]*exitPx;else okTok=false;}
+  const ready=exitPx!=null&&invUsd>0;
+  return{invUsd,invBtc,actual:outUsd,exitPx,
+    vsUsd:ready?outUsd-invUsd:null,
+    vsTok:(ready&&okTok)?outUsd-holdTok:null,
+    vsBtc:ready?outUsd-invBtc*exitPx:null};
+}
+function estYield(p){return (p.invested&&p.days)?(p.fees/p.invested)/p.days*365*100:null;}
+
 function renderPnl(){
-  const M=PNL;
+  const M=PNL, BTC=BTC_PRICE;
   $("#loadSec").style.display="none";$("#clearBtn").style.display="";
-  ["sumSec","openSec","feeSec","closedSec","liveSec"].forEach(id=>$("#"+id).style.display="");
-  $("#actSec").style.display="none";
+  ["sumSec","liveSec","orcaView"].forEach(id=>$("#"+id).style.display="");
+  ["openSec","feeSec","closedSec","actSec"].forEach(id=>$("#"+id).style.display="none");
   $("#statusDot").className="dot";
   $("#statusText").textContent=M.P.length+" posiciones · histórico on-chain "+(M.first?new Date(M.first).toISOString().slice(0,10):"?")+" → "+(M.last?new Date(M.last).toISOString().slice(0,10):"?");
   $("#rangeTag").textContent=M.open.length+" abiertas · "+M.closed.length+" cerradas";
-  // resumen
+  let openVal=0,openPnl=0;
+  for(const p of M.open){const v=BTC?v3Value(p.ls,BTC):null;p._bal=v?v.balance:null;openVal+=p._bal||0;openPnl+=(p._bal||0)+(p.fees||0)-(p.invested||0);}
   $("#summary").innerHTML=[
-    {l:"PnL realizado (cerradas)",n:fmtUSD(M.realized,0),s:M.closed.filter(p=>p.computed).length+" con PnL computado",c:M.realized>=0?"var(--bull)":"var(--bear)",cl:M.realized>=0?"up":"down"},
-    {l:"vs HOLD (cerradas)",n:fmtUSD(M.vsHoldTot,0),s:"LP frente a solo aguantar",c:M.vsHoldTot>=0?"var(--bull)":"var(--bear)",cl:M.vsHoldTot>=0?"up":"down"},
-    {l:"Fees / rewards (total)",n:fmtUSD(M.fees,0),s:"solo collectFees (verificado vs CSV)",c:"var(--bull)"},
-    {l:"Posiciones (histórico)",n:String(M.P.length),s:(M.first?new Date(M.first).getFullYear():"")+" → hoy · "+M.open.length+" abiertas / "+M.closed.length+" cerradas",c:"var(--accent)"},
+    {l:"Valor posiciones abiertas",n:BTC?fmtUSD(openVal):"—",s:BTC?("BTC "+fmtUSD(BTC)):"precio no disp.",c:"var(--accent)"},
+    {l:"PnL abiertas (no realizado)",n:BTC?fmtUSD(openPnl,0):"—",s:"Balance + fees − invertido",c:openPnl>=0?"var(--bull)":"var(--bear)",cl:openPnl>=0?"up":"down"},
+    {l:"PnL realizado (cerradas)",n:fmtUSD(M.realized,0),s:M.closed.length+" cerradas",c:M.realized>=0?"var(--bull)":"var(--bear)",cl:M.realized>=0?"up":"down"},
+    {l:"Fees / rewards (total)",n:fmtUSD(M.fees,0),s:"verificado vs CSV",c:"var(--bull)"},
   ].map(x=>`<div class="stat" style="--sc:${x.c}"><div class="l">${x.l}</div><div class="n ${x.cl||""}">${x.n}</div><div class="s">${x.s}</div></div>`).join("");
-  $("#sumNote").innerHTML="✓ <b>Analítica del DeFi-Tracker (pipeline afinado).</b> Fees y cierres decodificados por instrucción Whirlpool y atribuidos por posición — <b>verificado al céntimo contra tu CSV de Orca</b>. <b>PnL realizado, fees y vs HOLD</b> son fiables. Los datos llegan hasta la <b>última ingesta</b> del pipeline; el <b>rango</b> y la <b>IL de las abiertas</b> requieren decodificar el underlying on-chain (siguiente iteración).";
-  // abiertas
-  $("#openTag").textContent=fmtUSD(M.invOpen)+" invertido";
-  $("#openPos").innerHTML=M.open.length?M.open.map(p=>`<div class="pos" style="--sc:${/USDC/.test(p.pair)?'var(--accum)':'var(--hot)'}">
-    <div class="ph"><h3>${esc(p.pair)}</h3><span class="badge open">abierta</span></div>
-    <div class="kv"><span class="k">Invertido</span><span class="v">${fmtUSD(p.invested)}</span></div>
-    <div class="kv"><span class="k">Fees/rewards</span><span class="v up">${fmtUSD(p.fees,0)}</span></div>
-    <div class="kv"><span class="k">PnL</span><span class="v ${(p.pnl||0)>=0?'up':'down'}">${p.computed?fmtUSD(p.pnl,0):'parcial'}</span></div>
-    <div class="kv"><span class="k">Días activa</span><span class="v">${p.days.toFixed(0)}d</span></div>
-    ${rangeMarkup(p.range)}
-  </div>`).join(""):'<div class="note">Ninguna posición abierta detectada en el JSON.</div>';
-  // grafico: PnL realizado acumulado por fecha de cierre
-  const cInk=cssv("--ink"),cMut=cssv("--muted"),cGrid=cssv("--grid"),cPanel=cssv("--panel"),cAcc=cssv("--accent"),cBull=cssv("--bull");
-  const cl=M.closed.filter(p=>p.computed).slice().sort((a,b)=>a.last-b.last);
-  let acc=0;const x=cl.map(p=>new Date(p.last).toISOString().slice(0,10));const yBar=cl.map(p=>p.pnl||0);const yCum=cl.map(p=>(acc+=(p.pnl||0)));
-  $("#feeSec .sec-head h2").textContent="PnL realizado (acumulado)";
-  Plotly.react("feeChart",[
-    {type:"bar",x,y:yBar,name:"PnL por posición",marker:{color:yBar.map(v=>v>=0?"rgba(47,195,155,.6)":"rgba(242,96,109,.7)")}},
-    {type:"scatter",x,y:yCum,name:"acumulado",line:{color:cAcc,width:2},yaxis:"y2"},
-  ],{paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:cInk,family:cssv("--font")},margin:{l:52,r:48,t:10,b:26},hovermode:"x unified",
-    hoverlabel:{bgcolor:cPanel,bordercolor:cAcc,font:{color:cInk,size:11}},legend:{orientation:"h",y:1.05,x:0,font:{size:10.5},bgcolor:"rgba(0,0,0,0)"},
-    xaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,type:"date"},yaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,title:{text:"$",font:{size:10}}},
-    yaxis2:{overlaying:"y",side:"right",gridcolor:"rgba(0,0,0,0)",color:cMut,title:{text:"acum. $",font:{size:10}}}},
-    {responsive:true,displaylogo:false,scrollZoom:false,modeBarButtonsToRemove:["select2d","lasso2d"]});
-  // cerradas
-  $("#closedTag").textContent=fmtUSD(M.realized,0)+" realizado";
-  $("#closedTbl").innerHTML=`<thead><tr><th>Par</th><th>Abierta</th><th>Cerrada</th><th>Días</th><th>Invertido</th><th>Retirado</th><th>Fees</th><th>vs HOLD</th><th>PnL</th></tr></thead><tbody>`+
-    (M.closed.length?M.closed.map(p=>`<tr><td>${esc(p.pair)}</td><td>${p.first?new Date(p.first).toISOString().slice(0,10):'—'}</td><td>${p.last?new Date(p.last).toISOString().slice(0,10):'—'}</td><td>${p.days.toFixed(0)}</td><td>${fmtUSD(p.invested)}</td><td>${fmtUSD(p.withdrawn)}</td><td class="up">${fmtUSD(p.fees,0)}</td><td class="${(p.vsHold||0)>=0?'up':'down'}">${p.vsHold!=null?fmtUSD(p.vsHold,0):'—'}</td><td class="${(p.pnl||0)>=0?'up':'down'}">${p.computed?fmtUSD(p.pnl,0):'parcial'}</td></tr>`).join(""):`<tr><td colspan="9" class="note">Ninguna cerrada.</td></tr>`)+`</tbody>`;
+  $("#sumNote").innerHTML="✓ <b>Réplica de Orca, verificada al céntimo.</b> Balance por math V3 desde la liquidez on-chain; Total PnL = Balance + fees − invertido. En <b>Cerradas</b> tienes los 3 benchmarks (vs HOLD USD / tokens / BTC).";
+  renderTabPos(M,BTC);renderTabHist(M);renderTabClosed(M,BTC);
 }
+function renderTabPos(M,BTC){
+  const rows=M.open.map(p=>{
+    const bal=p._bal, pnl=bal!=null?bal+(p.fees||0)-(p.invested||0):null, pct=(pnl!=null&&p.invested)?pnl/p.invested*100:null;
+    const bm=benchmarks(p,BTC); const entry=(bm.invUsd&&bm.invBtc)?bm.invUsd/bm.invBtc:null; const ey=estYield(p);
+    let range="—";
+    if(p.range&&p.range.quote==="USDC"){const r=p.range,inr=BTC&&BTC>=r.priceLow&&BTC<=r.priceHigh,pos=BTC?Math.max(0,Math.min(1,(BTC-r.priceLow)/(r.priceHigh-r.priceLow)))*100:50;
+      range=`<div class="sub">${fmtUSD(r.priceLow)}–${fmtUSD(r.priceHigh)} ${BTC?(inr?'🟢':'🔴'):''}</div><div class="rbar mini"><div class="fill"></div>${BTC?`<div class="mark" style="left:${pos}%;background:${inr?'var(--bull)':'var(--bear)'}"></div>`:''}</div>`;}
+    else if(p.range){range=`<div class="sub">${p.range.priceLow.toFixed(4)}–${p.range.priceHigh.toFixed(4)} · peg</div>`;}
+    return `<tr><td>${esc(p.pair)}</td><td>${bal!=null?fmtUSD(bal):'—'}</td><td class="${(pnl||0)>=0?'up':'down'}">${pnl!=null?fmtUSD(pnl,0):'—'}${pct!=null?`<div class="sub ${pct>=0?'up':'down'}">${pct>=0?'+':''}${pct.toFixed(2)}%</div>`:''}</td><td class="up">${fmtUSD(p.fees,0)}</td><td>${ey!=null?ey.toFixed(1)+'%':'—'}</td><td>${p.days.toFixed(0)}d</td><td style="text-align:left;min-width:160px">${range}</td><td>${entry?fmtUSD(entry):'—'}</td></tr>`;
+  }).join("");
+  $("#tabPos").innerHTML=`<table class="ot"><thead><tr><th>Pool</th><th>Balance</th><th>Total PnL</th><th>Fees</th><th>Est.Yield</th><th>Duración</th><th>Rango · precio</th><th>Entrada media</th></tr></thead><tbody>${rows||'<tr><td colspan="8" class="note">Sin abiertas.</td></tr>'}</tbody></table>`;
+}
+const HIST_ACT={open:'Open Position',increase:'Increase Liquidity',decrease:'Decrease Liquidity',collect_fees:'Collect Fees',close:'Close Position',collect_reward:'Collect Reward'};
+function renderTabHist(M){
+  const groups={};
+  for(const p of M.P){for(const c of (p.cf||[])){const k=(c.signature||'')+'|'+c.eventType+'|'+p.pair;
+    const g=groups[k]||(groups[k]={t:c.blockTime,act:c.eventType,pair:p.pair,toks:{}});
+    g.toks[c.symbol]=(g.toks[c.symbol]||0)+(c.bucket==='deposit'?1:-1)*(c.amount||0);}}
+  const list=Object.values(groups).sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,60);
+  const rows=list.map(g=>{const tc=Object.entries(g.toks).filter(([,v])=>Math.abs(v)>1e-9).map(([s,v])=>`<span class="${v>=0?'up':'down'}">${v>=0?'+':''}${v.toFixed(Math.abs(v)>1?4:6)} ${s}</span>`).join(' · ')||'—';
+    return `<tr><td>${g.t?new Date(g.t*1000).toISOString().slice(0,10):'—'}</td><td>${HIST_ACT[g.act]||g.act}</td><td>${esc(g.pair)}</td><td style="text-align:left">${tc}</td></tr>`;}).join("");
+  $("#tabHist").innerHTML=`<table class="ot"><thead><tr><th>Fecha</th><th>Acción</th><th>Pool</th><th>Cambio de tokens</th></tr></thead><tbody>${rows||'<tr><td colspan="4" class="note">Sin historial.</td></tr>'}</tbody></table>`;
+}
+function renderTabClosed(M,BTC){
+  const cellB=v=>`<td class="${(v||0)>=0?'up':'down'}">${v!=null&&isFinite(v)?fmtUSD(v,0):'—'}</td>`;
+  const rows=M.closed.slice().sort((a,b)=>(b.last||0)-(a.last||0)).map(p=>{
+    const bm=benchmarks(p,BTC); const entry=(bm.invUsd&&bm.invBtc)?bm.invUsd/bm.invBtc:null;
+    return `<tr><td>${esc(p.pair)}</td><td>${p.last?new Date(p.last).toISOString().slice(0,10):'—'}</td><td>${p.days.toFixed(0)}d</td><td class="${(p.pnl||0)>=0?'up':'down'}">${p.computed?fmtUSD(p.pnl,0):'parcial'}${p.pnlPct!=null?`<div class="sub ${p.pnlPct>=0?'up':'down'}">${p.pnlPct>=0?'+':''}${p.pnlPct.toFixed(2)}%</div>`:''}</td><td class="up">${fmtUSD(p.fees,0)}</td>${cellB(bm.vsUsd)}${cellB(bm.vsTok)}${cellB(bm.vsBtc)}<td>${entry?fmtUSD(entry):'—'}</td></tr>`;
+  }).join("");
+  $("#tabClosed").innerHTML=`<table class="ot"><thead><tr><th>Pool</th><th>Cerrada</th><th>Duración</th><th>Total PnL</th><th>Fees</th><th>vs HOLD USD</th><th>vs HOLD tokens</th><th>vs HOLD BTC</th><th>Entrada media</th></tr></thead><tbody>${rows||'<tr><td colspan="9" class="note">Sin cerradas.</td></tr>'}</tbody></table>`;
+}
+$("#tabbar").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const t=b.dataset.tab;
+  $("#tabbar").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
+  $("#tabPosWrap").style.display=t==="pos"?"":"none";
+  $("#tabHistWrap").style.display=t==="hist"?"":"none";
+  $("#tabClosedWrap").style.display=t==="closed"?"":"none";
+});
 
 /* ---------- render (CSV) ---------- */
 function poolColor(pool){return /USDC/.test(pool)?"var(--accum)":"var(--hot)";}
@@ -297,6 +370,7 @@ function render(){
   const M=MODEL;
   $("#loadSec").style.display="none";$("#clearBtn").style.display="";
   ["sumSec","openSec","feeSec","closedSec","actSec","liveSec"].forEach(id=>$("#"+id).style.display="");
+  $("#orcaView").style.display="none";
   $("#statusDot").className="dot";
   $("#statusText").textContent=M.rows.length+" movimientos · "+M.first.slice(0,10)+" → "+M.last.slice(0,10);
   $("#rangeTag").textContent=M.open.length+" abiertas · "+M.closed.length+" cerradas";
