@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Benjamin Cowen · Riesgo & Ciclo BTC</title>
+<title>Benjamin Cowen · Ciclo BTC</title>
 <style>
   :root{
     --bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;
@@ -43,10 +43,10 @@
   .regime-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
   .phase-chip{font-family:var(--mono);font-weight:800;font-size:13px;padding:7px 13px;border-radius:11px;color:var(--phase);background:color-mix(in oklab,var(--phase) 16%,transparent);box-shadow:inset 0 0 0 1px color-mix(in oklab,var(--phase) 36%,transparent)}
   .phase-word{font-size:clamp(20px,2.6vw,26px);font-weight:780;letter-spacing:-.02em;color:var(--phase)}
-  .regime-say{color:var(--ink2);font-size:14.5px;margin-top:12px;max-width:86ch;text-wrap:pretty}
-  .cite{font-family:var(--mono);font-size:10.5px;color:var(--accent);opacity:.9}
+  .regime-say{color:var(--ink2);font-size:14.5px;margin-top:12px;max-width:88ch;text-wrap:pretty}
+  .cite{font-family:var(--mono);font-size:10.5px;color:var(--accent);opacity:.92}
   .timeline{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
-  .tstep{flex:1;min-width:150px;background:color-mix(in oklab,var(--panel2) 70%,transparent);border:1px solid var(--line);border-radius:11px;padding:11px 13px}
+  .tstep{flex:1;min-width:140px;background:color-mix(in oklab,var(--panel2) 70%,transparent);border:1px solid var(--line);border-radius:11px;padding:11px 13px}
   .tstep.here{border-color:var(--phase);box-shadow:inset 0 0 0 1px var(--phase)}
   .tstep .tn{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
   .tstep .tv{font-size:13.5px;font-weight:650;margin-top:3px}
@@ -69,12 +69,17 @@
   td.num{font-family:var(--mono);text-align:right}
   tr:last-child td{border-bottom:none}
   .pill{font-family:var(--mono);font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
-  .pill.lo{color:var(--bull);background:color-mix(in oklab,var(--bull) 15%,transparent)}
-  .pill.mid{color:var(--hot);background:color-mix(in oklab,var(--hot) 15%,transparent)}
-  .pill.hi{color:var(--bear);background:color-mix(in oklab,var(--bear) 15%,transparent)}
+  .pill.live{color:var(--accum);background:color-mix(in oklab,var(--accum) 15%,transparent)}
+  .pill.said{color:var(--hot);background:color-mix(in oklab,var(--hot) 15%,transparent)}
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px 10px 6px;margin-top:8px}
   .phint{font-size:11.5px;color:var(--muted);font-family:var(--mono);padding:2px 8px 10px;line-height:1.7}
   #chart{width:100%;height:720px} @media(max-width:700px){#chart{height:600px}}
+  /* cycle-position stat strip */
+  .strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--sc,var(--muted));border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
+  .stat .l{font-size:11.5px;color:var(--muted);font-weight:600}
+  .stat .n{font-family:var(--mono);font-size:19px;font-weight:750;margin-top:4px}
+  .stat .s{font-size:11.5px;color:var(--ink2);margin-top:3px} .stat .c{margin-top:6px}
   .note{color:var(--muted);font-size:12px;line-height:1.6}
   footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--line)}
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
@@ -84,8 +89,8 @@
 <div class="wrap">
   <header class="top">
     <div>
-      <div class="kicker">Bitcoin · Marco de riesgo y ciclo · Benjamin Cowen (Into The Cryptoverse)</div>
-      <h1>📊 <b>Cowen</b> · Riesgo & Ciclo BTC</h1>
+      <div class="kicker">Bitcoin · Ciclo de 4 años · Benjamin Cowen (Into The Cryptoverse) — a partir de sus vídeos</div>
+      <h1>📊 <b>Cowen</b> · Ciclo BTC</h1>
       <div class="price-now"><span class="big mono" id="price">—</span><span class="chg" id="chg">—</span></div>
       <div class="meta"><span class="dot" id="statusDot"></span><span id="statusText">Cargando…</span></div>
     </div>
@@ -100,43 +105,40 @@
 
   <div class="err-banner" id="errBanner"></div>
 
-  <div class="regime" id="regime" style="--phase:var(--accent)">
-    <div class="regime-top"><span class="phase-chip">BOTTOM-WATCH</span><span class="phase-word">Markdown tardío · vigilando el suelo</span></div>
-    <div class="regime-say">Techo el <b>6-oct-2025 ~$126k</b> en <b>apatía, no euforia</b> (paralelo estructural al techo de jun-2019). El drawdown ha seguido ese análogo hasta <b>ROI 0,520 desde el pico</b> y ha <b>superado su ventana temporal (282 días vs 261) sin la capitulación</b> tipo pandemia. Base case: <b>reset por TIEMPO</b> → <b>suelo en el 4º trimestre de 2026</b> (2 de 3 midterms hicieron suelo dentro del año: dic-2018, nov-2022; 2014 se fue a ene-2015). Postura: <b>paciencia sobre despliegue agresivo</b>; el reset de valoración aún NO está completo (MVRV Z todavía no ha reseteado por debajo de 0). <span class="cite">[reports/bitcoin-july-2026-memo.md]</span></div>
+  <div class="regime" id="regime" style="--phase:var(--bear)">
+    <div class="regime-top"><span class="phase-chip">BEAR · MIDTERM · VIGILANDO SUELO</span><span class="phase-word">Bear market de año midterm — «capitulación por tiempo»</span></div>
+    <div class="regime-say">Cowen se <b>atiene al ciclo de 4 años «hasta que se demuestre lo contrario»</b>. El techo fue en <b>oct-2025 (~$126k) en apatía, no euforia</b> → por eso «se siente peor» y no hubo rotación a alts. Lee el mercado como <b>2018 estructural</b> (versión menos volátil) + <b>2019-20 de ciclo de negocio</b>. Es una <b>capitulación por TIEMPO, no por precio</b> («I can't speed it up»), que suele durar ~1 año desde el techo. <b>No intenta cazar el suelo</b>: DCA en la 2ª mitad del año midterm, guardando la mayoría de la munición para el <b>drop final del 4T</b>. <span class="cite">[yt-transcripts: 20260710 · 20260714 · 20260706]</span></div>
     <div class="timeline" id="timeline"></div>
   </div>
 
   <div class="section">
-    <div class="sec-head"><h2>Tesis</h2><div class="rule"></div><span class="src">Fuente · Cowen (jul-2026)</span></div>
+    <div class="sec-head"><h2>Tesis actual (solo BTC)</h2><div class="rule"></div><span class="src">Vídeos · jun–jul 2026</span></div>
     <div class="cards">
-      <div class="card"><h3>El análogo de 2019</h3><p>Este ciclo <b>topó como 2019</b>: en apatía, semanas antes de terminar el QT, sin rotación duradera a cripto de más riesgo. El análogo ya <b>pasó su ventana temporal sin capitulación</b>, así que la pregunta ya no es <i>cuándo</i> sino <i>el mecanismo</i> del suelo.</p><div class="foot cite">[reports/bitcoin-july-2026-memo.md] §1</div></div>
-      <div class="card"><h3>Reset por tiempo, no por flush</h3><p>El suelo de 2019 vino de un shock <b>exógeno</b> (COVID, mar-2020), no del ciclo. Por eso el base case aquí es un <b>reset completado a través del tiempo</b> hacia el 4T-2026, no un flush comparable. <b>Incertidumbre central:</b> ¿hará falta una capitulación exógena? El marco no puede cronometrar esa rama.</p><div class="foot cite">[reports/bitcoin-july-2026-memo.md] §4 · Central Uncertainty</div></div>
-      <div class="card"><h3>Apatía = poca atención</h3><p>El techo llegó <b>sin multitud</b>: riesgo social 0,237, fear&amp;greed 0,024, vistas de YouTube ~389k (vs ~4M en 2021). La multitud que suele vender el suelo final está <b>ausente</b> — a la vez soporte del análogo y señal de que el reset de valoración va menos avanzado que en 2022.</p><div class="foot cite">[reports/bitcoin-july-2026-memo.md] §5</div></div>
+      <div class="card"><h3>El ciclo de 4 años «golpea otra vez»</h3><p>«<i>I'm deferring to the four-year cycle until proven otherwise.</i>» El ciclo no significa «solo bajar» — marca <b>la cadencia de cuándo ocurren los suelos</b>. Techo oct-2025, suelo esperado ~1 año después.</p><div class="foot cite">[yt-transcripts/20260710-bitcoin-dubious-speculation.md] · [20260706-...four-year-cycle-strikes-again.md]</div></div>
+      <div class="card"><h3>Análogo 2018, pero a 10×</h3><p>Estructuralmente es <b>2018 menos volátil</b>. Diminishing returns: el suelo local de 2026 fue <b>~$57k</b>, exactamente <b>10× el suelo de 2018 (~$5,7k)</b>. Mismo patrón fractal a mayor escala.</p><div class="foot cite">[yt-transcripts/20260714-understanding-this-bitcoin-bear-market.md] · [20260706-...four-year-cycle.md]</div></div>
+      <div class="card"><h3>Capitulación por tiempo, no por precio</h3><p>El suelo llega por <b>agotamiento temporal</b> (~1 año desde el techo), no por un flush de precio — salvo catalizador macro. Suele coincidir con un <b>pico de volumen que aún NO se ha visto</b>. «<i>It's going through time-based capitulation. I can't speed it up.</i>»</p><div class="foot cite">[yt-transcripts/20260710-...dubious-speculation.md] · [20260714-...bear-market.md]</div></div>
     </div>
   </div>
 
   <div class="section">
-    <div class="sec-head"><h2>Framework — Risk Scorecard (0–1)</h2><div class="rule"></div><span class="src">Cowen · 15-jul-2026</span></div>
-    <div class="tblwrap"><table>
-      <thead><tr><th>Métrica de riesgo (0=suelo · 1=techo)</th><th style="text-align:right">Ahora</th><th style="text-align:right">Hace 1 año</th><th>Lectura</th></tr></thead>
-      <tbody id="riskBody"></tbody>
-    </table></div>
-    <div class="note" style="margin-top:10px">El "risk metric" de Cowen normaliza cada indicador a una escala <b>0–1</b> (0 = riesgo históricamente bajo/acumulación, 1 = froth/techo). Casi todo lee <b>mucho más bajo que hace un año</b> (cuando el mercado estaba cerca del techo): la huella de un mercado que pasó de distribución a markdown. Valores leídos del dashboard de ITC. <span class="cite">[reports/bitcoin-july-2026-memo.md] Risk Scorecard</span></div>
+    <div class="sec-head"><h2>Dónde estamos en el ciclo</h2><div class="rule"></div><span class="src">Cowen · 16-jul-2026</span></div>
+    <div class="strip" id="cycleStrip"></div>
+    <div class="note" style="margin-top:12px">Cuenta de días y sentimiento tal como los da Cowen en su vídeo de ciclos del 16-jul. El <b>reset de valoración aún NO está completo</b>: el MVRV Z todavía no ha bajado de 0 (históricamente lo hace en el suelo) y no ha habido pico de volumen de capitulación. <span class="cite">[yt-transcripts/20260716-bitcoin-market-cycles.md] · [20260710-...dubious-speculation.md]</span></div>
   </div>
 
   <div class="section">
     <div class="sec-head"><h2>Niveles clave de BTC</h2><div class="rule"></div><span class="src">Cowen · jul-2026</span></div>
     <div class="tblwrap"><table>
-      <thead><tr><th>Nivel</th><th style="text-align:right">Precio</th><th style="text-align:right">vs spot</th><th>Qué significa</th></tr></thead>
+      <thead><tr><th>Nivel</th><th style="text-align:right">Precio</th><th style="text-align:right">vs spot</th><th>Origen</th><th>Qué significa</th></tr></thead>
       <tbody id="levelsBody"></tbody>
     </table></div>
-    <div class="note" style="margin-top:10px">Realized/200w/50w se calculan en vivo; balanced, proyección de fin de año y las bandas de cuantiles son valores citados de su memo (estáticos). <span class="cite">[reports/bitcoin-july-2026-memo.md] §4</span></div>
+    <div class="note" style="margin-top:10px"><span class="pill live">en vivo</span> = calculado ahora con datos de mercado (Binance/Coin Metrics). <span class="pill said">dicho</span> = cifra que Cowen menciona hablando en un vídeo (aproximada, speech-to-text). <span class="cite">[yt-transcripts: 20260701 · 20260708 · 20260710 · 20260714]</span></div>
   </div>
 
   <div class="section">
     <div class="sec-head"><h2>Gráfico</h2><div class="rule"></div><span class="tag" id="srcTag">—</span></div>
     <div class="panel">
-      <div class="phint">Velas semanales · log · <b>SMA 200 semanas</b> (deep-value / "date with destiny") · <b>SMA 50 semanas</b> (reclaim sostenido = cambio de régimen, ~$86,5k) · <b>Realized price</b> (coste base on-chain) · <b>Balanced price</b> ~$37,7k (suelo profundo, línea discontinua) · proyección fin-2026 ~$43,8k · Subpanel: <b>MVRV Z</b> (suelos tras resetear <b>bajo 0</b>) — arrastra=zoom, doble clic=reset</div>
+      <div class="phint">Velas semanales · log · <b>SMA 200 semanas</b> (pared inferior del «squeeze», soporte estructural) · <b>SMA 50 semanas</b> (reclaim sostenido = fin del bear) · <b>Realized price</b> (Cowen cita ~$53k; los suelos lo testean) · líneas citadas: <b>suelo local $57k</b>, <b>zona de compra &lt;$60k</b>, <b>balanced ~$38k</b> · Subpanel: <b>MVRV Z</b> (suelo tras resetear <b>bajo 0</b> — aún no) · arrastra=zoom, doble clic=reset</div>
       <div id="chart"></div>
     </div>
   </div>
@@ -144,15 +146,15 @@
   <div class="section">
     <div class="sec-head"><h2>Estrategia de acumulación</h2><div class="rule"></div><span class="src">Cowen</span></div>
     <div class="cards">
-      <div class="card"><h3>Paciencia &gt; despliegue agresivo</h3><p>Las condiciones favorecen <b>preservar capital</b> mientras las medidas de valoración a largo plazo mejoran con el drawdown. La acumulación se escala <b>según el risk metric</b>: cuanto más bajo el riesgo (0), más se despliega; nada de perseguir rebotes.</p><div class="foot cite">[reports/bitcoin-july-2026-memo.md] Executive Summary</div></div>
-      <div class="card"><h3>El cross ≠ el suelo</h3><p>El cruce de <b>supply in profit/loss</b> ya se dio (entrada a la <b>ventana de suelo</b>), pero marca la ventana, no el fondo. Cambia la postura de "confirmar el markdown" a "<b>vigilar el suelo</b>" — en meses, no semanas.</p><div class="foot cite">[reports/bitcoin-july-2026-memo.md] §5</div></div>
-      <div class="card"><h3>Disparadores a vigilar</h3><p><b>Acelera el suelo:</b> capitulación con pico de volumen que resetee los on-chain. <b>Debilita la tesis:</b> reclaim sostenido de la <b>SMA 50 semanas</b> (~$86,5k, 2 cierres semanales). Para un reset on-chain real, el precio tiene que <b>testear realized (~$53k)</b> — MVRV Z no resetea bajo 0 mientras el precio siga por encima de realized.</p><div class="foot cite">[reports/bitcoin-july-2026-memo.md] §4 · Current Assessment</div></div>
+      <div class="card"><h3>DCA en la 2ª mitad del midterm</h3><p>«<i>DCAing Bitcoin in the second half of midterm years is normally the way to go</i>» — si aguantas algo de caída. La hora de <b>vender fue el 4T-2025</b>, no ahora. Objetivo: <b>montar posición para el bull de 2027</b>.</p><div class="foot cite">[yt-transcripts/20260708-...window-of-strength.md] · [20260710-...dubious-speculation.md]</div></div>
+      <div class="card"><h3>Guarda munición para el 4T</h3><p>Compra <b>algo en julio</b> para no perderte un rebote, pero <b>reserva la mayoría de los DCA para el drop final del 4T</b>. «Comprar BTC <b>por debajo de $60k</b> probablemente salga bien a largo plazo» (no es consejo).</p><div class="foot cite">[yt-transcripts/20260701-bitcoin-simulation-confirmed.md]</div></div>
+      <div class="card"><h3>Disparadores / pivote</h3><p><b>Confirmación de rebote:</b> un <b>higher low</b> (si no, «es un cuchillo cayendo»). <b>Adelanta el suelo:</b> un crash por precio (catalizador macro / gran liquidación). <b>Pivota igual:</b> si en octubre sigue ~$60k, se pone alcista aunque no haya flush.</p><div class="foot cite">[yt-transcripts/20260701-...simulation-confirmed.md] · [20260714-...bear-market.md]</div></div>
     </div>
   </div>
 
   <footer>
-    <div class="note" style="max-width:760px">
-      <b>Fuentes.</b> Este panel resume el <b>marco escrito de Benjamin Cowen</b> (Into The Cryptoverse) a partir de sus reports en <code>agentes/cowen/reports/</code>, principalmente el <b>Bitcoin Cycle Memo (jul-2026)</b>. Los valores del scorecard y los niveles citados son del reference date 15-jul-2026; precio, SMAs y MVRV Z se calculan en vivo (Binance/CoinGecko + Coin Metrics). Es un <b>resumen de SU criterio</b>, no la realidad ni un consejo. <b>Uso educativo — no es asesoramiento financiero.</b>
+    <div class="note" style="max-width:820px">
+      <b>Fuentes.</b> Este panel resume la <b>visión de Benjamin Cowen SOBRE BITCOIN</b> (Into The Cryptoverse) a partir de sus <b>vídeos más recientes</b> (jun–jul 2026) en <code>agentes/cowen/yt-transcripts/</code> — se ignoran a propósito sus análisis de ETH, oro, S&amp;P y otros mercados. Las cifras «dichas» son transcripciones de voz (aproximadas); precio, SMAs y MVRV Z se calculan en vivo (Binance/CoinGecko + Coin Metrics). Es un <b>resumen de SU criterio</b>, no la realidad ni un consejo. <b>Uso educativo — no es asesoramiento financiero.</b>
     </div>
     <div class="note" id="srcNote" style="margin-top:8px">Fuente datos vivos: —</div>
   </footer>
@@ -164,23 +166,10 @@ const $=s=>document.querySelector(s);
 const fmtUSD=(v,d=0)=>v==null?"—":"$"+Number(v).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
 const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 
-/* Risk scorecard (valores citados del memo jul-2026, escala 0-1) */
-const RISK=[
-  ["Total market cap risk",0.383,0.595],
-  ["Bitcoin risk",0.311,0.582],
-  ["On-chain risk",0.188,0.584],
-  ["MVRV Z-Score (riesgo norm.)",0.200,0.530],
-  ["Supply profit/loss composite",0.226,0.989],
-  ["Puell multiple",0.347,0.680],
-  ["Social risk (composite)",0.237,0.529],
-  ["Fear & Greed",0.024,0.617],
-  ["Liquidity risk (macro)",0.809,null],
-];
-/* Niveles citados (estáticos) + los que se calculan en vivo se rellenan aparte */
-const ATH=126000, BALANCED=37700, YEAREND=43800, Q1=65500, MED=116000, P99=202000, TERMINAL=320000;
+/* Niveles CITADOS en sus vídeos recientes (aprox, speech-to-text) */
+const ATH=126000, LOCAL_LOW=57000, BUYZONE=60000, REALIZED_SAID=53000, BALANCED=38000, MA200D=74000, BOT_LO=30000, BOT_HI=60000;
 
 function sma(a,n){const o=Array(a.length).fill(null);let s=0;for(let i=0;i<a.length;i++){s+=a[i];if(i>=n)s-=a[i-n];if(i>=n-1)o[i]=s/n;}return o;}
-function ema(a,n){const o=Array(a.length).fill(null);const k=2/(n+1);let p=null,ss=0,sd=false;for(let i=0;i<a.length;i++){const v=a[i];if(v==null){o[i]=null;continue;}if(!sd){ss+=v;if(i>=n-1){p=ss/n;o[i]=p;sd=true;}continue;}p=v*k+p*(1-k);o[i]=p;}return o;}
 
 let DATA=null,SRC="",IND=null,OC=null,OC_STATUS="—";
 async function fetchBinance(host){const r=await fetch(`https://${host}/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=1000`,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();return{t:j.map(k=>k[0]),o:j.map(k=>+k[1]),h:j.map(k=>+k[2]),l:j.map(k=>+k[3]),c:j.map(k=>+k[4]),src:"Binance"};}
@@ -193,17 +182,12 @@ async function fetchCM(){
   const j=await r.json();const rows=j.data||[];if(!rows.length)throw new Error("sin filas");
   const dt=[],price=[],mvrv=[],mkt=[],real=[],sply=[];
   for(const x of rows){const t=Date.parse(x.time.slice(0,10));if(isNaN(t))continue;
-    dt.push(t);
-    price.push(x.PriceUSD!=null?+x.PriceUSD:null);
-    mvrv.push(x.CapMVRVCur!=null?+x.CapMVRVCur:null);
-    mkt.push(x.CapMrktCurUSD!=null?+x.CapMrktCurUSD:null);
-    real.push(x.CapRealUSD!=null?+x.CapRealUSD:null);
-    sply.push(x.SplyCur!=null?+x.SplyCur:null);}
+    dt.push(t);price.push(x.PriceUSD!=null?+x.PriceUSD:null);mvrv.push(x.CapMVRVCur!=null?+x.CapMVRVCur:null);
+    mkt.push(x.CapMrktCurUSD!=null?+x.CapMrktCurUSD:null);real.push(x.CapRealUSD!=null?+x.CapRealUSD:null);sply.push(x.SplyCur!=null?+x.SplyCur:null);}
   CM={dt,price,mvrv,mkt,real,sply};return CM;
 }
 async function fetchCMPrice(){
-  const cm=await fetchCM();
-  const t=[],o=[],h=[],l=[],c=[];const WK=7*864e5;let bs=null,bo,bh,bl,bc,bt;
+  const cm=await fetchCM();const t=[],o=[],h=[],l=[],c=[];const WK=7*864e5;let bs=null,bo,bh,bl,bc,bt;
   for(let i=0;i<cm.dt.length;i++){const ms=cm.dt[i],p=cm.price[i];if(p==null)continue;
     if(bs==null){bs=ms;bo=bh=bl=bc=p;bt=ms;continue;}
     if(ms-bs>=WK){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);bs=ms;bo=bh=bl=bc=p;bt=ms;}
@@ -211,7 +195,6 @@ async function fetchCMPrice(){
   if(bs!=null){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);}
   return{t,o,h,l,c,src:"CoinMetrics"};
 }
-
 async function loadData(){
   let bin=null,ext=null;
   try{bin=await fetchBinance("api.binance.com");}catch(e){try{bin=await fetchBinance("api.binance.us");}catch(e2){}}
@@ -228,51 +211,63 @@ async function loadOnchain(){
     const valid=mkt.filter(v=>v!=null);const mean=valid.reduce((a,b)=>a+b,0)/valid.length;
     const sd=Math.sqrt(valid.reduce((a,b)=>a+(b-mean)**2,0)/valid.length);
     const zAt=i=>(mkt[i]!=null&&real[i]!=null&&sd>0)?(mkt[i]-real[i])/sd:null;
-    const n=DATA.t.length;const A={mvrv:Array(n).fill(null),z:Array(n).fill(null),real:Array(n).fill(null)};
-    let j2=0;
+    const n=DATA.t.length;const A={mvrv:Array(n).fill(null),z:Array(n).fill(null),real:Array(n).fill(null)};let j2=0;
     for(let i=0;i<n;i++){const wt=DATA.t[i];while(j2+1<dt.length&&dt[j2+1]<=wt)j2++;
       if(dt[j2]<=wt+7*864e5){A.mvrv[i]=mvrv[j2];A.z[i]=zAt(j2);A.real[i]=(real[j2]!=null&&sply[j2])?real[j2]/sply[j2]:null;}}
-    OC=A;OC_STATUS="Coin Metrics \u2713";return;
+    OC=A;OC_STATUS="Coin Metrics ✓";return;
   }catch(e){OC=null;OC_STATUS="sin datos ("+((e&&e.message)||e)+")";}
 }
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("no se pudo cargar Plotly");}
 
-function riskPill(v){const c=v<0.35?"lo":v<0.6?"mid":"hi";const t=v<0.35?"bajo":v<0.6?"medio":"alto";return `<span class="pill ${c}">${t}</span>`;}
-function renderRisk(){
-  $("#riskBody").innerHTML=RISK.map(r=>`<tr><td>${r[0]}</td><td class="num">${r[1].toFixed(3)}</td><td class="num" style="color:var(--muted)">${r[2]==null?"—":r[2].toFixed(3)}</td><td>${riskPill(r[1])}</td></tr>`).join("");
+/* --- Dónde estamos: día del ciclo + sentimiento (cifras del vídeo 16-jul) --- */
+function renderCycleStrip(){
+  const z=OC?OC.z[OC.z.length-1]:null;
+  const items=[
+    {l:"Días desde el techo",n:"283",s:"osos previos: 364 · 377 · 406",c:"var(--accent)"},
+    {l:"Días desde el suelo previo",n:"1.333",s:"previos tocaron en 1.436 y 1.432 (~100 días por delante)",c:"var(--accent)"},
+    {l:"Riesgo social (0–1)",n:"≈0,25",s:"como jul-2018 · vs ≈0,50 en jul-2022",c:"var(--bull)"},
+    {l:"Vistas cripto YouTube",n:"~350k/día",s:"vs ~1M/día en jul-2022 — apatía",c:"var(--bull)"},
+    {l:"MVRV Z (en vivo)",n:z!=null?z.toFixed(2):"—",s:"suelo tras resetear <0 — aún no",c:z!=null&&z<0?"var(--bull)":"var(--hot)"},
+    {l:"P(suelo puesto ≤ 21-nov)",n:"60–65%",s:"su estimación para la conferencia ITC",c:"var(--accum)"},
+  ];
+  $("#cycleStrip").innerHTML=items.map(x=>`<div class="stat" style="--sc:${x.c}"><div class="l">${x.l}</div><div class="n" style="color:${x.c}">${x.n}</div><div class="s">${x.s}</div></div>`).join("");
 }
+
+function pill(kind){return kind==="live"?'<span class="pill live">en vivo</span>':'<span class="pill said">dicho</span>';}
 function renderLevels(){
   const price=DATA.c[DATA.c.length-1];
   const s50=IND.s50[IND.s50.length-1], s200=IND.s200[IND.s200.length-1];
   const real=OC?OC.real[OC.real.length-1]:null;
   const rows=[
-    ["ATH del ciclo (6-oct-2025)",ATH,"El techo, en apatía. Spot ~48% por debajo."],
-    ["SMA 50 semanas (cambio de régimen)",s50,"Reclaim sostenido (2 cierres) = transición fuera del bear. Debilitaría la tesis bajista."],
-    ["Cuantil 1% (banda inferior)",Q1,"Precio cotiza sobre el extremo bajo de su distribución histórica. No es un suelo absoluto."],
-    ["SMA 200 semanas (date with destiny)",s200,"Deep-value; ya reclamada pero con margen fino. En 2022 se rompió una 2ª vez antes del suelo."],
-    ["Realized price (coste base)",real,"Los suelos históricos testean o perforan este nivel. MVRV Z no resetea bajo 0 por encima de aquí."],
-    ["Proyección fin-2026 (ROI 0,49)",YEAREND,"Ilustrativa (3 observaciones), dentro del corredor realized→balanced. No es un target."],
-    ["Balanced price (suelo profundo)",BALANCED,"En suelos mayores el precio cotizó POR DEBAJO de balanced, no entre realized y balanced."],
-    ["Median band / 99% / Terminal",null,`Mediana ~${fmtUSD(MED)} · 99% ~${fmtUSD(P99)} · terminal ~${fmtUSD(TERMINAL)} (modelo de subida, no del argumento bajista).`],
+    ["Techo del ciclo (oct-2025)",ATH,"said","El techo en apatía. Su referencia de dónde venimos."],
+    ["200-day MA","~"+fmtUSD(MA200D),"said","Resistencia superior del rebote; «bajando a ~$70k para mediados de agosto»."],
+    ["SMA 50 semanas",s50,"live","Reclaim sostenido (2 cierres) = fin del bear. Debilitaría su tesis bajista."],
+    ["Zona de compra (<$60k)",BUYZONE,"said","«Comprar BTC por debajo de $60k probablemente salga bien a largo plazo.»"],
+    ["Suelo local (1-jul-2026)",LOCAL_LOW,"said","Mínimo del ciclo hasta ahora (~$57–57,7k). 10× el suelo de 2018."],
+    ["SMA 200 semanas",s200,"live","Pared inferior del «squeeze»; soporte estructural profundo."],
+    ["Realized price",real,"live","Cowen lo cita ~$53k; los suelos históricos lo testean. MVRV Z no resetea <0 por encima de aquí."],
+    ["Balanced price",BALANCED,"said","Suelo agresivo (~$38k); «posible pero codicioso»."],
+    ["Rango de fondo del ciclo",null,"said",`Muy amplio: «entre ${fmtUSD(BOT_LO)} y ${fmtUSD(BOT_HI)}» — insiste en que «nadie lo sabe».`],
   ];
   $("#levelsBody").innerHTML=rows.map(r=>{
-    const p=r[1];
-    const rel=(p!=null&&price)?((p/price-1)*100):null;
+    const p=r[1];const isNum=typeof p==="number";
+    const disp=isNum?fmtUSD(p):(p==null?"—":p);
+    const rel=(isNum&&price)?((p/price-1)*100):null;
     const relTxt=rel==null?"—":(rel>=0?"+":"")+rel.toFixed(0)+"%";
     const relCol=rel==null?"var(--muted)":rel>0?"var(--bull)":"var(--bear)";
-    return `<tr><td>${r[0]}</td><td class="num">${p==null?"—":fmtUSD(p)}</td><td class="num" style="color:${relCol}">${relTxt}</td><td style="white-space:normal;color:var(--ink2)">${r[2]}</td></tr>`;
+    return `<tr><td>${r[0]}</td><td class="num">${disp}</td><td class="num" style="color:${relCol}">${relTxt}</td><td>${pill(r[2])}</td><td style="white-space:normal;color:var(--ink2)">${r[3]}</td></tr>`;
   }).join("");
 }
 function renderTimeline(){
   const steps=[
-    {n:"Techo",v:"6-oct-2025 ~$126k",d:"En apatía, no euforia",here:false},
-    {n:"200w SMA",v:"Roto y reclamado",d:"Como en 2022 antes del suelo",here:false},
-    {n:"Supply cross",v:"Ya disparado",d:"Entrada a ventana de suelo",here:true},
-    {n:"Suelo (base case)",v:"4T-2026",d:"MVRV Z resetea <0 + test realized",here:false},
-    {n:"Riesgo alternativo",v:"→ ene-2027",d:"Precedente 2014→ene-2015",here:false},
+    {n:"Techo",v:"oct-2025 ~$126k",d:"En apatía, no euforia",here:false},
+    {n:"Ahora (día 283)",v:"Bear · midterm",d:"Capitulación por tiempo",here:true},
+    {n:"Ventana de suelo",v:"sep–oct 2026",d:"«late Sep / early Oct»",here:false},
+    {n:"60–65% suelo puesto",v:"≤ 21-nov 2026",d:"Conferencia ITC Miami",here:false},
+    {n:"Montar para el bull",v:"2027",d:"DCA acumulado en H2-2026",here:false},
   ];
-  $("#timeline").innerHTML=steps.map(s=>`<div class="tstep ${s.here?'here':''}"><div class="tn">${s.n}</div><div class="tv">${s.v}</div><div class="td">${s.d}</div></div>`).join("");
+  $("#timeline").innerHTML=steps.map(s=>`<div class="tstep ${s.here?'here':''}" ${s.here?'style="--phase:var(--bear)"':''}><div class="tn">${s.n}</div><div class="tv">${s.v}</div><div class="td">${s.d}</div></div>`).join("");
 }
 
 function renderChart(){
@@ -289,6 +284,8 @@ function renderChart(){
   if(OC) tr.push({type:"scatter",x,y:nul(OC.real),name:"Realized",yaxis:"y",line:{color:"#9b8cff",width:1.3,dash:"dot"}});
   if(OC) tr.push({type:"scatter",x,y:nul(OC.z),name:"MVRV Z",yaxis:"y2",line:{color:cAccum,width:1.3},showlegend:false});
   const ax={gridcolor:cGrid,zerolinecolor:cGrid,linecolor:cGrid,color:cMut,tickfont:{size:10}};
+  const hline=(y,col,dash,op)=>({type:"line",xref:"paper",yref:"y",x0:0,x1:1,y0:y,y1:y,line:{color:col,width:1,dash:dash},opacity:op});
+  const lab=(y,txt,col)=>({xref:"paper",x:0.012,y,yref:"y",yanchor:"bottom",xanchor:"left",text:txt,showarrow:false,font:{size:9.5,color:col,family:cssv("--mono")}});
   const layout={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:cInk,family:cssv("--font")},
     margin:{l:60,r:16,t:10,b:24},dragmode:"zoom",hovermode:"x unified",
     hoverlabel:{bgcolor:cPanel,bordercolor:cAcc,font:{color:cInk,size:11,family:cssv("--font")}},
@@ -297,14 +294,16 @@ function renderChart(){
     yaxis:{...ax,domain:[0.34,1],type:"log",title:{text:"Precio (log)",font:{size:11},standoff:8}},
     yaxis2:{...ax,domain:[0,0.26],title:{text:"MVRV Z",font:{size:11},standoff:8}},
     shapes:[
-      {type:"line",xref:"paper",yref:"y",x0:0,x1:1,y0:BALANCED,y1:BALANCED,line:{color:cHot,width:1,dash:"dash"},opacity:.7},
-      {type:"line",xref:"paper",yref:"y",x0:0,x1:1,y0:YEAREND,y1:YEAREND,line:{color:cBear,width:1,dash:"dot"},opacity:.6},
+      hline(LOCAL_LOW,cBull,"dash",.6),
+      hline(BUYZONE,cAccum,"dot",.5),
+      hline(BALANCED,cHot,"dash",.6),
       {type:"rect",xref:"paper",yref:"y2",x0:0,x1:1,y0:-99,y1:0,fillcolor:"rgba(47,195,155,.10)",line:{width:0},layer:"below"},
       {type:"line",xref:"paper",yref:"y2",x0:0,x1:1,y0:0,y1:0,line:{color:cGrid,width:1}},
     ],
     annotations:[
-      {xref:"paper",x:0.012,y:BALANCED,yref:"y",yanchor:"bottom",xanchor:"left",text:"Balanced ~$37,7k",showarrow:false,font:{size:9.5,color:cHot,family:cssv("--mono")}},
-      {xref:"paper",x:0.012,y:YEAREND,yref:"y",yanchor:"bottom",xanchor:"left",text:"Proy. fin-2026 ~$43,8k",showarrow:false,font:{size:9.5,color:cBear,family:cssv("--mono")}},
+      lab(LOCAL_LOW,"Suelo local $57k",cBull),
+      lab(BUYZONE,"Compra <$60k",cAccum),
+      lab(BALANCED,"Balanced ~$38k",cHot),
     ]};
   Plotly.react("chart",tr,layout,{responsive:true,scrollZoom:false,displaylogo:false,doubleClick:"reset",modeBarButtonsToRemove:["select2d","lasso2d","autoScale2d"]});
 }
@@ -317,7 +316,7 @@ function renderAll(){
   $("#statusDot").className="dot";
   $("#statusText").textContent=n+" semanas · "+new Date().toLocaleString("es-ES",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
   $("#srcTag").textContent=SRC;$("#srcNote").innerHTML="Precio: <b>"+SRC+"</b> · On-chain: <b>"+OC_STATUS+"</b>";
-  renderTimeline();renderRisk();renderLevels();renderChart();
+  renderTimeline();renderCycleStrip();renderLevels();renderChart();
 }
 async function boot(){
   $("#statusDot").className="dot warn";$("#statusText").textContent="Cargando…";$("#errBanner").style.display="none";
@@ -325,7 +324,7 @@ async function boot(){
   catch(err){$("#statusDot").className="dot err";$("#statusText").textContent="Error al cargar";
     const b=$("#errBanner");b.style.display="block";b.innerHTML="<b>No se pudo cargar.</b> "+((err&&err.message)||err)+". Prueba otra red y pulsa ↻.";}
 }
-$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);if(DATA&&window.Plotly){renderRisk();renderLevels();renderChart();}});
+$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);if(DATA&&window.Plotly){renderCycleStrip();renderLevels();renderChart();}});
 $("#refreshBtn").addEventListener("click",boot);
 (function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
 boot();

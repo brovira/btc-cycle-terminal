@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BTC · Backtesting de estrategias</title>
+<title>BTC · Strategy Tester</title>
 <style>
   :root{
     --bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;
@@ -23,7 +23,7 @@
   :root[data-theme="light"]{--bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;--ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--accent:#6a4bd6;--bull:#0e846a;--bear:#c93a48;--accum:#1f74c0;--hot:#b9791a;--grid:rgba(16,24,34,.08)}
   *{box-sizing:border-box} html,body{margin:0}
   body{background:radial-gradient(1200px 600px at 80% -10%,color-mix(in oklab,var(--accent) 9%,transparent),transparent 60%),linear-gradient(var(--bg),var(--bg2));color:var(--ink);font-family:var(--font);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
-  .wrap{max-width:1240px;margin:0 auto;padding:26px 20px 70px}
+  .wrap{max-width:1280px;margin:0 auto;padding:26px 20px 70px}
   .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
   header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:18px}
   .kicker{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600}
@@ -33,43 +33,57 @@
   .btn{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:8px 13px;border-radius:10px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;transition:.15s;text-decoration:none}
   .btn:hover{border-color:var(--accent);color:var(--accent)}
   .btn.pri{background:var(--accent);color:#111;border-color:var(--accent)} .btn.pri:hover{filter:brightness(1.05);color:#111}
+  .btn.sm{padding:5px 10px;font-size:12px}
   .controls{display:flex;gap:9px;flex-wrap:wrap}
   .err-banner{display:none;margin:12px 0;border:1px solid color-mix(in oklab,var(--bear) 40%,transparent);background:color-mix(in oklab,var(--bear) 10%,transparent);padding:13px 15px;border-radius:12px;font-size:13.5px}
-  .section{margin-top:26px}
-  .sec-head{display:flex;align-items:center;gap:12px;margin:0 2px 14px}
+  .section{margin-top:24px}
+  .sec-head{display:flex;align-items:center;gap:12px;margin:0 2px 12px}
   .sec-head h2{margin:0;font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
   .sec-head .rule{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
   .sec-head .tag{font-size:11px;font-weight:600;color:var(--muted);font-family:var(--mono)}
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
-  /* config grid */
-  .cfg{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px} @media(max-width:880px){.grid2{grid-template-columns:1fr}}
+  .cfg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
   .fld{display:flex;flex-direction:column;gap:5px}
   .fld label{font-size:12px;color:var(--muted);font-weight:600}
-  .fld input,.fld select{font:inherit;font-size:14px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+  .fld input,.fld select{font:inherit;font-size:13.5px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:8px 10px}
   .fld .hint{font-size:11px;color:var(--muted)}
-  .toggles{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-  .chk{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;padding:7px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);cursor:pointer}
-  .chk input{accent-color:var(--sc,var(--accent))}
-  /* cards */
-  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
-  .scard{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--sc,var(--muted));border-radius:12px;padding:15px 16px;box-shadow:var(--shadow)}
-  .scard .sh{display:flex;align-items:center;justify-content:space-between;gap:8px}
-  .scard h3{margin:0;font-size:14.5px;font-weight:750;color:var(--sc)}
-  .scard .win{font-size:10px;font-weight:800;font-family:var(--mono);padding:2px 7px;border-radius:999px;color:var(--bull);background:color-mix(in oklab,var(--bull) 16%,transparent);text-transform:uppercase}
-  .kv{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--line);font-size:13px} .kv:first-of-type{border-top:none;margin-top:8px}
-  .kv .k{color:var(--muted)} .kv .v{font-family:var(--mono);font-weight:700}
-  .kv .v.big{font-size:16px;color:var(--ink)}
+  /* rule builder */
+  .rblock{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+  .rblock.entry{border-left:3px solid var(--bull)} .rblock.exit{border-left:3px solid var(--bear)}
+  .rbh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+  .rbh h3{margin:0;font-size:14px;font-weight:750}
+  .logic{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .logic button{font:inherit;font-size:11.5px;font-weight:700;padding:4px 10px;background:var(--panel2);color:var(--muted);border:none;cursor:pointer}
+  .logic button.on{background:var(--accent);color:#111}
+  .cond{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);margin-bottom:8px}
+  .cond select,.cond input{font:inherit;font-size:12.5px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:6px 8px}
+  .cond input.p{width:56px}
+  .cond .rm{margin-left:auto;color:var(--bear);background:none;border:none;cursor:pointer;font-size:16px;line-height:1;padding:2px 6px}
+  .cond .lbl{font-size:11px;color:var(--muted);font-weight:600}
+  /* metrics */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--sc,var(--muted));border-radius:12px;padding:13px 15px;box-shadow:var(--shadow)}
+  .stat .l{font-size:11px;color:var(--muted);font-weight:600}
+  .stat .n{font-family:var(--mono);font-size:19px;font-weight:750;margin-top:3px}
+  .stat .s{font-size:11px;color:var(--muted);margin-top:2px}
   .up{color:var(--bull)} .down{color:var(--bear)}
-  #eq,#acc{width:100%;height:420px}
-  table.cmp{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
-  table.cmp th,table.cmp td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--line)}
-  table.cmp th:first-child,table.cmp td:first-child{text-align:left}
-  table.cmp th{color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em}
-  table.cmp td{font-family:var(--mono)}
-  table.cmp tr td:first-child{font-family:var(--font);font-weight:650}
-  .swatch{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:7px;vertical-align:middle}
+  #chart{width:100%;height:560px}
+  table.t{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.t th,table.t td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line)}
+  table.t th:first-child,table.t td:first-child{text-align:left}
+  table.t th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+  table.t td{font-family:var(--mono)}
+  /* saved */
+  .saved{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+  .scard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 14px;box-shadow:var(--shadow)}
+  .scard .st{display:flex;justify-content:space-between;gap:8px;align-items:center}
+  .scard h4{margin:0;font-size:13.5px;font-weight:750}
+  .scard .m{font-family:var(--mono);font-size:12px;color:var(--ink2);margin-top:6px}
+  .scard .acts{display:flex;gap:6px;margin-top:10px}
+  .jempty{color:var(--muted);font-size:13px}
   .note{color:var(--muted);font-size:12px;line-height:1.6}
-  footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--line)}
+  footer{margin-top:34px;padding-top:18px;border-top:1px solid var(--line)}
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
@@ -77,8 +91,8 @@
 <div class="wrap">
   <header class="top">
     <div>
-      <div class="kicker">Herramientas · Simulación de estrategias</div>
-      <h1>🧪 <b>Backtesting</b> de estrategias BTC</h1>
+      <div class="kicker">Herramientas · Strategy Tester</div>
+      <h1>🧪 <b>Backtesting</b> · constructor de estrategias</h1>
       <div class="meta"><span class="dot" id="statusDot"></span><span id="statusText">Cargando datos…</span></div>
     </div>
     <div class="controls">
@@ -91,47 +105,86 @@
 
   <div class="err-banner" id="errBanner"></div>
 
+  <!-- CONFIG -->
   <div class="section">
-    <div class="sec-head"><h2>Configuración</h2><div class="rule"></div><span class="tag" id="srcTag">—</span></div>
+    <div class="sec-head"><h2>Ajustes</h2><div class="rule"></div><span class="tag" id="srcTag">—</span></div>
     <div class="panel">
       <div class="cfg">
-        <div class="fld"><label>Desde</label><input type="date" id="c_start" value="2018-01-01"><span class="hint">inicio del backtest</span></div>
-        <div class="fld"><label>Aporte semanal (USD)</label><input type="number" id="c_week" value="100" step="any"><span class="hint">para las estrategias DCA</span></div>
-        <div class="fld"><label>Umbral MVRV Z para «dip»</label><input type="number" id="c_zdip" value="0" step="0.1"><span class="hint">compra reforzada si Z &lt; umbral (franja verde = 0)</span></div>
-        <div class="fld"><label>Multiplicador en «dip»</label><input type="number" id="c_zmult" value="3" step="0.5"><span class="hint">×aporte cuando Z bajo umbral</span></div>
-        <div class="fld"><label>Umbral RSI sobreventa</label><input type="number" id="c_rsi" value="40" step="1"><span class="hint">refuerza si RSI semanal &lt; umbral</span></div>
+        <div class="fld"><label>Preset</label><select id="c_preset">
+          <option value="">— cargar ejemplo —</option>
+          <option value="gc">Golden/Death Cross 50/200</option>
+          <option value="rsi">RSI sobreventa (34/70)</option>
+          <option value="mvrv">MVRV Z suelo (&lt;0 dentro, &gt;5 fuera)</option>
+          <option value="bmsb">Tendencia BMSB (cruce banda)</option>
+          <option value="macd">Cruce MACD (línea/señal)</option>
+        </select><span class="hint">rellena el constructor</span></div>
+        <div class="fld"><label>Capital inicial (USD)</label><input type="number" id="c_cap" value="10000" step="any"></div>
+        <div class="fld"><label>Comisión+slippage %</label><input type="number" id="c_fee" value="0.1" step="0.05"><span class="hint">por operación</span></div>
+        <div class="fld"><label>Tamaño posición %</label><input type="number" id="c_size" value="100" step="5"><span class="hint">del capital por entrada</span></div>
+        <div class="fld"><label>Desde</label><input type="date" id="c_start" value="2017-01-01"></div>
       </div>
-      <div class="toggles" id="toggles"></div>
-      <div style="margin-top:16px"><button class="btn pri" id="runBtn">▶ Ejecutar backtest</button>
-        <span class="note" id="rangeNote" style="margin-left:10px"></span></div>
     </div>
   </div>
 
+  <!-- BUILDER -->
   <div class="section">
-    <div class="sec-head"><h2>Resultados</h2><div class="rule"></div><span class="tag">al último precio · mismo periodo</span></div>
+    <div class="sec-head"><h2>Estrategia (señales)</h2><div class="rule"></div><span class="tag">long-only · spot</span></div>
+    <div class="grid2">
+      <div class="rblock entry">
+        <div class="rbh"><h3>🟢 Entrada (comprar)</h3>
+          <div class="logic" id="entryLogic"><button data-v="all" class="on">TODAS (Y)</button><button data-v="any">ALGUNA (O)</button></div></div>
+        <div id="entryConds"></div>
+        <button class="btn sm" id="addEntry">＋ condición</button>
+      </div>
+      <div class="rblock exit">
+        <div class="rbh"><h3>🔴 Salida (vender a liquidez)</h3>
+          <div class="logic" id="exitLogic"><button data-v="all" class="on">TODAS (Y)</button><button data-v="any">ALGUNA (O)</button></div></div>
+        <div id="exitConds"></div>
+        <button class="btn sm" id="addExit">＋ condición</button>
+      </div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:9px;flex-wrap:wrap;align-items:center">
+      <button class="btn pri" id="runBtn">▶ Ejecutar backtest</button>
+      <input id="stratName" placeholder="Nombre de la estrategia" style="font:inherit;font-size:13.5px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:8px 10px;flex:1;min-width:180px">
+      <button class="btn" id="saveBtn">💾 Guardar</button>
+      <span class="note" id="rangeNote"></span>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="section">
+    <div class="sec-head"><h2>Resultados</h2><div class="rule"></div><span class="tag" id="resTag">—</span></div>
     <div class="cards" id="cards"></div>
   </div>
 
   <div class="section">
-    <div class="sec-head"><h2>Valor de la cartera</h2><div class="rule"></div><span class="tag">equity curve (log)</span></div>
-    <div class="panel" style="padding:12px 10px 6px"><div id="eq"></div></div>
+    <div class="sec-head"><h2>Precio + operaciones · Curva de capital</h2><div class="rule"></div><span class="tag">estrategia vs comprar y aguantar</span></div>
+    <div class="panel" style="padding:12px 10px 6px"><div id="chart"></div></div>
   </div>
 
-  <div class="section">
-    <div class="sec-head"><h2>Comparativa</h2><div class="rule"></div><span class="tag">ROI = normalizado por capital</span></div>
-    <div class="panel"><div style="overflow:auto"><table class="cmp" id="cmp"></table></div>
-      <div class="note" style="margin-top:12px">Comparación justa = <b>ROI %</b> y <b>coste medio</b> (independientes del capital). El «valor final» depende del total invertido, que difiere entre estrategias (el DCA con refuerzo despliega más capital en las caídas — ese es justo su punto). <b>Max DD</b> = peor caída del valor de la cartera. Datos de precio: Binance + Coin Metrics (histórico). On-chain (MVRV Z): Coin Metrics Community. <b>Uso educativo — no es asesoramiento financiero; rentabilidad pasada no garantiza resultados.</b></div>
+  <div class="grid2 section">
+    <div>
+      <div class="sec-head"><h2>Métricas detalladas</h2><div class="rule"></div></div>
+      <div class="panel" style="overflow:auto"><table class="t" id="metrics"></table></div>
+    </div>
+    <div>
+      <div class="sec-head"><h2>Últimas operaciones</h2><div class="rule"></div></div>
+      <div class="panel" style="overflow:auto"><table class="t" id="trades"></table></div>
     </div>
   </div>
 
+  <!-- SAVED -->
+  <div class="section">
+    <div class="sec-head"><h2>Estrategias guardadas</h2><div class="rule"></div>
+      <button class="btn sm" id="expBtn">⭳ Exportar</button><button class="btn sm" id="impBtn">⭱ Importar</button>
+      <input type="file" id="impFile" accept="application/json" style="display:none"></div>
+    <div class="saved" id="savedList"></div>
+  </div>
+
   <footer>
-    <div class="note" style="max-width:900px">
-      <b>Estrategias.</b>
-      <b>Hold</b> = invertir de golpe todo el capital (aporte × nº semanas) el primer día y aguantar ·
-      <b>DCA fija</b> = mismo aporte cada semana pase lo que pase ·
-      <b>DCA + dip (estilo LMEC)</b> = aporte base semanal, <b>reforzado ×N</b> cuando el MVRV Z entra en la franja verde y/o el RSI está sobrevendido (comprar más fuerte abajo) ·
-      <b>Tendencia BMSB</b> = solo acumula (aporta) cuando el precio está por encima de la Bull Market Support Band; en bajista guarda el aporte en «liquidez» y lo despliega al recuperar la banda.
-      Los indicadores (RSI 14, MACD 12/26/9, BMSB SMA20/EMA21, MVRV Z) son semanales, igual que en el panel LMEC. <b>Derivados (funding, IV/skew) llegarán</b> cuando conectemos esa fuente — hoy el backtest usa precio + on-chain.
+    <div class="note" style="max-width:960px">
+      <b>Cómo funciona.</b> Construyes <b>señales de entrada y salida</b> combinando indicadores (precio, SMA/EMA con el periodo que quieras, RSI, MACD línea/señal/histograma, BMSB, MVRV Z) con operadores (<b>cruza al alza/baja, &gt;, &lt;, sube, baja</b>) contra otro indicador o un valor fijo. Combina varias condiciones con <b>Y / O</b>. El motor entra/sale <b>al cierre semanal</b> de la señal, aplica comisión+slippage, y calcula métricas <b>profesionales</b>: ROI, CAGR, <b>Sharpe</b>, max drawdown, win-rate, profit factor, exposición y comparación contra <b>comprar y aguantar</b>. Guarda cada estrategia con sus resultados (en tu navegador) y expórtalas. Long-only sobre spot (sin apalancamiento).
+      <br><b>Nota:</b> MACD/BMSB/MVRV Z usan la misma config que los paneles LMEC/Cowen (semanal). Los <b>derivados</b> (funding, IV/skew) entran como indicadores cuando conectemos esa fuente. <b>Uso educativo — la rentabilidad pasada no garantiza resultados; no es asesoramiento financiero.</b>
     </div>
   </footer>
 </div>
@@ -140,162 +193,278 @@
 "use strict";
 const $=s=>document.querySelector(s);
 const fmtUSD=(v,d=0)=>v==null||isNaN(v)?"—":"$"+Number(v).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
-const fmtPct=v=>v==null||isNaN(v)?"—":(v>=0?"+":"")+v.toFixed(1)+"%";
+const fmtPct=(v,d=1)=>v==null||isNaN(v)?"—":(v>=0?"+":"")+v.toFixed(d)+"%";
 const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
 
-/* ---------- indicadores (idénticos al panel LMEC) ---------- */
+/* ---------- indicadores base ---------- */
 function sma(a,n){const o=Array(a.length).fill(null);let s=0;for(let i=0;i<a.length;i++){s+=a[i];if(i>=n)s-=a[i-n];if(i>=n-1)o[i]=s/n;}return o;}
 function ema(a,n){const o=Array(a.length).fill(null);const k=2/(n+1);let p=null,ss=0,sd=false;for(let i=0;i<a.length;i++){const v=a[i];if(v==null){o[i]=null;continue;}if(!sd){ss+=v;if(i>=n-1){p=ss/n;o[i]=p;sd=true;}continue;}p=v*k+p*(1-k);o[i]=p;}return o;}
 function rsi(c,n=14){const o=Array(c.length).fill(null);let g=0,l=0;for(let i=1;i<c.length;i++){const ch=c[i]-c[i-1],gg=Math.max(0,ch),ll=Math.max(0,-ch);if(i<=n){g+=gg;l+=ll;if(i===n){g/=n;l/=n;o[i]=100-100/(1+(l===0?1e9:g/l));}}else{g=(g*(n-1)+gg)/n;l=(l*(n-1)+ll)/n;o[i]=100-100/(1+(l===0?1e9:g/l));}}return o;}
+function macdParts(c,f,s,sig){const ef=ema(c,f),es=ema(c,s);const line=c.map((_,i)=>(ef[i]!=null&&es[i]!=null)?ef[i]-es[i]:null);const signal=ema(line.map(x=>x==null?null:x),sig);const hist=line.map((_,i)=>(line[i]!=null&&signal[i]!=null)?line[i]-signal[i]:null);return{line,signal,hist};}
 
-/* ---------- datos: Binance + Coin Metrics (histórico) + MVRV Z ---------- */
-let DATA=null,SRC="",IND=null,OC=null,OC_STATUS="—";
+/* ---------- registro de indicadores para el builder ---------- */
+const INDS={
+  price:{lbl:"Precio",params:[],calc:()=>DATA.c},
+  sma:{lbl:"SMA",params:[["n",50]],calc:p=>sma(DATA.c,p.n)},
+  ema:{lbl:"EMA",params:[["n",21]],calc:p=>ema(DATA.c,p.n)},
+  rsi:{lbl:"RSI",params:[["n",14]],calc:p=>rsi(DATA.c,p.n)},
+  macd:{lbl:"MACD línea",params:[["f",12],["s",26]],calc:p=>macdParts(DATA.c,p.f,p.s,9).line},
+  macds:{lbl:"MACD señal",params:[["f",12],["s",26],["sig",9]],calc:p=>macdParts(DATA.c,p.f,p.s,p.sig).signal},
+  macdh:{lbl:"MACD histog.",params:[["f",12],["s",26],["sig",9]],calc:p=>macdParts(DATA.c,p.f,p.s,p.sig).hist},
+  bmsb:{lbl:"BMSB (banda)",params:[],calc:()=>{const a=sma(DATA.c,20),b=ema(DATA.c,21);return DATA.c.map((_,i)=>(a[i]!=null&&b[i]!=null)?Math.max(a[i],b[i]):null);}},
+  mvrvz:{lbl:"MVRV Z",params:[],calc:()=>OC?OC.z:DATA.c.map(()=>null)},
+  value:{lbl:"Valor fijo",params:[["v",0]],isConst:true},
+};
+const OPS=[["cross_up","cruza ↑"],["cross_dn","cruza ↓"],["gt","&gt;"],["lt","&lt;"],["rise","sube"],["fall","baja"]];
+
+/* ---------- estado del builder ---------- */
+let ENTRY={logic:"all",conds:[]}, EXIT={logic:"all",conds:[]};
+function newCond(left,op,right){return{left:left||{ind:"price",params:{}},op:op||"cross_up",right:right||{ind:"sma",params:{n:50}}};}
+function defParams(ind){const o={};(INDS[ind].params||[]).forEach(([k,d])=>o[k]=d);return o;}
+
+/* ---------- render builder ---------- */
+function indSelect(sel,cur){return `<select data-role="${sel}">`+Object.keys(INDS).map(k=>`<option value="${k}" ${k===cur?"selected":""}>${INDS[k].lbl}</option>`).join("")+`</select>`;}
+function paramInputs(side,ind,params){return (INDS[ind].params||[]).map(([k,d])=>`<input class="p" type="number" data-side="${side}" data-p="${k}" value="${params[k]!=null?params[k]:d}" title="${k}">`).join("");}
+function renderCondRow(block,cond,idx){
+  return `<div class="cond" data-block="${block}" data-idx="${idx}">
+    <span class="lbl">SI</span>
+    ${indSelect("left",cond.left.ind)}${paramInputs("left",cond.left.ind,cond.left.params)}
+    <select data-role="op">${OPS.map(o=>`<option value="${o[0]}" ${o[0]===cond.op?"selected":""}>${o[1]}</option>`).join("")}</select>
+    ${indSelect("right",cond.right.ind)}${paramInputs("right",cond.right.ind,cond.right.params)}
+    <button class="rm" title="quitar">✕</button>
+  </div>`;
+}
+function renderBuilder(){
+  $("#entryConds").innerHTML=ENTRY.conds.map((c,i)=>renderCondRow("entry",c,i)).join("")||'<div class="jempty">Sin condiciones — pulsa ＋</div>';
+  $("#exitConds").innerHTML=EXIT.conds.map((c,i)=>renderCondRow("exit",c,i)).join("")||'<div class="jempty">Sin condiciones — pulsa ＋</div>';
+  $("#entryLogic").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===ENTRY.logic));
+  $("#exitLogic").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===EXIT.logic));
+  bindCondEvents();
+}
+function bindCondEvents(){
+  document.querySelectorAll(".cond").forEach(row=>{
+    const block=row.dataset.block, idx=+row.dataset.idx, C=(block==="entry"?ENTRY:EXIT).conds[idx];
+    row.querySelectorAll("select[data-role]").forEach(sel=>sel.addEventListener("change",()=>{
+      const role=sel.dataset.role;
+      if(role==="op")C.op=sel.value;
+      else{const side=role;C[side].ind=sel.value;C[side].params=defParams(sel.value);renderBuilder();}
+    }));
+    row.querySelectorAll("input[data-p]").forEach(inp=>inp.addEventListener("input",()=>{const side=inp.dataset.side;C[side].params[inp.dataset.p]=parseFloat(inp.value);}));
+    row.querySelector(".rm").addEventListener("click",()=>{(block==="entry"?ENTRY:EXIT).conds.splice(idx,1);renderBuilder();});
+  });
+}
+
+/* ---------- datos ---------- */
+let DATA=null,SRC="",OC=null,OC_STATUS="—";
 async function fetchBinance(host){const r=await fetch(`https://${host}/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=1000`,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();return{t:j.map(k=>k[0]),o:j.map(k=>+k[1]),h:j.map(k=>+k[2]),l:j.map(k=>+k[3]),c:j.map(k=>+k[4])};}
 let CM=null;
-async function fetchCM(){
-  if(CM) return CM;
+async function fetchCM(){if(CM)return CM;
   const url="https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=PriceUSD,CapMrktCurUSD,CapRealUSD&frequency=1d&page_size=10000&start_time=2010-07-18";
-  const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);
-  const j=await r.json();const rows=j.data||[];if(!rows.length)throw new Error("sin filas");
-  const dt=[],price=[],mkt=[],real=[];
-  for(const x of rows){const t=Date.parse(x.time.slice(0,10));if(isNaN(t))continue;
-    dt.push(t);price.push(x.PriceUSD!=null?+x.PriceUSD:null);
-    mkt.push(x.CapMrktCurUSD!=null?+x.CapMrktCurUSD:null);real.push(x.CapRealUSD!=null?+x.CapRealUSD:null);}
-  CM={dt,price,mkt,real};return CM;
-}
-function weeklyFrom(dt,px){const t=[],c=[];const WK=7*864e5;let bs=null,bc,bt;
-  for(let i=0;i<dt.length;i++){const ms=dt[i],p=px[i];if(p==null)continue;
-    if(bs==null){bs=ms;bc=p;bt=ms;continue;}
-    if(ms-bs>=WK){t.push(bt);c.push(bc);bs=ms;bc=p;bt=ms;}else{bc=p;bt=ms;}}
-  if(bs!=null){t.push(bt);c.push(bc);}return{t,c};}
+  const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();const rows=j.data||[];if(!rows.length)throw new Error("sin filas");
+  const dt=[],price=[],mkt=[],real=[];for(const x of rows){const t=Date.parse(x.time.slice(0,10));if(isNaN(t))continue;dt.push(t);price.push(x.PriceUSD!=null?+x.PriceUSD:null);mkt.push(x.CapMrktCurUSD!=null?+x.CapMrktCurUSD:null);real.push(x.CapRealUSD!=null?+x.CapRealUSD:null);}
+  CM={dt,price,mkt,real};return CM;}
+function weeklyC(dt,px){const t=[],o=[],h=[],l=[],c=[];const WK=7*864e5;let bs=null,bo,bh,bl,bc,bt;for(let i=0;i<dt.length;i++){const ms=dt[i],p=px[i];if(p==null)continue;if(bs==null){bs=ms;bo=bh=bl=bc=p;bt=ms;continue;}if(ms-bs>=WK){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);bs=ms;bo=bh=bl=bc=p;bt=ms;}else{bh=Math.max(bh,p);bl=Math.min(bl,p);bc=p;bt=ms;}}if(bs!=null){t.push(bt);o.push(bo);h.push(bh);l.push(bl);c.push(bc);}return{t,o,h,l,c};}
 async function loadData(){
   let bin=null,cm=null;
   try{bin=await fetchBinance("api.binance.com");}catch(e){try{bin=await fetchBinance("api.binance.us");}catch(e2){}}
   try{cm=await fetchCM();}catch(e){}
-  if(bin&&cm){const w=weeklyFrom(cm.dt,cm.price);const b0=bin.t[0];const pt=[],pc=[];
-    for(let i=0;i<w.t.length;i++){if(w.t[i]<b0-3*864e5&&w.t[i]>Date.parse("2010-01-01")){pt.push(w.t[i]);pc.push(w.c[i]);}}
-    DATA={t:[...pt,...bin.t],c:[...pc,...bin.c]};SRC="Coin Metrics + Binance";return;}
-  if(bin){DATA={t:bin.t,c:bin.c};SRC="Binance";return;}
-  if(cm){const w=weeklyFrom(cm.dt,cm.price);DATA={t:w.t,c:w.c};SRC="Coin Metrics";return;}
-  throw new Error("sin fuentes de precio");
+  if(bin&&cm){const w=weeklyC(cm.dt,cm.price);const b0=bin.t[0];const pt=[],po=[],ph=[],pl=[],pc=[];for(let i=0;i<w.t.length;i++){if(w.t[i]<b0-3*864e5&&w.t[i]>Date.parse("2010-01-01")){pt.push(w.t[i]);po.push(w.o[i]);ph.push(w.h[i]);pl.push(w.l[i]);pc.push(w.c[i]);}}
+    DATA={t:[...pt,...bin.t],o:[...po,...bin.o],h:[...ph,...bin.h],l:[...pl,...bin.l],c:[...pc,...bin.c]};SRC="Coin Metrics + Binance";return;}
+  if(bin){DATA=bin;SRC="Binance";return;}
+  if(cm){DATA=weeklyC(cm.dt,cm.price);SRC="Coin Metrics";return;}
+  throw new Error("sin fuentes de precio");}
+async function loadOnchain(){try{const cm=await fetchCM();const dt=cm.dt,mkt=cm.mkt,real=cm.real;
+  const valid=mkt.filter(v=>v!=null);const mean=valid.reduce((a,b)=>a+b,0)/valid.length;const sd=Math.sqrt(valid.reduce((a,b)=>a+(b-mean)**2,0)/valid.length);
+  const zAt=i=>(mkt[i]!=null&&real[i]!=null&&sd>0)?(mkt[i]-real[i])/sd:null;
+  const n=DATA.t.length;const z=Array(n).fill(null);let j2=0;for(let i=0;i<n;i++){const wt=DATA.t[i];while(j2+1<dt.length&&dt[j2+1]<=wt)j2++;if(dt[j2]<=wt+7*864e5)z[i]=zAt(j2);}
+  OC={z};OC_STATUS="Coin Metrics ✓";}catch(e){OC=null;OC_STATUS="sin datos";}}
+
+/* ---------- evaluación de señales ---------- */
+let SERIES={};
+function seriesFor(op){if(op.ind==="value")return null;const key=op.ind+":"+JSON.stringify(op.params);if(!SERIES[key])SERIES[key]=INDS[op.ind].calc(op.params);return SERIES[key];}
+function evalCond(cond,i){
+  const L=seriesFor(cond.left);const li=L?L[i]:null,lip=L?L[i-1]:null;
+  let ri,rip;if(cond.right.ind==="value"){ri=rip=cond.right.params.v;}else{const R=seriesFor(cond.right);ri=R?R[i]:null;rip=R?R[i-1]:null;}
+  if(li==null||ri==null)return false;
+  switch(cond.op){
+    case"cross_up":return lip!=null&&rip!=null&&lip<=rip&&li>ri;
+    case"cross_dn":return lip!=null&&rip!=null&&lip>=rip&&li<ri;
+    case"gt":return li>ri; case"lt":return li<ri;
+    case"rise":return lip!=null&&li>lip; case"fall":return lip!=null&&li<lip;
+  }return false;
 }
-async function loadOnchain(){
-  try{const cm=await fetchCM();const dt=cm.dt,mkt=cm.mkt,real=cm.real;
-    const valid=mkt.filter(v=>v!=null);const mean=valid.reduce((a,b)=>a+b,0)/valid.length;
-    const sd=Math.sqrt(valid.reduce((a,b)=>a+(b-mean)**2,0)/valid.length);
-    const zAt=i=>(mkt[i]!=null&&real[i]!=null&&sd>0)?(mkt[i]-real[i])/sd:null;
-    const n=DATA.t.length;const z=Array(n).fill(null);let j2=0;
-    for(let i=0;i<n;i++){const wt=DATA.t[i];while(j2+1<dt.length&&dt[j2+1]<=wt)j2++;if(dt[j2]<=wt+7*864e5)z[i]=zAt(j2);}
-    OC={z};OC_STATUS="Coin Metrics ✓";return;
-  }catch(e){OC=null;OC_STATUS="sin datos";}
-}
+function signal(block,i){const B=block==="entry"?ENTRY:EXIT;if(!B.conds.length)return false;const rs=B.conds.map(c=>evalCond(c,i));return B.logic==="all"?rs.every(Boolean):rs.some(Boolean);}
 
 /* ---------- motor de backtest ---------- */
-function startIdx(){const t0=Date.parse($("#c_start").value)||DATA.t[0];let i=0;while(i<DATA.t.length&&DATA.t[i]<t0)i++;return Math.min(i,DATA.t.length-1);}
-// simula aportaciones semanales; contribFn(i) devuelve el USD a invertir esa semana.
-function runContrib(i0,contribFn){
-  const c=DATA.c,n=c.length;let btc=0,invested=0,peak=0,maxdd=0,cash=0;
-  const val=Array(n).fill(null);const buys=[];
-  for(let i=i0;i<n;i++){
-    const r=contribFn(i,{btc,cash,px:c[i]});
-    const amt=r.buy||0, keep=r.cash||0;
-    if(amt>0){btc+=amt/c[i];invested+=amt;buys.push({i,amt});}
-    if(keep>0){cash+=keep;invested+=keep;}
-    if(r.deployCash&&cash>0){btc+=cash/c[i];buys.push({i,amt:cash,fromCash:true});cash=0;}
-    const v=btc*c[i]+cash;val[i]=v;
-    if(v>peak)peak=v;const dd=peak>0?(v/peak-1):0;if(dd<maxdd)maxdd=dd;
-  }
-  const last=c[n-1];const finalVal=btc*last+cash;
-  return{btc,invested,cash,val,buys,finalVal,avg:btc>0?(invested-cash)/btc:null,
-    roi:invested>0?(finalVal/invested-1)*100:null,maxdd:maxdd*100};
-}
+let RES=null;
 function backtest(){
-  const i0=startIdx();const week=parseFloat($("#c_week").value)||0;
-  const zdip=parseFloat($("#c_zdip").value),zmult=parseFloat($("#c_zmult").value)||1,rsiTh=parseFloat($("#c_rsi").value);
-  const n=DATA.c.length,weeks=n-i0;
-  const S={};
-  // Hold: lump sum = week*weeks el primer día
-  S.hold=runContrib(i0,(i)=>i===i0?{buy:week*weeks}:{});
-  // DCA fija
-  S.dca=runContrib(i0,()=>({buy:week}));
-  // DCA + dip
-  S.dip=runContrib(i0,(i)=>{let m=1;const z=OC?OC.z[i]:null;if(z!=null&&z<zdip)m=Math.max(m,zmult);
-    if(IND.rsi[i]!=null&&IND.rsi[i]<rsiTh)m=Math.max(m,1+(zmult-1)*0.5);return{buy:week*m};});
-  // Tendencia BMSB: aporta a BTC si precio>banda; si no, guarda en cash; al recuperar banda despliega
-  S.bmsb=runContrib(i0,(i,st)=>{const s20=IND.s20[i],e21=IND.e21[i];const band=(s20!=null&&e21!=null)?Math.max(s20,e21):null;
-    if(band==null)return{buy:week};
-    if(DATA.c[i]>band)return{buy:week,deployCash:true};
-    return{cash:week};});
-  return{i0,weeks,S};
+  SERIES={};
+  const cap=parseFloat($("#c_cap").value)||10000;const fee=(parseFloat($("#c_fee").value)||0)/100;const size=Math.min(1,(parseFloat($("#c_size").value)||100)/100);
+  const t0=Date.parse($("#c_start").value)||DATA.t[0];let i0=0;while(i0<DATA.t.length&&DATA.t[i0]<t0)i0++;if(i0<1)i0=1;
+  const c=DATA.c,n=c.length;
+  let cash=cap,btc=0,inPos=false,entryPx=0,entryI=0;
+  const equity=Array(n).fill(null);const trades=[];let weeksIn=0;
+  for(let i=i0;i<n;i++){
+    if(!inPos&&signal("entry",i)){const spend=cash*size;const b=spend*(1-fee)/c[i];btc+=b;cash-=spend;inPos=true;entryPx=c[i];entryI=i;}
+    else if(inPos&&signal("exit",i)){const got=btc*c[i]*(1-fee);cash+=got;const ret=(c[i]/entryPx-1)*100;trades.push({inI:entryI,outI:i,pIn:entryPx,pOut:c[i],ret,bars:i-entryI});btc=0;inPos=false;}
+    if(inPos)weeksIn++;
+    equity[i]=cash+btc*c[i];
+  }
+  // cierre forzoso al final para métricas (marca-a-mercado, no trade)
+  const finalEq=cash+btc*c[n-1];
+  // buy & hold desde i0
+  const bh=Array(n).fill(null);for(let i=i0;i<n;i++)bh[i]=cap*c[i]/c[i0];
+  const metrics=computeMetrics(equity,bh,trades,i0,n,cap,finalEq,weeksIn);
+  RES={i0,n,equity,bh,trades,metrics,inPos,finalEq};
+  return RES;
+}
+function maxDD(eq,i0,n){let peak=-1e18,mdd=0;for(let i=i0;i<n;i++){if(eq[i]==null)continue;if(eq[i]>peak)peak=eq[i];const dd=peak>0?(eq[i]/peak-1):0;if(dd<mdd)mdd=dd;}return mdd*100;}
+function computeMetrics(eq,bh,trades,i0,n,cap,finalEq,weeksIn){
+  const weeks=n-i0;const years=weeks/52;
+  const roi=(finalEq/cap-1)*100;const bhRoi=(bh[n-1]/cap-1)*100;
+  const cagr=years>0?(Math.pow(finalEq/cap,1/years)-1)*100:null;
+  // sharpe sobre retornos semanales de la equity (solo tramos activos->usa toda la serie)
+  const rets=[];for(let i=i0+1;i<n;i++){if(eq[i]!=null&&eq[i-1]!=null&&eq[i-1]>0)rets.push(eq[i]/eq[i-1]-1);}
+  const mr=rets.reduce((a,b)=>a+b,0)/(rets.length||1);const sd=Math.sqrt(rets.reduce((a,b)=>a+(b-mr)**2,0)/(rets.length||1));
+  const sharpe=sd>0?(mr/sd)*Math.sqrt(52):null;
+  const dd=maxDD(eq,i0,n);const bhdd=maxDD(bh,i0,n);
+  const wins=trades.filter(t=>t.ret>0),losses=trades.filter(t=>t.ret<=0);
+  const winRate=trades.length?100*wins.length/trades.length:null;
+  const avgWin=wins.length?wins.reduce((a,t)=>a+t.ret,0)/wins.length:null;
+  const avgLoss=losses.length?losses.reduce((a,t)=>a+t.ret,0)/losses.length:null;
+  const grossW=wins.reduce((a,t)=>a+t.ret,0),grossL=Math.abs(losses.reduce((a,t)=>a+t.ret,0));
+  const pf=grossL>0?grossW/grossL:(grossW>0?Infinity:null);
+  const expo=100*weeksIn/weeks;
+  return{roi,bhRoi,cagr,sharpe,dd,bhdd,nTrades:trades.length,winRate,avgWin,avgLoss,pf,expo,finalEq,years,vsBH:roi-bhRoi};
 }
 
-/* ---------- render ---------- */
-const STRAT=[
-  {k:"hold",name:"Hold",col:"var(--muted)",plot:"#8aa0bd"},
-  {k:"dca",name:"DCA fija",col:"var(--accum)",plot:"#3fa9f5"},
-  {k:"dip",name:"DCA + dip (LMEC)",col:"var(--bull)",plot:"#2fc39b"},
-  {k:"bmsb",name:"Tendencia BMSB",col:"var(--accent)",plot:"#9b8cff"},
-];
-let SEL={hold:true,dca:true,dip:true,bmsb:true};
-function renderToggles(){$("#toggles").innerHTML=STRAT.map(s=>
-  `<label class="chk" style="--sc:${s.plot}"><input type="checkbox" data-k="${s.k}" ${SEL[s.k]?"checked":""}><span class="swatch" style="background:${s.plot}"></span>${s.name}</label>`).join("");
-  $("#toggles").querySelectorAll("input").forEach(el=>el.addEventListener("change",()=>{SEL[el.dataset.k]=el.checked;if(LAST)paint(LAST);}));}
-let LAST=null;
-function paint(res){
-  const {i0,weeks,S}=res;
-  $("#rangeNote").textContent=`${weeks} semanas · desde ${new Date(DATA.t[i0]).toISOString().slice(0,10)} · ${OC_STATUS==="Coin Metrics ✓"?"on-chain ✓":"on-chain no disponible (dip usa solo RSI)"}`;
-  const active=STRAT.filter(s=>SEL[s.k]);
-  // mejor ROI
-  let bestROI=-1e9,bestK=null;active.forEach(s=>{const r=S[s.k].roi;if(r!=null&&r>bestROI){bestROI=r;bestK=s.k;}});
-  // cards
-  $("#cards").innerHTML=active.map(s=>{const r=S[s.k];
-    return `<div class="scard" style="--sc:${s.plot}">
-      <div class="sh"><h3>${s.name}</h3>${s.k===bestK?'<span class="win">mejor ROI</span>':""}</div>
-      <div class="kv"><span class="k">ROI</span><span class="v big ${r.roi>=0?"up":"down"}">${fmtPct(r.roi)}</span></div>
-      <div class="kv"><span class="k">Invertido</span><span class="v">${fmtUSD(r.invested)}</span></div>
-      <div class="kv"><span class="k">Valor final</span><span class="v">${fmtUSD(r.finalVal)}</span></div>
-      <div class="kv"><span class="k">BTC acumulado</span><span class="v">${r.btc.toFixed(4)}</span></div>
-      <div class="kv"><span class="k">Coste medio</span><span class="v">${fmtUSD(r.avg)}</span></div>
-      <div class="kv"><span class="k">Max drawdown</span><span class="v down">${r.maxdd.toFixed(0)}%</span></div>
-    </div>`;}).join("");
-  // tabla
-  $("#cmp").innerHTML=`<thead><tr><th>Estrategia</th><th>ROI</th><th>Invertido</th><th>Valor final</th><th>BTC</th><th>Coste medio</th><th>Max DD</th></tr></thead><tbody>`+
-    active.map(s=>{const r=S[s.k];return `<tr><td><span class="swatch" style="background:${s.plot}"></span>${s.name}</td>
-      <td class="${r.roi>=0?"up":"down"}">${fmtPct(r.roi)}</td><td>${fmtUSD(r.invested)}</td><td>${fmtUSD(r.finalVal)}</td>
-      <td>${r.btc.toFixed(4)}</td><td>${fmtUSD(r.avg)}</td><td class="down">${r.maxdd.toFixed(0)}%</td></tr>`;}).join("")+`</tbody>`;
-  // equity chart
+/* ---------- render resultados ---------- */
+function paint(){
+  const M=RES.metrics;
+  $("#resTag").textContent=`${DATA.t.length-RES.i0} sem · ${M.nTrades} ops · ${OC?"on-chain ✓":"on-chain n/d"}`;
+  $("#rangeNote").textContent=`desde ${new Date(DATA.t[RES.i0]).toISOString().slice(0,10)}${RES.inPos?" · posición ABIERTA al final":""}`;
+  const beat=M.vsBH>=0;
+  $("#cards").innerHTML=[
+    {l:"ROI estrategia",n:fmtPct(M.roi),s:"neto tras comisiones",c:M.roi>=0?"var(--bull)":"var(--bear)",cl:M.roi>=0?"up":"down"},
+    {l:"Comprar y aguantar",n:fmtPct(M.bhRoi),s:"mismo periodo",c:"var(--muted)"},
+    {l:"vs B&H",n:fmtPct(M.vsBH),s:beat?"bate al hold":"por debajo del hold",c:beat?"var(--bull)":"var(--bear)",cl:beat?"up":"down"},
+    {l:"CAGR",n:M.cagr!=null?fmtPct(M.cagr):"—",s:M.years.toFixed(1)+" años",c:"var(--accent)"},
+    {l:"Max drawdown",n:M.dd.toFixed(0)+"%",s:"B&H "+M.bhdd.toFixed(0)+"%",c:"var(--bear)",cl:"down"},
+    {l:"Sharpe (anual)",n:M.sharpe!=null?M.sharpe.toFixed(2):"—",s:"retorno/riesgo",c:"var(--accum)"},
+    {l:"Win rate",n:M.winRate!=null?M.winRate.toFixed(0)+"%":"—",s:M.nTrades+" operaciones",c:"var(--accent)"},
+    {l:"Profit factor",n:M.pf==null?"—":(M.pf===Infinity?"∞":M.pf.toFixed(2)),s:"ganancia/pérdida",c:"var(--bull)"},
+  ].map(x=>`<div class="stat" style="--sc:${x.c}"><div class="l">${x.l}</div><div class="n ${x.cl||""}">${x.n}</div><div class="s">${x.s}</div></div>`).join("");
+
+  // tabla métricas
+  const rowsM=[
+    ["Capital final",fmtUSD(M.finalEq)],["ROI",fmtPct(M.roi)],["CAGR",M.cagr!=null?fmtPct(M.cagr):"—"],
+    ["Comprar y aguantar",fmtPct(M.bhRoi)],["Diferencia vs B&H",fmtPct(M.vsBH)],
+    ["Max drawdown",M.dd.toFixed(1)+"%"],["Max DD (B&H)",M.bhdd.toFixed(1)+"%"],["Sharpe anualizado",M.sharpe!=null?M.sharpe.toFixed(2):"—"],
+    ["Nº operaciones",M.nTrades],["Win rate",M.winRate!=null?M.winRate.toFixed(1)+"%":"—"],
+    ["Ganancia media",M.avgWin!=null?fmtPct(M.avgWin):"—"],["Pérdida media",M.avgLoss!=null?fmtPct(M.avgLoss):"—"],
+    ["Profit factor",M.pf==null?"—":(M.pf===Infinity?"∞":M.pf.toFixed(2))],["Exposición (tiempo en mercado)",M.expo.toFixed(0)+"%"],
+  ];
+  $("#metrics").innerHTML="<tbody>"+rowsM.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("")+"</tbody>";
+
+  // tabla trades (últimas 12)
+  const tr=RES.trades.slice(-12).reverse();
+  $("#trades").innerHTML=`<thead><tr><th>Entrada</th><th>Salida</th><th>Compra</th><th>Venta</th><th>Retorno</th></tr></thead><tbody>`+
+    (tr.length?tr.map(t=>`<tr><td>${new Date(DATA.t[t.inI]).toISOString().slice(0,10)}</td><td>${new Date(DATA.t[t.outI]).toISOString().slice(0,10)}</td><td>${fmtUSD(t.pIn)}</td><td>${fmtUSD(t.pOut)}</td><td class="${t.ret>=0?"up":"down"}">${fmtPct(t.ret)}</td></tr>`).join(""):`<tr><td colspan="5" class="jempty">Sin operaciones cerradas.</td></tr>`)+`</tbody>`;
+
+  paintChart();
+}
+function paintChart(){
   const x=DATA.t.map(ms=>new Date(ms).toISOString().slice(0,10));
-  const cGrid=cssv("--grid"),cMut=cssv("--muted"),cInk=cssv("--ink"),cPanel=cssv("--panel"),cAcc=cssv("--accent");
-  const tr=active.map(s=>({type:"scatter",x,y:S[s.k].val,name:s.name,line:{color:s.plot,width:1.8},connectgaps:false}));
-  // invertido acumulado (línea de referencia, gris)
-  if(active.length){const ref=S[active[0].k].val.map((_,i)=>{ // usa DCA fija como coste referencia si está
-      const base=S[SEL.dca?"dca":active[0].k];return null;});}
+  const cGrid=cssv("--grid"),cMut=cssv("--muted"),cInk=cssv("--ink"),cPanel=cssv("--panel"),cAcc=cssv("--accent"),cBull=cssv("--bull"),cBear=cssv("--bear");
+  const ex=[],exy=[],xx=[],xxy=[];
+  RES.trades.forEach(t=>{ex.push(x[t.inI]);exy.push(t.pIn);xx.push(x[t.outI]);xxy.push(t.pOut);});
+  if(RES.inPos){const li=DATA.c.length-1;} // posición abierta: última entrada visible ya está marcada
+  const tr=[
+    {type:"scatter",x,y:DATA.c,name:"BTC",yaxis:"y",line:{color:cMut,width:1.2}},
+    {type:"scatter",x:ex,y:exy,name:"compra",yaxis:"y",mode:"markers",marker:{symbol:"triangle-up",size:9,color:cBull,line:{color:"#fff",width:.6}}},
+    {type:"scatter",x:xx,y:xxy,name:"venta",yaxis:"y",mode:"markers",marker:{symbol:"triangle-down",size:9,color:cBear,line:{color:"#fff",width:.6}}},
+    {type:"scatter",x,y:RES.equity,name:"capital estrategia",yaxis:"y2",line:{color:cAcc,width:1.8}},
+    {type:"scatter",x,y:RES.bh,name:"comprar y aguantar",yaxis:"y2",line:{color:cMut,width:1,dash:"dot"}},
+  ];
+  const ax={gridcolor:cGrid,linecolor:cGrid,color:cMut,tickfont:{size:10}};
   const layout={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:cInk,family:cssv("--font")},
-    margin:{l:64,r:14,t:10,b:28},hovermode:"x unified",
+    margin:{l:60,r:52,t:10,b:26},hovermode:"x unified",
     hoverlabel:{bgcolor:cPanel,bordercolor:cAcc,font:{color:cInk,size:11}},
-    legend:{orientation:"h",y:1.04,x:0,font:{size:11},bgcolor:"rgba(0,0,0,0)"},
-    xaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,type:"date"},
-    yaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,type:"log",title:{text:"Valor cartera (log, USD)",font:{size:11}}}};
-  Plotly.react("eq",tr,layout,{responsive:true,displaylogo:false,scrollZoom:false,modeBarButtonsToRemove:["select2d","lasso2d"]});
+    legend:{orientation:"h",y:1.05,x:0,font:{size:10.5},bgcolor:"rgba(0,0,0,0)"},
+    xaxis:{...ax,anchor:"y2",type:"date"},
+    yaxis:{...ax,domain:[0.42,1],type:"log",title:{text:"BTC (log)",font:{size:11}}},
+    yaxis2:{...ax,domain:[0,0.34],type:"log",title:{text:"Capital (log)",font:{size:11}}}};
+  Plotly.react("chart",tr,layout,{responsive:true,displaylogo:false,scrollZoom:false,modeBarButtonsToRemove:["select2d","lasso2d"]});
 }
 
-/* ---------- plotly loader ---------- */
+/* ---------- presets ---------- */
+const PRESETS={
+  gc:{name:"Golden/Death Cross 50/200",e:{logic:"all",conds:[{left:{ind:"sma",params:{n:50}},op:"cross_up",right:{ind:"sma",params:{n:200}}}]},x:{logic:"all",conds:[{left:{ind:"sma",params:{n:50}},op:"cross_dn",right:{ind:"sma",params:{n:200}}}]}},
+  rsi:{name:"RSI sobreventa 34/70",e:{logic:"all",conds:[{left:{ind:"rsi",params:{n:14}},op:"cross_up",right:{ind:"value",params:{v:34}}}]},x:{logic:"all",conds:[{left:{ind:"rsi",params:{n:14}},op:"cross_dn",right:{ind:"value",params:{v:70}}}]}},
+  mvrv:{name:"MVRV Z suelo",e:{logic:"all",conds:[{left:{ind:"mvrvz",params:{}},op:"cross_up",right:{ind:"value",params:{v:0}}}]},x:{logic:"all",conds:[{left:{ind:"mvrvz",params:{}},op:"gt",right:{ind:"value",params:{v:5}}}]}},
+  bmsb:{name:"Tendencia BMSB",e:{logic:"all",conds:[{left:{ind:"price",params:{}},op:"cross_up",right:{ind:"bmsb",params:{}}}]},x:{logic:"all",conds:[{left:{ind:"price",params:{}},op:"cross_dn",right:{ind:"bmsb",params:{}}}]}},
+  macd:{name:"Cruce MACD",e:{logic:"all",conds:[{left:{ind:"macd",params:{f:12,s:26}},op:"cross_up",right:{ind:"macds",params:{f:12,s:26,sig:9}}}]},x:{logic:"all",conds:[{left:{ind:"macd",params:{f:12,s:26}},op:"cross_dn",right:{ind:"macds",params:{f:12,s:26,sig:9}}}]}},
+};
+function loadPreset(k){const P=PRESETS[k];if(!P)return;ENTRY=JSON.parse(JSON.stringify(P.e));EXIT=JSON.parse(JSON.stringify(P.x));$("#stratName").value=P.name;renderBuilder();}
+
+/* ---------- guardar estrategias (localStorage) ---------- */
+const SKEY="btc-bt-strategies-v1";
+let SAVED=[];
+function sload(){try{SAVED=JSON.parse(localStorage.getItem(SKEY)||"[]");}catch(e){SAVED=[];}}
+function ssave(){localStorage.setItem(SKEY,JSON.stringify(SAVED));}
+function saveCurrent(){
+  if(!RES){alert("Ejecuta el backtest antes de guardar.");return;}
+  const name=($("#stratName").value||"").trim()||("Estrategia "+(SAVED.length+1));
+  const M=RES.metrics;
+  const rec={id:"s"+Date.now(),name,entry:ENTRY,exit:EXIT,
+    cfg:{cap:$("#c_cap").value,fee:$("#c_fee").value,size:$("#c_size").value,start:$("#c_start").value},
+    metrics:{roi:M.roi,cagr:M.cagr,dd:M.dd,sharpe:M.sharpe,winRate:M.winRate,nTrades:M.nTrades,vsBH:M.vsBH}};
+  const ix=SAVED.findIndex(s=>s.name===name);if(ix>=0)SAVED[ix]=rec;else SAVED.push(rec);
+  ssave();renderSaved();
+}
+function renderSaved(){
+  if(!SAVED.length){$("#savedList").innerHTML='<div class="jempty">Aún no has guardado estrategias. Construye una, ejecútala y pulsa 💾 Guardar.</div>';return;}
+  $("#savedList").innerHTML=SAVED.map(s=>{const m=s.metrics||{};
+    return `<div class="scard" data-id="${s.id}">
+      <div class="st"><h4>${esc(s.name)}</h4><span class="${(m.roi||0)>=0?"up":"down"} mono" style="font-size:13px;font-weight:750">${fmtPct(m.roi)}</span></div>
+      <div class="m">CAGR ${m.cagr!=null?fmtPct(m.cagr):"—"} · DD ${m.dd!=null?m.dd.toFixed(0)+"%":"—"} · Sharpe ${m.sharpe!=null?m.sharpe.toFixed(2):"—"}<br>${m.nTrades||0} ops · win ${m.winRate!=null?m.winRate.toFixed(0)+"%":"—"} · vs B&H ${fmtPct(m.vsBH)}</div>
+      <div class="acts"><button class="btn sm load">↺ Cargar</button><button class="btn sm del" style="color:var(--bear)">Eliminar</button></div>
+    </div>`;}).join("");
+  $("#savedList").querySelectorAll(".scard").forEach(el=>{const id=el.dataset.id;const s=SAVED.find(x=>x.id===id);
+    el.querySelector(".load").addEventListener("click",()=>{ENTRY=JSON.parse(JSON.stringify(s.entry));EXIT=JSON.parse(JSON.stringify(s.exit));
+      if(s.cfg){$("#c_cap").value=s.cfg.cap;$("#c_fee").value=s.cfg.fee;$("#c_size").value=s.cfg.size;$("#c_start").value=s.cfg.start;}
+      $("#stratName").value=s.name;renderBuilder();run();window.scrollTo({top:0,behavior:"smooth"});});
+    el.querySelector(".del").addEventListener("click",()=>{SAVED=SAVED.filter(x=>x.id!==id);ssave();renderSaved();});});
+}
+function exportSaved(){const blob=new Blob([JSON.stringify(SAVED,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="btc-strategies.json";a.click();}
+function importSaved(file){const rd=new FileReader();rd.onload=()=>{try{const arr=JSON.parse(rd.result);if(Array.isArray(arr)){SAVED=arr;ssave();renderSaved();}}catch(e){alert("Archivo no válido");}};rd.readAsText(file);}
+
+/* ---------- plotly ---------- */
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("no se pudo cargar Plotly");}
 
-function run(){if(!DATA)return;IND={s20:sma(DATA.c,20),e21:ema(DATA.c,21),rsi:rsi(DATA.c)};LAST=backtest();paint(LAST);}
+function run(){if(!DATA)return;try{backtest();paint();}catch(e){const b=$("#errBanner");b.style.display="block";b.textContent="Error en el backtest: "+((e&&e.message)||e);}}
 async function boot(){
   $("#statusDot").className="dot warn";$("#statusText").textContent="Cargando datos…";$("#errBanner").style.display="none";
-  renderToggles();
+  sload();renderSaved();
+  if(!ENTRY.conds.length)loadPreset("gc");else renderBuilder();
   try{await Promise.all([loadPlotly(),loadData()]);await loadOnchain();
-    $("#statusDot").className="dot";$("#statusText").textContent=DATA.t.length+" semanas · "+SRC;$("#srcTag").textContent=SRC;
-    run();}
-  catch(err){$("#statusDot").className="dot err";$("#statusText").textContent="Error";
-    const b=$("#errBanner");b.style.display="block";b.innerHTML="<b>No se pudo cargar.</b> "+((err&&err.message)||err)+". Tu red puede bloquear Binance/Coin Metrics — prueba otra red y pulsa ↻.";}
+    $("#statusDot").className="dot";$("#statusText").textContent=DATA.t.length+" semanas · "+SRC;$("#srcTag").textContent=SRC;run();}
+  catch(err){$("#statusDot").className="dot err";$("#statusText").textContent="Error";const b=$("#errBanner");b.style.display="block";b.innerHTML="<b>No se pudo cargar.</b> "+((err&&err.message)||err)+". Tu red puede bloquear Binance/Coin Metrics — prueba otra red y pulsa ↻.";}
 }
+$("#addEntry").addEventListener("click",()=>{ENTRY.conds.push(newCond());renderBuilder();});
+$("#addExit").addEventListener("click",()=>{EXIT.conds.push(newCond({ind:"price",params:{}},"cross_dn",{ind:"sma",params:{n:50}}));renderBuilder();});
+$("#entryLogic").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{ENTRY.logic=b.dataset.v;renderBuilder();}));
+$("#exitLogic").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{EXIT.logic=b.dataset.v;renderBuilder();}));
+$("#c_preset").addEventListener("change",e=>{if(e.target.value)loadPreset(e.target.value);});
 $("#runBtn").addEventListener("click",run);
+$("#saveBtn").addEventListener("click",saveCurrent);
+$("#expBtn").addEventListener("click",exportSaved);
+$("#impBtn").addEventListener("click",()=>$("#impFile").click());
+$("#impFile").addEventListener("change",e=>{if(e.target.files[0])importSaved(e.target.files[0]);});
 $("#refreshBtn").addEventListener("click",boot);
-$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);if(LAST)paint(LAST);});
+$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);if(RES)paintChart();});
 (function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
 boot();
 </script>
