@@ -54,21 +54,22 @@ código" — sin la cookie correcta, Vercel no entrega el HTML.
 
 Tus posiciones/PnL (DeFi-Tracker) y tu **diario de operativa** son **datos personales**.
 Este repo es **público**, así que esos datos **nunca** viven aquí: se guardan en tu repo
-**privado** `brovira/DeFi-Tracker` y el backend los trae **al momento**, solo si envías la
-**contraseña** correcta.
+**privado** `brovira/DeFi-Tracker` y el backend los trae **al momento**, solo durante una
+sesión autorizada por la entrada global de la web.
 
 - `private.js` → `GET /api/private?file=orca_pnl` — sirve `data/normalized/orca_pnl.json`
   (también `orca_positions` / `orca_events`). Solo lectura.
 - `journal.js` → `GET/POST /api/journal` — lee y **añade** entradas a `data/journal.json`
   (tu diario de trades + razonamiento). El POST **escribe** en el repo privado.
 
-El dashboard `lp.html` pide la contraseña una vez (botón **🔒 Mis datos**), la recuerda en
-tu dispositivo y a partir de ahí **auto-carga** tus datos y tu diario — **sin descargar ni
-subir archivos**. La contraseña viaja en la cabecera `x-dash-pw`; los datos **no** se cachean
-en el navegador (se re-piden con la contraseña en cada carga).
+La herramienta pide la contraseña una sola vez al entrar. La cookie segura `site_auth`
+autoriza también `portfolio.html`, `lp.html` y sus APIs, que **auto-cargan** los datos sin
+volver a mostrar formularios. La cookie es `HttpOnly`; la contraseña no se guarda en el
+navegador y los datos personales se vuelven a pedir al backend en cada carga.
 
 ### Configuración (una vez, en Vercel → `btc-cycle-terminal` → Settings → Environment Variables)
-1. `DASH_PASSWORD = <la contraseña que elijas>` (Production + Preview).
+1. `SITE_PASSWORD = <la contraseña que elijas>` (Production + Preview). `DASH_PASSWORD`
+   sigue aceptándose por compatibilidad, pero ya no es necesario usar dos claves.
 2. `GH_TOKEN = <token fine-grained de GitHub sobre DeFi-Tracker>`:
    - GitHub → **Settings → Developer settings → Fine-grained tokens → Generate new token**.
    - **Resource owner:** tú · **Repository access:** *Only select repositories* → **DeFi-Tracker**.
@@ -77,11 +78,12 @@ en el navegador (se re-piden con la contraseña en cada carga).
      - **Read and write** → necesario para **añadir** entradas al diario desde el dashboard.
    - Generate token y pega el valor en `GH_TOKEN`.
 3. *(Opcional)* `PRIVATE_REPO = brovira/DeFi-Tracker` (es el valor por defecto).
-4. **Redeploy** (o push). Entra en `/lp.html`, pulsa **🔒 Mis datos**, escribe la contraseña.
+4. **Redeploy** (o push). Introduce la contraseña al entrar en la web; las zonas privadas
+   cargarán después con esa misma sesión.
 
 ### Comportamiento sin configurar (nada se rompe)
-- Sin `DASH_PASSWORD` → `503 {error:"no_password"}` y el frontend avisa.
-- Contraseña incorrecta → `401` con un pequeño retardo anti-fuerza-bruta.
+- Sin `SITE_PASSWORD` ni `DASH_PASSWORD` → `503 {error:"no_password"}` y el frontend avisa.
+- Sesión inválida → `401` con un pequeño retardo anti-fuerza-bruta.
 - Sin `GH_TOKEN` → `503`; con token sin escritura, el diario **se lee** pero el POST da `403`.
 - El `file-upload` manual (arrastrar el JSON/CSV) sigue disponible como alternativa.
 

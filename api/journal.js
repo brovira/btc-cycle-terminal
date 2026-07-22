@@ -1,7 +1,7 @@
 // api/journal.js — diario de operativa (trade journal) PERSONAL.
 // GET  /api/journal            → lee las entradas del repo privado (data/journal.json)
 // POST /api/journal            → añade una entrada nueva (y la commitea al repo privado)
-// Ambas requieren la contraseña (cabecera 'x-dash-pw'). Los datos NUNCA están en el
+// Ambas requieren la sesión global de la web. Los datos NUNCA están en el
 // repo público: se leen/escriben en el momento contra brovira/DeFi-Tracker con GH_TOKEN.
 //
 // CONFIGURACIÓN (Vercel → Settings → Environment Variables):
@@ -13,13 +13,7 @@
 
 const REPO = process.env.PRIVATE_REPO || "brovira/DeFi-Tracker";
 const PATH = "data/journal.json";
-
-function passwordOk(req, url, pass) {
-  const given = req.headers["x-dash-pw"] || url.searchParams.get("pw") || "";
-  return given.length === pass.length && (() => {
-    let d = 0; for (let i = 0; i < pass.length; i++) d |= given.charCodeAt(i) ^ pass.charCodeAt(i); return d === 0;
-  })();
-}
+const { authConfigured, requestAuthorized } = require("../lib/auth");
 
 async function readBody(req) {
   if (req.body) return typeof req.body === "string" ? JSON.parse(req.body) : req.body;
@@ -36,11 +30,10 @@ function slug(s) {
 module.exports = async (req, res) => {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   const url = new URL(req.url, "http://x");
-  const pass = process.env.DASH_PASSWORD;
   const token = process.env.GH_TOKEN;
 
-  if (!pass) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password", message: "Falta DASH_PASSWORD en Vercel." })); }
-  if (!passwordOk(req, url, pass)) { await new Promise(r => setTimeout(r, 600)); res.statusCode = 401; return res.end(JSON.stringify({ error: "bad_password" })); }
+  if (!authConfigured()) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password", message: "Falta SITE_PASSWORD o DASH_PASSWORD en Vercel." })); }
+  if (!requestAuthorized(req, url)) { await new Promise(r => setTimeout(r, 600)); res.statusCode = 401; return res.end(JSON.stringify({ error: "bad_password" })); }
   if (!token) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_github_token", message: "Falta GH_TOKEN en Vercel." })); }
 
   const gh = (extra) => ({ Authorization: `Bearer ${token}`, "User-Agent": "lp-journal", Accept: "application/vnd.github+json", ...extra });

@@ -6,7 +6,7 @@
 //
 // CONFIGURACIÓN (una vez): Vercel → proyecto btc-cycle-terminal → Settings →
 //   Environment Variables → SITE_PASSWORD = <la contraseña para entrar>
-// Mientras SITE_PASSWORD no esté puesta, NO bloquea nada (así no te dejas fuera).
+// Si no existe, reutiliza DASH_PASSWORD para que toda la herramienta tenga una sola clave.
 //
 // Nota: el repo es público, así que el CÓDIGO sigue visible en GitHub; esto
 // protege el SITIO desplegado (la URL), que es lo que pediste.
@@ -48,7 +48,7 @@ function loginPage(err) {
 }
 
 export default async function middleware(req) {
-  const pass = process.env.SITE_PASSWORD;
+  const pass = process.env.SITE_PASSWORD || process.env.DASH_PASSWORD;
   if (!pass) return; // sin configurar → no bloquea (evita dejarte fuera)
 
   const url = new URL(req.url);

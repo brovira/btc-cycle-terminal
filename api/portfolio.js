@@ -4,8 +4,9 @@
 //   · EVM (Ethereum + Base): Blockscout público (trae precios USD de cada token)
 //   · Precios BTC/SOL: Binance
 // Las direcciones viven en el repo PRIVADO (data/wallets.json): {"solana":"...","evm":"..."}
-// GET /api/portfolio  (cabecera x-dash-pw)  →  { solana:{...}, evm:{...}, prices:{...} }
+// GET /api/portfolio  →  { solana:{...}, evm:{...}, prices:{...} }
 
+const { authConfigured, requestAuthorized } = require("../lib/auth");
 const REPO = process.env.PRIVATE_REPO || "brovira/DeFi-Tracker";
 const SOL_RPC = process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
 const KNOWN = { // mints de Solana que ya conocemos → se valoran con precio BTC/USDC
@@ -13,13 +14,6 @@ const KNOWN = { // mints de Solana que ya conocemos → se valoran con precio BT
   "3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh": { sym: "WBTC", kind: "btc" },
   "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": { sym: "USDC", kind: "usd" },
 };
-
-function passwordOk(req, url, pass) {
-  const given = req.headers["x-dash-pw"] || url.searchParams.get("pw") || "";
-  return given.length === pass.length && (() => {
-    let d = 0; for (let i = 0; i < pass.length; i++) d |= given.charCodeAt(i) ^ pass.charCodeAt(i); return d === 0;
-  })();
-}
 
 async function ghFile(token, path) {
   const r = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
@@ -276,9 +270,9 @@ async function fetchPrices() {
 module.exports = async (req, res) => {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   const url = new URL(req.url, "http://x");
-  const pass = process.env.DASH_PASSWORD; const token = process.env.GH_TOKEN;
-  if (!pass) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password" })); }
-  if (!passwordOk(req, url, pass)) { await new Promise(r => setTimeout(r, 600)); res.statusCode = 401; return res.end(JSON.stringify({ error: "bad_password" })); }
+  const token = process.env.GH_TOKEN;
+  if (!authConfigured()) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password" })); }
+  if (!requestAuthorized(req, url)) { await new Promise(r => setTimeout(r, 600)); res.statusCode = 401; return res.end(JSON.stringify({ error: "bad_password" })); }
   if (!token) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_github_token" })); }
 
   try {

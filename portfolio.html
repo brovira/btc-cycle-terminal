@@ -55,7 +55,7 @@
     <div>
       <div class="kicker">DeFi · Cartera</div>
       <h1>🧳 <b>Cartera</b> · estado actual</h1>
-      <div class="meta"><span class="dot" id="statusDot"></span><span id="statusText">Introduce tu contraseña</span></div>
+      <div class="meta"><span class="dot" id="statusDot"></span><span id="statusText">Cargando sesión privada</span></div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <a class="btn" href="index.html">← Panel</a>
@@ -65,13 +65,8 @@
   </header>
 
   <div class="panel" id="gate" style="padding:16px;max-width:520px">
-    <div style="font-size:15px;margin-bottom:8px">🔒 <b>Datos personales</b></div>
-    <form id="pwForm" style="display:flex;gap:8px;flex-wrap:wrap">
-      <input type="password" id="pw" placeholder="Contraseña" autocomplete="current-password"
-        style="flex:1;min-width:170px;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:14px">
-      <button class="btn pri" type="submit">Entrar</button>
-    </form>
-    <div class="note" id="gateMsg" style="margin-top:8px"></div>
+    <div style="font-size:15px;margin-bottom:6px">🔒 <b>Datos personales</b></div>
+    <div class="note" id="gateMsg">Cargando cartera privada…</div>
   </div>
 
   <div id="content" style="display:none">
@@ -119,7 +114,6 @@ const fmtUSD=(v,d=0)=>v==null||isNaN(v)?"—":"$"+Number(v).toLocaleString("en-U
 const fmtEUR=v=>v==null||isNaN(v)?"—":(v<0?"-€":"€")+Math.abs(Math.round(v)).toLocaleString("en-US");
 const fmtAmt=v=>v==null?"—":Number(v).toLocaleString("en-US",{maximumFractionDigits:v>1000?0:(v>1?4:6)});
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
-const PWKEY="lp-dash-pw"; // misma clave que lp.html: un solo login para todo lo personal
 const BELROGAM_CUSHION=60000;
 (function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
 $("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);});
@@ -142,16 +136,16 @@ function v3Value(ls,btc){
   const px=l=>l==="USDC"?1:btc;
   return a0*px(ls.label0)+a1*px(ls.label1);
 }
-async function loadLpValue(pw,btc){
-  try{const r=await fetch("/api/private?file=orca_pnl",{headers:{"x-dash-pw":pw},cache:"no-store"});
+async function loadLpValue(btc){
+  try{const r=await fetch("/api/private?file=orca_pnl",{cache:"no-store"});
     if(!r.ok)return null;const data=await r.json();
     const arr=Array.isArray(data)?data:(data.pnl||[]);
     let v=0,n=0;for(const p of arr){if(p&&p.status==="open"&&p.isConfirmedPosition){const b=v3Value(p.liquidityState,btc);if(b!=null){v+=b;n++;}}}
     return n?v:null;}catch(e){return null;}
 }
 /* Activos manuales (sin API): data/manual_assets.json del repo privado, precio via Binance */
-async function loadManual(pw){
-  try{const r=await fetch("/api/private?file=manual_assets",{headers:{"x-dash-pw":pw},cache:"no-store"});
+async function loadManual(){
+  try{const r=await fetch("/api/private?file=manual_assets",{cache:"no-store"});
     if(!r.ok)return[];const doc=await r.json();const list=(doc&&doc.assets)||[];
     const out=[];
     for(const a of list){
@@ -166,22 +160,21 @@ async function loadManual(pw){
     }
     return out;}catch(e){return[];}
 }
-async function load(pw){
+async function load(){
   $("#gateMsg").textContent="Cargando…";
   let j=null;
-  try{const r=await fetch("/api/portfolio",{headers:{"x-dash-pw":pw},cache:"no-store"});
+  try{const r=await fetch("/api/portfolio",{cache:"no-store"});
     j=await r.json().catch(()=>null);
-    if(r.status===401){$("#gateMsg").textContent="Contraseña incorrecta.";localStorage.removeItem(PWKEY);return;}
+    if(r.status===401){$("#gateMsg").textContent="La sesión ha caducado. Recarga la página para volver a entrar.";return;}
     if(!r.ok||!j||j.error==="no_wallets"){$("#gateMsg").innerHTML=j&&j.message?esc(j.message):("Error "+(j&&j.error||r.status));if(j&&j.error==="no_wallets")$("#gateMsg").innerHTML="Aún no hay direcciones: rellena <code>data/wallets.json</code> en el repo privado (o pásamelas y las guardo yo).";return;}
   }catch(e){$("#gateMsg").textContent="Error de red.";return;}
-  localStorage.setItem(PWKEY,pw);
   const px=j.prices||{};
-  const [lpVal,manual]=await Promise.all([loadLpValue(pw,px.BTC),loadManual(pw)]);
+  const [lpVal,manual]=await Promise.all([loadLpValue(px.BTC),loadManual()]);
   $("#gate").style.display="none";$("#content").style.display="";
   $("#statusDot").className="dot ok";$("#statusText").textContent="Actualizado "+new Date().toISOString().slice(0,16).replace("T"," ")+" · caché 2 min";
   RAW={j,px,lpVal,manual};
   rebuild();
-  loadCashflow(pw);
+  loadCashflow();
   if(location.hash==="#belrogam")requestAnimationFrame(()=>$("#belrogam").scrollIntoView({block:"start"}));
 }
 let RAW=null,DUST_HIDE=false;const DUST_MIN=5;
@@ -261,14 +254,14 @@ function rebuild(){
 
 /* ---------- BELROGAM: cashflow → pólvora BTC ---------- */
 function addMonths(ym,k){const[y,m]=ym.split("-").map(Number);const d=new Date(Date.UTC(y,m-1+k,1));return d.toISOString().slice(0,7);}
-async function loadCashflow(pw){
+async function loadCashflow(){
   const msg=$("#cfMsg"),body=$("#cfBody");
   msg.textContent="Cargando cashflow…";body.style.display="none";body.innerHTML="";
   let j=null;
   try{
-    const r=await fetch("/api/cashflow",{headers:{"x-dash-pw":pw},cache:"no-store"});
+    const r=await fetch("/api/cashflow",{cache:"no-store"});
     j=await r.json().catch(()=>null);
-    if(r.status===401){msg.textContent="Contraseña incorrecta para cashflow.";return;}
+    if(r.status===401){msg.textContent="La sesión ha caducado. Recarga la página para volver a entrar.";return;}
     if(!r.ok){msg.textContent=(j&&(j.message||j.error))||("Cashflow no disponible · error "+r.status);return;}
   }catch(e){msg.textContent="Cashflow no disponible en esta preview local. Se prueba completo en Vercel Preview.";return;}
 
@@ -345,9 +338,9 @@ $("#pfTbl").addEventListener("click",e=>{
 });
 document.querySelectorAll("#pfTabs .btn").forEach(b=>b.addEventListener("click",()=>renderPf(b.dataset.pf)));
 $("#dustToggle").addEventListener("change",e=>{DUST_HIDE=e.target.checked;rebuild();});
-$("#pwForm").addEventListener("submit",e=>{e.preventDefault();load($("#pw").value);});
-(function(){const pw=localStorage.getItem(PWKEY)||sessionStorage.getItem(PWKEY);if(pw){$("#pw").value=pw;load(pw);}})();
-setInterval(()=>{const pw=localStorage.getItem(PWKEY);if(pw&&$("#content").style.display!=="none")load(pw);},10*60*1000);
+localStorage.removeItem("lp-dash-pw");sessionStorage.removeItem("lp-dash-pw");
+load();
+setInterval(()=>{if($("#content").style.display!=="none")load();},10*60*1000);
 </script>
 </body>
 </html>

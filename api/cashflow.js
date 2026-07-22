@@ -7,19 +7,13 @@
 // CONFIGURACIÓN (Vercel → Environment Variables — copia los valores del proyecto belrogam):
 //   SUPABASE_URL         = https://<proyecto>.supabase.co
 //   SUPABASE_SERVICE_KEY = <service role key>   (queda solo en el backend)
-//   DASH_PASSWORD        = (la que ya tienes)
+//   SITE_PASSWORD        = (la contraseña única de la web; DASH_PASSWORD sigue compatible)
 
-function passwordOk(req, url, pass) {
-  const given = req.headers["x-dash-pw"] || url.searchParams.get("pw") || "";
-  return given.length === pass.length && (() => {
-    let d = 0; for (let i = 0; i < pass.length; i++) d |= given.charCodeAt(i) ^ pass.charCodeAt(i); return d === 0;
-  })();
-}
+const { authConfigured, requestAuthorized } = require("../lib/auth");
 
 module.exports = async (req, res) => {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   const url = new URL(req.url, "http://x");
-  const pass = process.env.DASH_PASSWORD;
   // tolerante a variantes/typos del nombre (SUPABASE_URL, SUPBASE_URL, SUPABASE-URL…) y a
   // espacios/saltos de línea accidentales al pegar el valor en Vercel (trim()).
   const clean = (v) => {
@@ -36,8 +30,8 @@ module.exports = async (req, res) => {
     }
   }
   KEY = cleanKey(KEY);
-  if (!pass) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password" })); }
-  if (!passwordOk(req, url, pass)) { await new Promise(r => setTimeout(r, 600)); res.statusCode = 401; return res.end(JSON.stringify({ error: "bad_password" })); }
+  if (!authConfigured()) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password" })); }
+  if (!requestAuthorized(req, url)) { await new Promise(r => setTimeout(r, 600)); res.statusCode = 401; return res.end(JSON.stringify({ error: "bad_password" })); }
   if (!SB || !KEY) {
     // diagnóstico: nombres + LONGITUD de lo que hay (nunca el valor) — así se ve si está
     // vacía, si tiene solo espacios, o si directamente no existe la variable.

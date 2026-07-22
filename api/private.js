@@ -11,8 +11,10 @@
 //   Repository access: Only select repositories → DeFi-Tracker →
 //   Permissions → Repository permissions → Contents: Read-only → Generate.
 //
-// El frontend manda la contraseña en la cabecera 'x-dash-pw'.
+// La cookie del acceso global autoriza estas peticiones. La cabecera 'x-dash-pw'
+// se mantiene como compatibilidad para desarrollo y clientes antiguos.
 
+const { authConfigured, requestAuthorized } = require("../lib/auth");
 const REPO = process.env.PRIVATE_REPO || "brovira/DeFi-Tracker";
 const FILES = {                       // lista blanca de archivos que se pueden pedir
   orca_pnl: "data/normalized/orca_pnl.json",
@@ -24,14 +26,10 @@ const FILES = {                       // lista blanca de archivos que se pueden 
 module.exports = async (req, res) => {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   const url = new URL(req.url, "http://x");
-  const pass = process.env.DASH_PASSWORD;
   const token = process.env.GH_TOKEN;
 
-  if (!pass) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password", message: "Falta DASH_PASSWORD en Vercel." })); }
-  const given = req.headers["x-dash-pw"] || url.searchParams.get("pw") || "";
-  // comparación de longitud constante básica
-  const ok = given.length === pass.length && (() => { let d = 0; for (let i = 0; i < pass.length; i++) d |= given.charCodeAt(i) ^ pass.charCodeAt(i); return d === 0; })();
-  if (!ok) {
+  if (!authConfigured()) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password", message: "Falta SITE_PASSWORD o DASH_PASSWORD en Vercel." })); }
+  if (!requestAuthorized(req, url)) {
     await new Promise(r => setTimeout(r, 600)); // pequeño freno anti fuerza bruta
     res.statusCode = 401; return res.end(JSON.stringify({ error: "bad_password" }));
   }

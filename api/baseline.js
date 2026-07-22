@@ -2,7 +2,7 @@
 // GET  /api/baseline  → lee data/baseline.json del repo privado (DeFi-Tracker)
 // POST /api/baseline  → fija la línea base de HOY (valor actual de las posiciones
 //                       estables) y la commitea al repo privado.
-// Requiere la contraseña (cabecera 'x-dash-pw'), igual que journal.js.
+// Requiere la sesión global de la web, igual que journal.js.
 //
 // La línea base marca el "día cero" del farming: a partir de ahí el dashboard
 // calcula el PnL solo con los flujos posteriores (capital fresco = depósito
@@ -10,13 +10,7 @@
 
 const REPO = process.env.PRIVATE_REPO || "brovira/DeFi-Tracker";
 const PATH = "data/baseline.json";
-
-function passwordOk(req, url, pass) {
-  const given = req.headers["x-dash-pw"] || url.searchParams.get("pw") || "";
-  return given.length === pass.length && (() => {
-    let d = 0; for (let i = 0; i < pass.length; i++) d |= given.charCodeAt(i) ^ pass.charCodeAt(i); return d === 0;
-  })();
-}
+const { authConfigured, requestAuthorized } = require("../lib/auth");
 
 async function readBody(req) {
   if (req.body) return typeof req.body === "string" ? JSON.parse(req.body) : req.body;
@@ -28,11 +22,10 @@ async function readBody(req) {
 module.exports = async (req, res) => {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   const url = new URL(req.url, "http://x");
-  const pass = process.env.DASH_PASSWORD;
   const token = process.env.GH_TOKEN;
 
-  if (!pass) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password" })); }
-  if (!passwordOk(req, url, pass)) { await new Promise(r => setTimeout(r, 600)); res.statusCode = 401; return res.end(JSON.stringify({ error: "bad_password" })); }
+  if (!authConfigured()) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password" })); }
+  if (!requestAuthorized(req, url)) { await new Promise(r => setTimeout(r, 600)); res.statusCode = 401; return res.end(JSON.stringify({ error: "bad_password" })); }
   if (!token) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_github_token" })); }
 
   const gh = (extra) => ({ Authorization: `Bearer ${token}`, "User-Agent": "lp-baseline", Accept: "application/vnd.github+json", ...extra });
