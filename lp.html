@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LP · Posiciones (Orca)</title>
+<title>LP · Posiciones</title>
 <style>
   :root{
     --bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;
@@ -60,8 +60,15 @@
   .kv .k{color:var(--muted)} .kv .v{font-family:var(--mono);font-weight:700}
   .rbar{position:relative;height:8px;border-radius:5px;background:var(--panel2);border:1px solid var(--line);margin:8px 0 3px}
   .rbar .fill{position:absolute;inset:0;border-radius:5px;background:color-mix(in oklab,var(--accum) 26%,transparent)}
-  .rbar .mark{position:absolute;top:-4px;width:3px;height:16px;border-radius:2px}
+  .rbar .mark{position:absolute;top:-4px;width:3px;height:16px;border-radius:2px;transform:translateX(-50%);box-shadow:0 0 0 2px var(--panel)}
   .rbar.mini{height:6px;margin:3px 0 0}
+  .rangebox{min-width:240px;width:100%}
+  .rangeends,.rangefoot{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:10.5px;color:var(--muted)}
+  .rangefoot{margin-top:5px;white-space:normal}
+  .rangefoot strong{font-family:var(--font);font-size:10.5px;white-space:nowrap}
+  .rangefoot strong.in{color:var(--bull)} .rangefoot strong.out{color:var(--bear)}
+  .poolmeta{font-family:var(--mono);font-size:10px;color:var(--muted);font-weight:500;margin-top:2px}
+  .na{color:var(--muted)}
   .tabbar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
   .tabbar button{font:inherit;font-size:13px;font-weight:650;color:var(--muted);background:var(--panel);border:1px solid var(--line);padding:8px 14px;border-radius:10px;cursor:pointer}
   .tabbar button.on{color:var(--ink);border-color:var(--accent);background:color-mix(in oklab,var(--accent) 12%,var(--panel))}
@@ -100,9 +107,9 @@
 <div class="wrap">
   <header class="top">
     <div>
-      <div class="kicker">LPs · Liquidez concentrada · Orca (Solana)</div>
+      <div class="kicker">LPs · Liquidez concentrada · Orca + Uniswap</div>
       <h1>💧 <b>Posiciones LP</b></h1>
-      <div class="meta"><span class="dot" id="statusDot"></span><span id="statusText">Carga tu CSV de Orca</span></div>
+      <div class="meta"><span class="dot" id="statusDot"></span><span id="statusText">Cargando posiciones on-chain</span></div>
     </div>
     <div class="controls">
       <a class="btn" href="index.html">← Panel</a>
@@ -150,7 +157,7 @@
     <div class="panel" id="freshBody" style="padding:16px"></div>
   </div>
 
-  <!-- VISTA TIPO ORCA (modo JSON) -->
+  <!-- VISTA UNIFICADA TIPO ORCA -->
   <div class="section" id="orcaView" style="display:none">
     <div class="tabbar" id="tabbar">
       <button data-tab="pos" class="on">Posiciones</button>
@@ -213,15 +220,9 @@
     <div class="panel" style="overflow:auto"><table class="t" id="actTbl"></table></div>
   </div>
 
-  <!-- LIVE next -->
-  <div class="section" id="liveSec" style="display:none">
-    <div class="sec-head"><h2>En vivo desde tu wallet</h2><div class="rule"></div><span class="tag">próximamente</span></div>
-    <div class="soon"><b>Precios exactos vía Birdeye: backend listo</b> (<code>/api/birdeye</code>). Pon <code>BIRDEYE_API_KEY</code> en Vercel (los GitHub Secrets del DeFi-Tracker no se pueden leer desde aquí) y el pool peg WBTC/cbBTC pasa a ratio EXACTO y los balances se valoran con los precios reales de cada token de Solana. Lo que aún queda para el "en vivo" total: <b>fees pendientes de cobrar</b> (necesita leer el estado del pool vía RPC — siguiente paso si lo quieres).</div>
-  </div>
-
   <footer>
     <div class="note" style="max-width:900px">
-      Análisis de tu <b>Position History de Orca</b> (Solana). Todo se calcula en tu navegador; el CSV no sale de tu dispositivo (se guarda en localStorage). Muestra lo que el CSV contiene con certeza — capital, fees, PnL realizado — no el valor de mercado ni el rango actuales (eso es on-chain). <b>Uso educativo — no es asesoramiento financiero.</b>
+      Posiciones LP de <b>Orca</b> (Solana) y <b>Uniswap V3</b> (Ethereum). Orca combina histórico del DeFi-Tracker con valoración actual; Uniswap muestra balance y rango directamente desde la blockchain. <b>Uso educativo — no es asesoramiento financiero.</b>
     </div>
   </footer>
 </div>
@@ -246,7 +247,7 @@ function parseCSV(text){
 const num=v=>{const n=parseFloat(v);return isNaN(n)?0:n;};
 
 /* ---------- agregación por posición ---------- */
-let MODEL=null, MODE="csv", PNL=null;
+let MODEL=null, MODE="csv", PNL=null, LIVE_LPS=[], LIVE_LP_WARNING="";
 function build(rows){
   const pos={};const collects=[];
   for(const r of rows){
@@ -321,6 +322,42 @@ async function fetchPegRatio(){
   for(const h of["api.binance.com","api.binance.us"]){
     try{const r=await fetch(`https://${h}/api/v3/ticker/price?symbol=WBTCBTC`,{cache:"no-store"});
       if(r.ok){const p=+(await r.json()).price;if(p>0){PEG_RATIO=1/p;PEG_SRC="aprox";return;}}}catch(e){}}
+}
+async function fetchLiveLps(){
+  LIVE_LP_WARNING="";
+  try{
+    const r=await fetch("/api/portfolio",{cache:"no-store"});
+    if(!r.ok){LIVE_LPS=[];LIVE_LP_WARNING="LPs EVM no disponibles ("+r.status+")";return;}
+    const j=await r.json();
+    const sources=[j.uniswap,j.projectx].filter(Boolean);
+    LIVE_LPS=sources.flatMap(src=>(src.positions||[]).map(p=>({...p,protocol:p.protocol||src.protocol||"V3"})));
+    LIVE_LP_WARNING=sources.map(src=>src.warning).filter(Boolean).join(" · ");
+  }catch(e){LIVE_LPS=[];LIVE_LP_WARNING="LPs EVM no disponibles";}
+}
+function fmtRangePrice(v){
+  if(v==null||!isFinite(v))return"—";
+  const a=Math.abs(v),d=a>=1000?0:a>=10?2:a>=1?4:a>=.01?4:6;
+  return Number(v).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+}
+function fmtTokenAmount(v){
+  if(v==null||!isFinite(v))return"—";
+  const a=Math.abs(v),d=a>=1?4:a>=.01?5:7;
+  return Number(v).toLocaleString("en-US",{maximumFractionDigits:d});
+}
+function rangeVisual(r,current){
+  if(!r||!(r.priceHigh>r.priceLow))return'<span class="na">n/d</span>';
+  const lo=+r.priceLow,hi=+r.priceHigh,cur=current!=null?+current:null;
+  const has=cur!=null&&isFinite(cur)&&cur>0;
+  const inr=has&&cur>=lo&&cur<=hi;
+  let pos=50;
+  if(has){const raw=lo>0&&hi>0?Math.log(cur/lo)/Math.log(hi/lo):(cur-lo)/(hi-lo);pos=Math.max(0,Math.min(1,raw))*100;}
+  const state=!has?"Precio n/d":inr?"En rango":cur<lo?"Por debajo":"Por encima";
+  const unit=(r.quote&&r.base)?`${r.quote} por ${r.base}`:"precio";
+  return `<div class="rangebox" title="${esc(state)}">
+    <div class="rangeends"><span>${fmtRangePrice(lo)}</span><span>${fmtRangePrice(hi)}</span></div>
+    <div class="rbar mini"><div class="fill"></div>${has?`<div class="mark" style="left:${pos}%;background:${inr?'var(--bull)':'var(--bear)'}"></div>`:""}</div>
+    <div class="rangefoot"><span>${has?`Actual ${fmtRangePrice(cur)} ${esc(unit)}`:esc(unit)}</span><strong class="${inr?'in':'out'}">${state}</strong></div>
+  </div>`;
 }
 function rangeMarkup(r){
   if(!r)return `<div class="kv"><span class="k">Rango</span><span class="v" style="color:var(--muted)">—</span></div>`;
@@ -456,37 +493,40 @@ async function setBaseline(){
 function renderPnl(){
   const M=freshView(), BTC=BTC_PRICE;
   $("#loadSec").style.display="none";$("#clearBtn").style.display="";
-  ["sumSec","liveSec","orcaView"].forEach(id=>$("#"+id).style.display="");
+  ["sumSec","orcaView"].forEach(id=>$("#"+id).style.display="");
   ["openSec","feeSec","closedSec","actSec"].forEach(id=>$("#"+id).style.display="none");
-  $("#statusDot").className="dot";
-  $("#statusText").textContent=M.P.length+" posiciones · histórico on-chain "+(M.first?new Date(M.first).toISOString().slice(0,10):"?")+" → "+(M.last?new Date(M.last).toISOString().slice(0,10):"?");
-  $("#rangeTag").textContent=M.open.length+" abiertas · "+M.closed.length+" cerradas";
+  $("#statusDot").className=LIVE_LP_WARNING?"dot warn":"dot";
+  $("#statusText").textContent=M.P.length+" Orca · "+LIVE_LPS.length+" EVM · histórico "+(M.first?new Date(M.first).toISOString().slice(0,10):"?")+" → "+(M.last?new Date(M.last).toISOString().slice(0,10):"?");
+  $("#rangeTag").textContent=(M.open.length+LIVE_LPS.length)+" abiertas · "+M.closed.length+" cerradas";
   let openVal=0,openPnl=0;
   for(const p of M.open){const v=BTC?v3Value(p.ls,BTC):null;p._bal=v?v.balance:null;openVal+=p._bal||0;openPnl+=(p._bal||0)+(p.fees||0)-(p.invested||0);}
+  const liveVal=LIVE_LPS.reduce((s,p)=>s+(p.usd||0),0);openVal+=liveVal;
   $("#summary").innerHTML=[
-    {l:"Valor posiciones abiertas",n:BTC?fmtUSD(openVal):"—",s:BTC?("BTC "+fmtUSD(BTC)):"precio no disp.",c:"var(--accent)"},
-    {l:"PnL abiertas (no realizado)",n:BTC?fmtUSD(openPnl,0):"—",s:"Balance + fees − invertido",c:openPnl>=0?"var(--bull)":"var(--bear)",cl:openPnl>=0?"up":"down"},
+    {l:"Valor posiciones abiertas",n:BTC?fmtUSD(openVal):"—",s:"Orca + Uniswap · "+(M.open.length+LIVE_LPS.length)+" posiciones",c:"var(--accent)"},
+    {l:"PnL Orca abiertas",n:BTC?fmtUSD(openPnl,0):"—",s:"Balance + fees − invertido",c:openPnl>=0?"var(--bull)":"var(--bear)",cl:openPnl>=0?"up":"down"},
     {l:"PnL realizado (cerradas)",n:fmtUSD(M.realized,0),s:M.closed.length+" cerradas",c:M.realized>=0?"var(--bull)":"var(--bear)",cl:M.realized>=0?"up":"down"},
-    {l:"Fees / rewards (total)",n:fmtUSD(M.fees,0),s:"verificado vs CSV",c:"var(--bull)"},
+    {l:"Fees / rewards Orca",n:fmtUSD(M.fees,0),s:"verificado vs CSV",c:"var(--bull)"},
   ].map(x=>`<div class="stat" style="--sc:${x.c}"><div class="l">${x.l}</div><div class="n ${x.cl||""}">${x.n}</div><div class="s">${x.s}</div></div>`).join("");
-  $("#sumNote").innerHTML="✓ <b>Réplica de Orca, verificada al céntimo.</b> Balance por math V3 desde la liquidez on-chain; Total PnL = Balance + fees − invertido. En <b>Cerradas</b> tienes los 3 benchmarks (vs HOLD USD / tokens / BTC).";
+  $("#sumNote").innerHTML="<b>Orca:</b> balance y PnL histórico verificados. <b>Uniswap:</b> balance, composición y rango en vivo desde Ethereum; PnL y fees históricos todavía no disponibles."+(LIVE_LP_WARNING?` <span style="color:var(--hot)">${esc(LIVE_LP_WARNING)}</span>`:"");
   renderTabPos(M,BTC);renderTabHist(M);renderTabClosed(M,BTC);renderFresh();
 }
 function renderTabPos(M,BTC){
-  const rows=M.open.map(p=>{
+  const orcaRows=M.open.map(p=>{
     const bal=p._bal, pnl=bal!=null?bal+(p.fees||0)-(p.invested||0):null, pct=(pnl!=null&&p.invested)?pnl/p.invested*100:null;
     const bm=benchmarks(p,BTC); const entry=(bm.invUsd&&bm.invBtc)?bm.invUsd/bm.invBtc:null; const ey=estYield(p);
-    let range="—";
-    if(p.range&&p.range.quote==="USDC"){const r=p.range,inr=BTC&&BTC>=r.priceLow&&BTC<=r.priceHigh,pos=BTC?Math.max(0,Math.min(1,(BTC-r.priceLow)/(r.priceHigh-r.priceLow)))*100:50;
-      range=`<div class="sub">${fmtUSD(r.priceLow)}–${fmtUSD(r.priceHigh)} ${BTC?(inr?'🟢':'🔴'):''}</div><div class="rbar mini"><div class="fill"></div>${BTC?`<div class="mark" style="left:${pos}%;background:${inr?'var(--bull)':'var(--bear)'}"></div>`:''}</div>`;}
-    else if(p.range){
-      let pegSt="";
-      if(PEG_RATIO){const inr=PEG_RATIO>=p.range.priceLow&&PEG_RATIO<=p.range.priceHigh;
-        pegSt=` ${inr?'🟢':'🔴'} ${PEG_RATIO.toFixed(4)} <span style="color:var(--muted)">(${PEG_SRC||"aprox"})</span>`;}
-      range=`<div class="sub">${p.range.priceLow.toFixed(4)}–${p.range.priceHigh.toFixed(4)} · peg${pegSt}</div>`;}
-    return `<tr><td>${esc(p.pair)}</td><td>${bal!=null?fmtUSD(bal):'—'}</td><td class="${(pnl||0)>=0?'up':'down'}">${pnl!=null?fmtUSD(pnl,0):'—'}${pct!=null?`<div class="sub ${pct>=0?'up':'down'}">${pct>=0?'+':''}${pct.toFixed(2)}%</div>`:''}</td><td class="up">${fmtUSD(p.fees,0)}</td><td>${ey!=null?ey.toFixed(1)+'%':'—'}</td><td>${p.days.toFixed(0)}d</td><td style="text-align:left;min-width:160px">${range}</td><td>${entry?fmtUSD(entry):'—'}</td></tr>`;
+    const current=p.range&&p.range.quote==="USDC"?BTC:PEG_RATIO;
+    const range=rangeVisual(p.range,current);
+    return `<tr><td>${esc(p.pair)}<div class="poolmeta">Orca · Solana</div></td><td>${bal!=null?fmtUSD(bal):'—'}</td><td class="${(pnl||0)>=0?'up':'down'}">${pnl!=null?fmtUSD(pnl,0):'—'}${pct!=null?`<div class="sub ${pct>=0?'up':'down'}">${pct>=0?'+':''}${pct.toFixed(2)}%</div>`:''}</td><td class="up">${fmtUSD(p.fees,0)}</td><td>${ey!=null?ey.toFixed(1)+'%':'—'}</td><td>${p.days.toFixed(0)}d</td><td style="text-align:left">${range}</td><td>${entry?fmtUSD(entry):'—'}</td></tr>`;
   }).join("");
-  $("#tabPos").innerHTML=`<table class="ot"><thead><tr><th>Pool</th><th>Balance</th><th>Total PnL</th><th>Fees</th><th>Est.Yield</th><th>Duración</th><th>Rango · precio</th><th>Entrada media</th></tr></thead><tbody>${rows||'<tr><td colspan="8" class="note">Sin abiertas.</td></tr>'}</tbody></table>`;
+  const liveRows=LIVE_LPS.map(p=>`<tr>
+    <td>${esc(p.pair)} <span class="pilltok">${esc(p.fee)}</span><div class="poolmeta">${esc(p.protocol)} · ${esc(p.network||"EVM")} · NFT #${esc(p.id)}</div></td>
+    <td>${p.usd!=null?fmtUSD(p.usd):'<span class="na">sin precio</span>'}<div class="sub">${fmtTokenAmount(p.amt0)} ${esc(p.sym0)} + ${fmtTokenAmount(p.amt1)} ${esc(p.sym1)}</div></td>
+    <td><span class="na">n/d</span><div class="sub">sin histórico</div></td>
+    <td><span class="na">n/d</span></td><td><span class="na">n/d</span></td><td><span class="na">n/d</span></td>
+    <td style="text-align:left">${rangeVisual(p.range,p.range&&p.range.currentPrice)}</td><td><span class="na">n/d</span></td>
+  </tr>`).join("");
+  const rows=orcaRows+liveRows;
+  $("#tabPos").innerHTML=`<table class="ot" style="min-width:980px"><thead><tr><th>Pool</th><th>Balance</th><th>Total PnL</th><th>Fees</th><th>Est.Yield</th><th>Duración</th><th>Rango · precio</th><th>Entrada media</th></tr></thead><tbody>${rows||'<tr><td colspan="8" class="note">Sin abiertas.</td></tr>'}</tbody></table>`;
 }
 const HIST_ACT={open:'Open Position',increase:'Increase Liquidity',decrease:'Decrease Liquidity',collect_fees:'Collect Fees',close:'Close Position',collect_reward:'Collect Reward'};
 function renderTabHist(M){
@@ -521,7 +561,7 @@ function poolColor(pool){return /USDC/.test(pool)?"var(--accum)":"var(--hot)";}
 function render(){
   const M=MODEL;
   $("#loadSec").style.display="none";$("#clearBtn").style.display="";
-  ["sumSec","openSec","feeSec","closedSec","actSec","liveSec"].forEach(id=>$("#"+id).style.display="");
+  ["sumSec","openSec","feeSec","closedSec","actSec"].forEach(id=>$("#"+id).style.display="");
   $("#orcaView").style.display="none";
   $("#statusDot").className="dot";
   $("#statusText").textContent=M.rows.length+" movimientos · "+M.first.slice(0,10)+" → "+M.last.slice(0,10);
@@ -601,13 +641,15 @@ let PRIVATE_READY=false;
 async function loadPrivate(){
   $("#privBtn").disabled=true;$("#privBtn").textContent="…";
   try{
+    const livePromise=fetchLiveLps();
     const r=await fetch("/api/private?file=orca_pnl",{cache:"no-store"});
     if(r.status===401){privMsg("La sesión ha caducado. Recarga la página para volver a entrar.",true);return false;}
     if(r.status===503){const j=await r.json().catch(()=>({}));privMsg("Falta configurar el servidor: <code>"+esc(j.error||"config")+"</code>. "+esc(j.message||""),true);return false;}
     if(!r.ok){const j=await r.json().catch(()=>({}));privMsg("No se pudo cargar ("+r.status+"): "+esc(j.message||j.error||"error"),true);return false;}
     const text=await r.text();
+    await livePromise;
     PRIVATE_READY=true;
-    privMsg("✓ Datos privados cargados.",false);
+    privMsg("Datos Orca y posiciones EVM cargados.",false);
     await loadBaseline(); // línea base del fresh start ANTES de pintar (para filtrar desde el primer render)
     loadText(text,false); // NO cachear datos personales: se vuelven a pedir con la sesión global
     loadJournal();

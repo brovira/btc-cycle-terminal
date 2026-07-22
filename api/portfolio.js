@@ -210,7 +210,25 @@ async function blockscoutNfts(baseUrl, addr, wantedContracts = []) {
   return items;
 }
 
-async function fetchV3Positions(baseUrl, rpcs, addr, protoLabel, knownManagers = []) {
+function displayPriceRange(sp, spa, spb, token0, token1) {
+  const scale = Math.pow(10, token0.dec - token1.dec);
+  let currentPrice = sp * sp * scale;
+  let priceLow = spa * spa * scale;
+  let priceHigh = spb * spb * scale;
+  let base = token0.sym;
+  let quote = token1.sym;
+  if (currentPrice < 1) {
+    currentPrice = 1 / currentPrice;
+    const inverseLow = 1 / priceHigh;
+    priceHigh = 1 / priceLow;
+    priceLow = inverseLow;
+    base = token1.sym;
+    quote = token0.sym;
+  }
+  return { priceLow, priceHigh, currentPrice, base, quote };
+}
+
+async function fetchV3Positions(baseUrl, rpcs, addr, protoLabel, knownManagers = [], network = "EVM") {
   const out = { positions: [], totalUsd: 0, protocol: protoLabel };
   const call = rpcCaller(rpcs);
   try {
@@ -245,9 +263,10 @@ async function fetchV3Positions(baseUrl, rpcs, addr, protoLabel, knownManagers =
       const amt0 = a0 / Math.pow(10, t0.dec), amt1 = a1 / Math.pow(10, t1.dec);
       const usd = (t0.px != null ? amt0 * t0.px : 0) + (t1.px != null ? amt1 * t1.px : 0);
       const priced = t0.px != null && t1.px != null;
+      const range = displayPriceRange(sp, spa, spb, t0, t1);
       out.positions.push({ id: String(it.id), pair: `${t0.sym}/${t1.sym}`, fee: fee / 10000 + "%",
         amt0, amt1, sym0: t0.sym, sym1: t1.sym, usd: priced ? usd : (usd || null),
-        inRange: sp >= spa && sp <= spb, protocol: protoLabel });
+        inRange: sp >= spa && sp <= spb, range, protocol: protoLabel, network });
       if (usd) out.totalUsd += usd;
     }
   } catch (e) { out.warning = String(e.message || e); }
@@ -343,8 +362,8 @@ module.exports = async (req, res) => {
       wallets.evm ? fetchEvmChain("https://arbitrum.blockscout.com", "arbitrum", wallets.evm).catch(e => ({ error: String(e.message || e) })) : null,
       wallets.evm ? fetchEvmChain("https://optimism.blockscout.com", "optimism", wallets.evm).catch(e => ({ error: String(e.message || e) })) : null,
       wallets.evm ? fetchHyperliquid(wallets.evm).catch(e => ({ tokens: [], totalUsd: 0, warning: String(e.message || e) })) : null,
-      wallets.evm ? fetchV3Positions("https://eth.blockscout.com", ETH_RPCS, wallets.evm, "Uniswap V3", [UNISWAP_V3_POSITION_MANAGER]).catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
-      wallets.evm ? fetchV3Positions("https://hyperliquid.cloud.blockscout.com", HYPE_RPCS, wallets.evm, "ProjectX").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
+      wallets.evm ? fetchV3Positions("https://eth.blockscout.com", ETH_RPCS, wallets.evm, "Uniswap V3", [UNISWAP_V3_POSITION_MANAGER], "Ethereum").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
+      wallets.evm ? fetchV3Positions("https://hyperliquid.cloud.blockscout.com", HYPE_RPCS, wallets.evm, "ProjectX", [], "HyperEVM").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
       wallets.solana ? fetchKamino(wallets.solana).catch(e => ({ usd: 0, ok: false, warning: String(e.message || e) })) : null,
     ]);
     res.setHeader("Cache-Control", "private, max-age=120");
