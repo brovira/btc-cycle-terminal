@@ -681,6 +681,340 @@ body.dashboard-page * {
   padding: 15px 16px;
 }
 
+/* Portfolio */
+.page-portfolio .wrap {
+  max-width: 1600px;
+}
+
+.page-portfolio .tabbar {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+  margin: 0 0 16px;
+  padding: 0 9px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+
+.page-portfolio .tab {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 13px 12px 11px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.page-portfolio .tab:hover {
+  color: var(--ink);
+}
+
+.page-portfolio .tab.on {
+  border-bottom-color: var(--ink);
+  background: transparent;
+  color: var(--ink);
+}
+
+.page-portfolio #gate {
+  border-left: 3px solid var(--accent);
+  box-shadow: none;
+}
+
+.page-portfolio .nw {
+  display: grid;
+  grid-template-columns: minmax(330px, .9fr) minmax(430px, 1.1fr);
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.page-portfolio .nw > div {
+  min-width: 0;
+  padding: 20px 22px;
+}
+
+.page-portfolio .nw > div + div {
+  border-left: 1px solid var(--line);
+}
+
+.page-portfolio .nw .big {
+  margin-top: 5px;
+  font-family: var(--mono);
+  font-size: 34px;
+  font-weight: 720;
+  line-height: 1.1;
+}
+
+.page-portfolio .nw .lbl {
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.page-portfolio .substats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(105px, 1fr));
+  gap: 0;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.page-portfolio .substats > div {
+  min-width: 0;
+  padding-right: 13px;
+}
+
+.page-portfolio .substats > div + div {
+  padding-left: 13px;
+  border-left: 1px solid var(--line);
+}
+
+.page-portfolio .substats .n {
+  margin-top: 4px;
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.page-portfolio .risk {
+  justify-content: center;
+}
+
+.page-portfolio .risk .seg {
+  height: 8px;
+  margin-top: 12px;
+  border-radius: 4px;
+  background: var(--panel2);
+}
+
+.page-portfolio .risk .leg {
+  gap: 10px 18px;
+  margin-top: 14px;
+}
+
+.page-portfolio .risk .leg span {
+  color: var(--ink2);
+  font-size: 11.5px;
+}
+
+.page-portfolio .rdot {
+  width: 7px;
+  height: 7px;
+}
+
+.page-portfolio .sec-head {
+  margin-top: 24px;
+}
+
+.page-portfolio .sel {
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--ink2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.page-portfolio .modes {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+}
+
+.page-portfolio .mbtn {
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.page-portfolio .mbtn:hover {
+  color: var(--ink);
+}
+
+.page-portfolio .mbtn.on {
+  background: var(--accent);
+  color: #0d1117;
+}
+
+.page-portfolio #tab-ov > .panel[style*="overflow"] {
+  padding: 0;
+}
+
+.page-portfolio table {
+  min-width: 720px;
+  font-size: 12.5px;
+}
+
+.page-portfolio table th,
+.page-portfolio table td {
+  padding: 13px 14px;
+}
+
+.page-portfolio table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  font-size: 11px;
+}
+
+.page-portfolio table td {
+  font-family: var(--mono);
+}
+
+.page-portfolio table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.page-portfolio tr.grp:hover td {
+  background: color-mix(in oklab, var(--panel2) 60%, transparent);
+}
+
+.page-portfolio tr.subrow td {
+  background: var(--panel2);
+  color: var(--ink2);
+}
+
+.page-portfolio .shbar {
+  height: 5px;
+  border-radius: 3px;
+  background: var(--panel2);
+}
+
+.page-portfolio .shbar i {
+  border-radius: 3px;
+}
+
+.page-portfolio .chip,
+.page-portfolio .badge {
+  border-radius: 5px;
+}
+
+.page-portfolio .ticon {
+  letter-spacing: 0;
+}
+
+.page-portfolio .chips {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.page-portfolio .pchip {
+  min-width: 0;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: none;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+
+.page-portfolio .pchip:hover {
+  transform: none;
+  border-color: color-mix(in oklab, var(--accent) 45%, var(--line));
+  background: var(--panel2);
+}
+
+.page-portfolio .pchip .pi {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--panel2);
+  font-size: 13px;
+}
+
+.page-portfolio .pchip .pv {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.page-portfolio .proto {
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.page-portfolio .proto > summary {
+  min-height: 52px;
+  padding: 13px 16px;
+}
+
+.page-portfolio .proto > summary:hover {
+  background: var(--panel2);
+}
+
+.page-portfolio .proto > summary .pn,
+.page-portfolio .proto > summary .pt {
+  font-size: 14px;
+}
+
+.page-portfolio .proto .body {
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.page-portfolio #belrogam + .panel {
+  padding: 0 !important;
+  border: 0;
+  background: transparent !important;
+}
+
+.page-portfolio #cfMsg:not(:empty) {
+  padding: 15px 17px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+
+.page-portfolio #cfBody > div:first-child {
+  gap: 0 !important;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+
+.page-portfolio #cfBody > div:first-child > .panel {
+  padding: 14px 16px !important;
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-left: 0 !important;
+  border-radius: 0;
+  background: transparent !important;
+}
+
+.page-portfolio #cfBody > div:first-child > .panel:last-child {
+  border-right: 0;
+}
+
+.page-portfolio #cfBody > div[style*="overflow"] {
+  overflow-x: auto !important;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+
 @media (max-width: 900px) {
   .dashboard-page .wrap {
     padding: 22px 16px 52px;
@@ -727,6 +1061,34 @@ body.dashboard-page * {
   .dashboard-page #stats > .stat:nth-child(n+3),
   .dashboard-page #cards > .stat:nth-child(n+3) {
     border-top: 1px solid var(--line);
+  }
+
+  .page-portfolio .nw {
+    grid-template-columns: 1fr;
+  }
+
+  .page-portfolio .nw > div + div {
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .page-portfolio .substats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .page-portfolio .substats > div:nth-child(3) {
+    padding-left: 0;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .page-portfolio .substats > div:nth-child(4) {
+    border-top: 1px solid var(--line);
+  }
+
+  .page-portfolio .substats > div:nth-child(n+3) {
+    margin-top: 11px;
+    padding-top: 11px;
   }
 }
 
@@ -806,6 +1168,60 @@ body.dashboard-page * {
   .page-decision .lv:nth-child(n+3),
   .page-decision .lv:nth-child(n+4) {
     border-top: 1px solid var(--line);
+  }
+
+  .page-portfolio .tabbar {
+    margin-bottom: 12px;
+  }
+
+  .page-portfolio .nw > div {
+    padding: 17px 16px;
+  }
+
+  .page-portfolio .nw .big {
+    font-size: 30px;
+  }
+
+  .page-portfolio .sec-head .rule {
+    order: 2;
+  }
+
+  .page-portfolio .sec-head .sel,
+  .page-portfolio .sec-head .modes,
+  .page-portfolio .sec-head label {
+    order: 3;
+  }
+
+  .page-portfolio .modes {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .page-portfolio .chips {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .page-portfolio .proto > summary {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .page-portfolio .proto > summary .pt {
+    width: 100%;
+    margin-left: 23px;
+  }
+
+  .page-portfolio #cfBody > div:first-child {
+    grid-template-columns: 1fr !important;
+  }
+
+  .page-portfolio #cfBody > div:first-child > .panel {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .page-portfolio #cfBody > div:first-child > .panel:last-child {
+    border-bottom: 0;
   }
 }
 
