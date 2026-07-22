@@ -148,19 +148,33 @@ const ETH_RPCS = ["https://eth.blockscout.com/api/eth-rpc", "https://eth.llamarp
 const HYPE_RPCS = ["https://rpc.hyperliquid.xyz/evm"];
 const UNISWAP_V3_POSITION_MANAGER = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
 const PROJECTX_POSITION_MANAGER = "0xeaD19AE861c29bBb2101E834922B2FEee69B9091";
+const TOPIC_INCREASE = "0x3067048beee31b25b2f1681f88dac838c8bba36af25bfb2b7cf7473a5847e35f";
+const TOPIC_DECREASE = "0x26f6a048ee9138f2c0ce266f322cb99228e8d619ae2bff30c67f8dcf9d2377b4";
+const TOPIC_COLLECT = "0x40d0efd1a53d60ecbf40971b9daf7dc90178c3aadc7aab1765632738fa8b8f01";
+const MAX_UINT128 = "f".repeat(32);
+const HISTORICAL_PRICE_CACHE = new Map();
+const POSITION_HISTORY_CACHE = new Map();
 const pad = (h) => h.replace(/^0x/, "").padStart(64, "0");
 const word = (hex, i) => BigInt("0x" + (hex.replace(/^0x/, "").slice(i * 64, i * 64 + 64) || "0"));
 const toInt = (v) => (v > (1n << 255n) ? v - (1n << 256n) : v);
+async function rpcRequest(rpcs, method, params) {
+  for (const rpc of rpcs) {
+    try {
+      const r = await fetch(rpc, { method: "POST", headers: { "Content-Type": "application/json", "User-Agent": "portfolio" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }) });
+      if (!r.ok) continue;
+      const j = await r.json();
+      if (j.result != null) return j.result;
+    } catch (e) {}
+  }
+  return null;
+}
 function rpcCaller(rpcs) {
-  return async (to, data) => {
-    for (const rpc of rpcs) {
-      try {
-        const r = await fetch(rpc, { method: "POST", headers: { "Content-Type": "application/json", "User-Agent": "portfolio" },
-          body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_call", params: [{ to, data }, "latest"] }) });
-        if (!r.ok) continue; const j = await r.json(); if (j.result && j.result !== "0x") return j.result;
-      } catch (e) {}
-    }
-    return null;
+  return async (to, data, from) => {
+    const tx = { to, data };
+    if (from) tx.from = from;
+    const result = await rpcRequest(rpcs, "eth_call", [tx, "latest"]);
+    return result && result !== "0x" ? result : null;
   };
 }
 function decodeRpcString(hex) {
@@ -190,6 +204,209 @@ async function tokenInfo(baseUrl, address, call) {
 
 function isUsdStable(symbol) {
   return (symbol || "").toUpperCase().replace(/[^A-Z0-9]/g, "").startsWith("USD");
+}
+
+function marketPair(symbol) {
+  const sym = (symbol || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (isUsdStable(sym)) return "USD";
+  if (["BTC", "WBTC", "CBBTC", "UBTC"].includes(sym)) return "BTCUSDT";
+  if (["ETH", "WETH"].includes(sym)) return "ETHUSDT";
+  if (sym === "BNB") return "BNBUSDT";
+  return null;
+}
+
+async function historicalUsdPrice(symbol, timestamp) {
+  const pair = marketPair(symbol);
+  if (pair === "USD") return 1;
+  const minute = Math.floor(timestamp / 60000) * 60000;
+  const key = `${pair || symbol}:${minute}`;
+  if (!HISTORICAL_PRICE_CACHE.has(key)) {
+    HISTORICAL_PRICE_CACHE.set(key, (async () => {
+      if (pair) {
+        for (const host of ["api.binance.com", "api.binance.us"]) {
+          try {
+            const r = await fetch(`https://${host}/api/v3/klines?symbol=${pair}&interval=1m&startTime=${minute}&limit=1`, { headers: { "User-Agent": "portfolio" } });
+            if (!r.ok) continue;
+            const rows = await r.json();
+            if (Array.isArray(rows) && rows[0] && +rows[0][4] > 0) return +rows[0][4];
+          } catch (e) {}
+        }
+      }
+      if ((symbol || "").toUpperCase() === "HYPE") {
+        try {
+          const from = Math.floor(timestamp / 1000) - 3600;
+          const to = Math.floor(timestamp / 1000) + 3600;
+          const r = await fetch(`https://api.coingecko.com/api/v3/coins/hyperliquid/market_chart/range?vs_currency=usd&from=${from}&to=${to}`, { headers: { "User-Agent": "portfolio" } });
+          if (r.ok) {
+            const prices = (await r.json()).prices || [];
+            prices.sort((a, b) => Math.abs(a[0] - timestamp) - Math.abs(b[0] - timestamp));
+            if (prices[0] && +prices[0][1] > 0) return +prices[0][1];
+          }
+        } catch (e) {}
+      }
+      return null;
+    })());
+  }
+  return HISTORICAL_PRICE_CACHE.get(key);
+}
+
+async function discoverPositionMint(baseUrl, manager, tokenId, network) {
+  if (network === "HyperEVM") {
+    const r = await fetch(`https://hyperevmscan.io/nft/${manager}/${tokenId}`, { headers: { "User-Agent": "portfolio" } });
+    if (!r.ok) return null;
+    const html = await r.text();
+    const match = html.match(/var\s+dt_Data\s*=\s*(\[[\s\S]*?\]);/);
+    if (!match) return null;
+    const row = JSON.parse(match[1]).find(x => String(x.action) === "0" || String(x._from || "").toLowerCase() === "0x0000000000000000000000000000000000000000");
+    if (!row) return null;
+    return { hash: row.txhash, block: +row.blockNumber, timestamp: Date.parse(String(row.dt).replace(" ", "T") + "Z") };
+  }
+  const r = await fetch(`${baseUrl}/api/v2/tokens/${manager}/instances/${tokenId}/transfers`, { headers: { "User-Agent": "portfolio" } });
+  if (!r.ok) return null;
+  const body = await r.json();
+  const row = (body.items || []).find(x => x.type === "token_minting" || String(x.from && x.from.hash).toLowerCase() === "0x0000000000000000000000000000000000000000");
+  return row ? { hash: row.transaction_hash, block: +row.block_number, timestamp: Date.parse(row.timestamp) } : null;
+}
+
+async function recentManagerTransactions(baseUrl, owner, manager, network) {
+  if (network === "HyperEVM") {
+    const r = await fetch(`https://hyperevmscan.io/txs?a=${owner}&ps=100&p=1`, { headers: { "User-Agent": "portfolio" } });
+    if (!r.ok) return { rows: [], oldestBlock: null };
+    const html = await r.text();
+    const rows = [];
+    const blocks = [];
+    for (const match of html.matchAll(/<tr\b[\s\S]*?<\/tr>/gi)) {
+      const row = match[0];
+      const block = +(row.match(/href=["']\/block\/(\d+)["']/i) || [])[1];
+      if (block > 0) blocks.push(block);
+      if (!row.toLowerCase().includes(manager.toLowerCase())) continue;
+      const hash = (row.match(/href=["']\/tx\/(0x[0-9a-f]{64})["']/i) || [])[1];
+      const timestamp = +((row.match(/showLocalDate[\s\S]*?>(\d{10})<\/span>/i) || [])[1]) * 1000;
+      if (hash && block) rows.push({ hash, block, timestamp: timestamp || null });
+    }
+    return { rows, oldestBlock: blocks.length ? Math.min(...blocks) : null };
+  }
+  const r = await fetch(`${baseUrl}/api/v2/addresses/${owner}/transactions`, { headers: { "User-Agent": "portfolio" } });
+  if (!r.ok) return { rows: [], oldestBlock: null };
+  const body = await r.json();
+  const all = body.items || [];
+  const rows = all.filter(x => String(x.to && x.to.hash).toLowerCase() === manager.toLowerCase())
+    .map(x => ({ hash: x.hash, block: +x.block_number, timestamp: Date.parse(x.timestamp) }));
+  const blocks = all.map(x => +x.block_number).filter(Boolean);
+  return { rows, oldestBlock: blocks.length ? Math.min(...blocks) : null };
+}
+
+function decodeLiquidityEvent(log, tokenId, dec0, dec1) {
+  if (!log || !log.topics || log.topics.length < 2) return null;
+  try { if (word(log.topics[1], 0).toString() !== String(tokenId)) return null; } catch (e) { return null; }
+  const topic = String(log.topics[0]).toLowerCase();
+  if (![TOPIC_INCREASE, TOPIC_DECREASE, TOPIC_COLLECT].includes(topic)) return null;
+  return {
+    type: topic === TOPIC_INCREASE ? "increase" : topic === TOPIC_DECREASE ? "decrease" : "collect",
+    amount0: Number(word(log.data, 1)) / Math.pow(10, dec0),
+    amount1: Number(word(log.data, 2)) / Math.pow(10, dec1),
+  };
+}
+
+async function pendingPositionCollect(call, manager, tokenId, owner, token0, token1, px0, px1) {
+  const data = "0xfc6f7865" + pad(BigInt(tokenId).toString(16)) + pad(owner) + pad(MAX_UINT128) + pad(MAX_UINT128);
+  const result = await call(manager, data, owner);
+  if (!result) return null;
+  const amount0 = Number(word(result, 0)) / Math.pow(10, token0.dec);
+  const amount1 = Number(word(result, 1)) / Math.pow(10, token1.dec);
+  return { amount0, amount1, usd: (px0 != null ? amount0 * px0 : 0) + (px1 != null ? amount1 * px1 : 0) };
+}
+
+async function fetchPositionHistory({ baseUrl, rpcs, call, owner, manager, tokenId, network, token0, token1, currentUsd, px0, px1 }) {
+  const [mint, recent, pending] = await Promise.all([
+    discoverPositionMint(baseUrl, manager, tokenId, network),
+    recentManagerTransactions(baseUrl, owner, manager, network),
+    pendingPositionCollect(call, manager, tokenId, owner, token0, token1, px0, px1),
+  ]);
+  if (!mint) return null;
+  const txRows = recent.rows.filter(x => x.block >= mint.block);
+  if (!txRows.some(x => x.hash.toLowerCase() === mint.hash.toLowerCase())) txRows.push(mint);
+  const receipts = await Promise.all(txRows.map(async row => ({
+    ...row,
+    receipt: await rpcRequest(rpcs, "eth_getTransactionReceipt", [row.hash]),
+  })));
+  receipts.sort((a, b) => a.block - b.block);
+
+  let deposited0 = 0, deposited1 = 0, investedUsd = 0, withdrawnUsd = 0;
+  let claimedFeesUsd = 0, gasUsd = 0, gasComplete = true, owed0 = 0, owed1 = 0;
+  let entryCost0 = 0, entryCost1 = 0, openedAt = mint.timestamp;
+  const nativeSymbol = network === "Ethereum" ? "ETH" : network === "HyperEVM" ? "HYPE" : null;
+  const events = [];
+  for (const tx of receipts) {
+    if (!tx.receipt) continue;
+    let timestamp = tx.timestamp || null;
+    if (!timestamp) {
+      const block = await rpcRequest(rpcs, "eth_getBlockByNumber", [tx.receipt.blockNumber, false]);
+      if (block && block.timestamp) timestamp = Number(BigInt(block.timestamp)) * 1000;
+    }
+    const decoded = (tx.receipt.logs || [])
+      .filter(log => String(log.address).toLowerCase() === manager.toLowerCase())
+      .map(log => decodeLiquidityEvent(log, tokenId, token0.dec, token1.dec)).filter(Boolean);
+    if (!decoded.length) continue;
+    const [eventPx0, eventPx1, nativePx] = await Promise.all([
+      historicalUsdPrice(token0.sym, timestamp), historicalUsdPrice(token1.sym, timestamp),
+      nativeSymbol ? historicalUsdPrice(nativeSymbol, timestamp) : null,
+    ]);
+    for (const event of decoded) {
+      events.push({ type: event.type, timestamp, amount0: event.amount0, amount1: event.amount1 });
+      if (event.type === "increase") {
+        deposited0 += event.amount0; deposited1 += event.amount1;
+        if (eventPx0 == null || eventPx1 == null) return null;
+        const cost0 = event.amount0 * eventPx0, cost1 = event.amount1 * eventPx1;
+        investedUsd += cost0 + cost1; entryCost0 += cost0; entryCost1 += cost1;
+        if (!openedAt || timestamp < openedAt) openedAt = timestamp;
+      } else if (event.type === "decrease") {
+        owed0 += event.amount0; owed1 += event.amount1;
+      } else {
+        if (eventPx0 == null || eventPx1 == null) return null;
+        withdrawnUsd += event.amount0 * eventPx0 + event.amount1 * eventPx1;
+        const principal0 = Math.min(owed0, event.amount0), principal1 = Math.min(owed1, event.amount1);
+        claimedFeesUsd += (event.amount0 - principal0) * eventPx0 + (event.amount1 - principal1) * eventPx1;
+        owed0 -= principal0; owed1 -= principal1;
+      }
+    }
+    const gasNative = Number(BigInt(tx.receipt.gasUsed || "0x0") * BigInt(tx.receipt.effectiveGasPrice || "0x0")) / 1e18;
+    if (gasNative > 0) {
+      if (nativePx != null) gasUsd += gasNative * nativePx;
+      else gasComplete = false;
+    }
+  }
+  if (!(investedUsd > 0) || !openedAt) return null;
+  const pendingAmount0 = pending ? Math.max(0, pending.amount0 - owed0) : 0;
+  const pendingAmount1 = pending ? Math.max(0, pending.amount1 - owed1) : 0;
+  const pendingFeesUsd = (px0 != null ? pendingAmount0 * px0 : 0) + (px1 != null ? pendingAmount1 * px1 : 0);
+  const pendingCollectUsd = pending ? pending.usd : 0;
+  const feesUsd = claimedFeesUsd + pendingFeesUsd;
+  const pnlUsd = (currentUsd || 0) + withdrawnUsd + pendingCollectUsd - investedUsd - gasUsd;
+  const durationDays = Math.max((Date.now() - openedAt) / 86400000, 1 / 24);
+  const entryPrices = [];
+  if (!isUsdStable(token0.sym) && deposited0 > 0) entryPrices.push({ symbol: token0.sym === "WETH" ? "ETH" : token0.sym, priceUsd: entryCost0 / deposited0 });
+  if (!isUsdStable(token1.sym) && deposited1 > 0) entryPrices.push({ symbol: token1.sym === "WETH" ? "ETH" : token1.sym, priceUsd: entryCost1 / deposited1 });
+  return {
+    openedAt, durationDays, deposited0, deposited1, investedUsd, withdrawnUsd,
+    claimedFeesUsd, pendingFeesUsd, feesUsd, gasUsd: gasComplete ? gasUsd : null,
+    pnlUsd, pnlPct: pnlUsd / investedUsd * 100,
+    annualizedYieldPct: feesUsd / investedUsd * 365 / durationDays * 100,
+    entryPrices, events,
+    complete: recent.oldestBlock != null && recent.oldestBlock <= mint.block,
+  };
+}
+
+async function cachedPositionHistory(args) {
+  const key = `${args.network}:${String(args.manager).toLowerCase()}:${args.tokenId}`;
+  const cached = POSITION_HISTORY_CACHE.get(key);
+  if (cached && Date.now() - cached.createdAt < 120000) return cached.promise;
+  const promise = fetchPositionHistory(args).catch(error => {
+    POSITION_HISTORY_CACHE.delete(key);
+    throw error;
+  });
+  POSITION_HISTORY_CACHE.set(key, { createdAt: Date.now(), promise });
+  return promise;
 }
 
 function nftContract(item) {
@@ -293,9 +510,12 @@ async function fetchV3Positions(baseUrl, rpcs, addr, protoLabel, knownManagers =
       const usd = (px0 != null ? amt0 * px0 : 0) + (px1 != null ? amt1 * px1 : 0);
       const priced = px0 != null && px1 != null;
       const range = displayPriceRange(sp, spa, spb, t0, t1);
-      out.positions.push({ id: String(it.id), pair: `${t0.sym}/${t1.sym}`, fee: fee / 10000 + "%",
+      const position = { id: String(it.id), pair: `${t0.sym}/${t1.sym}`, fee: fee / 10000 + "%",
         amt0, amt1, sym0: t0.sym, sym1: t1.sym, usd: priced ? usd : (usd || null),
-        inRange: sp >= spa && sp <= spb, range, protocol: protoLabel, network });
+        price0: px0, price1: px1, inRange: sp >= spa && sp <= spb, range, protocol: protoLabel, network };
+      position.history = await cachedPositionHistory({ baseUrl, rpcs, call, owner: addr, manager: npm,
+        tokenId: it.id, network, token0: t0, token1: t1, currentUsd: position.usd, px0, px1 }).catch(() => null);
+      out.positions.push(position);
       if (usd) out.totalUsd += usd;
     }
   } catch (e) { out.warning = String(e.message || e); }
