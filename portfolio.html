@@ -73,7 +73,8 @@
 
     <div class="sec-head"><h2>⟠ Wallet EVM</h2><div class="rule"></div><span class="addr" id="evmAddr"></span></div>
     <div class="panel" style="overflow:auto"><table id="evmTbl"></table></div>
-    <div class="note" style="margin-top:8px">Se consultan <b>Ethereum</b> y <b>Base</b> (Blockscout, gratis). Cuando montes el loop en Aave/Base, aquí añadimos colateral, deuda y health factor.</div>
+    <div class="note" id="evmNote" style="margin-top:8px"></div>
+    <div class="note" style="margin-top:4px">Se consultan <b>Ethereum</b> y <b>Base</b> (Blockscout) + posiciones <b>Uniswap V3</b> en ETH (RPC público). Cuando montes el loop en Aave/Base, aquí añadimos colateral, deuda y health factor.</div>
   </div>
 
   <footer>
@@ -95,12 +96,26 @@ function short(a){return a?a.slice(0,4)+"…"+a.slice(-4):"";}
 function tokenRows(tokens){
   return (tokens||[]).map(t=>`<tr><td>${esc(t.sym)}</td><td>${fmtAmt(t.amount)}</td><td>${t.usd!=null?fmtUSD(t.usd,2):'<span style="color:var(--muted)">sin precio</span>'}</td></tr>`).join("");
 }
-async function loadLpValue(pw){ // valor de las posiciones LP abiertas (snapshot diario del pipeline)
+/* Valor de las LPs abiertas de Orca: math V3 con el precio VIVO de BTC (el snapshot del
+   pipeline no trae valor "actual" — solo precios alrededor de cada tx). Igual que lp.html. */
+function v3Value(ls,btc){
+  if(!ls||!ls.liquidity||!btc)return null;
+  const L=Number(ls.liquidity);if(!(L>0))return null;
+  const tl=ls.tickLower,tu=ls.tickUpper;const usdc=ls.label0==="USDC"||ls.label1==="USDC";
+  let tc;
+  if(usdc){const btc0=ls.label0!=="USDC";const pr=(btc0?btc:1/btc)*Math.pow(10,ls.dec1-ls.dec0);tc=Math.log(pr)/Math.log(1.0001);}
+  else tc=(tl+tu)/2; // pool peg: midpoint (error mínimo, ambos lados ≈ BTC)
+  const spa=Math.pow(1.0001,tl/2),spb=Math.pow(1.0001,tu/2);const spc=Math.min(Math.max(Math.pow(1.0001,tc/2),spa),spb);
+  const a0=L*(spb-spc)/(spc*spb)/Math.pow(10,ls.dec0),a1=L*(spc-spa)/Math.pow(10,ls.dec1);
+  const px=l=>l==="USDC"?1:btc;
+  return a0*px(ls.label0)+a1*px(ls.label1);
+}
+async function loadLpValue(pw,btc){
   try{const r=await fetch("/api/private?file=orca_pnl",{headers:{"x-dash-pw":pw},cache:"no-store"});
     if(!r.ok)return null;const data=await r.json();
     const arr=Array.isArray(data)?data:(data.pnl||[]);
-    let v=0;for(const p of arr){if(p&&p.status==="open"&&p.isConfirmedPosition&&p.performance&&p.performance.currentValueUsd!=null)v+=p.performance.currentValueUsd;}
-    return v;}catch(e){return null;}
+    let v=0,n=0;for(const p of arr){if(p&&p.status==="open"&&p.isConfirmedPosition){const b=v3Value(p.liquidityState,btc);if(b!=null){v+=b;n++;}}}
+    return n?v:null;}catch(e){return null;}
 }
 async function load(pw){
   $("#gateMsg").textContent="Cargando…";
@@ -111,33 +126,42 @@ async function load(pw){
     if(!r.ok||!j||j.error==="no_wallets"){$("#gateMsg").innerHTML=j&&j.message?esc(j.message):("Error "+(j&&j.error||r.status));if(j&&j.error==="no_wallets")$("#gateMsg").innerHTML="Aún no hay direcciones: rellena <code>data/wallets.json</code> en el repo privado (o pásamelas y las guardo yo).";return;}
   }catch(e){$("#gateMsg").textContent="Error de red.";return;}
   localStorage.setItem(PWKEY,pw);
-  const lpVal=await loadLpValue(pw);
+  const px=j.prices||{};
+  const lpVal=await loadLpValue(pw,px.BTC);
   $("#gate").style.display="none";$("#content").style.display="";
   $("#statusDot").className="dot ok";$("#statusText").textContent="Actualizado "+new Date().toISOString().slice(0,16).replace("T"," ")+" · caché 2 min";
-  const sol=j.solana,evm=j.evm||{};const px=j.prices||{};
-  let solTok=sol&&sol.totalUsd||0,evmTot=0;
+  const sol=j.solana,evm=j.evm||{},uni=j.uniswap||{positions:[],totalUsd:0};
+  const MIN=20; // ocultar polvo/spam por debajo de $20 (solo en las listas de blockchain)
+  const visTok=arr=>{const vis=[],hid={n:0};for(const t of (arr||[])){if(t.usd==null||t.usd<MIN)hid.n++;else vis.push(t);}return{vis,hid:hid.n};};
+  const solV=visTok(sol&&sol.tokens);
+  let solTok=0;for(const t of solV.vis)solTok+=t.usd||0;
   const chains=[["ethereum",evm.ethereum],["base",evm.base]].filter(x=>x[1]);
-  for(const[,c]of chains)evmTot+=c.totalUsd||0;
+  let evmTot=uni.totalUsd||0,evmHid=0;
+  for(const[,c]of chains){evmTot+=c.totalUsd||0;evmHid+=c.hidden||0;}
   const total=solTok+(lpVal||0)+evmTot;
   $("#totals").innerHTML=[
     {l:"TOTAL cartera",n:fmtUSD(total),s:px.BTC?("₿ "+(total/px.BTC).toFixed(5)+" · BTC "+fmtUSD(px.BTC)):"",c:"var(--accent)"},
     {l:"Solana · tokens líquidos",n:fmtUSD(solTok),s:(sol&&sol.nfts?sol.nfts+" NFTs de posición":""),c:"var(--bull)"},
-    {l:"Solana · LPs (Orca)",n:lpVal!=null?fmtUSD(lpVal):"—",s:"snapshot diario del DeFi-Tracker",c:"var(--bull)"},
-    {l:"EVM (ETH + Base)",n:fmtUSD(evmTot),s:"Blockscout",c:"var(--hot)"},
+    {l:"Solana · LPs (Orca)",n:lpVal!=null?fmtUSD(lpVal):"—",s:"math V3 + precio BTC en vivo",c:"var(--bull)"},
+    {l:"EVM (ETH + Base)",n:fmtUSD(evmTot),s:uni.totalUsd?("incluye Uniswap "+fmtUSD(uni.totalUsd)):"Blockscout",c:"var(--hot)"},
   ].map(x=>`<div class="stat" style="--sc:${x.c}"><div class="l">${x.l}</div><div class="n">${x.n}</div><div class="s">${x.s||""}</div></div>`).join("");
   // Solana
   if(sol&&!sol.error){
     $("#solAddr").textContent=short(sol.address);
-    $("#solTbl").innerHTML=`<thead><tr><th>Token</th><th>Cantidad</th><th>Valor</th></tr></thead><tbody>${tokenRows(sol.tokens)||'<tr><td colspan="3" class="note">Sin tokens.</td></tr>'}${lpVal!=null?`<tr><td>💧 Posiciones LP (Orca)</td><td>—</td><td>${fmtUSD(lpVal,2)}</td></tr>`:""}</tbody>`;
-    $("#solNote").textContent=sol.warning?("Aviso RPC: "+sol.warning):"";
+    $("#solTbl").innerHTML=`<thead><tr><th>Token</th><th>Cantidad</th><th>Valor</th></tr></thead><tbody>${tokenRows(solV.vis)||'<tr><td colspan="3" class="note">Sin tokens.</td></tr>'}${lpVal!=null?`<tr><td>💧 Posiciones LP (Orca)</td><td>—</td><td>${fmtUSD(lpVal,2)}</td></tr>`:""}</tbody>`;
+    $("#solNote").textContent=(solV.hid?solV.hid+" tokens ocultos (<$"+MIN+" o sin precio — probable spam/polvo). ":"")+(sol.warning?("Aviso RPC: "+sol.warning):"");
   }else{$("#solTbl").innerHTML=`<tbody><tr><td class="note">${sol?esc(sol.error||""):"sin dirección configurada"}</td></tr></tbody>`;}
-  // EVM
+  // EVM (tokens + posiciones Uniswap V3)
   let evmRows="";
+  for(const p of (uni.positions||[])){
+    evmRows+=`<tr><td>🦄 Uniswap V3 ${esc(p.pair)} ${esc(p.fee)} ${p.inRange?'🟢':'🔴'} <span class="addr">ethereum</span></td><td>${fmtAmt(p.amt0)} ${esc(p.sym0)} + ${fmtAmt(p.amt1)} ${esc(p.sym1)}</td><td>${p.usd!=null?fmtUSD(p.usd,2):'<span style="color:var(--muted)">sin precio</span>'}</td></tr>`;
+  }
   for(const[name,c]of chains){
     if(!c||c.error)continue;
     for(const t of c.tokens||[])evmRows+=`<tr><td>${esc(t.sym)} <span class="addr">${name}</span></td><td>${fmtAmt(t.amount)}</td><td>${t.usd!=null?fmtUSD(t.usd,2):'<span style="color:var(--muted)">sin precio</span>'}</td></tr>`;
   }
   $("#evmTbl").innerHTML=`<thead><tr><th>Token · red</th><th>Cantidad</th><th>Valor</th></tr></thead><tbody>${evmRows||'<tr><td colspan="3" class="note">Sin tokens (o sin dirección configurada).</td></tr>'}</tbody>`;
+  $("#evmNote").textContent=(evmHid?evmHid+" tokens ocultos (<$"+MIN+", sin market cap real, o spam con precio falso).":"");
 }
 $("#pwForm").addEventListener("submit",e=>{e.preventDefault();load($("#pw").value);});
 (function(){const pw=localStorage.getItem(PWKEY)||sessionStorage.getItem(PWKEY);if(pw){$("#pw").value=pw;load(pw);}})();
