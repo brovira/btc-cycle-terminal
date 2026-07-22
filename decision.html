@@ -499,9 +499,10 @@ function cowenBands(alpha){
   const s=[];
   for(let y=2013;y<=2028;y++){
     const m=y%4;
-    if(m===2){ // midterm (2014/18/22/26): compra desde el June low → fin de año
+    if(m===2){ // midterm (2014/18/22/26): compra activa desde el June low → fin de año
       s.push(phRect(`${y}-07-01`,`${y}-12-31`,`rgba(47,195,155,${alpha})`));
-      s.push(phRect(`${y+1}-01-01`,`${y+1}-12-31`,`rgba(47,195,155,${alpha*0.45})`)); // pre-halving year (compra, más suave)
+      // pre-halving year: sigue acumulando pero ya no es LA ventana — azul, igual convención que LMEC (DCA pre-halving)
+      s.push(phRect(`${y+1}-01-01`,`${y+1}-12-31`,`rgba(63,169,245,${alpha})`));
     }
     if(m===1)s.push(phRect(`${y}-10-01`,`${y}-12-31`,`rgba(242,163,63,${alpha})`)); // post-halving (2013/17/21/25): venta Q4
   }
@@ -509,20 +510,40 @@ function cowenBands(alpha){
 }
 const PH_NOTES={
   lmec:`🎯 <b>Bandas LMEC</b> (su Halving Cycle Profit, idénticas a su panel): <span style="color:var(--hot)">■ venta</span> sem 40-80 post-halving · <span style="color:var(--bull)">■ DCA/compra</span> sem 125-165. Líneas: BMSB y 200W MA.`,
-  cowen:`📊 <b>Bandas Cowen</b> (calendario, citado): <span style="color:var(--bull)">■ compra</span> = 2ª mitad del midterm year <i>("right after that June low")</i> + pre-halving year (suave) · <span style="color:var(--hot)">■ venta</span> = Q4 del post-halving year <i>("I'm going to sell Bitcoin in Q4 of the post-halving years")</i>.`,
-  both:`<b>Ambos marcos superpuestos</b> — donde el color se hace más denso, LMEC y Cowen COINCIDEN: <span style="color:var(--bull)">■■ doble verde</span> = ambos comprarían (p.ej. H2-2026 → 2027) · <span style="color:var(--hot)">■■ doble naranja</span> = ambos venderían (Q4 post-halving ≈ sem 40-80). Verde = comprar · naranja = vender.`
+  cowen:`📊 <b>Bandas Cowen</b> (calendario, citado): <span style="color:var(--bull)">■ compra activa</span> = 2ª mitad del midterm year <i>("right after that June low")</i> · <span style="color:var(--accum)">■ sigue acumulando</span> = pre-halving year (ya no es LA ventana, pero él seguía comprando) · <span style="color:var(--hot)">■ venta</span> = Q4 del post-halving year <i>("I'm going to sell Bitcoin in Q4 of the post-halving years")</i>.`,
+  both:`<b>Ambos marcos superpuestos</b> — donde el color se hace más denso, LMEC y Cowen COINCIDEN: <span style="color:var(--bull)">■■ verde denso</span> = ambos en modo compra activa a la vez · <span style="color:var(--hot)">■■ naranja denso</span> = ambos venderían a la vez (Q4 post-halving ≈ sem 40-80). Azul = solo uno sigue acumulando (menos convicción). Verde = comprar · naranja = vender.`
 };
+/* histórico completo: Coin Metrics (precio diario desde 2010-07-18, primeros mercados con
+   precio real — antes de eso Bitcoin no cotizaba) colapsado a semanal + empalmado con el
+   semanal de Binance (más fiable/reciente). Mismo patrón que usa backtest.html. */
+let CM_PREFIX=null; // {t,c} de Coin Metrics ANTES de que empiece Binance — se pide una vez, se reusa
+async function fetchFullHistory(D){
+  if(!CM_PREFIX){
+    try{
+      const rows=await cmGet("PriceUSD");
+      if(rows&&rows.length){
+        const dt=[],px=[];
+        for(const x of rows){if(x.PriceUSD!=null){const t=Date.parse(String(x.time).slice(0,10));if(!isNaN(t)){dt.push(t);px.push(+x.PriceUSD);}}}
+        const WK=7*864e5,t=[],c=[];let bs=null,bc,bt;
+        for(let i=0;i<dt.length;i++){const ms=dt[i],p=px[i];if(bs==null){bs=ms;bc=p;bt=ms;continue;}if(ms-bs>=WK){t.push(bt);c.push(bc);bs=ms;bc=p;bt=ms;}else{bc=p;bt=ms;}}
+        if(bs!=null){t.push(bt);c.push(bc);}
+        const b0=D.t[0],pt=[],pc=[];for(let i=0;i<t.length;i++){if(t[i]<b0-3*864e5){pt.push(t[i]);pc.push(c[i]);}}
+        CM_PREFIX={t:pt,c:pc};
+      }else CM_PREFIX={t:[],c:[]};
+    }catch(e){CM_PREFIX={t:[],c:[]};}
+  }
+  return CM_PREFIX.t.length?{t:[...CM_PREFIX.t,...D.t],c:[...CM_PREFIX.c,...D.c]}:D;
+}
 async function renderPhaseChart(D){
   PH_LASTD=D;
   await ensurePlotly();if(!window.Plotly)return;
   const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-  const ink=css("--ink"),muted=css("--muted"),line=css("--line"),accent=css("--accent"),accum=css("--accum");
-  const n=D.c.length,start=Math.max(0,n-Math.min(n,470)); // ~9 años
-  const xs=[],ys=[];for(let i=start;i<n;i++){xs.push(new Date(D.t[i]).toISOString().slice(0,10));ys.push(D.c[i]);}
+  const ink=css("--ink"),muted=css("--muted"),line=css("--line"),panel=css("--panel"),accent=css("--accent"),accum=css("--accum");
+  const xs=[],ys=[];for(let i=0;i<D.t.length;i++){xs.push(new Date(D.t[i]).toISOString().slice(0,10));ys.push(D.c[i]);}
   const s20=sma(D.c,20),e21=ema(D.c,21),s200=sma(D.c,200);
-  const bm=[],m2=[];for(let i=start;i<n;i++){bm.push((s20[i]!=null&&e21[i]!=null)?Math.max(s20[i],e21[i]):null);m2.push(s200[i]);}
+  const bm=[],m2=[];for(let i=0;i<D.t.length;i++){bm.push((s20[i]!=null&&e21[i]!=null)?Math.max(s20[i],e21[i]):null);m2.push(s200[i]);}
   const shapes=PH_MODE==="lmec"?lmecBands(0.16):PH_MODE==="cowen"?cowenBands(0.16):[...lmecBands(0.11),...cowenBands(0.11)];
-  $("#phaseNote").innerHTML=PH_NOTES[PH_MODE];
+  $("#phaseNote").innerHTML=PH_NOTES[PH_MODE]+` <span class="mtxt">· histórico desde ${xs[0]?xs[0].slice(0,4):"—"} (Coin Metrics + Binance)</span>`;
   const traces=[
     {x:xs,y:ys,type:"scatter",mode:"lines",name:"BTC",line:{color:ink,width:1.5},hovertemplate:"%{x}<br>$%{y:,.0f}<extra></extra>"},
     {x:xs,y:bm,type:"scatter",mode:"lines",name:"BMSB",line:{color:accent,width:1,dash:"dot"}},
@@ -531,7 +552,7 @@ async function renderPhaseChart(D){
   const layout={margin:{l:56,r:12,t:8,b:32},height:380,paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
     font:{color:ink,size:11},showlegend:true,legend:{orientation:"h",y:1.12,font:{size:11}},shapes,
     xaxis:{gridcolor:line,type:"date",range:[xs[0],xs[xs.length-1]]},yaxis:{gridcolor:line,type:"log",tickprefix:"$",title:{text:"BTC (log)",font:{size:11}}},hovermode:"x unified",
-    hoverlabel:{bordercolor:muted,font:{size:11}}};
+    hoverlabel:{bgcolor:panel,bordercolor:line,font:{size:11,color:ink}}};
   window.Plotly.react("phaseChart",traces,layout,{displayModeBar:false,responsive:true});
 }
 document.querySelectorAll("#phTabs .btn").forEach(b=>b.addEventListener("click",()=>{
@@ -691,7 +712,8 @@ async function refreshAll(){
     const R=evaluate(D);render(R);
     await loadKB();
     renderAgents(R);
-    renderPhaseChart(D);
+    renderPhaseChart(D); // pinta ya con lo rápido (Binance); se amplía abajo con el histórico completo
+    fetchFullHistory(D).then(full=>{if(full!==D)renderPhaseChart(full);});
     loadHistory(D,R);
     loadBuys(R);
     $("#statusDot").className="dot ok";
