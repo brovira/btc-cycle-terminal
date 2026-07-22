@@ -75,12 +75,14 @@
   .badge.in{background:color-mix(in oklab,var(--bull) 20%,transparent);color:var(--bull)}
   .badge.out{background:color-mix(in oklab,var(--bear) 20%,transparent);color:var(--bear)}
   /* protocol section (Holdings) */
-  .chips{display:flex;gap:9px;flex-wrap:wrap;margin:2px 0 18px}
-  .pchip{display:flex;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 13px;cursor:pointer}
-  .pchip:hover{border-color:var(--accent)}
-  .pchip .pi{font-size:15px}
-  .pchip .pv{font-family:var(--mono);font-weight:700;font-size:14px}
-  .pchip .pl{font-size:11px;color:var(--muted)}
+  .chips{display:flex;gap:10px;flex-wrap:wrap;margin:2px 0 20px}
+  .pchip{display:flex;align-items:center;gap:11px;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:10px 14px;cursor:pointer;transition:transform .12s,border-color .12s}
+  .pchip:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .pchip .pi{width:30px;height:30px;border-radius:9px;background:var(--panel2);border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-size:15px;flex:none}
+  .pchip .pv{font-family:var(--font);font-variant-numeric:tabular-nums;font-weight:750;font-size:15px;letter-spacing:-.01em}
+  .pchip .pl{font-size:11px;color:var(--muted);margin-top:1px}
+  .pairic{display:inline-flex;align-items:center}
+  .pairic .ticon:not(:first-child){margin-left:-9px;box-shadow:-2px 0 0 var(--panel)}
   .proto{margin-bottom:14px}
   .proto>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:11px;padding:13px 18px}
   .proto>summary::-webkit-details-marker{display:none}
@@ -436,37 +438,42 @@ $("#fWallet").addEventListener("change",e=>{FILT_W=e.target.value;renderBreakdow
 $("#fChain").addEventListener("change",e=>{FILT_C=e.target.value;renderBreakdown();});
 
 /* ---------------- HOLDINGS: por protocolo ---------------- */
+const pct=(u)=>TOTAL_USD?(u/TOTAL_USD*100):0;
 function walletBody(items){
-  // agrupa por token, expandible por chain (como Nansen)
+  // agrupa por token, expandible por chain (como Nansen), share = % de la cartera total
   const g={};
-  for(const a of items){const k=a.sym.toUpperCase();const o=g[k]||(g[k]={sym:a.sym,usd:0,amount:0,amtOk:true,items:[]});o.usd+=a.usd||0;if(a.amount!=null)o.amount+=a.amount;else o.amtOk=false;o.items.push(a);}
-  const rows=Object.values(g).sort((a,b)=>b.usd-a.usd);const tot=rows.reduce((s,r)=>s+r.usd,0);
-  let h=`<table><thead><tr><th>Token</th><th>Precio</th><th>Cantidad</th><th>Share</th><th>Valor</th></tr></thead><tbody>`;
+  for(const a of items){const k=strip(a.sym).toUpperCase();const o=g[k]||(g[k]={sym:a.sym,usd:0,amount:0,amtOk:true,items:[]});o.usd+=a.usd||0;if(a.amount!=null)o.amount+=a.amount;else o.amtOk=false;o.items.push(a);}
+  const rows=Object.values(g).sort((a,b)=>b.usd-a.usd);
+  let h=`<table><thead><tr><th>Token</th><th>Precio</th><th>Cantidad</th><th>% cartera</th><th>Valor</th></tr></thead><tbody>`;
   rows.forEach((r,ix)=>{
-    const price=r.amtOk&&r.amount?r.usd/r.amount:null,share=tot?r.usd/tot*100:0,multi=r.items.length>1;
-    h+=`<tr class="${multi?"grp":""}" data-g="w${ix}"><td>${multi?'<span class="caret">▶</span> ':''}<span class="tok">${tokIcon(r.sym)}${esc(r.sym)}</span></td><td>${fmtPx(price)}</td><td>${r.amtOk?fmtAmt(r.amount):"—"}</td><td>${bar(share)}</td><td>${fmtUSD(r.usd,2)}</td></tr>`;
+    const price=r.amtOk&&r.amount?r.usd/r.amount:null,multi=r.items.length>1;
+    h+=`<tr class="${multi?"grp":""}" data-g="w${ix}"><td>${multi?'<span class="caret">▶</span> ':'<span style="display:inline-block;width:13px"></span> '}<span class="tok">${tokIcon(r.sym)}${esc(strip(r.sym))}</span></td><td>${fmtPx(price)}</td><td>${r.amtOk?fmtAmt(r.amount):"—"}</td><td>${bar(pct(r.usd))}</td><td>${fmtUSD(r.usd,2)}</td></tr>`;
     if(multi)for(const a of r.items.sort((x,y)=>(y.usd||0)-(x.usd||0)))
-      h+=`<tr class="subrow" data-p="w${ix}"><td style="padding-left:40px"><span class="chip">${esc(a.chain)}</span></td><td></td><td>${fmtAmt(a.amount)}</td><td></td><td>${fmtUSD(a.usd,2)}</td></tr>`;
+      h+=`<tr class="subrow" data-p="w${ix}"><td style="padding-left:44px"><span class="chip">${esc(a.chain)}</span></td><td></td><td>${fmtAmt(a.amount)}</td><td></td><td>${fmtUSD(a.usd,2)}</td></tr>`;
   });
   return h+`</tbody></table>`;
 }
+function pairIcons(a,b){return `<span class="pairic">${tokIcon(a)}${tokIcon(b)}</span>`;}
 function lpBody(positions){
-  let h=`<table><thead><tr><th>Posición</th><th>Rango</th><th>Composición</th><th>Valor</th></tr></thead><tbody>`;
-  for(const p of positions){
-    const comp=(p.parts?p.parts.map(x=>`${fmtAmt(x.amount)} ${esc(x.sym)}`).join(" + "):`${fmtAmt(p.amt0)} ${esc(p.sym0)} + ${fmtAmt(p.amt1)} ${esc(p.sym1)}`);
-    h+=`<tr><td><span class="tok">🌊 ${esc(p.pair)}</span></td><td><span class="badge ${p.inRange?"in":"out"}">${p.inRange?"en rango":"fuera"}</span></td><td>${comp}</td><td>${p.usd!=null?fmtUSD(p.usd,2):"—"}</td></tr>`;
+  const tot=positions.reduce((s,p)=>s+(p.usd||0),0);
+  let h=`<table><thead><tr><th>Pool</th><th>Comisión</th><th>Rango</th><th>Composición</th><th>Share</th><th>Valor</th></tr></thead><tbody>`;
+  for(const p of positions.sort((x,y)=>(y.usd||0)-(x.usd||0))){
+    const parts=p.parts||[{sym:p.sym0,amount:p.amt0},{sym:p.sym1,amount:p.amt1}];
+    const comp=parts.map(x=>`${fmtAmt(x.amount)} ${esc(strip(x.sym))}`).join(" + ");
+    const share=tot?(p.usd||0)/tot*100:0;
+    h+=`<tr><td><span class="tok">${pairIcons(parts[0]?parts[0].sym:"?",parts[1]?parts[1].sym:"?")}${esc(p.pair)}</span></td><td>${p.fee?esc(p.fee):"—"}</td><td><span class="badge ${p.inRange?"in":"out"}">${p.inRange?"en rango":"fuera"}</span></td><td class="addr" style="text-align:right">${comp}</td><td>${bar(share)}</td><td>${p.usd!=null?fmtUSD(p.usd,2):"—"}</td></tr>`;
   }
   return h+`</tbody></table>`;
 }
 function simpleBody(items){
-  let h=`<table><thead><tr><th>Activo</th><th>Red</th><th>Cantidad</th><th>Valor</th></tr></thead><tbody>`;
+  let h=`<table><thead><tr><th>Activo</th><th>Red</th><th>Cantidad</th><th>% cartera</th><th>Valor</th></tr></thead><tbody>`;
   for(const a of items.sort((x,y)=>(y.usd||0)-(x.usd||0)))
-    h+=`<tr><td><span class="tok">${tokIcon(a.sym)}${esc(a.sym)}${a.kind==="stake"?' <span class="chip">staked</span>':''}</span></td><td class="addr" style="text-align:left">${esc(a.chain)}</td><td>${a.amount!=null?fmtAmt(a.amount):"—"}</td><td>${fmtUSD(a.usd,2)}</td></tr>`;
+    h+=`<tr><td><span class="tok">${tokIcon(a.sym)}${esc(strip(a.sym))}${a.kind==="stake"?' <span class="chip">staked</span>':''}</span></td><td class="addr" style="text-align:left">${esc(a.chain)}</td><td>${a.amount!=null?fmtAmt(a.amount):"—"}</td><td>${bar(pct(a.usd||0))}</td><td>${fmtUSD(a.usd,2)}</td></tr>`;
   return h+`</tbody></table>`;
 }
 function renderHoldings(){
   const chipsEl=$("#protoChips"),listEl=$("#protoList");
-  chipsEl.innerHTML=PROTOS.map(p=>`<div class="pchip" data-p="${esc(p.name)}"><span class="pi">${protoIcon(p.name)}</span><div><div class="pv">${fmtUSD(p.usd)}</div><div class="pl">${esc(p.name)}</div></div></div>`).join("");
+  chipsEl.innerHTML=PROTOS.map(p=>`<div class="pchip" data-p="${esc(p.name)}"><span class="pi">${protoIcon(p.name)}</span><div><div class="pv">${fmtUSD(p.usd)}</div><div class="pl">${esc(p.name)} · ${pct(p.usd).toFixed(1)}%</div></div></div>`).join("");
   listEl.innerHTML=PROTOS.map((p,i)=>{
     let body;
     if(p.name==="Orca")body=lpBody(RAW.orcaPos||[]);
@@ -475,7 +482,7 @@ function renderHoldings(){
     else if(p.name==="Wallet")body=walletBody(p.items);
     else body=simpleBody(p.items);
     return `<details class="panel proto" id="proto-${i}" ${i<3?"open":""}>
-      <summary><span class="cv">▶</span><span class="pn">${protoIcon(p.name)} ${esc(p.name)}</span><span class="pt">${fmtUSD(p.usd)}</span></summary>
+      <summary><span class="cv">▶</span><span class="pn">${protoIcon(p.name)} ${esc(p.name)}</span><span class="pt">${fmtUSD(p.usd)} <span class="addr" style="font-weight:600;margin-left:4px">${pct(p.usd).toFixed(1)}%</span></span></summary>
       <div class="body">${body}</div>
     </details>`;
   }).join("");
