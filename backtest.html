@@ -57,6 +57,16 @@
   .logic button{font:inherit;font-size:11.5px;font-weight:700;padding:4px 10px;background:var(--panel2);color:var(--muted);border:none;cursor:pointer}
   .logic button.on{background:var(--accent);color:#111}
   .cond{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);margin-bottom:8px}
+  body.simple .cond .p{display:none}
+  .pdesc{margin-top:14px;padding:13px 15px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);font-size:13px;line-height:1.55;color:var(--ink2)}
+  .pdesc h4{margin:0 0 4px;font-size:14px;color:var(--ink);font-weight:750}
+  .pdesc .q{border-left:3px solid var(--accent);padding:3px 0 3px 11px;margin:9px 0;color:var(--ink);font-style:italic}
+  .pdesc .src{font-family:var(--mono);font-size:10.5px;color:var(--muted);font-style:normal;display:block;margin-top:3px}
+  .pdesc .how{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px}
+  .pdesc .how>div{flex:1;min-width:190px}
+  .pdesc .how b{color:var(--ink)}
+  .pdesc .warn{color:var(--hot)}
+  #advBtn.on{border-color:var(--accent);color:var(--accent)}
   .cond select,.cond input{font:inherit;font-size:12.5px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:6px 8px}
   .cond input.p{width:56px}
   .cond .rm{margin-left:auto;color:var(--bear);background:none;border:none;cursor:pointer;font-size:16px;line-height:1;padding:2px 6px}
@@ -110,8 +120,9 @@
     <div class="sec-head"><h2>Ajustes</h2><div class="rule"></div><span class="tag" id="srcTag">—</span></div>
     <div class="panel">
       <div class="cfg">
-        <div class="fld"><label>Preset</label><select id="c_preset">
-          <option value="">— cargar estrategia —</option>
+        <div class="fld"><label>Estrategia</label><select id="c_preset">
+          <option value="">— elige una estrategia —</option>
+          <option value="__new__">＋ Crear nueva (elige indicadores)</option>
           <optgroup label="🔄 Ciclos · agentes">
             <option value="lmec_cycle">LMEC · Ciclo del halving (temporal)</option>
             <option value="lmec_bmsb">LMEC · Ruptura de la BMSB</option>
@@ -131,7 +142,9 @@
         <div class="fld"><label>Comisión+slippage %</label><input type="number" id="c_fee" value="0.1" step="0.05"><span class="hint">por operación</span></div>
         <div class="fld"><label>Tamaño posición %</label><input type="number" id="c_size" value="100" step="5"><span class="hint">del capital por entrada</span></div>
         <div class="fld"><label>Desde</label><input type="date" id="c_start" value="2017-01-01"></div>
+        <div class="fld"><label>Modo</label><select id="c_mode"><option value="lump">Todo / nada</option><option value="dca">DCA (reparte)</option></select><span class="hint">DCA: compra/vende ese % cada semana mientras la señal siga activa</span></div>
       </div>
+      <div class="pdesc" id="presetDesc" style="display:none"></div>
     </div>
   </div>
 
@@ -218,6 +231,27 @@ function macdParts(c,f,s,sig){const ef=ema(c,f),es=ema(c,s);const line=c.map((_,
 /* ---------- ciclo del halving (para señales temporales) ---------- */
 const HALVINGS=["2012-11-28","2016-07-09","2020-05-11","2024-04-19","2028-04-20"].map(d=>Date.parse(d));
 function halvSeries(){const WK=7*864e5;return DATA.t.map(ms=>{let H=HALVINGS[0];for(const h of HALVINGS)if(h<=ms)H=h;return (ms-H)/WK;});}
+/* 2ª recuperación al alza de la BMSB (método LMEC: la 1ª es trampa, la 2ª marca el nuevo bull).
+   Devuelve una serie con 1 en la barra de la 2ª ruptura al alza, 0 el resto. */
+function bmsb2Series(){
+  const c=DATA.c,n=c.length,s20=sma(c,20),e21=ema(c,21);
+  const hi=i=>(s20[i]!=null&&e21[i]!=null)?Math.max(s20[i],e21[i]):null;
+  const lo=i=>(s20[i]!=null&&e21[i]!=null)?Math.min(s20[i],e21[i]):null;
+  const ev=[];let state=null;
+  for(let i=1;i<n;i++){const H=hi(i),L=lo(i);if(H==null)continue;
+    const aC=c[i]>H&&hi(i-1)!=null&&c[i-1]>hi(i-1);
+    const bC=c[i]<L&&lo(i-1)!=null&&c[i-1]<lo(i-1);
+    if(aC&&state!=="up"){if(state)ev.push([i,"up"]);state="up";}
+    else if(bC&&state!=="down"){if(state)ev.push([i,"down"]);state="down";}
+    else if(state==null){state=c[i]>H?"up":(c[i]<L?"down":null);}
+  }
+  const out=Array(n).fill(0);let inBear=false,ups=0,lastUp=null;
+  for(const[i,t]of ev){
+    if(t==="up"){lastUp=i;if(inBear){ups++;if(ups===2){out[i]=1;inBear=false;}}}
+    else{const bl=lastUp!=null?(i-lastUp):999;if(bl>=40){inBear=true;ups=0;}}
+  }
+  return out;
+}
 
 /* ---------- registro de indicadores para el builder ---------- */
 const INDS={
@@ -229,6 +263,7 @@ const INDS={
   macds:{lbl:"MACD señal",params:[["f",12],["s",26],["sig",9]],calc:p=>macdParts(DATA.c,p.f,p.s,p.sig).signal},
   macdh:{lbl:"MACD histog.",params:[["f",12],["s",26],["sig",9]],calc:p=>macdParts(DATA.c,p.f,p.s,p.sig).hist},
   bmsb:{lbl:"BMSB (banda)",params:[],calc:()=>{const a=sma(DATA.c,20),b=ema(DATA.c,21);return DATA.c.map((_,i)=>(a[i]!=null&&b[i]!=null)?Math.max(a[i],b[i]):null);}},
+  bmsb2:{lbl:"BMSB · 2ª ruptura ▲",params:[],calc:()=>bmsb2Series()},
   mvrvz:{lbl:"MVRV Z",params:[],calc:()=>OC?OC.z:DATA.c.map(()=>null)},
   fng:{lbl:"Fear & Greed",params:[],calc:()=>FNG?FNG.slice():DATA.c.map(()=>null)},
   fngcad:{lbl:"F&G cadencia 90d",params:[],calc:()=>fngCadence()},
@@ -345,20 +380,39 @@ let RES=null;
 function backtest(){
   SERIES={};
   const cap=parseFloat($("#c_cap").value)||10000;const fee=(parseFloat($("#c_fee").value)||0)/100;const size=Math.min(1,(parseFloat($("#c_size").value)||100)/100);
+  const dca=$("#c_mode")&&$("#c_mode").value==="dca";
   const t0=Date.parse($("#c_start").value)||DATA.t[0];let i0=0;while(i0<DATA.t.length&&DATA.t[i0]<t0)i0++;if(i0<1)i0=1;
   const c=DATA.c,n=c.length;
-  let cash=cap,btc=0,inPos=false,entryPx=0,entryI=0;
   const equity=Array(n).fill(null);const trades=[];let weeksIn=0;
+  const bh=Array(n).fill(null);for(let i=i0;i<n;i++)bh[i]=cap*c[i]/c[i0];
+
+  if(dca){
+    // DCA: mientras la señal de COMPRA esté activa, despliega 'size' del capital cada semana;
+    // mientras la de VENTA esté activa, liquida 'size' de lo que tengas cada semana. Reparte, no todo/nada.
+    let cash=cap,btc=0,buys=0,sells=0;
+    for(let i=i0;i<n;i++){
+      const eS=signal("entry",i),xS=signal("exit",i);
+      if(eS&&cash>1){const spend=Math.min(cash,cap*size);const b=spend*(1-fee)/c[i];btc+=b;cash-=spend;buys++;}
+      else if(xS&&btc*c[i]>1){const sellB=btc*size;cash+=sellB*c[i]*(1-fee);btc-=sellB;sells++;}
+      if(btc*c[i]>1)weeksIn++;
+      equity[i]=cash+btc*c[i];
+    }
+    const finalEq=cash+btc*c[n-1];
+    const metrics=computeMetrics(equity,bh,[],i0,n,cap,finalEq,weeksIn);
+    metrics.nTrades=buys+sells;metrics.buys=buys;metrics.sells=sells;metrics.dca=true;metrics.winRate=null;metrics.pf=null;
+    RES={i0,n,equity,bh,trades:[],metrics,inPos:btc*c[n-1]>1,finalEq};
+    return RES;
+  }
+
+  // Todo/nada (lump): compra 'size' del capital al primer disparo y vende todo a la salida.
+  let cash=cap,btc=0,inPos=false,entryPx=0,entryI=0;
   for(let i=i0;i<n;i++){
     if(!inPos&&signal("entry",i)){const spend=cash*size;const b=spend*(1-fee)/c[i];btc+=b;cash-=spend;inPos=true;entryPx=c[i];entryI=i;}
     else if(inPos&&signal("exit",i)){const got=btc*c[i]*(1-fee);cash+=got;const ret=(c[i]/entryPx-1)*100;trades.push({inI:entryI,outI:i,pIn:entryPx,pOut:c[i],ret,bars:i-entryI});btc=0;inPos=false;}
     if(inPos)weeksIn++;
     equity[i]=cash+btc*c[i];
   }
-  // cierre forzoso al final para métricas (marca-a-mercado, no trade)
   const finalEq=cash+btc*c[n-1];
-  // buy & hold desde i0
-  const bh=Array(n).fill(null);for(let i=i0;i<n;i++)bh[i]=cap*c[i]/c[i0];
   const metrics=computeMetrics(equity,bh,trades,i0,n,cap,finalEq,weeksIn);
   RES={i0,n,equity,bh,trades,metrics,inPos,finalEq};
   return RES;
@@ -386,7 +440,7 @@ function computeMetrics(eq,bh,trades,i0,n,cap,finalEq,weeksIn){
 /* ---------- render resultados ---------- */
 function paint(){
   const M=RES.metrics;
-  $("#resTag").textContent=`${DATA.t.length-RES.i0} sem · ${M.nTrades} ops · ${OC?"on-chain ✓":"on-chain n/d"}`;
+  $("#resTag").textContent=`${DATA.t.length-RES.i0} sem · ${M.nTrades} ${M.dca?"movs (DCA)":"ops"} · ${OC?"on-chain ✓":"on-chain n/d"}`;
   $("#rangeNote").textContent=`desde ${new Date(DATA.t[RES.i0]).toISOString().slice(0,10)}${RES.inPos?" · posición ABIERTA al final":""}`;
   const beat=M.vsBH>=0;
   $("#cards").innerHTML=[
@@ -442,59 +496,72 @@ function paintChart(){
   Plotly.react("chart",tr,layout,{responsive:true,displaylogo:false,scrollZoom:false,modeBarButtonsToRemove:["select2d","lasso2d"]});
 }
 
-/* ---------- presets ---------- */
+/* ---------- presets (reglas basadas en citas reales de los transcripts) ---------- */
 const PRESETS={
   /* === Ciclos · agentes === */
-  // LMEC — pilar "Bitcoin Halving Cycle Profit". Estructura histórica del ciclo:
-  //   · techo del bull ≈ 74-80 sem tras el halving (dic-2017, nov-2021)
-  //   · suelo del bear ≈ 125-135 sem tras el halving (dic-2018, nov-2022)
-  // → TOMA DE BENEFICIO en sem 70-110 (cerca del techo) y ACUMULACIÓN en sem 120-180
-  //   (DESPUÉS del suelo, no a mitad del crash). Comprar antes (sem 90) recompraba
-  //   mientras aún caía → no evitaba el bear. Señal 100% temporal.
-  lmec_cycle:{name:"LMEC · Ciclo del halving",e:{logic:"all",conds:[
+  lmec_cycle:{name:"LMEC · Ciclo del halving",
+    desc:`<h4>LMEC · Ciclo del halving (temporal)</h4>Acumula en la ventana de suelo del ciclo y toma beneficio cerca del techo, guiándose por las semanas desde el halving (techo ≈ sem 74-80, suelo ≈ sem 125-135).
+    <div class="how"><div><b>Compra</b>: sem 120-180 (tras el suelo del bear).</div><div><b>Vende</b>: sem 70-110 (cerca del techo).</div></div>
+    <div class="q">"cuanto más caen, más aumenta el porcentaje de la compra... siempre mantener mucha liquidez disponible"<span class="src">[lmec/04-plan-completo-2027]</span></div>
+    <span class="warn">Las semanas exactas son una aproximación de la estructura del ciclo; él compra por niveles de precio, no por semana fija. Prueba el Modo DCA.</span>`,
+    e:{logic:"all",conds:[
     {left:{ind:"halvw",params:{}},op:"gt",right:{ind:"value",params:{v:120}}},
     {left:{ind:"halvw",params:{}},op:"lt",right:{ind:"value",params:{v:180}}}]},
     x:{logic:"all",conds:[
     {left:{ind:"halvw",params:{}},op:"gt",right:{ind:"value",params:{v:70}}},
     {left:{ind:"halvw",params:{}},op:"lt",right:{ind:"value",params:{v:110}}}]}},
-  // LMEC — señal núcleo: recuperar la Bull Market Support Band = inicio de bull;
-  // perderla = fin de bull. Entra al reclaim CONFIRMADO (3 cierres semanales por
-  // encima) y sale al perderla CONFIRMADA (3 por debajo) → sin whipsaws de una vela.
-  lmec_bmsb:{name:"LMEC · Ruptura BMSB (confirmada)",e:{logic:"all",conds:[
-    {left:{ind:"price",params:{}},op:"hold_gt3",right:{ind:"bmsb",params:{}}}]},
+  lmec_bmsb:{name:"LMEC · 2ª ruptura de la BMSB",
+    desc:`<h4>LMEC · 2ª ruptura de la BMSB</h4>Su señal de compra núcleo: la <b>segunda</b> recuperación al alza de la Bull Market Support Band (la 1ª es una trampa). Vende en la euforia del ciclo, NO al perder la banda.
+    <div class="q">"Cada vez que Bitcoin ha roto por segunda vez la Bull Market Support Band, ese momento siempre ha coincidido con el inicio de un nuevo tramo alcista. Importante la segunda vez, que no la primera."<span class="src">[lmec/01-punto-exacto-bmsb]</span></div>
+    <div class="how"><div><b>Compra</b>: 2ª ruptura ▲ de la BMSB.</div><div><b>Vende</b>: euforia del ciclo (sem 70-110 tras el halving).</div></div>
+    <span class="warn">Corrección: "perder la BMSB = vender" NO es su regla (no lo dice en ningún transcript). Su venta es tomar beneficio en la euforia; por eso la salida es temporal, no "perder la banda".</span>`,
+    e:{logic:"all",conds:[
+    {left:{ind:"bmsb2",params:{}},op:"gt",right:{ind:"value",params:{v:0.5}}}]},
     x:{logic:"all",conds:[
-    {left:{ind:"price",params:{}},op:"hold_lt3",right:{ind:"bmsb",params:{}}}]}},
-  // Cowen — estacional: comprar 2ª mitad del año midterm (año%4=2, mes>=7),
-  // vender Q4 del año pre-midterm (año%4=1, mes>=10). Sus propias palabras.
-  cowen_seasonal:{name:"Cowen · Estacional midterm",e:{logic:"all",conds:[
+    {left:{ind:"halvw",params:{}},op:"gt",right:{ind:"value",params:{v:70}}},
+    {left:{ind:"halvw",params:{}},op:"lt",right:{ind:"value",params:{v:110}}}]}},
+  cowen_seasonal:{name:"Cowen · Estacional midterm",
+    desc:`<h4>Cowen · Estacional midterm</h4>Compra en la 2ª mitad del año midterm (tras el mínimo de junio) y distribuye a final del año post-halving.
+    <div class="q">"after the June low is when I bought and I just DCA... You then start to deploy that... the second half of the midterm year"<span class="src">[cowen/20260614-bitcoin-dynamic-dca]</span></div>
+    <div class="q">"You accumulate cash position the end of the post having year."<span class="src">[cowen/20260614]</span></div>
+    <div class="how"><div><b>Compra</b>: año midterm (año%4=2), 2ª mitad.</div><div><b>Vende</b>: Q4 del año post-halving (año%4=1).</div></div>
+    <b>Tip:</b> activa el <b>Modo DCA</b> — Cowen despliega la compra como DCA (semanal/mensual, ventana ~1-2 años), no de golpe.`,
+    e:{logic:"all",conds:[
     {left:{ind:"ymod4",params:{}},op:"eq",right:{ind:"value",params:{v:2}}},
     {left:{ind:"month",params:{}},op:"gt",right:{ind:"value",params:{v:6}}}]},
     x:{logic:"all",conds:[
     {left:{ind:"ymod4",params:{}},op:"eq",right:{ind:"value",params:{v:1}}},
     {left:{ind:"month",params:{}},op:"gt",right:{ind:"value",params:{v:9}}}]}},
-  // Cowen — on-chain: comprar cuando el MVRV Z resetea por debajo de 0 (suelo),
-  // vender cuando se calienta (>7).
-  cowen_mvrv:{name:"Cowen · Reset MVRV Z",e:{logic:"all",conds:[
+  cowen_mvrv:{name:"Cowen · Reset MVRV Z",
+    desc:`<h4>Cowen · Reset MVRV Z</h4>Compra cuando el MVRV Z resetea a la franja baja (suelo on-chain) y reduce cuando se calienta.
+    <span class="warn">Necesita datos on-chain (MVRV). Si arriba pone "on-chain n/d", no operará hasta que cargue Coin Metrics.</span>`,
+    e:{logic:"all",conds:[
     {left:{ind:"mvrvz",params:{}},op:"lt",right:{ind:"value",params:{v:0}}}]},
     x:{logic:"all",conds:[
     {left:{ind:"mvrvz",params:{}},op:"gt",right:{ind:"value",params:{v:3}}}]}},
-  // OnChainMind — su estrategia insignia "Fear & Greed Cadence" (bat​ió al DCA 10x
-  // desde 2019). Compra: cadencia F&G cruza al alza de 0 + precio>MA200 (aprox 29
-  // sem.) + F&G>20. Venta: cadencia cruza a la baja de 0. Reglas textuales suyas.
-  onchainmind_fng:{name:"OnChainMind · F&G Cadence",e:{logic:"all",conds:[
+  onchainmind_fng:{name:"OnChainMind · F&G Cadence",
+    desc:`<h4>OnChainMind · Fear & Greed Cadence</h4>Compra cuando la <b>cadencia</b> del Fear & Greed (F&G de hoy − F&G de hace 90 días) cruza de negativo a positivo, con precio &gt; MA200 y F&G &gt; 20. Vende <b>en cuanto</b> la cadencia vuelve a cruzar por debajo de 0.
+    <div class="q">"When the Cadence moves from negative to positive, that becomes your buy signal."<span class="src">[ocm/20260325]</span></div>
+    <div class="q">"The moment the cadence crosses back below zero again, you get out. No filters, no waiting."<span class="src">[ocm/20260325]</span></div>
+    <span class="warn">Su backtest es DIARIO (+3.800%, ~10× DCA, 86% aciertos); aquí el motor es SEMANAL, así que la cadencia pierde precisión y rinde por debajo. La regla es fiel; la resolución no.</span>`,
+    e:{logic:"all",conds:[
     {left:{ind:"fngcad",params:{}},op:"cross_up",right:{ind:"value",params:{v:0}}},
     {left:{ind:"price",params:{}},op:"gt",right:{ind:"sma",params:{n:29}}},
     {left:{ind:"fng",params:{}},op:"gt",right:{ind:"value",params:{v:20}}}]},
     x:{logic:"all",conds:[
     {left:{ind:"fngcad",params:{}},op:"cross_dn",right:{ind:"value",params:{v:0}}}]}},
   /* === Indicadores clásicos === */
-  gc:{name:"Golden/Death Cross 50/200",e:{logic:"all",conds:[{left:{ind:"sma",params:{n:50}},op:"cross_up",right:{ind:"sma",params:{n:200}}}]},x:{logic:"all",conds:[{left:{ind:"sma",params:{n:50}},op:"cross_dn",right:{ind:"sma",params:{n:200}}}]}},
-  rsi:{name:"RSI sobreventa 34/70",e:{logic:"all",conds:[{left:{ind:"rsi",params:{n:14}},op:"cross_up",right:{ind:"value",params:{v:34}}}]},x:{logic:"all",conds:[{left:{ind:"rsi",params:{n:14}},op:"cross_dn",right:{ind:"value",params:{v:70}}}]}},
-  mvrv:{name:"MVRV Z suelo",e:{logic:"all",conds:[{left:{ind:"mvrvz",params:{}},op:"cross_up",right:{ind:"value",params:{v:0}}}]},x:{logic:"all",conds:[{left:{ind:"mvrvz",params:{}},op:"gt",right:{ind:"value",params:{v:3}}}]}},
-  bmsb:{name:"Tendencia BMSB (confirmada)",e:{logic:"all",conds:[{left:{ind:"price",params:{}},op:"hold_gt3",right:{ind:"bmsb",params:{}}}]},x:{logic:"all",conds:[{left:{ind:"price",params:{}},op:"hold_lt3",right:{ind:"bmsb",params:{}}}]}},
-  macd:{name:"Cruce MACD",e:{logic:"all",conds:[{left:{ind:"macd",params:{f:12,s:26}},op:"cross_up",right:{ind:"macds",params:{f:12,s:26,sig:9}}}]},x:{logic:"all",conds:[{left:{ind:"macd",params:{f:12,s:26}},op:"cross_dn",right:{ind:"macds",params:{f:12,s:26,sig:9}}}]}},
+  gc:{name:"Golden/Death Cross 50/200",desc:`<h4>Golden/Death Cross</h4>Compra cuando la SMA50 cruza por encima de la SMA200; vende al revés. Clásico de tendencia, lento.`,e:{logic:"all",conds:[{left:{ind:"sma",params:{n:50}},op:"cross_up",right:{ind:"sma",params:{n:200}}}]},x:{logic:"all",conds:[{left:{ind:"sma",params:{n:50}},op:"cross_dn",right:{ind:"sma",params:{n:200}}}]}},
+  rsi:{name:"RSI sobreventa 34/70",desc:`<h4>RSI sobreventa</h4>Compra cuando el RSI semanal recupera 34 (sale de sobreventa); vende al perder 70 (sobrecompra).`,e:{logic:"all",conds:[{left:{ind:"rsi",params:{n:14}},op:"cross_up",right:{ind:"value",params:{v:34}}}]},x:{logic:"all",conds:[{left:{ind:"rsi",params:{n:14}},op:"cross_dn",right:{ind:"value",params:{v:70}}}]}},
+  mvrv:{name:"MVRV Z suelo",desc:`<h4>MVRV Z suelo</h4>Compra al salir el MVRV Z de la franja de suelo (&lt;0→&gt;0); vende cuando se calienta. <span class="warn">Necesita on-chain.</span>`,e:{logic:"all",conds:[{left:{ind:"mvrvz",params:{}},op:"cross_up",right:{ind:"value",params:{v:0}}}]},x:{logic:"all",conds:[{left:{ind:"mvrvz",params:{}},op:"gt",right:{ind:"value",params:{v:3}}}]}},
+  bmsb:{name:"Tendencia BMSB (confirmada)",desc:`<h4>Tendencia BMSB</h4>Dentro mientras el precio cierra 3 semanas sobre la banda; fuera cuando cierra 3 por debajo. Confirmado para evitar whipsaws.`,e:{logic:"all",conds:[{left:{ind:"price",params:{}},op:"hold_gt3",right:{ind:"bmsb",params:{}}}]},x:{logic:"all",conds:[{left:{ind:"price",params:{}},op:"hold_lt3",right:{ind:"bmsb",params:{}}}]}},
+  macd:{name:"Cruce MACD",desc:`<h4>Cruce MACD</h4>Compra cuando la línea MACD cruza sobre su señal; vende al cruzar por debajo. Velas semanales.`,e:{logic:"all",conds:[{left:{ind:"macd",params:{f:12,s:26}},op:"cross_up",right:{ind:"macds",params:{f:12,s:26,sig:9}}}]},x:{logic:"all",conds:[{left:{ind:"macd",params:{f:12,s:26}},op:"cross_dn",right:{ind:"macds",params:{f:12,s:26,sig:9}}}]}},
 };
-function loadPreset(k){const P=PRESETS[k];if(!P)return;ENTRY=JSON.parse(JSON.stringify(P.e));EXIT=JSON.parse(JSON.stringify(P.x));$("#stratName").value=P.name;renderBuilder();}
+function renderPresetDesc(k){const box=$("#presetDesc");
+  if(k==="__new__"){box.style.display="block";box.innerHTML=`<h4>＋ Crear nueva</h4>Elige tus <b>indicadores de compra</b> (izquierda) y de <b>venta</b> (derecha) abajo, pulsa «Ejecutar backtest» y compara con comprar y aguantar. Pulsa <b>⚙ Avanzado</b> para cambiar parámetros (nº de días, umbrales…); sin tocar nada se usan los valores preconfigurados.`;return;}
+  const P=PRESETS[k];if(P&&P.desc){box.style.display="block";box.innerHTML=P.desc;}else{box.style.display="none";box.innerHTML="";}}
+function loadPreset(k){const P=PRESETS[k];if(!P)return;ENTRY=JSON.parse(JSON.stringify(P.e));EXIT=JSON.parse(JSON.stringify(P.x));$("#stratName").value=P.name;renderBuilder();renderPresetDesc(k);}
+function newStrategy(){ENTRY={logic:"all",conds:[newCond({ind:"price",params:{}},"cross_up",{ind:"sma",params:{n:50}})]};EXIT={logic:"all",conds:[newCond({ind:"price",params:{}},"cross_dn",{ind:"sma",params:{n:50}})]};$("#stratName").value="";renderBuilder();renderPresetDesc("__new__");}
 
 /* ---------- guardar estrategias (localStorage) ---------- */
 const SKEY="btc-bt-strategies-v1";
@@ -549,7 +616,9 @@ $("#addEntry").addEventListener("click",()=>{ENTRY.conds.push(newCond());renderB
 $("#addExit").addEventListener("click",()=>{EXIT.conds.push(newCond({ind:"price",params:{}},"cross_dn",{ind:"sma",params:{n:50}}));renderBuilder();});
 $("#entryLogic").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{ENTRY.logic=b.dataset.v;renderBuilder();}));
 $("#exitLogic").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{EXIT.logic=b.dataset.v;renderBuilder();}));
-$("#c_preset").addEventListener("change",e=>{if(e.target.value){loadPreset(e.target.value);if(DATA)run();}});
+$("#c_preset").addEventListener("change",e=>{const v=e.target.value;if(!v)return;if(v==="__new__"){newStrategy();if(DATA)run();return;}loadPreset(v);if(DATA)run();});
+$("#advBtn").addEventListener("click",()=>{document.body.classList.toggle("simple");$("#advBtn").classList.toggle("on");});
+$("#c_mode").addEventListener("change",()=>{if(DATA)run();});
 $("#runBtn").addEventListener("click",run);
 $("#saveBtn").addEventListener("click",saveCurrent);
 $("#expBtn").addEventListener("click",exportSaved);
@@ -557,7 +626,7 @@ $("#impBtn").addEventListener("click",()=>$("#impFile").click());
 $("#impFile").addEventListener("change",e=>{if(e.target.files[0])importSaved(e.target.files[0]);});
 $("#refreshBtn").addEventListener("click",boot);
 $("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);if(RES)paintChart();});
-(function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
+(function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);document.body.classList.add("simple");})();
 boot();
 </script>
 </body>
