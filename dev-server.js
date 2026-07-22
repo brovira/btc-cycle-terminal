@@ -10,7 +10,7 @@ const LOCAL_CASHFLOW = process.env.LOCAL_CASHFLOW_FILE || path.join(ROOT, ".loca
 if (fs.existsSync(LOCAL_DATA)) process.env.LOCAL_DATA_DIR = LOCAL_DATA;
 if (fs.existsSync(LOCAL_CASHFLOW)) process.env.LOCAL_CASHFLOW_FILE = LOCAL_CASHFLOW;
 
-const API = new Set(["baseline", "birdeye", "cashflow", "coinglass", "coinmetrics", "journal", "portfolio", "private"]);
+const API = new Set(["baseline", "birdeye", "cashflow", "coinglass", "coinmetrics", "journal", "orca-fees", "portfolio", "private"]);
 const MIME = {
   ".css": "text/css; charset=utf-8",
   ".csv": "text/csv; charset=utf-8",

@@ -3,5 +3,10 @@
   "private": true,
   "scripts": {
     "dev": "node dev-server.js"
+  },
+  "dependencies": {
+    "@orca-so/whirlpools-client": "^7.0.0",
+    "@orca-so/whirlpools-core": "^3.1.0",
+    "@solana/kit": "^5.5.1"
   }
 }

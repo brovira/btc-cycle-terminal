@@ -247,7 +247,7 @@ function parseCSV(text){
 const num=v=>{const n=parseFloat(v);return isNaN(n)?0:n;};
 
 /* ---------- agregación por posición ---------- */
-let MODEL=null, MODE="csv", PNL=null, LIVE_LPS=[], LIVE_LP_WARNING="";
+let MODEL=null, MODE="csv", PNL=null, LIVE_LPS=[], LIVE_LP_WARNING="", ORCA_PENDING={}, ORCA_PENDING_WARNING="";
 function build(rows){
   const pos={};const collects=[];
   for(const r of rows){
@@ -342,6 +342,18 @@ async function fetchLiveLps(){
     LIVE_LP_WARNING=sources.map(src=>src.warning).filter(Boolean).join(" · ");
   }catch(e){LIVE_LPS=[];LIVE_LP_WARNING="LPs EVM no disponibles";}
 }
+async function fetchOrcaPending(positions){
+  const mints=(positions||[]).map(p=>p.mint).filter(Boolean);
+  ORCA_PENDING_WARNING="";
+  if(!mints.length){ORCA_PENDING={};return;}
+  try{
+    const r=await fetch("/api/orca-fees?mints="+mints.map(encodeURIComponent).join(","),{cache:"no-store"});
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    const j=await r.json();ORCA_PENDING=j.positions||{};
+    const failed=Object.values(ORCA_PENDING).filter(x=>x&&x.error).length;
+    if(failed)ORCA_PENDING_WARNING=failed+" posición(es) Orca sin fees pendientes";
+  }catch(e){ORCA_PENDING={};ORCA_PENDING_WARNING="Fees pendientes de Orca no disponibles";}
+}
 function fmtRangePrice(v){
   if(v==null||!isFinite(v))return"—";
   const a=Math.abs(v),d=a>=1000?0:a>=10?2:a>=1?4:a>=.01?4:6;
@@ -383,14 +395,9 @@ function entryMarkup(entries){
   if(!entries||!entries.length)return'<span class="na">n/d</span>';
   return entries.map((x,i)=>`${i?'<div class="sub">':''}${fmtUSD(x.priceUsd)} ${esc(x.symbol)}${i?'</div>':''}`).join("");
 }
-function feeMarkup(total,claimed,pending,digits=2){
-  if(!Number.isFinite(total))return'<span class="na">n/d</span>';
-  const hasClaimed=Number.isFinite(claimed)&&claimed>.005;
-  const hasPending=Number.isFinite(pending)&&pending>.005;
-  if(hasClaimed&&hasPending){
-    return `${fmtUSD(total,digits)}<div class="sub">${fmtUSD(claimed,digits)} cobradas</div><div class="sub">${fmtUSD(pending,digits)} pendientes</div>`;
-  }
-  return `${fmtUSD(total,digits)}<div class="sub">${hasPending?'pendientes':'cobradas'}</div>`;
+function feeMarkup(claimed,pending,digits=2){
+  const row=(value,label)=>`<div>${Number.isFinite(value)?fmtUSD(value,digits):'<span class="na">n/d</span>'}<span class="sub"> ${label}</span></div>`;
+  return row(claimed,"cobradas")+row(pending,"pendientes");
 }
 function rangeVisual(r,current){
   if(!r||!(r.priceHigh>r.priceLow))return'<span class="na">n/d</span>';
@@ -441,6 +448,22 @@ function v3Value(ls,btc){
   const usd0=a0*px(ls.label0),usd1=a1*px(ls.label1);
   return{balance:usd0+usd1,amt0:a0,amt1:a1,usd0,usd1};
 }
+function orcaPendingUsd(p,btc){
+  const quote=ORCA_PENDING[p.mint];
+  if(!quote||quote.error||!p.ls||!btc)return null;
+  const defs=[
+    {mint:p.ls.token0,dec:p.ls.dec0,label:p.ls.label0},
+    {mint:p.ls.token1,dec:p.ls.dec1,label:p.ls.label1},
+  ];
+  const value=(mint,raw)=>{
+    const d=defs.find(x=>x.mint===mint);if(!d||raw==null)return null;
+    const amount=Number(raw)/Math.pow(10,d.dec);
+    const price=d.label==="USDC"?1:((LIVE_PX&&LIVE_PX[d.label]>0)?LIVE_PX[d.label]:btc);
+    return amount*price;
+  };
+  const a=value(quote.tokenA,quote.feeOwedA),b=value(quote.tokenB,quote.feeOwedB);
+  return Number.isFinite(a)&&Number.isFinite(b)?a+b:null;
+}
 /* --- benchmarks desde los cashflows: vs HOLD USD / tokens / BTC (funciona abierta y cerrada) --- */
 function benchmarks(p,btc){
   let invUsd=0,invBtc=0,outUsd=0,exitPx=null,lastT=-1;const dep={};
@@ -458,7 +481,7 @@ function benchmarks(p,btc){
     vsTok:(ready&&okTok)?outUsd-holdTok:null,
     vsBtc:ready?outUsd-invBtc*exitPx:null};
 }
-function estYield(p){return (p.invested&&p.days)?(p.fees/p.invested)/p.days*365*100:null;}
+function estYield(p,pending=0){return (p.invested&&p.days)?((p.fees+(pending||0))/p.invested)/p.days*365*100:null;}
 
 /* ========== FRESH START: farming desde cero (línea base + filtro) ========== */
 let BASELINE=null, SHOW_OLD=false;
@@ -544,36 +567,37 @@ function renderPnl(){
   $("#loadSec").style.display="none";$("#clearBtn").style.display="";
   ["sumSec","orcaView"].forEach(id=>$("#"+id).style.display="");
   ["openSec","feeSec","closedSec","actSec"].forEach(id=>$("#"+id).style.display="none");
-  $("#statusDot").className=LIVE_LP_WARNING?"dot warn":"dot";
+  $("#statusDot").className=(LIVE_LP_WARNING||ORCA_PENDING_WARNING)?"dot warn":"dot";
   $("#statusText").textContent=M.P.length+" Orca · "+LIVE_LPS.length+" EVM · histórico "+(M.first?new Date(M.first).toISOString().slice(0,10):"?")+" → "+(M.last?new Date(M.last).toISOString().slice(0,10):"?");
   $("#rangeTag").textContent=(M.open.length+LIVE_LPS.length)+" abiertas · "+M.closed.length+" cerradas";
   let openVal=0,openPnl=0;
-  for(const p of M.open){const v=BTC?v3Value(p.ls,BTC):null;p._position=v;p._bal=v?v.balance:null;openVal+=p._bal||0;openPnl+=(p._bal||0)+(p.fees||0)-(p.invested||0);}
+  for(const p of M.open){const v=BTC?v3Value(p.ls,BTC):null;p._position=v;p._bal=v?v.balance:null;p._pendingFees=orcaPendingUsd(p,BTC);openVal+=p._bal||0;openPnl+=(p._bal||0)+(p.fees||0)+(p._pendingFees||0)-(p.invested||0);}
   const liveVal=LIVE_LPS.reduce((s,p)=>s+(p.usd||0),0);openVal+=liveVal;
   const liveWithHistory=LIVE_LPS.filter(p=>p.history&&Number.isFinite(p.history.pnlUsd));
   const livePnl=liveWithHistory.reduce((s,p)=>s+p.history.pnlUsd,0);
   const totalOpenPnl=openPnl+livePnl;
   const liveFees=liveWithHistory.reduce((s,p)=>s+(p.history.feesUsd||0),0);
+  const orcaPendingFees=M.open.reduce((s,p)=>s+(p._pendingFees||0),0);
   $("#summary").innerHTML=[
     {l:"Valor posiciones abiertas",n:BTC?fmtUSD(openVal):"—",s:"Orca + EVM · "+(M.open.length+LIVE_LPS.length)+" posiciones",c:"var(--accent)"},
     {l:"PnL abiertas",n:(BTC||liveWithHistory.length)?fmtUSD(totalOpenPnl,0):"—",s:"Orca + EVM · neto de gas",c:totalOpenPnl>=0?"var(--bull)":"var(--bear)",cl:totalOpenPnl>=0?"up":"down"},
     {l:"PnL realizado (cerradas)",n:fmtUSD(M.realized,0),s:M.closed.length+" cerradas",c:M.realized>=0?"var(--bull)":"var(--bear)",cl:M.realized>=0?"up":"down"},
-    {l:"Fees / rewards total",n:fmtUSD(M.fees+liveFees,0),s:"Orca + EVM on-chain",c:"var(--bull)"},
+    {l:"Fees / rewards total",n:fmtUSD(M.fees+orcaPendingFees+liveFees,0),s:"cobradas + pendientes",c:"var(--bull)"},
   ].map(x=>`<div class="stat" style="--sc:${x.c}"><div class="l">${x.l}</div><div class="n ${x.cl||""}">${x.n}</div><div class="s">${x.s}</div></div>`).join("");
-  $("#sumNote").innerHTML="<b>Orca:</b> balance y PnL histórico verificados. <b>Uniswap y ProjectX:</b> depósitos, retiradas, fees, gas y duración reconstruidos desde los eventos de cada NFT; fees pendientes consultadas en vivo."+(LIVE_LP_WARNING?` <span style="color:var(--hot)">${esc(LIVE_LP_WARNING)}</span>`:"");
+  $("#sumNote").innerHTML="<b>Todas las pools:</b> fees cobradas reconstruidas desde el histórico y fees pendientes consultadas on-chain en vivo."+([LIVE_LP_WARNING,ORCA_PENDING_WARNING].filter(Boolean).length?` <span style="color:var(--hot)">${esc([LIVE_LP_WARNING,ORCA_PENDING_WARNING].filter(Boolean).join(" · "))}</span>`:"");
   renderTabPos(M,BTC);renderTabHist(M);renderTabClosed(M,BTC);renderFresh();
 }
 function renderTabPos(M,BTC){
   const orcaRows=M.open.map(p=>{
-    const bal=p._bal, pnl=bal!=null?bal+(p.fees||0)-(p.invested||0):null, pct=(pnl!=null&&p.invested)?pnl/p.invested*100:null;
-    const entry=byPairOrder(p.pair,entryPricesFromCashflows(p.cf)),ey=estYield(p);
+    const bal=p._bal, pnl=bal!=null?bal+(p.fees||0)+(p._pendingFees||0)-(p.invested||0):null, pct=(pnl!=null&&p.invested)?pnl/p.invested*100:null;
+    const entry=byPairOrder(p.pair,entryPricesFromCashflows(p.cf)),ey=estYield(p,p._pendingFees);
     const current=p.range&&p.range.quote==="USDC"?BTC:PEG_RATIO;
     const range=rangeVisual(p.range,current);
     const fee=p.feePercent!=null?` <span class="pilltok">${p.feePercent}%</span>`:'';
     const nft=p.mint?` · <span title="${esc(p.mint)}">NFT ${esc(shortNft(p.mint))}</span>`:'';
     const v=p._position;
     const assets=byPairOrder(p.pair,v?[{amount:v.amt0,symbol:p.ls.label0,usd:v.usd0},{amount:v.amt1,symbol:p.ls.label1,usd:v.usd1}]:[]);
-    return `<tr><td>${esc(p.pair)}${fee}<div class="poolmeta">Orca · Solana${nft}</div></td><td>${balanceMarkup(bal,assets)}</td><td class="${(pnl||0)>=0?'up':'down'}">${pnl!=null?fmtUSD(pnl,0):'—'}${pct!=null?`<div class="sub ${pct>=0?'up':'down'}">${pct>=0?'+':''}${pct.toFixed(2)}%</div>`:''}</td><td class="up">${feeMarkup(p.fees,p.fees,0,0)}</td><td>${ey!=null?ey.toFixed(1)+'%':'—'}</td><td>${p.days.toFixed(0)}d</td><td style="text-align:left">${range}</td><td>${entryMarkup(entry)}</td></tr>`;
+    return `<tr><td>${esc(p.pair)}${fee}<div class="poolmeta">Orca · Solana${nft}</div></td><td>${balanceMarkup(bal,assets)}</td><td class="${(pnl||0)>=0?'up':'down'}">${pnl!=null?fmtUSD(pnl,0):'—'}${pct!=null?`<div class="sub ${pct>=0?'up':'down'}">${pct>=0?'+':''}${pct.toFixed(2)}%</div>`:''}</td><td class="up">${feeMarkup(p.fees,p._pendingFees,2)}</td><td>${ey!=null?ey.toFixed(1)+'%':'—'}</td><td>${p.days.toFixed(0)}d</td><td style="text-align:left">${range}</td><td>${entryMarkup(entry)}</td></tr>`;
   }).join("");
   const liveRows=LIVE_LPS.map(p=>{
     const h=p.history;
@@ -583,7 +607,7 @@ function renderTabPos(M,BTC){
       <td>${esc(p.pair)} <span class="pilltok">${esc(p.fee)}</span><div class="poolmeta">${esc(p.protocol)} · ${esc(p.network||"EVM")} · NFT #${esc(p.id)}</div></td>
       <td>${balanceMarkup(p.usd,byPairOrder(p.pair,[{amount:p.amt0,symbol:p.sym0,usd:p.price0!=null?p.amt0*p.price0:null},{amount:p.amt1,symbol:p.sym1,usd:p.price1!=null?p.amt1*p.price1:null}]))}</td>
       <td class="${h&&h.pnlUsd>=0?'up':'down'}">${h?fmtUSD(h.pnlUsd,0):'<span class="na">n/d</span>'}${h?`<div class="sub ${h.pnlPct>=0?'up':'down'}">${h.pnlPct>=0?'+':''}${h.pnlPct.toFixed(2)}%</div>`:'<div class="sub">sin histórico</div>'}${histState}</td>
-      <td class="${h?'up':''}">${h?feeMarkup(h.feesUsd,h.claimedFeesUsd,h.pendingFeesUsd,2):'<span class="na">n/d</span>'}</td>
+      <td class="${h?'up':''}">${h?feeMarkup(h.claimedFeesUsd,h.pendingFeesUsd,2):feeMarkup(null,null,2)}</td>
       <td>${h?`${h.annualizedYieldPct.toFixed(1)}%`:'<span class="na">n/d</span>'}</td>
       <td>${h?`${h.durationDays.toFixed(0)}d`:'<span class="na">n/d</span>'}</td>
       <td style="text-align:left">${rangeVisual(p.range,p.range&&p.range.currentPrice)}</td><td>${entry}</td>
@@ -686,7 +710,8 @@ function loadText(text,persist){
   const t=(text||"").trim();
   if(t[0]==="["||t[0]==="{"){ // JSON del DeFi-Tracker (orca_pnl.json) = histórico on-chain completo
     try{const data=JSON.parse(t);MODE="pnl";PNL=buildPnl(data);if(persist)localStorage.setItem(LKEY,text);
-      if(window.Plotly)renderPnl();else loadPlotly().then(renderPnl);return;}
+      const paint=()=>{renderPnl();fetchOrcaPending(PNL.open).then(()=>{if(MODE==="pnl"&&PNL)renderPnl();});};
+      if(window.Plotly)paint();else loadPlotly().then(paint);return;}
     catch(e){$("#statusDot").className="dot err";$("#statusText").textContent="JSON no válido: "+((e&&e.message)||e);return;}
   }
   try{const rows=parseCSV(text);
