@@ -131,7 +131,7 @@
             <option value="cowen_seasonal">Cowen · Estacional midterm (compra H2 midterm / vende Q4 pre-midterm)</option>
             <option value="cowen_risk">Cowen · Risk metric (DCA &lt;0,3 / salir &gt;0,6)</option>
             <option value="cowen_mvrv">Cowen · Reset MVRV Z (&lt;0 dentro / &gt;3 fuera)</option>
-            <option value="onchainmind_fng">OnChainMind · F&amp;G Cadence (batió al DCA 10× desde 2019)</option>
+            <option value="onchainmind_fng">F&amp;G Cadence 90d (batió al DCA 10× desde 2019)</option>
           </optgroup>
           <optgroup label="📐 Indicadores clásicos">
             <option value="gc">Golden/Death Cross 50/200</option>
@@ -209,7 +209,7 @@
   <footer>
     <div class="note" style="max-width:960px">
       <b>Cómo funciona.</b> Construyes <b>señales de entrada y salida</b> combinando indicadores con operadores (<b>cruza al alza/baja, &gt;, &lt;, =, sube, baja</b>) contra otro indicador o un valor fijo, y combinas varias condiciones con <b>Y / O</b>. Indicadores disponibles:
-      <br>• <b>Técnicos:</b> precio, SMA/EMA(n), RSI, MACD (línea/señal/histograma), BMSB · <b>On-chain:</b> MVRV Z · <b>Sentimiento:</b> Fear &amp; Greed y su <b>cadencia a 90 días</b> (la estrategia insignia de OnChainMind).
+      <br>• <b>Técnicos:</b> precio, SMA/EMA(n), RSI, MACD (línea/señal/histograma), BMSB · <b>On-chain:</b> MVRV Z · <b>Sentimiento:</b> Fear &amp; Greed y su <b>cadencia a 90 días</b>.
       <br>• <b>Temporales (ciclo):</b> <b>Sem. desde halving</b> (para el «Bitcoin Halving Cycle Profit» de LMEC), <b>Mes</b> y <b>Año del ciclo (%4)</b> (para las señales <b>estacionales</b> de Cowen: comprar 2ª mitad del año midterm, vender Q4 del año pre-midterm).
       <br>El motor entra/sale <b>al cierre semanal</b> de la señal, aplica comisión+slippage, y calcula métricas <b>profesionales</b>: ROI, CAGR, <b>Sharpe</b>, max drawdown, win-rate, profit factor, exposición y comparación contra <b>comprar y aguantar</b>. Los presets <b>🔄 Ciclos · agentes</b> traen las estrategias de <b>LMEC y Cowen ya prediseñadas</b> — selecciónalas para ver qué han dado históricamente. Guarda cada estrategia con sus resultados (en tu navegador) y expórtalas. Long-only sobre spot.
       <br><b>Derivados</b> (funding, IV/skew) entrarán como indicadores más cuando conectemos esa fuente. <b>Uso educativo — la rentabilidad pasada no garantiza resultados; no es asesoramiento financiero.</b>
@@ -579,8 +579,8 @@ const PRESETS={
     {left:{ind:"mvrvz",params:{}},op:"lt",right:{ind:"value",params:{v:0}}}]},
     x:{logic:"all",conds:[
     {left:{ind:"mvrvz",params:{}},op:"gt",right:{ind:"value",params:{v:3}}}]}},
-  onchainmind_fng:{name:"OnChainMind · F&G Cadence",
-    desc:`<h4>OnChainMind · Fear & Greed Cadence</h4>Compra cuando la <b>cadencia</b> del Fear & Greed (F&G de hoy − F&G de hace 90 días) cruza de negativo a positivo, con precio &gt; MA200 y F&G &gt; 20. Vende <b>en cuanto</b> la cadencia vuelve a cruzar por debajo de 0.
+  onchainmind_fng:{name:"F&G Cadence 90d",
+    desc:`<h4>Fear & Greed Cadence (90d)</h4>Compra cuando la <b>cadencia</b> del Fear & Greed (F&G de hoy − F&G de hace 90 días) cruza de negativo a positivo, con precio &gt; MA200 y F&G &gt; 20. Vende <b>en cuanto</b> la cadencia vuelve a cruzar por debajo de 0.
     <div class="q">"When the Cadence moves from negative to positive, that becomes your buy signal."<span class="src">[ocm/20260325]</span></div>
     <div class="q">"The moment the cadence crosses back below zero again, you get out. No filters, no waiting."<span class="src">[ocm/20260325]</span></div>
     <span class="warn">Su backtest es DIARIO (+3.800%, ~10× DCA, 86% aciertos); aquí el motor es SEMANAL, así que la cadencia pierde precisión y rinde por debajo. La regla es fiel; la resolución no.</span>`,

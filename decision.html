@@ -97,7 +97,6 @@
       <a class="btn" href="index.html">← Panel</a>
       <a class="btn" href="lmec.html">🎯 LMEC</a>
       <a class="btn" href="cowen.html">📊 Cowen</a>
-      <a class="btn" href="onchainmind.html">🧠 OnChainMind</a>
       <button class="btn" id="themeBtn">◐ Tema</button>
     </div>
   </header>
@@ -118,8 +117,10 @@
   <div class="note" id="delta" style="display:none;border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:12px 16px;margin-top:10px"></div>
 
   <div class="sec-head"><h2>LMEC · Cowen — qué hacen AHORA</h2><div class="rule"></div><span class="mtxt" style="font-size:12px">de sus transcripts, citado · señales en vivo</span></div>
-  <div class="note" style="margin-bottom:10px">🧠 OnChainMind fuera de la comparativa (auditado: nunca dio señal de venta en tiempo real) — su panel sigue en <a href="onchainmind.html" style="color:var(--accent)">onchainmind.html</a>.</div>
   <div class="agrid" id="agentCards"></div>
+
+  <div class="sec-head"><h2>₿ Mis compras BTC de este ciclo</h2><div class="rule"></div><span class="mtxt" style="font-size:12px">privado · round-up Revolut + órdenes BELROGAM</span></div>
+  <div class="note" id="buysBox" style="border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:14px 16px">Cargando compras…</div>
 
   <div class="sec-head"><h2>Fases del ciclo sobre el precio <span class="mtxt" style="font-weight:400;font-size:12px">· marco temporal LMEC/Cowen</span></h2><div class="rule"></div></div>
   <div style="border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:8px 6px 2px"><div id="phaseChart" style="width:100%;min-height:380px"></div></div>
@@ -145,7 +146,7 @@
   </details>
 
   <footer>
-    Agrega las señales que los tres analistas (LMEC · Cowen · OnChainMind) usan para el <b>largo plazo del ciclo</b> y las traduce a una acción. Precio y BMSB/RSI vía Binance; F&amp;G vía alternative.me; MVRV Z vía Coin Metrics (si el on-chain está disponible). <b>No mide timing intradía ni derivados.</b> Uso educativo — <b>no es asesoramiento financiero.</b>
+    Agrega las señales que LMEC y Cowen usan para el <b>largo plazo del ciclo</b> y las traduce a una acción. Precio y BMSB/RSI vía Binance; F&amp;G vía alternative.me; MVRV Z vía Coin Metrics (si el on-chain está disponible). <b>No mide timing intradía ni derivados.</b> Uso educativo — <b>no es asesoramiento financiero.</b>
   </footer>
 </div>
 
@@ -259,9 +260,9 @@ function evaluate(D){
     {key:"real",nm:"Precio ≤ realized price",who:"LMEC",on:belowReal,nd:realized==null,val:realized!=null?fmtUSD(realized):"n/d",
      ds:realized==null?"On-chain no disponible. No cuenta.":(belowReal?"El precio está por debajo del precio medio de los holders (realized) = zona de capitulación/suelo.":"Precio por encima del realized price; aún sin capitulación."),
      q:"BTC siempre perforó por abajo el precio medio de compra de los holders… cerca del suelo real.",src:"LMEC · mvrv-zscore"},
-    {key:"fng",nm:"Fear & Greed en miedo",who:"OnChainMind",on:fngFear,nd:fng==null,val:fng!=null?String(fng):"n/d",
+    {key:"fng",nm:"Fear & Greed en miedo",who:"Sentimiento",on:fngFear,nd:fng==null,val:fng!=null?String(fng):"n/d",
      ds:fng==null?"F&G no disponible.":(fngFear?"F&G en miedo (<45): OCM aumenta compras en miedo/miedo extremo.":"F&G sin miedo (≥45): OCM reduce compras."),
-     q:"selectively increasing your purchases when the market is in fear or extreme fear.",src:"OnChainMind · fear-greed"},
+     q:"selectively increasing your purchases when the market is in fear or extreme fear.",src:"fear-greed (KB onchainmind)"},
     {key:"cycle",nm:"Ventana de ciclo",who:"LMEC + Cowen",on:cycleBuy,val:"sem "+Math.round(hw),
      ds:accumWindow?`Ventana de acumulación del halving (sem 120-180 ≈ ${accumStart} → ${accumEnd}).`:(cowenSeason?`2ª mitad del año midterm: Cowen acumula tras el mínimo de junio (jul–dic ${yr} y principios de ${yr+1}).`:(distWindow?"Sem 70-110 = zona de techo/distribución del ciclo.":`Fuera de ventana. Acumulación del halving: sem 120-180 (≈ ${accumStart} → ${accumEnd}).`)),
      q:"after the June low is when I bought and I just DCA… the second half of the midterm year.",src:"Cowen · dynamic-dca"},
@@ -334,7 +335,7 @@ function render(R){
         · <b>RSI 34-50</b> (LMEC): 34 al recuperar de sobreventa, 40-50 en la ruptura de compra.<br>
         · <b>MVRV Z franja verde</b> (LMEC): verde = infravaloración (el límite Z&lt;0 es la convención de la franja; LMEC no da número).<br>
         · <b>Precio ≤ realized price</b> (LMEC): el suelo perfora el precio medio de los holders (~capitulación).<br>
-        · <b>F&amp;G en miedo</b> (OnChainMind): comprar más en miedo/miedo extremo (índice: &lt;45 = miedo).<br>
+        · <b>F&amp;G en miedo</b> (sentimiento): comprar más en miedo/miedo extremo (índice: &lt;45 = miedo).<br>
         · <b>Ventana de ciclo</b> (LMEC halving + Cowen): acumulación del ciclo o 2ª mitad del año midterm.</div>
       <div><b>Acción resultante:</b><br>
         · <b>Tomar beneficio</b>: ventana de techo (sem 70-110) si el precio no está barato.<br>
@@ -451,6 +452,12 @@ function renderAgents(R){
       <div class="albl">Siguiente movimiento que espera</div><div class="arow">${a.next}</div>
       <div class="albl">Pólvora</div><div class="arow">${a.powder}</div>
       <div class="aq">${a.q}<span class="src">[${a.src}]</span></div>
+      ${nCambios?`<div class="albl" style="margin-top:8px">🧠 Cambios de opinión (${nCambios}) — pivotar a tiempo es señal de aprendizaje, no de debilidad</div>
+      ${kb.cambios_opinion.slice().reverse().map(c=>`<div class="arow" style="font-size:12px;border-left:2px solid var(--line);padding-left:9px;margin:7px 0">
+        <span class="mono" style="color:var(--muted)">${esc(c.fecha||"")}</span> · <span style="color:var(--muted)">antes:</span> ${esc(c.antes||"")}<br>
+        <span style="color:var(--muted)">ahora:</span> <b>${esc(c.ahora||"")}</b>
+        ${c.quote?`<div class="aq" style="margin-top:4px">"${esc(c.quote)}"<span class="src">[${esc(c.src||"")}]</span></div>`:""}
+      </div>`).join("")}`:""}
       ${a.audit?`<div class="arow" style="color:var(--hot);font-size:12px;margin-top:6px">${a.audit}</div>`:""}
     </details>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
@@ -546,13 +553,7 @@ function renderDelta(R,snaps){
     else bits.push(`acción sin cambio (<b>${esc(R.action)}</b>)`);
     if(last.lit!==R.lit)bits.push(`señales encendidas: <b>${last.lit}/${last.tot} → ${R.lit}/${R.tot}</b>`);
   }
-  for(const k of["lmec","cowen"]){
-    const kb=KB[k];const cam=kb&&Array.isArray(kb.cambios_opinion)&&kb.cambios_opinion.length?kb.cambios_opinion[kb.cambios_opinion.length-1]:null;
-    if(cam&&cam.fecha){
-      const days=(Date.now()-new Date(cam.fecha).getTime())/864e5;
-      if(days>=0&&days<=45)bits.push(`🧠 <b>${k==="lmec"?"LMEC":"Cowen"}</b> cambió de opinión el ${esc(cam.fecha)}: ${esc(cam.de||"")} → <b>${esc(cam.a||cam.resumen||"")}</b>`);
-    }
-  }
+  // (los cambios de opinión viven en la tarjeta de cada agente, con historial completo y citas)
   if(!bits.length){el.style.display="none";return;}
   el.style.display="block";
   el.innerHTML=`<b>🔄 Qué ha cambiado</b> · ${bits.join(" · ")}`;
@@ -584,6 +585,50 @@ async function loadHistory(D,R){
         <td>${h==null?'<span class="st off">n/a</span>':(h?'<span class="st on">✓</span>':'<span class="st nd">✗</span>')}</td></tr>`;}).join("")+`</tbody>`;
 }
 
+/* ---------- mis compras BTC del ciclo (datos en el repo PRIVADO: data/btc_compras.json) ---------- */
+const fmtEUR=v=>v==null||isNaN(v)?"—":(v<0?"-€":"€")+Math.abs(Math.round(v)).toLocaleString("en-US");
+const fmtBTC=v=>v==null||isNaN(v)?"—":"₿ "+Number(v).toFixed(v<0.01?6:4);
+async function loadBuys(R){
+  const el=$("#buysBox");
+  let j=null,status=0;
+  try{const r=await fetch("/api/private?file=btc_compras",{cache:"no-store"});status=r.status;if(r.ok)j=await r.json();}catch(e){}
+  if(!j){
+    el.innerHTML=status===404
+      ?`Aún no hay datos. Crea <code>data/btc_compras.json</code> en el repo privado <b>DeFi-Tracker</b> (pídeme el formato en el chat y te lo doy relleno con tu plan) y esta sección se pinta sola: escalera del round-up, órdenes de BELROGAM y totales del ciclo.`
+      :`No se pudo cargar (${status||"red"}). ¿Sesión caducada? Recarga la página.`;
+    return;
+  }
+  const px=R.price;
+  const sumB=arr=>(arr||[]).reduce((s,c)=>s+(+c.btc||0),0);
+  const sumE=arr=>(arr||[]).reduce((s,c)=>s+(+c.eur||0),0);
+  const block=(title,compras,extra)=>{
+    const b=sumB(compras),e=sumE(compras),avg=b>0?e/b:null;
+    const val=b*px*(j.eurusd?1/j.eurusd:0.86); // aprox €: si no hay tipo, 0.86 conservador
+    const pnl=b>0?val-e:null;
+    return `<div style="margin-bottom:14px"><b>${title}</b>${extra||""}
+      ${b>0?`<div style="display:flex;gap:22px;flex-wrap:wrap;margin-top:6px" class="mono">
+        <span>Acumulado <b>${fmtBTC(b)}</b></span><span>Invertido <b>${fmtEUR(e)}</b></span>
+        <span>Precio medio <b>${avg?fmtEUR(avg)+"/₿":"—"}</b></span>
+        <span>Ahora <b>${fmtEUR(val)}</b> <span style="color:${pnl>=0?'var(--bull)':'var(--bear)'}">(${pnl>=0?"+":""}${fmtEUR(pnl)})</span></span>
+      </div>`:`<div class="mtxt" style="margin-top:4px">sin compras registradas aún</div>`}</div>`;
+  };
+  const p=j.personal||{},b=j.belrogam||{};
+  const ladder=(p.escalera||[]).map(s=>{
+    const active=px<s.bajo&&(!s.hasta||px>=s.hasta);
+    return `<span class="chip" style="padding:4px 9px;${active?"border-color:var(--bull);color:var(--bull);font-weight:700":""}">&lt;${(s.bajo/1000)}k → ×${s.mult}${active?" · ACTIVO":""}</span>`;
+  }).join(" ");
+  const orders=(b.ordenes||[]).map(o=>{
+    const filled=(b.compras||[]).some(c=>c.orden===o.precio);
+    const near=!filled&&px<=o.precio*1.03;
+    return `<span class="chip" style="padding:4px 9px;${filled?"text-decoration:line-through;opacity:.6":near?"border-color:var(--hot);color:var(--hot);font-weight:700":""}">${(o.precio/1000)}k · ${fmtEUR(o.eur)}${filled?" ✓":near?" · CERCA":""}</span>`;
+  }).join(" ");
+  el.innerHTML=
+    block(`👤 Personal — Revolut round-up`,p.compras,
+      ladder?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${ladder}</div><div class="mtxt" style="margin-top:3px">multiplicador según precio (BTC ahora: ${fmtUSD(px)})</div>`:"")+
+    block(`🏢 BELROGAM — órdenes escalonadas`,b.compras,
+      orders?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${orders}</div>${b.presupuesto_eur?`<div class="mtxt" style="margin-top:3px">presupuesto actual ${fmtEUR(b.presupuesto_eur)}${b.nota?" · "+esc(b.nota):""}</div>`:""}`:"")+
+    `<div class="mtxt">Para actualizar: dime las compras en el chat o súbeme el informe de Revolut y actualizo el JSON del repo privado.</div>`;
+}
 async function refreshAll(){
   try{
     const D=await fetchWeekly();
@@ -594,6 +639,7 @@ async function refreshAll(){
     renderAgents(R);
     renderPhaseChart(D);
     loadHistory(D,R);
+    loadBuys(R);
     $("#statusDot").className="dot ok";
     const hh=new Date();const hm=String(hh.getHours()).padStart(2,"0")+":"+String(hh.getMinutes()).padStart(2,"0");
     $("#statusText").textContent="Actualizado "+hh.toISOString().slice(0,10)+" "+hm+" · se refresca cada 30 min · Binance"+(D.z!=null?" + Coin Metrics":"");
