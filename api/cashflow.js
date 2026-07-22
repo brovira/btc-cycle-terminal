@@ -20,10 +20,22 @@ module.exports = async (req, res) => {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   const url = new URL(req.url, "http://x");
   const pass = process.env.DASH_PASSWORD;
-  const SB = process.env.SUPABASE_URL, KEY = process.env.SUPABASE_SERVICE_KEY;
+  // tolerante a variantes/typos del nombre (SUPABASE_URL, SUPBASE_URL, SUPABASE-URL…):
+  // vale cualquier env que empiece por SUP y termine en URL / KEY.
+  let SB = process.env.SUPABASE_URL, KEY = process.env.SUPABASE_SERVICE_KEY;
+  if (!SB || !KEY) {
+    for (const k of Object.keys(process.env)) {
+      if (!SB && /^SUP/i.test(k) && /URL$/i.test(k)) SB = process.env[k];
+      if (!KEY && /^SUP/i.test(k) && /KEY$/i.test(k)) KEY = process.env[k];
+    }
+  }
   if (!pass) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password" })); }
   if (!passwordOk(req, url, pass)) { await new Promise(r => setTimeout(r, 600)); res.statusCode = 401; return res.end(JSON.stringify({ error: "bad_password" })); }
-  if (!SB || !KEY) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_supabase", message: "Faltan SUPABASE_URL y SUPABASE_SERVICE_KEY en Vercel (cópialos del proyecto belrogam)." })); }
+  if (!SB || !KEY) {
+    const seen = Object.keys(process.env).filter(k => /SUP/i.test(k)); // solo NOMBRES, nunca valores
+    res.statusCode = 503;
+    return res.end(JSON.stringify({ error: "no_supabase", message: "No encuentro las variables de Supabase. Nombres esperados: SUPABASE_URL y SUPABASE_SERVICE_KEY. Variables parecidas que SÍ veo: " + (seen.length ? seen.join(", ") : "ninguna") + ". Tras corregir, Redeploy." }));
+  }
 
   const H = { apikey: KEY, Authorization: `Bearer ${KEY}` };
   const get = async (path) => {

@@ -41,6 +41,11 @@
   .shbar i{display:block;height:100%;background:var(--bull)}
   .shcell{display:flex;align-items:center;gap:8px;justify-content:flex-end}
   .chip{font-size:10px;font-family:var(--mono);color:var(--muted);background:var(--panel2);border:1px solid var(--line);padding:1px 6px;border-radius:999px}
+  tr.grp{cursor:pointer} tr.grp:hover td{background:color-mix(in oklab,var(--accent) 6%,transparent)}
+  tr.subrow{display:none} tr.subrow.show{display:table-row}
+  tr.subrow td{background:var(--panel2);font-size:12.5px;color:var(--ink2);border-bottom:1px solid var(--line)}
+  .caret{display:inline-block;width:14px;color:var(--muted);transition:transform .12s}
+  tr.grp.open .caret{transform:rotate(90deg)}
   footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;line-height:1.6}
 </style>
 </head>
@@ -73,12 +78,15 @@
     <div class="cards" id="totals" style="margin-top:6px"></div>
 
     <div class="sec-head"><h2>📊 Portfolio</h2><div class="rule"></div>
-      <div style="display:flex;gap:6px">
-        <button class="btn on" data-pf="token" id="pfTok">Por token</button>
-        <button class="btn" data-pf="chain" id="pfCh">Por blockchain</button>
+      <div style="display:flex;gap:6px" id="pfTabs">
+        <button class="btn on" data-pf="token">Token</button>
+        <button class="btn" data-pf="protocol">Protocol</button>
+        <button class="btn" data-pf="chain">Chain</button>
+        <button class="btn" data-pf="address">Address</button>
       </div>
     </div>
     <div class="panel" style="overflow:auto"><table id="pfTbl"></table></div>
+    <div class="note" style="margin-top:6px">Pincha una fila para desplegar el detalle (dónde está cada parte: wallet, Orca, Uniswap, ProjectX, staking…).</div>
 
     <div class="sec-head"><h2>◎ Wallet Solana</h2><div class="rule"></div><span class="addr" id="solAddr"></span></div>
     <div class="panel" style="overflow:auto"><table id="solTbl"></table></div>
@@ -143,21 +151,26 @@ async function load(pw){
   const lpVal=await loadLpValue(pw,px.BTC);
   $("#gate").style.display="none";$("#content").style.display="";
   $("#statusDot").className="dot ok";$("#statusText").textContent="Actualizado "+new Date().toISOString().slice(0,16).replace("T"," ")+" · caché 2 min";
-  const sol=j.solana,evm=j.evm||{},uni=j.uniswap||{positions:[],totalUsd:0},hl=j.hyperliquid||{tokens:[],totalUsd:0};
+  const sol=j.solana,evm=j.evm||{},uni=j.uniswap||{positions:[],totalUsd:0},prjx=j.projectx||{positions:[],totalUsd:0},hl=j.hyperliquid||{tokens:[],totalUsd:0};
   const MIN=20; // ocultar polvo/spam por debajo de $20 (solo en las listas de blockchain)
   const visTok=arr=>{const vis=[],hid={n:0};for(const t of (arr||[])){if(t.usd==null||t.usd<MIN)hid.n++;else vis.push(t);}return{vis,hid:hid.n};};
   const solV=visTok(sol&&sol.tokens);
   const chains=[["ethereum",evm.ethereum],["base",evm.base],["hyperevm",evm.hyperevm]].filter(x=>x[1]&&!x[1].error);
   const STABLE=s=>/^USD|^DAI$|USD.?0$/i.test(String(s).replace(/\s.*/,""));
+  const solAddr=sol&&sol.address?short(sol.address):"solana";
+  const evmAddr="EVM"; // una sola wallet EVM
 
-  // ---------- ASSETS unificados (para el portfolio estilo Nansen) ----------
+  // ---------- ASSETS unificados (token · chain · protocol · address) ----------
   ASSETS=[];
-  for(const t of solV.vis)ASSETS.push({sym:t.sym,chain:"solana",amount:t.amount,usd:t.usd,kind:"token"});
-  if(lpVal!=null&&lpVal>0)ASSETS.push({sym:"LP Orca (cbBTC/USDC + peg)",chain:"solana",amount:null,usd:lpVal,kind:"lp"});
-  for(const[name,c]of chains)for(const t of c.tokens||[])ASSETS.push({sym:t.sym,chain:name,amount:t.amount,usd:t.usd,kind:/^A[A-Z]/.test(t.sym)?"defi":"token"});
-  for(const p of (uni.positions||[]))if(p.usd)ASSETS.push({sym:`LP UniV3 ${p.pair}`,chain:"ethereum",amount:null,usd:p.usd,kind:"lp",extra:p});
-  for(const t of (hl.tokens||[]))ASSETS.push({sym:t.sym,chain:"hyperliquid",amount:t.amount,usd:t.usd,kind:"token"});
-  if(hl.staked&&hl.staked.usd)ASSETS.push({sym:"HYPE",chain:"hyperliquid",amount:hl.staked.amount,usd:hl.staked.usd,kind:"stake"});
+  for(const t of solV.vis)ASSETS.push({sym:t.sym,chain:"solana",protocol:"Wallet",address:solAddr,amount:t.amount,usd:t.usd,kind:"token"});
+  if(lpVal!=null&&lpVal>0)ASSETS.push({sym:"cbBTC/USDC + peg (LP)",chain:"solana",protocol:"Orca",address:solAddr,amount:null,usd:lpVal,kind:"lp"});
+  for(const[name,c]of chains)for(const t of c.tokens||[]){
+    const aave=/^A(WETH|ETH|WBTC|CBBTC|USDC|USDT|DAI)/i.test(t.sym);
+    ASSETS.push({sym:t.sym,chain:name,protocol:aave?"Aave":"Wallet",address:evmAddr,amount:t.amount,usd:t.usd,kind:aave?"defi":"token"});}
+  for(const p of (uni.positions||[]))if(p.usd)ASSETS.push({sym:`${p.pair} (LP)`,chain:"ethereum",protocol:"Uniswap V3",address:evmAddr,amount:null,usd:p.usd,kind:"lp",extra:p});
+  for(const p of (prjx.positions||[]))if(p.usd)ASSETS.push({sym:`${p.pair} (LP)`,chain:"hyperevm",protocol:"ProjectX",address:evmAddr,amount:null,usd:p.usd,kind:"lp",extra:p});
+  for(const t of (hl.tokens||[]))ASSETS.push({sym:t.sym,chain:"hyperliquid",protocol:"Hyperliquid · spot",address:evmAddr,amount:t.amount,usd:t.usd,kind:"token"});
+  if(hl.staked&&hl.staked.usd)ASSETS.push({sym:"HYPE",chain:"hyperliquid",protocol:"Hyperliquid · staking",address:evmAddr,amount:hl.staked.amount,usd:hl.staked.usd,kind:"stake"});
 
   const sum=f=>ASSETS.filter(f).reduce((s,a)=>s+(a.usd||0),0);
   const total=sum(()=>true);
@@ -185,8 +198,10 @@ async function load(pw){
   // ---------- detalle EVM + Hyperliquid ----------
   let evmHid=0;for(const[,c]of chains)evmHid+=c.hidden||0;
   let evmRows="";
-  for(const p of (uni.positions||[])){
-    evmRows+=`<tr><td>🦄 Uniswap V3 ${esc(p.pair)} ${esc(p.fee)} ${p.inRange?'🟢':'🔴'} <span class="addr">ethereum</span></td><td>${fmtAmt(p.amt0)} ${esc(p.sym0)} + ${fmtAmt(p.amt1)} ${esc(p.sym1)}</td><td>${p.usd!=null?fmtUSD(p.usd,2):'<span style="color:var(--muted)">sin precio</span>'}</td></tr>`;
+  for(const[ic,src,net]of[["🦄",uni,"ethereum"],["✖️",prjx,"hyperevm"]]){
+    for(const p of (src.positions||[])){
+      evmRows+=`<tr><td>${ic} ${esc(p.protocol||"V3")} ${esc(p.pair)} ${esc(p.fee)} ${p.inRange?'🟢':'🔴'} <span class="addr">${net}</span></td><td>${fmtAmt(p.amt0)} ${esc(p.sym0)} + ${fmtAmt(p.amt1)} ${esc(p.sym1)}</td><td>${p.usd!=null?fmtUSD(p.usd,2):'<span style="color:var(--muted)">sin precio</span>'}</td></tr>`;
+    }
   }
   if(hl.staked)evmRows+=`<tr><td>🥩 ${esc(hl.staked.sym)} <span class="addr">hyperliquid</span></td><td>${fmtAmt(hl.staked.amount)}</td><td>${hl.staked.usd!=null?fmtUSD(hl.staked.usd,2):'—'}</td></tr>`;
   for(const t of (hl.tokens||[]))evmRows+=`<tr><td>${esc(t.sym)} <span class="addr">hyperliquid</span></td><td>${fmtAmt(t.amount)}</td><td>${t.usd!=null?fmtUSD(t.usd,2):'<span style="color:var(--muted)">sin precio</span>'}</td></tr>`;
@@ -197,33 +212,48 @@ async function load(pw){
   $("#evmNote").textContent=(evmHid?evmHid+" tokens ocultos (<$"+MIN+", sin market cap real, o spam con precio falso). ":"")+(hl.warning?("Hyperliquid: "+hl.warning):"");
 }
 
-/* ---------- Portfolio estilo Nansen: por token / por blockchain ---------- */
+/* ---------- Portfolio estilo Nansen: Token / Protocol / Chain / Address (expandible) ---------- */
 let ASSETS=[],TOTAL_USD=0,PF_MODE="token";
 function bar(pct){return `<div class="shcell"><span class="mono" style="font-size:12px;color:var(--muted)">${pct.toFixed(1)}%</span><div class="shbar"><i style="width:${Math.min(100,pct)}%"></i></div></div>`;}
+function whereLabel(a){ // "Positions on Orca via solana" al estilo Nansen
+  const via=a.address?` <span class="chip">${esc(a.chain)}</span>`:"";
+  if(a.protocol==="Wallet")return`Idling en Wallet${via}`;
+  return`${esc(a.protocol)}${via}`;
+}
+function groupRender(keyFn,labelFn,headers,mode){
+  const g={};
+  for(const a of ASSETS){const k=keyFn(a);const o=g[k]||(g[k]={key:k,usd:0,amount:0,amtOk:true,items:[]});
+    o.usd+=a.usd||0;if(a.amount!=null)o.amount+=a.amount;else o.amtOk=false;o.items.push(a);}
+  const rows=Object.values(g).sort((a,b)=>b.usd-a.usd);
+  let html=`<thead><tr>${headers.map((h,i)=>`<th${i===0?' style="text-align:left"':''}>${h}</th>`).join("")}</tr></thead><tbody>`;
+  rows.forEach((r,ix)=>{
+    const share=TOTAL_USD?r.usd/TOTAL_USD*100:0;
+    html+=`<tr class="grp" data-g="${mode}${ix}"><td style="text-align:left"><span class="caret">▶</span>${labelFn(r)}</td>`+
+      (mode==="token"?`<td>${r.amtOk?fmtAmt(r.amount):"—"}</td>`:`<td>${r.items.length}</td>`)+
+      `<td>${bar(share)}</td><td>${fmtUSD(r.usd,2)}</td></tr>`;
+    for(const a of r.items.sort((x,y)=>(y.usd||0)-(x.usd||0))){
+      const pctIn=r.usd?(a.usd||0)/r.usd*100:0;
+      html+=`<tr class="subrow" data-p="${mode}${ix}"><td style="text-align:left;padding-left:34px">${mode==="token"?whereLabel(a):esc(a.sym)+' <span class="chip">'+esc(a.chain)+'</span>'+(a.protocol!=="Wallet"?' <span class="chip">'+esc(a.protocol)+'</span>':"")}</td><td>${a.amount!=null?fmtAmt(a.amount):"—"}</td><td>${bar(pctIn)}</td><td>${fmtUSD(a.usd,2)}</td></tr>`;
+    }
+  });
+  return html+`</tbody>`;
+}
 function renderPf(mode){
   PF_MODE=mode;
-  $("#pfTok").classList.toggle("on",mode==="token");$("#pfCh").classList.toggle("on",mode==="chain");
+  document.querySelectorAll("#pfTabs .btn").forEach(b=>b.classList.toggle("on",b.dataset.pf===mode));
   if(!ASSETS.length){$("#pfTbl").innerHTML="";return;}
-  if(mode==="token"){
-    const g={};
-    for(const a of ASSETS){const k=a.sym.toUpperCase().replace(/\s*\(.*\)$/,"");
-      const o=g[k]||(g[k]={sym:a.sym.replace(/\s*\(.*\)$/,""),usd:0,amount:0,amtOk:true,chains:new Set()});
-      o.usd+=a.usd||0;if(a.amount!=null)o.amount+=a.amount;else o.amtOk=false;o.chains.add(a.chain);}
-    const rows=Object.values(g).sort((a,b)=>b.usd-a.usd);
-    $("#pfTbl").innerHTML=`<thead><tr><th>Token</th><th>Cantidad</th><th>Redes</th><th style="min-width:150px">Share</th><th>Valor</th></tr></thead><tbody>`+
-      rows.map(r=>`<tr><td>${esc(r.sym)}</td><td>${r.amtOk?fmtAmt(r.amount):"—"}</td><td style="text-align:left">${[...r.chains].map(c=>`<span class="chip">${esc(c)}</span>`).join(" ")}</td><td>${bar(TOTAL_USD?r.usd/TOTAL_USD*100:0)}</td><td>${fmtUSD(r.usd,2)}</td></tr>`).join("")+`</tbody>`;
-  }else{
-    const g={};
-    for(const a of ASSETS){const o=g[a.chain]||(g[a.chain]={chain:a.chain,usd:0,syms:{}});o.usd+=a.usd||0;
-      const k=a.sym.replace(/\s*\(.*\)$/,"");o.syms[k]=(o.syms[k]||0)+(a.usd||0);}
-    const rows=Object.values(g).sort((a,b)=>b.usd-a.usd);
-    $("#pfTbl").innerHTML=`<thead><tr><th>Blockchain</th><th style="text-align:left">Top posiciones</th><th style="min-width:150px">Share</th><th>Valor</th></tr></thead><tbody>`+
-      rows.map(r=>{const top=Object.entries(r.syms).sort((x,y)=>y[1]-x[1]).slice(0,3).map(([s,v])=>`${esc(s)} ${fmtUSD(v)}`).join(" · ");
-        return `<tr><td>${esc(r.chain)}</td><td style="text-align:left;font-family:var(--font);font-size:12px;color:var(--muted)">${top}</td><td>${bar(TOTAL_USD?r.usd/TOTAL_USD*100:0)}</td><td>${fmtUSD(r.usd,2)}</td></tr>`;}).join("")+`</tbody>`;
-  }
+  const strip=s=>s.replace(/\s*\((LP|staked|HL spot|Base)\)$/i,"");
+  if(mode==="token")$("#pfTbl").innerHTML=groupRender(a=>strip(a.sym).toUpperCase().replace(/^ETH \(BASE\)$/,"ETH"),r=>esc(strip(r.items[0].sym)),["Token","Cantidad","Share","Valor"],mode);
+  else if(mode==="protocol")$("#pfTbl").innerHTML=groupRender(a=>a.protocol,r=>esc(r.key),["Protocolo","#","Share","Valor"],mode);
+  else if(mode==="chain")$("#pfTbl").innerHTML=groupRender(a=>a.chain,r=>esc(r.key),["Blockchain","#","Share","Valor"],mode);
+  else $("#pfTbl").innerHTML=groupRender(a=>a.address,r=>esc(r.key),["Dirección","#","Share","Valor"],mode);
 }
-$("#pfTok").addEventListener("click",()=>renderPf("token"));
-$("#pfCh").addEventListener("click",()=>renderPf("chain"));
+$("#pfTbl").addEventListener("click",e=>{
+  const tr=e.target.closest("tr.grp");if(!tr)return;
+  tr.classList.toggle("open");
+  document.querySelectorAll(`tr.subrow[data-p="${tr.dataset.g}"]`).forEach(s=>s.classList.toggle("show"));
+});
+document.querySelectorAll("#pfTabs .btn").forEach(b=>b.addEventListener("click",()=>renderPf(b.dataset.pf)));
 $("#pwForm").addEventListener("submit",e=>{e.preventDefault();load($("#pw").value);});
 (function(){const pw=localStorage.getItem(PWKEY)||sessionStorage.getItem(PWKEY);if(pw){$("#pw").value=pw;load(pw);}})();
 setInterval(()=>{const pw=localStorage.getItem(PWKEY);if(pw&&$("#content").style.display!=="none")load(pw);},10*60*1000);
