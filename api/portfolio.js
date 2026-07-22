@@ -147,6 +147,7 @@ async function fetchEvmChain(base, chain, addr) {
 const ETH_RPCS = ["https://eth.blockscout.com/api/eth-rpc", "https://eth.llamarpc.com", "https://cloudflare-eth.com", "https://rpc.ankr.com/eth"];
 const HYPE_RPCS = ["https://rpc.hyperliquid.xyz/evm"];
 const UNISWAP_V3_POSITION_MANAGER = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
+const PROJECTX_POSITION_MANAGER = "0xeaD19AE861c29bBb2101E834922B2FEee69B9091";
 const pad = (h) => h.replace(/^0x/, "").padStart(64, "0");
 const word = (hex, i) => BigInt("0x" + (hex.replace(/^0x/, "").slice(i * 64, i * 64 + 64) || "0"));
 const toInt = (v) => (v > (1n << 255n) ? v - (1n << 256n) : v);
@@ -162,10 +163,33 @@ function rpcCaller(rpcs) {
     return null;
   };
 }
-async function tokenInfo(baseUrl, address) {
+function decodeRpcString(hex) {
+  const raw = (hex || "").replace(/^0x/, "");
+  if (!raw) return "?";
+  try {
+    const offset = Number(BigInt("0x" + raw.slice(0, 64)));
+    if (offset === 32) {
+      const length = Number(BigInt("0x" + raw.slice(64, 128)));
+      return Buffer.from(raw.slice(128, 128 + length * 2), "hex").toString("utf8") || "?";
+    }
+    return Buffer.from(raw.slice(0, 64).replace(/00+$/, ""), "hex").toString("utf8") || "?";
+  } catch (e) { return "?"; }
+}
+
+async function tokenInfo(baseUrl, address, call) {
   try { const r = await fetch(`${baseUrl}/api/v2/tokens/${address}`, { headers: { "User-Agent": "portfolio" } });
     if (r.ok) { const j = await r.json(); return { sym: j.symbol || "?", dec: +(j.decimals || 18), px: j.exchange_rate != null ? +j.exchange_rate : null }; } } catch (e) {}
+  if (call) {
+    try {
+      const [symbol, decimals] = await Promise.all([call(address, "0x95d89b41"), call(address, "0x313ce567")]);
+      return { sym: decodeRpcString(symbol), dec: decimals ? Number(word(decimals, 0)) : 18, px: null };
+    } catch (e) {}
+  }
   return { sym: "?", dec: 18, px: null };
+}
+
+function isUsdStable(symbol) {
+  return (symbol || "").toUpperCase().replace(/[^A-Z0-9]/g, "").startsWith("USD");
 }
 
 function nftContract(item) {
@@ -259,10 +283,15 @@ async function fetchV3Positions(baseUrl, rpcs, addr, protoLabel, knownManagers =
       const spa = Math.pow(1.0001, tl / 2), spb = Math.pow(1.0001, tu / 2);
       const spc = Math.min(Math.max(sp, spa), spb);
       const a0 = L * (spb - spc) / (spc * spb), a1 = L * (spc - spa);
-      const [t0, t1] = await Promise.all([tokenInfo(baseUrl, token0), tokenInfo(baseUrl, token1)]);
+      const [t0, t1] = await Promise.all([tokenInfo(baseUrl, token0, call), tokenInfo(baseUrl, token1, call)]);
       const amt0 = a0 / Math.pow(10, t0.dec), amt1 = a1 / Math.pow(10, t1.dec);
-      const usd = (t0.px != null ? amt0 * t0.px : 0) + (t1.px != null ? amt1 * t1.px : 0);
-      const priced = t0.px != null && t1.px != null;
+      const currentRaw = sp * sp * Math.pow(10, t0.dec - t1.dec);
+      let px0 = isUsdStable(t0.sym) ? 1 : t0.px;
+      let px1 = isUsdStable(t1.sym) ? 1 : t1.px;
+      if (px0 == null && px1 != null) px0 = currentRaw * px1;
+      if (px1 == null && px0 != null) px1 = px0 / currentRaw;
+      const usd = (px0 != null ? amt0 * px0 : 0) + (px1 != null ? amt1 * px1 : 0);
+      const priced = px0 != null && px1 != null;
       const range = displayPriceRange(sp, spa, spb, t0, t1);
       out.positions.push({ id: String(it.id), pair: `${t0.sym}/${t1.sym}`, fee: fee / 10000 + "%",
         amt0, amt1, sym0: t0.sym, sym1: t1.sym, usd: priced ? usd : (usd || null),
@@ -363,7 +392,7 @@ module.exports = async (req, res) => {
       wallets.evm ? fetchEvmChain("https://optimism.blockscout.com", "optimism", wallets.evm).catch(e => ({ error: String(e.message || e) })) : null,
       wallets.evm ? fetchHyperliquid(wallets.evm).catch(e => ({ tokens: [], totalUsd: 0, warning: String(e.message || e) })) : null,
       wallets.evm ? fetchV3Positions("https://eth.blockscout.com", ETH_RPCS, wallets.evm, "Uniswap V3", [UNISWAP_V3_POSITION_MANAGER], "Ethereum").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
-      wallets.evm ? fetchV3Positions("https://hyperliquid.cloud.blockscout.com", HYPE_RPCS, wallets.evm, "ProjectX", [], "HyperEVM").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
+      wallets.evm ? fetchV3Positions("https://hyperliquid.cloud.blockscout.com", HYPE_RPCS, wallets.evm, "ProjectX", [PROJECTX_POSITION_MANAGER], "HyperEVM").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
       wallets.solana ? fetchKamino(wallets.solana).catch(e => ({ usd: 0, ok: false, warning: String(e.message || e) })) : null,
     ]);
     res.setHeader("Cache-Control", "private, max-age=120");

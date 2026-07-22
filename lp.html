@@ -107,7 +107,7 @@
 <div class="wrap">
   <header class="top">
     <div>
-      <div class="kicker">LPs · Liquidez concentrada · Orca + Uniswap</div>
+      <div class="kicker">LPs · Liquidez concentrada · Orca + EVM</div>
       <h1>💧 <b>Posiciones LP</b></h1>
       <div class="meta"><span class="dot" id="statusDot"></span><span id="statusText">Cargando posiciones on-chain</span></div>
     </div>
@@ -222,7 +222,7 @@
 
   <footer>
     <div class="note" style="max-width:900px">
-      Posiciones LP de <b>Orca</b> (Solana) y <b>Uniswap V3</b> (Ethereum). Orca combina histórico del DeFi-Tracker con valoración actual; Uniswap muestra balance y rango directamente desde la blockchain. <b>Uso educativo — no es asesoramiento financiero.</b>
+      Posiciones LP de <b>Orca</b> (Solana), <b>Uniswap V3</b> (Ethereum) y <b>ProjectX</b> (HyperEVM). Orca combina histórico del DeFi-Tracker con valoración actual; las posiciones EVM muestran balance y rango directamente desde la blockchain. <b>Uso educativo — no es asesoramiento financiero.</b>
     </div>
   </footer>
 </div>
@@ -502,12 +502,12 @@ function renderPnl(){
   for(const p of M.open){const v=BTC?v3Value(p.ls,BTC):null;p._bal=v?v.balance:null;openVal+=p._bal||0;openPnl+=(p._bal||0)+(p.fees||0)-(p.invested||0);}
   const liveVal=LIVE_LPS.reduce((s,p)=>s+(p.usd||0),0);openVal+=liveVal;
   $("#summary").innerHTML=[
-    {l:"Valor posiciones abiertas",n:BTC?fmtUSD(openVal):"—",s:"Orca + Uniswap · "+(M.open.length+LIVE_LPS.length)+" posiciones",c:"var(--accent)"},
+    {l:"Valor posiciones abiertas",n:BTC?fmtUSD(openVal):"—",s:"Orca + EVM · "+(M.open.length+LIVE_LPS.length)+" posiciones",c:"var(--accent)"},
     {l:"PnL Orca abiertas",n:BTC?fmtUSD(openPnl,0):"—",s:"Balance + fees − invertido",c:openPnl>=0?"var(--bull)":"var(--bear)",cl:openPnl>=0?"up":"down"},
     {l:"PnL realizado (cerradas)",n:fmtUSD(M.realized,0),s:M.closed.length+" cerradas",c:M.realized>=0?"var(--bull)":"var(--bear)",cl:M.realized>=0?"up":"down"},
     {l:"Fees / rewards Orca",n:fmtUSD(M.fees,0),s:"verificado vs CSV",c:"var(--bull)"},
   ].map(x=>`<div class="stat" style="--sc:${x.c}"><div class="l">${x.l}</div><div class="n ${x.cl||""}">${x.n}</div><div class="s">${x.s}</div></div>`).join("");
-  $("#sumNote").innerHTML="<b>Orca:</b> balance y PnL histórico verificados. <b>Uniswap:</b> balance, composición y rango en vivo desde Ethereum; PnL y fees históricos todavía no disponibles."+(LIVE_LP_WARNING?` <span style="color:var(--hot)">${esc(LIVE_LP_WARNING)}</span>`:"");
+  $("#sumNote").innerHTML="<b>Orca:</b> balance y PnL histórico verificados. <b>Uniswap y ProjectX:</b> balance, composición y rango en vivo desde sus blockchains; PnL y fees históricos todavía no disponibles."+(LIVE_LP_WARNING?` <span style="color:var(--hot)">${esc(LIVE_LP_WARNING)}</span>`:"");
   renderTabPos(M,BTC);renderTabHist(M);renderTabClosed(M,BTC);renderFresh();
 }
 function renderTabPos(M,BTC){
