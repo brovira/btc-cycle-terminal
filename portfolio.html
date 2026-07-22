@@ -31,16 +31,24 @@
   /* net worth */
   .nw{display:grid;grid-template-columns:1.15fr 1fr;gap:18px;padding:20px 22px}
   @media (max-width:720px){.nw{grid-template-columns:1fr}}
-  .nw .big{font-family:var(--mono);font-size:38px;font-weight:800;letter-spacing:-.02em;line-height:1}
-  .nw .lbl{font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:600}
-  .substats{display:flex;gap:26px;flex-wrap:wrap;margin-top:16px}
-  .substats .n{font-family:var(--mono);font-size:17px;font-weight:700;margin-top:3px}
-  .risk .seg{display:flex;height:10px;border-radius:6px;overflow:hidden;background:var(--panel2);margin-top:8px}
-  .risk .seg i{display:block;height:100%}
-  .risk .leg{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px}
-  .risk .leg span{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink2)}
-  .risk .leg b{font-family:var(--mono);color:var(--ink)}
+  .nw .big{font-family:var(--font);font-variant-numeric:tabular-nums;font-size:41px;font-weight:800;letter-spacing:-.028em;line-height:1;margin-top:5px}
+  .nw .lbl{font-size:11.5px;letter-spacing:.01em;color:var(--muted);font-weight:600}
+  .substats{display:flex;gap:30px;flex-wrap:wrap;margin-top:20px}
+  .substats .n{font-family:var(--font);font-variant-numeric:tabular-nums;font-size:17px;font-weight:750;margin-top:5px;letter-spacing:-.01em}
+  .risk{display:flex;flex-direction:column;justify-content:center}
+  .risk .seg{display:flex;height:13px;border-radius:999px;overflow:hidden;background:var(--panel2);margin-top:11px;gap:2px}
+  .risk .seg i{display:block;height:100%;border-radius:2px;transition:width .4s ease}
+  .risk .leg{display:flex;gap:20px;flex-wrap:wrap;margin-top:15px}
+  .risk .leg span{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink2)}
+  .risk .leg b{font-family:var(--font);font-variant-numeric:tabular-nums;color:var(--ink);font-weight:700}
   .rdot{width:9px;height:9px;border-radius:50%;display:inline-block}
+  /* filtros + toggle de agrupación (estilo Nansen) */
+  .sel{font:inherit;font-size:12.5px;font-weight:600;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:6px 10px;cursor:pointer}
+  .sel:hover{border-color:var(--accent)}
+  .modes{display:inline-flex;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:2px}
+  .mbtn{font:inherit;font-size:12.5px;font-weight:600;color:var(--muted);background:none;border:0;padding:5px 11px;border-radius:8px;cursor:pointer}
+  .mbtn:hover{color:var(--ink)}
+  .mbtn.on{background:var(--accent);color:#fff}
   /* tables */
   .sec-head{display:flex;align-items:center;gap:10px;margin:24px 2px 12px}
   .sec-head h2{margin:0;font-size:14px;font-weight:750}
@@ -57,7 +65,7 @@
   .shcell{display:flex;align-items:center;gap:9px;justify-content:flex-end}
   .chip{font-size:10px;font-family:var(--mono);color:var(--muted);background:var(--panel2);border:1px solid var(--line);padding:1px 7px;border-radius:999px;white-space:nowrap}
   .tok{display:inline-flex;align-items:center;gap:8px}
-  .ticon{width:22px;height:22px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--ink2);flex:none}
+  .ticon{width:23px;height:23px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:750;color:var(--ink2);flex:none;letter-spacing:-.02em}
   tr.grp{cursor:pointer} tr.grp:hover td{background:color-mix(in oklab,var(--accent) 6%,transparent)}
   tr.subrow{display:none} tr.subrow.show{display:table-row}
   tr.subrow td{background:var(--panel2);font-size:12.5px;color:var(--ink2)}
@@ -67,12 +75,14 @@
   .badge.in{background:color-mix(in oklab,var(--bull) 20%,transparent);color:var(--bull)}
   .badge.out{background:color-mix(in oklab,var(--bear) 20%,transparent);color:var(--bear)}
   /* protocol section (Holdings) */
-  .chips{display:flex;gap:9px;flex-wrap:wrap;margin:2px 0 18px}
-  .pchip{display:flex;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 13px;cursor:pointer}
-  .pchip:hover{border-color:var(--accent)}
-  .pchip .pi{font-size:15px}
-  .pchip .pv{font-family:var(--mono);font-weight:700;font-size:14px}
-  .pchip .pl{font-size:11px;color:var(--muted)}
+  .chips{display:flex;gap:10px;flex-wrap:wrap;margin:2px 0 20px}
+  .pchip{display:flex;align-items:center;gap:11px;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:10px 14px;cursor:pointer;transition:transform .12s,border-color .12s}
+  .pchip:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .pchip .pi{width:30px;height:30px;border-radius:9px;background:var(--panel2);border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-size:15px;flex:none}
+  .pchip .pv{font-family:var(--font);font-variant-numeric:tabular-nums;font-weight:750;font-size:15px;letter-spacing:-.01em}
+  .pchip .pl{font-size:11px;color:var(--muted);margin-top:1px}
+  .pairic{display:inline-flex;align-items:center}
+  .pairic .ticon:not(:first-child){margin-left:-9px;box-shadow:-2px 0 0 var(--panel)}
   .proto{margin-bottom:14px}
   .proto>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:11px;padding:13px 18px}
   .proto>summary::-webkit-details-marker{display:none}
@@ -114,13 +124,21 @@
     <div id="tab-ov">
       <div class="panel nw" id="nwCard"></div>
 
-      <div class="sec-head"><h2>🪙 Token breakdown</h2><div class="rule"></div>
+      <div class="sec-head" style="flex-wrap:wrap;gap:8px"><h2>🪙 Token breakdown</h2><div class="rule"></div>
+        <select id="fWallet" class="sel" title="Filtrar por wallet"></select>
+        <select id="fChain" class="sel" title="Filtrar por blockchain"></select>
+        <div class="modes" id="gbModes">
+          <button class="mbtn on" data-m="activo">Activo</button>
+          <button class="mbtn" data-m="token">Token</button>
+          <button class="mbtn" data-m="protocol">Protocolo</button>
+          <button class="mbtn" data-m="chain">Chain</button>
+        </div>
         <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);cursor:pointer">
           <input type="checkbox" id="dustToggle"> ocultar &lt;$5
         </label>
       </div>
       <div class="panel" style="overflow:auto"><table id="tbTbl"></table></div>
-      <div class="note" style="margin-top:6px">Cada token suma <b>todas</b> sus ubicaciones (wallet + pools + staking). Pincha una fila para ver dónde está cada parte.</div>
+      <div class="note" id="tbNote" style="margin-top:6px"><b>Activo</b> agrupa por subyacente (todos tus BTC juntos en ₿ y $, ídem ETH, USD…). Pincha una fila para desglosarla.</div>
     </div>
 
     <!-- ============ HOLDINGS ============ -->
@@ -131,7 +149,7 @@
     </div>
 
     <!-- ============ BELROGAM (siempre visible) ============ -->
-    <div class="sec-head" id="belrogam" style="scroll-margin-top:16px"><h2>🏢 BELROGAM · plan de guerra</h2><div class="rule"></div><span class="addr">cashflow privado</span></div>
+    <div class="sec-head" id="belrogam" style="scroll-margin-top:16px"><h2>🏢 BELROGAM · 4-year cycle plan</h2><div class="rule"></div><span class="addr">cashflow privado</span></div>
     <div class="panel" style="padding:16px 18px">
       <div class="note" id="cfMsg">Cargando cashflow…</div>
       <div id="cfBody" style="display:none;margin-top:12px"></div>
@@ -157,16 +175,23 @@ $("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;co
 
 function short(a){return a?a.slice(0,4)+"…"+a.slice(-4):"";}
 function initials(sym){const s=String(sym||"?").replace(/[^A-Za-z0-9]/g,"").toUpperCase();return s.slice(0,3)||"?";}
-function tokIcon(sym){return `<span class="ticon">${esc(initials(sym))}</span>`;}
 const STABLE=s=>/^(USD|DAI|USDC|USDT|USDT0|USDE|PYUSD|GUSD|CGUSD|USDA|EUROC|EURC)/i.test(String(s).replace(/[\s/].*/,""))||/USD$/i.test(String(s).replace(/[\s/].*/,""));
+/* Perfil de riesgo a MEDIDA del usuario: BTC · Estables · Blue chips · Otros.
+   Blue chips = las únicas alts que piensa tocar en el bull (ETH/BNB/HYPE/TRON/SOL). */
 function capTier(sym){
   const s=String(sym).toUpperCase().replace(/[\s/].*/,"");
   if(STABLE(s))return"stable";
-  if(/^(BTC|WBTC|CBBTC|TBTC|ETH|WETH|STETH|WSTETH|SOL|WSOL|BNB|WBNB|HYPE)$/.test(s))return"large";
-  if(/^(JUP|POL|MATIC|MATICX|AVAX|LINK|ARB|OP|KMNO|ORCA|RAY|AAVE|UNI|LDO|PYTH|RENDER|W)$/.test(s))return"mid";
-  return"micro";
+  if(/BTC$/.test(s)||/^(BTC|BTCB|SATS|XBT)$/.test(s))return"btc";
+  if(/^(ETH|WETH|STETH|WSTETH|BETH|BNB|WBNB|HYPE|WHYPE|TRX|TRON|SOL|WSOL)$/.test(s))return"blue";
+  return"otros";
 }
-const TIERS=[["large","Large-cap","var(--bull)"],["stable","Estables","var(--stable)"],["mid","Mid-cap","var(--mid)"],["micro","Micro-cap","var(--micro)"]];
+const TIER_COLOR={btc:"var(--hot)",stable:"var(--stable)",blue:"var(--bull)",otros:"var(--muted)"};
+const TIERS=[["btc","BTC","var(--hot)"],["stable","Estables","var(--stable)"],["blue","Blue chips","var(--bull)"],["otros","Otros","var(--muted)"]];
+function tokIcon(sym){
+  const t=capTier(sym),c=TIER_COLOR[t];
+  const gl=t==="btc"?"₿":t==="stable"?"$":initials(sym);
+  return `<span class="ticon" style="background:color-mix(in oklab,${c} 20%,transparent);border-color:color-mix(in oklab,${c} 40%,transparent);color:${c}">${esc(gl)}</span>`;
+}
 const PROTO_META={ "Wallet":["👛",0],"Orca":["🌊",1],"Uniswap V3":["🦄",2],"ProjectX":["✖️",3],"Hyperliquid":["⚡",4],"Aave":["👻",5],"Kamino":["🅚",6],"Manual":["✍️",9] };
 function protoIcon(p){return (PROTO_META[p]||PROTO_META[Object.keys(PROTO_META).find(k=>p.startsWith(k))]||["🔹",8])[0];}
 function protoOrder(p){const m=PROTO_META[p]||PROTO_META[Object.keys(PROTO_META).find(k=>p.startsWith(k))];return m?m[1]:8;}
@@ -185,6 +210,15 @@ function v3Parts(ls,btc){
   const parts=[{sym:ls.label0,amount:a0,usd:a0*px(ls.label0)},{sym:ls.label1,amount:a1,usd:a1*px(ls.label1)}];
   parts.inRange=inRange;return parts;
 }
+/* fee tier de Orca a partir del tickSpacing (mismo mapa que lp.html) */
+const ORCA_FEE_BY_TICK_SPACING={1:.01,2:.02,4:.04,8:.05,16:.1,64:.3,128:1};
+function gcdInt(a,b){a=Math.abs(Math.trunc(a));b=Math.abs(Math.trunc(b));while(b){const r=a%b;a=b;b=r;}return a;}
+function orcaFee(ls){
+  if(!ls)return null;
+  const spacing=ls.tickSpacing||gcdInt(ls.tickLower,ls.tickUpper);
+  const f=ORCA_FEE_BY_TICK_SPACING[spacing];
+  return f==null?null:f+"%";
+}
 async function loadOrca(btc){
   try{const r=await fetch("/api/private?file=orca_pnl",{cache:"no-store"});
     if(!r.ok)return{positions:[],total:0};
@@ -194,7 +228,7 @@ async function loadOrca(btc){
       if(!(p&&p.status==="open"&&p.isConfirmedPosition))continue;
       const parts=v3Parts(p.liquidityState,btc);if(!parts)continue;
       const usd=parts.reduce((s,x)=>s+x.usd,0);total+=usd;
-      positions.push({pair:parts.map(x=>x.sym).join(" / "),usd,inRange:parts.inRange,parts});
+      positions.push({pair:parts.map(x=>x.sym).join(" / "),usd,inRange:parts.inRange,parts,fee:orcaFee(p.liquidityState)});
     }
     positions.sort((a,b)=>b.usd-a.usd);
     return{positions,total};
@@ -287,7 +321,8 @@ function rebuild(){
   RAW.orcaPos=orca.positions;RAW.uniPos=(uni.positions||[]);RAW.prjxPos=(prjx.positions||[]);RAW.hl=hl;
 
   renderNetWorth();
-  renderTokenBreakdown();
+  populateFilters();
+  renderBreakdown();
   renderHoldings();
 }
 
@@ -323,64 +358,131 @@ function whereLabel(a){
   const verb=a.protocol==="Wallet"?"Idle en Wallet":(a.kind==="stake"?"Staking en "+esc(a.protocol):(a.kind==="lp"?"LP en "+esc(a.protocol):"En "+esc(a.protocol)));
   return `${verb}${via} <span class="addr">${esc(a.address)}</span>`;
 }
-function renderTokenBreakdown(){
-  if(!ASSETS.length){$("#tbTbl").innerHTML="";return;}
-  const strip=s=>String(s).replace(/[\s].*/,"");
+let GB_MODE="activo",FILT_W="all",FILT_C="all";
+const strip=s=>String(s).replace(/[\s].*/,"");
+/* activo = subyacente: todos los BTC juntos (cbBTC/WBTC/UBTC…), ETH+WETH, BNB, HYPE, estables→USD */
+function underlying(sym){
+  const s=String(sym).toUpperCase().replace(/[\s/].*/,"");
+  if(STABLE(s))return"USD";
+  if(/BTC$/.test(s)||/^(BTC|BTCB|SATS|XBT)$/.test(s))return"BTC";
+  if(/^(ETH|WETH|STETH|WSTETH|BETH|UETH)$/.test(s))return"ETH";
+  if(/^(BNB|WBNB)$/.test(s))return"BNB";
+  if(/^(HYPE|WHYPE)$/.test(s))return"HYPE";
+  if(/^(SOL|WSOL)$/.test(s))return"SOL";
+  return strip(sym);
+}
+function walletOf(a){return a.chain==="solana"?"solana":"evm";}
+function viewAssets(){
+  let arr=ASSETS_FULL.slice();
+  if(DUST_HIDE)arr=arr.filter(a=>(a.usd||0)>=DUST_MIN);
+  if(FILT_W!=="all")arr=arr.filter(a=>walletOf(a)===FILT_W);
+  if(FILT_C!=="all")arr=arr.filter(a=>a.chain===FILT_C);
+  return arr;
+}
+function groupBy(arr,keyFn){
   const g={};
-  for(const a of ASSETS){const k=strip(a.sym).toUpperCase();const o=g[k]||(g[k]={key:k,sym:strip(a.sym),usd:0,amount:0,amtOk:true,items:[]});
-    o.usd+=a.usd||0;if(a.amount!=null)o.amount+=a.amount;else o.amtOk=false;o.items.push(a);}
-  const rows=Object.values(g).sort((a,b)=>b.usd-a.usd);
-  let html=`<thead><tr><th>Token</th><th>Precio</th><th>Cantidad</th><th>Share</th><th>Valor</th></tr></thead><tbody>`;
-  rows.forEach((r,ix)=>{
-    const share=TOTAL_USD?r.usd/TOTAL_USD*100:0;
-    const price=r.amtOk&&r.amount?r.usd/r.amount:null;
-    html+=`<tr class="grp" data-g="tb${ix}"><td><span class="caret">▶</span> <span class="tok">${tokIcon(r.sym)}${esc(r.sym)}</span></td>`+
-      `<td>${fmtPx(price)}</td><td>${r.amtOk?fmtAmt(r.amount):"—"}</td><td>${bar(share)}</td><td>${fmtUSD(r.usd,2)}</td></tr>`;
-    for(const a of r.items.sort((x,y)=>(y.usd||0)-(x.usd||0))){
-      const pctIn=r.usd?(a.usd||0)/r.usd*100:0;
-      html+=`<tr class="subrow" data-p="tb${ix}"><td style="padding-left:40px">${whereLabel(a)}</td><td></td><td>${a.amount!=null?fmtAmt(a.amount):"—"}</td><td>${bar(pctIn)}</td><td>${fmtUSD(a.usd,2)}</td></tr>`;
+  for(const a of arr){const k=keyFn(a);const o=g[k]||(g[k]={key:k,usd:0,amount:0,amtOk:true,items:[]});o.usd+=a.usd||0;if(a.amount!=null)o.amount+=a.amount;else o.amtOk=false;o.items.push(a);}
+  return Object.values(g).sort((x,y)=>y.usd-x.usd);
+}
+function whereText(a){
+  const w=a.protocol==="Wallet"?"Idle en Wallet":(a.kind==="stake"?"Staking "+a.protocol:(a.kind==="lp"?"LP "+a.protocol:a.protocol));
+  return w+" · "+a.chain;
+}
+function populateFilters(){
+  const wl=$("#fWallet"),cl=$("#fChain");
+  const wallets=[...new Set(ASSETS_FULL.map(walletOf))];
+  const chains=[...new Set(ASSETS_FULL.map(a=>a.chain))].sort();
+  const wName={solana:"Solana",evm:"EVM"};
+  wl.innerHTML=[["all","Wallet · todas"],...wallets.map(w=>[w,wName[w]||w])].map(([v,n])=>`<option value="${v}"${v===FILT_W?" selected":""}>${esc(n)}</option>`).join("");
+  cl.innerHTML=[["all","Chain · todas"],...chains.map(c=>[c,c])].map(([v,n])=>`<option value="${v}"${v===FILT_C?" selected":""}>${esc(n)}</option>`).join("");
+}
+function renderBreakdown(){
+  const arr=viewAssets();
+  const total=arr.reduce((s,a)=>s+(a.usd||0),0)||1;
+  const topKey = GB_MODE==="activo"?(a=>underlying(a.sym))
+              : GB_MODE==="token"?(a=>strip(a.sym).toUpperCase())
+              : GB_MODE==="protocol"?(a=>a.protocol) : (a=>a.chain);
+  const subKey = GB_MODE==="token"?(a=>a.protocol+"|"+a.chain+"|"+a.kind+"|"+a.address) : (a=>strip(a.sym).toUpperCase());
+  const amtMode = GB_MODE==="activo"||GB_MODE==="token";
+  const th0 = GB_MODE==="protocol"?"Protocolo":GB_MODE==="chain"?"Blockchain":GB_MODE==="activo"?"Activo":"Token";
+  const groups=groupBy(arr,topKey);
+  let html=`<thead><tr><th>${th0}</th><th>Precio</th><th>Cantidad</th><th>Share</th><th>Valor</th></tr></thead><tbody>`;
+  groups.forEach((r,ix)=>{
+    const share=r.usd/total*100, price=amtMode&&r.amtOk&&r.amount?r.usd/r.amount:null;
+    let glab;
+    if(GB_MODE==="protocol")glab=`<span class="tok">${protoIcon(r.key)} ${esc(r.key)}</span>`;
+    else if(GB_MODE==="chain")glab=`<span class="tok">${esc(r.key)}</span>`;
+    else glab=`<span class="tok">${tokIcon(GB_MODE==="activo"?r.key:r.items[0].sym)}${esc(GB_MODE==="activo"?r.key:strip(r.items[0].sym))}</span>`;
+    const amtCell = amtMode ? (r.amtOk?`${fmtAmt(r.amount)}${GB_MODE==="activo"?` <span class="addr">${esc(r.key)}</span>`:""}`:"—") : `<span class="addr">${r.items.length} activos</span>`;
+    html+=`<tr class="grp" data-g="tb${ix}"><td><span class="caret">▶</span> ${glab}</td><td>${fmtPx(price)}</td><td>${amtCell}</td><td>${bar(share)}</td><td>${fmtUSD(r.usd,2)}</td></tr>`;
+    for(const sg of groupBy(r.items,subKey)){
+      const pctIn=r.usd?sg.usd/r.usd*100:0, a0=sg.items[0];
+      let slab;
+      if(GB_MODE==="token")slab=whereLabel(a0);
+      else if(GB_MODE==="activo")slab=`<span class="tok">${tokIcon(a0.sym)}${esc(strip(a0.sym))}</span>`;
+      else slab=`<span class="tok">${tokIcon(a0.sym)}${esc(strip(a0.sym))}</span> <span class="chip">${esc(GB_MODE==="protocol"?a0.chain:a0.protocol)}</span>`;
+      html+=`<tr class="subrow" data-p="tb${ix}"><td style="padding-left:40px">${slab}</td><td></td><td>${sg.amtOk?fmtAmt(sg.amount):"—"}</td><td>${bar(pctIn)}</td><td>${fmtUSD(sg.usd,2)}</td></tr>`;
     }
   });
-  $("#tbTbl").innerHTML=html+`</tbody>`;
+  $("#tbTbl").innerHTML= groups.length?html+`</tbody>`:`<tbody><tr><td class="note" style="padding:16px">Nada que mostrar con estos filtros.</td></tr></tbody>`;
 }
 $("#tbTbl").addEventListener("click",e=>{
   const tr=e.target.closest("tr.grp");if(!tr)return;
   tr.classList.toggle("open");
   document.querySelectorAll(`tr.subrow[data-p="${tr.dataset.g}"]`).forEach(s=>s.classList.toggle("show"));
 });
+const TB_NOTE={
+  activo:"<b>Activo</b> agrupa por subyacente: todos tus BTC juntos (en ₿ y $), ídem ETH+WETH, BNB, HYPE, y estables→USD. Pincha para ver de qué tokens se compone.",
+  token:"<b>Token</b>: cada token por separado. Pincha para ver dónde está (wallet, LP, staking).",
+  protocol:"<b>Protocolo</b>: agrupado por dónde está el capital (Wallet, Orca, Uniswap…).",
+  chain:"<b>Chain</b>: agrupado por blockchain."
+};
+document.querySelectorAll("#gbModes .mbtn").forEach(b=>b.addEventListener("click",()=>{
+  GB_MODE=b.dataset.m;
+  document.querySelectorAll("#gbModes .mbtn").forEach(x=>x.classList.toggle("on",x===b));
+  $("#tbNote").innerHTML=TB_NOTE[GB_MODE]+" Filtra por wallet/chain arriba.";
+  renderBreakdown();
+}));
+$("#fWallet").addEventListener("change",e=>{FILT_W=e.target.value;renderBreakdown();});
+$("#fChain").addEventListener("change",e=>{FILT_C=e.target.value;renderBreakdown();});
 
 /* ---------------- HOLDINGS: por protocolo ---------------- */
+const pct=(u)=>TOTAL_USD?(u/TOTAL_USD*100):0;
 function walletBody(items){
-  // agrupa por token, expandible por chain (como Nansen)
+  // agrupa por token, expandible por chain (como Nansen), share = % de la cartera total
   const g={};
-  for(const a of items){const k=a.sym.toUpperCase();const o=g[k]||(g[k]={sym:a.sym,usd:0,amount:0,amtOk:true,items:[]});o.usd+=a.usd||0;if(a.amount!=null)o.amount+=a.amount;else o.amtOk=false;o.items.push(a);}
-  const rows=Object.values(g).sort((a,b)=>b.usd-a.usd);const tot=rows.reduce((s,r)=>s+r.usd,0);
-  let h=`<table><thead><tr><th>Token</th><th>Precio</th><th>Cantidad</th><th>Share</th><th>Valor</th></tr></thead><tbody>`;
+  for(const a of items){const k=strip(a.sym).toUpperCase();const o=g[k]||(g[k]={sym:a.sym,usd:0,amount:0,amtOk:true,items:[]});o.usd+=a.usd||0;if(a.amount!=null)o.amount+=a.amount;else o.amtOk=false;o.items.push(a);}
+  const rows=Object.values(g).sort((a,b)=>b.usd-a.usd);
+  let h=`<table><thead><tr><th>Token</th><th>Precio</th><th>Cantidad</th><th>% cartera</th><th>Valor</th></tr></thead><tbody>`;
   rows.forEach((r,ix)=>{
-    const price=r.amtOk&&r.amount?r.usd/r.amount:null,share=tot?r.usd/tot*100:0,multi=r.items.length>1;
-    h+=`<tr class="${multi?"grp":""}" data-g="w${ix}"><td>${multi?'<span class="caret">▶</span> ':''}<span class="tok">${tokIcon(r.sym)}${esc(r.sym)}</span></td><td>${fmtPx(price)}</td><td>${r.amtOk?fmtAmt(r.amount):"—"}</td><td>${bar(share)}</td><td>${fmtUSD(r.usd,2)}</td></tr>`;
+    const price=r.amtOk&&r.amount?r.usd/r.amount:null,multi=r.items.length>1;
+    h+=`<tr class="${multi?"grp":""}" data-g="w${ix}"><td>${multi?'<span class="caret">▶</span> ':'<span style="display:inline-block;width:13px"></span> '}<span class="tok">${tokIcon(r.sym)}${esc(strip(r.sym))}</span></td><td>${fmtPx(price)}</td><td>${r.amtOk?fmtAmt(r.amount):"—"}</td><td>${bar(pct(r.usd))}</td><td>${fmtUSD(r.usd,2)}</td></tr>`;
     if(multi)for(const a of r.items.sort((x,y)=>(y.usd||0)-(x.usd||0)))
-      h+=`<tr class="subrow" data-p="w${ix}"><td style="padding-left:40px"><span class="chip">${esc(a.chain)}</span></td><td></td><td>${fmtAmt(a.amount)}</td><td></td><td>${fmtUSD(a.usd,2)}</td></tr>`;
+      h+=`<tr class="subrow" data-p="w${ix}"><td style="padding-left:44px"><span class="chip">${esc(a.chain)}</span></td><td></td><td>${fmtAmt(a.amount)}</td><td></td><td>${fmtUSD(a.usd,2)}</td></tr>`;
   });
   return h+`</tbody></table>`;
 }
+function pairIcons(a,b){return `<span class="pairic">${tokIcon(a)}${tokIcon(b)}</span>`;}
 function lpBody(positions){
-  let h=`<table><thead><tr><th>Posición</th><th>Rango</th><th>Composición</th><th>Valor</th></tr></thead><tbody>`;
-  for(const p of positions){
-    const comp=(p.parts?p.parts.map(x=>`${fmtAmt(x.amount)} ${esc(x.sym)}`).join(" + "):`${fmtAmt(p.amt0)} ${esc(p.sym0)} + ${fmtAmt(p.amt1)} ${esc(p.sym1)}`);
-    h+=`<tr><td><span class="tok">🌊 ${esc(p.pair)}</span></td><td><span class="badge ${p.inRange?"in":"out"}">${p.inRange?"en rango":"fuera"}</span></td><td>${comp}</td><td>${p.usd!=null?fmtUSD(p.usd,2):"—"}</td></tr>`;
+  const tot=positions.reduce((s,p)=>s+(p.usd||0),0);
+  let h=`<table><thead><tr><th>Pool</th><th>Comisión</th><th>Rango</th><th>Composición</th><th>Share</th><th>Valor</th></tr></thead><tbody>`;
+  for(const p of positions.sort((x,y)=>(y.usd||0)-(x.usd||0))){
+    const parts=p.parts||[{sym:p.sym0,amount:p.amt0},{sym:p.sym1,amount:p.amt1}];
+    const comp=parts.map(x=>`${fmtAmt(x.amount)} ${esc(strip(x.sym))}`).join(" + ");
+    const share=tot?(p.usd||0)/tot*100:0;
+    h+=`<tr><td><span class="tok">${pairIcons(parts[0]?parts[0].sym:"?",parts[1]?parts[1].sym:"?")}${esc(p.pair)}</span></td><td>${p.fee?esc(p.fee):"—"}</td><td><span class="badge ${p.inRange?"in":"out"}">${p.inRange?"en rango":"fuera"}</span></td><td class="addr" style="text-align:right">${comp}</td><td>${bar(share)}</td><td>${p.usd!=null?fmtUSD(p.usd,2):"—"}</td></tr>`;
   }
   return h+`</tbody></table>`;
 }
 function simpleBody(items){
-  let h=`<table><thead><tr><th>Activo</th><th>Red</th><th>Cantidad</th><th>Valor</th></tr></thead><tbody>`;
+  let h=`<table><thead><tr><th>Activo</th><th>Red</th><th>Cantidad</th><th>% cartera</th><th>Valor</th></tr></thead><tbody>`;
   for(const a of items.sort((x,y)=>(y.usd||0)-(x.usd||0)))
-    h+=`<tr><td><span class="tok">${tokIcon(a.sym)}${esc(a.sym)}${a.kind==="stake"?' <span class="chip">staked</span>':''}</span></td><td class="addr" style="text-align:left">${esc(a.chain)}</td><td>${a.amount!=null?fmtAmt(a.amount):"—"}</td><td>${fmtUSD(a.usd,2)}</td></tr>`;
+    h+=`<tr><td><span class="tok">${tokIcon(a.sym)}${esc(strip(a.sym))}${a.kind==="stake"?' <span class="chip">staked</span>':''}</span></td><td class="addr" style="text-align:left">${esc(a.chain)}</td><td>${a.amount!=null?fmtAmt(a.amount):"—"}</td><td>${bar(pct(a.usd||0))}</td><td>${fmtUSD(a.usd,2)}</td></tr>`;
   return h+`</tbody></table>`;
 }
 function renderHoldings(){
   const chipsEl=$("#protoChips"),listEl=$("#protoList");
-  chipsEl.innerHTML=PROTOS.map(p=>`<div class="pchip" data-p="${esc(p.name)}"><span class="pi">${protoIcon(p.name)}</span><div><div class="pv">${fmtUSD(p.usd)}</div><div class="pl">${esc(p.name)}</div></div></div>`).join("");
+  chipsEl.innerHTML=PROTOS.map(p=>`<div class="pchip" data-p="${esc(p.name)}"><span class="pi">${protoIcon(p.name)}</span><div><div class="pv">${fmtUSD(p.usd)}</div><div class="pl">${esc(p.name)} · ${pct(p.usd).toFixed(1)}%</div></div></div>`).join("");
   listEl.innerHTML=PROTOS.map((p,i)=>{
     let body;
     if(p.name==="Orca")body=lpBody(RAW.orcaPos||[]);
@@ -389,7 +491,7 @@ function renderHoldings(){
     else if(p.name==="Wallet")body=walletBody(p.items);
     else body=simpleBody(p.items);
     return `<details class="panel proto" id="proto-${i}" ${i<3?"open":""}>
-      <summary><span class="cv">▶</span><span class="pn">${protoIcon(p.name)} ${esc(p.name)}</span><span class="pt">${fmtUSD(p.usd)}</span></summary>
+      <summary><span class="cv">▶</span><span class="pn">${protoIcon(p.name)} ${esc(p.name)}</span><span class="pt">${fmtUSD(p.usd)} <span class="addr" style="font-weight:600;margin-left:4px">${pct(p.usd).toFixed(1)}%</span></span></summary>
       <div class="body">${body}</div>
     </details>`;
   }).join("");

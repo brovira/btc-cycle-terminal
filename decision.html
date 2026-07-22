@@ -109,24 +109,20 @@
       <div class="beads" id="beads"></div>
       <div class="mtxt"><b id="litN">—</b> <span id="litTot"></span> señales de compra encendidas</div>
     </div>
+    <div class="levels" id="levels" style="margin-top:12px"></div>
   </div>
   <div class="banner" id="banner"></div>
 
-<!-- (los relojes de ciclo viven ahora DENTRO de la tarjeta de cada agente) -->
+  <!-- qué ha cambiado desde el último registro semanal (se rellena solo si hay histórico) -->
+  <div class="note" id="delta" style="display:none;border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:12px 16px;margin-top:10px"></div>
 
   <div class="sec-head"><h2>LMEC · Cowen — qué hacen AHORA</h2><div class="rule"></div><span class="mtxt" style="font-size:12px">de sus transcripts, citado · señales en vivo</span></div>
-  <div class="note" style="margin-bottom:10px">🧠 OnChainMind se retiró de esta comparativa: auditado (sep-25→jul-26), <b>nunca dio señal de venta en tiempo real</b>, ni en el techo. Solo sirve para timing de compra. Su panel sigue en <a href="onchainmind.html" style="color:var(--accent)">onchainmind.html</a>.</div>
+  <div class="note" style="margin-bottom:10px">🧠 OnChainMind fuera de la comparativa (auditado: nunca dio señal de venta en tiempo real) — su panel sigue en <a href="onchainmind.html" style="color:var(--accent)">onchainmind.html</a>.</div>
   <div class="agrid" id="agentCards"></div>
 
-  <div class="sec-head"><h2>Fases del ciclo sobre el precio</h2><div class="rule"></div></div>
+  <div class="sec-head"><h2>Fases del ciclo sobre el precio <span class="mtxt" style="font-weight:400;font-size:12px">· marco temporal LMEC/Cowen</span></h2><div class="rule"></div></div>
   <div style="border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:8px 6px 2px"><div id="phaseChart" style="width:100%;min-height:380px"></div></div>
   <div class="note" style="margin-top:8px">Sombras = fase del ciclo según las <b>semanas desde el halving</b> (marco LMEC/Cowen): <span style="color:var(--bull)">■</span> acumulación/DCA fuerte (sem 120-180) · <span style="color:var(--accum)">■</span> DCA pre-halving (sem 180+) · <span style="color:var(--hot)">■</span> distribución/vender (sem 70-110) · <span style="color:var(--muted)">■</span> preservación/cash (sem 110-120) · sin sombra = bull, dejar correr (sem 0-70). Líneas: BMSB y 200W MA — el "rango" que citan los tres.</div>
-
-  <div class="sec-head"><h2>Señales</h2><div class="rule"></div></div>
-  <div class="grid" id="sigs"></div>
-
-  <div class="sec-head"><h2>Niveles en vivo</h2><div class="rule"></div></div>
-  <div class="levels" id="levels"></div>
 
   <div class="sec-head" id="chartSec" style="display:none"><h2>Gráfica del histórico</h2><div class="rule"></div></div>
   <div id="histChartWrap" style="display:none">
@@ -142,8 +138,10 @@
     <div class="note" id="histFoot" style="margin-top:10px;display:none">«Acierto»: para acciones de <b>compra/esperar-compra</b> cuenta si BTC subió después; para <b>Tomar beneficio</b>, si bajó después. Con pocas semanas el dato es orientativo — sirve para <b>calibrar los umbrales</b>, no como verdad absoluta.</div>
   </div>
 
-  <div class="sec-head"><h2>Cómo se decide</h2><div class="rule"></div></div>
-  <div class="note" id="logic"></div>
+  <details style="margin-top:26px">
+    <summary style="cursor:pointer;font-size:15px;font-weight:750;padding:4px 2px">Cómo se decide (documentación)</summary>
+    <div class="note" id="logic" style="margin-top:10px"></div>
+  </details>
 
   <footer>
     Agrega las señales que los tres analistas (LMEC · Cowen · OnChainMind) usan para el <b>largo plazo del ciclo</b> y las traduce a una acción. Precio y BMSB/RSI vía Binance; F&amp;G vía alternative.me; MVRV Z vía Coin Metrics (si el on-chain está disponible). <b>No mide timing intradía ni derivados.</b> Uso educativo — <b>no es asesoramiento financiero.</b>
@@ -314,12 +312,8 @@ function render(R){
   $("#actionSub").textContent=R.sub;
   $("#litN").textContent=R.lit+"/"+R.tot;$("#litTot").textContent="";
   $("#beads").innerHTML=Array.from({length:R.tot},(_,i)=>`<span class="bead ${i<R.lit?"on":""}"></span>`).join("");
-  $("#sigs").innerHTML=R.SIG.map(s=>{
-    const cls=s.nd?"nd":(s.on?"on":"off");const lbl=s.nd?"n/d":(s.on==null?"—":(s.on?"✓ sí":"✗ no"));
-    return `<div class="sig"><div class="r1"><span class="nm">${s.nm}</span><span class="st ${cls}">${lbl}</span></div>
-      <div class="who">${esc(s.who||"")}</div>
-      <div class="val">${s.val}</div><div class="ds">${s.ds}</div>
-      ${s.q?`<div class="q">“${esc(s.q)}”<span class="src">${esc(s.src||"")}</span></div>`:""}</div>`;}).join("");
+  // (la sección "Señales" se fusionó en las tarjetas de agente: cada señal vive como chip
+  //  en la tarjeta de quien la usa, con su tooltip; las citas están en el KB y el framework)
   const lv=[
     ["Precio BTC",fmtUSD(R.price)],
     ["BMSB (banda alta)",R.bmsbHi!=null?fmtUSD(R.bmsbHi):"—"],
@@ -407,20 +401,22 @@ function renderAgents(R){
      next:`Espera <b>rebote-trampa a 67-69k</b> (test de la BMSB) en jul/ago → más caídas después; suelo hacia <b>oct/nov-2026</b> (~45k su escenario central) y bull real en <b>mar/abr-2027</b> (280 días tras la 2ª ruptura).`,
      powder:`<b>45% en stables.</b> "Lo gordo" reservado para la ruptura alcista CONFIRMADA de la BMSB (+MACD verde+RSI 40-50+MVRV saliendo de verde).`,
      q:`"Volveré a comprar [BTC] en los 55.000… cuanto más caen, más aumenta el porcentaje de la compra. Por eso es tan importante siempre mantener mucha liquidez disponible."`,src:"LMEC · 12-jun-2026 (plan completo 2027)",
+     audit:`⚠️ Auditado (nota 4/10 solo ciclo 2022-25): el suelo real de nov-2022 NO es verificable en tiempo real (su corpus tiene un hueco jul-22→ene-23; "compré a 15,7k" es autocita retrospectiva de 2023+). Su venta de 2025 llegó TARDE (señal completa 23-may-2025 a ~$110-112k, solo ~5 meses antes del techo real de oct-2025) y <b>nunca vende BTC en sí</b> — rota altcoins→stable, el BTC core lo mantiene. Además: Terra "bajo riesgo" 6 sem antes del colapso sin post-mortem, objetivos que mutan (116k→180k). Su MÉTODO (niveles, disciplina) > su historial de timing. [track_record.md · audit_2022_bottom_2025_top.md]`,
      advice:m=>{
        if(m.price<=55500)return`El precio ha llegado a su <b>nivel de compra ~55.3k</b> → ejecuta la orden (30% del tramo).`;
        if(m.bmsbHi&&m.price>=m.bmsbHi*0.97)return`Precio pegado a la BMSB (${fmtUSD(m.bmsbHi)}) = su <b>rebote-trampa</b>: NO comprar aquí; él abriría cortos en alts. Órdenes abajo (55.3k) y paciencia.`;
-       return`<b>No comprar a mercado.</b> Deja órdenes límite (siguiente: ~55.3k) y espera. La compra fuerte es la ruptura confirmada de la BMSB (~mar-2027).<br><span style="color:var(--hot)">⚠️ Auditado (nota 4/10 solo ciclo 2022-25): el suelo real de nov-2022 NO es verificable en tiempo real (su corpus tiene un hueco jul-22→ene-23; "compré a 15,7k" es autocita retrospectiva de 2023+). Su venta de 2025 llegó TARDE (señal completa 23-may-2025 a ~$110-112k, solo ~5 meses antes del techo real de oct-2025) y <b>nunca vende BTC en sí</b> — rota altcoins→stable, el BTC core lo mantiene. Además: Terra "bajo riesgo" 6 sem antes del colapso sin post-mortem, objetivos que mutan (116k→180k). Su MÉTODO (niveles, disciplina) > su historial de timing. [track_record.md · audit_2022_bottom_2025_top.md]</span>`;}},
+       return`<b>No comprar a mercado.</b> Deja órdenes límite (siguiente: ~55.3k) y espera. La compra fuerte es la ruptura confirmada de la BMSB (~mar-2027).`;}},
     {name:"📊 Cowen",color:"var(--hot)",state:"Dynamic DCA activo (risk <0,3)",kb:"cowen",fw:"cowen.html",clock:cowenClock(),
      now:`<b>Ya está comprando</b>: dynamic DCA solo cuando su risk metric está <b>bajo 0,3</b> (citó 0,296). Empezó tras el <b>mínimo de junio-2026</b> (~57k), calcando 2018 y 2022. Despliegue deliberadamente lento.`,
      since:`"I started accumulating Bitcoin after the June low… I just DCA" — evitó el mínimo de febrero a propósito ("far too early in the midterm year").`,
      next:`El rebote de verano muere en el <b>200d MA (~70k)</b> fin jul-ago; <b>ago-sep han sido negativos en LOS TRES midterms</b> (−18/−15/−15%); mínimo de ciclo en <b>Q4 (octubre)</b>, test del realized (~53k); balanced 38k = "greedy". Invalidación: recuperar la 50W (~86,5k).`,
      powder:`Escalonado creciente: $100→$200→$300 al caer el risk a 0,2/0,1/0. "La mayoría de los DCAs" reservada para Q4 — y pivot "in a heartbeat" si capitula antes.`,
      q:`"There's nothing wrong… with DCA-ing Bitcoin in the second half of midterm years. That's what I've done and it's worked out pretty well."`,src:"Cowen · 08-jul-2026",
+     audit:`⚠️ Auditado (nota 5/10 solo ciclo 2022-25): excelente en MACRO (BTC dominance y los rallies de contratendencia 2026, avisados con nivel casi exacto), pero sin señal de venta en NINGUNO de los 2 techos (2021: "see you at 100k"; 126k: risk "moderate" días antes) y <b>nunca vende BTC</b> (solo rota altcoins→stable — su venta de ETH llegó EN la zona del ATH, no antes). El suelo de 2022 tampoco es verificable (corpus sin cobertura jul-22→ene-23). Fiable para régimen; no para clavar entradas/salidas exactas. [track_record.md · audit_eth_dominance_rallies.md]`,
      advice:m=>{
        if(m.ma200&&m.price<=Math.max(53000,m.ma200*0.85))return`Zona de despliegue fuerte (≤realized ~53k): <b>sube el tamaño del DCA</b> (su escalera 2-3×).`;
        if(m.price>=70000)return`Precio en su techo del rebote (200d ~70k): <b>no comprar aquí</b>; acumula cash para ago-oct.`;
-       return`<b>DCA pequeño ya</b> (risk <0,3) y guarda la mayoría de la pólvora para el mínimo de Q4 (octubre). Ago-sep suelen ser rojos: no tener prisa.<br><span style="color:var(--hot)">⚠️ Auditado (nota 5/10 solo ciclo 2022-25): excelente en MACRO (BTC dominance y los rallies de contratendencia 2026, avisados con nivel casi exacto), pero sin señal de venta en NINGUNO de los 2 techos (2021: "see you at 100k"; 126k: risk "moderate" días antes) y <b>nunca vende BTC</b> (solo rota altcoins→stable — su venta de ETH llegó EN la zona del ATH, no antes). El suelo de 2022 tampoco es verificable (corpus sin cobertura jul-22→ene-23). Fiable para régimen; no para clavar entradas/salidas exactas. [track_record.md · audit_eth_dominance_rallies.md]</span>`;}},
+       return`<b>DCA pequeño ya</b> (risk <0,3) y guarda la mayoría de la pólvora para el mínimo de Q4 (octubre). Ago-sep suelen ser rojos: no tener prisa.`;}},
   ];
   // OnChainMind se retiró de esta comparativa (auditoría: nunca dio señal de venta en tiempo
   // real, ni siquiera en el techo de $111k — "not a time to be defensive yet". Solo sirve
@@ -441,18 +437,22 @@ function renderAgents(R){
       }).join("")}</div>`:"";
     return `<div class="acard" style="--ac:${a.color}">
     <h3>${a.name} <span class="astate">${a.state}</span></h3>
-    <div class="albl">1 · Fase del ciclo (según él)</div>
-    <div class="arow"><b style="color:${a.clock.pc}">${a.clock.phase}</b>${reg?` — <i>"${esc(reg.fase||"")}"</i>`:""}<br>${a.clock.sub}</div>
-    ${reg&&reg.quote?`<div class="aq">"${esc(reg.quote)}"<span class="src">[${esc(reg.src||"")}]</span></div>`:""}
-    <div class="levels" style="margin:4px 0 2px">${a.clock.cards.map(x=>`<div class="lv"><div class="l">${x[0]}</div><div class="n" style="font-size:13px">${x[1]}</div></div>`).join("")}</div>
-    ${chkHtml}
-    <div class="albl">2 · Qué está haciendo</div><div class="arow">${a.now}</div>
-    <div class="albl">3 · Por qué (y desde cuándo)</div><div class="arow">${a.since}</div>
-    <div class="albl">Siguiente movimiento que espera</div><div class="arow">${a.next}</div>
-    <div class="albl">Pólvora</div><div class="arow">${a.powder}</div>
-    <div class="aq">${a.q}<span class="src">[${a.src}]</span></div>
+    <div class="albl">Qué está haciendo AHORA</div><div class="arow">${a.now}</div>
     <div class="advice">💬 <b>Con las métricas de hoy</b> (BTC ${fmtUSD(px)}): ${a.advice(R)}</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+    ${chkHtml}
+    <details style="margin-top:10px">
+      <summary style="cursor:pointer;font-size:12.5px;font-weight:650;color:var(--muted);padding:2px 0">Evidencia: fase del ciclo, citas, pólvora y auditoría ▾</summary>
+      <div class="albl" style="margin-top:8px">Fase del ciclo (según él)</div>
+      <div class="arow"><b style="color:${a.clock.pc}">${a.clock.phase}</b>${reg?` — <i>"${esc(reg.fase||"")}"</i>`:""}<br>${a.clock.sub}</div>
+      ${reg&&reg.quote?`<div class="aq">"${esc(reg.quote)}"<span class="src">[${esc(reg.src||"")}]</span></div>`:""}
+      <div class="levels" style="margin:4px 0 2px">${a.clock.cards.map(x=>`<div class="lv"><div class="l">${x[0]}</div><div class="n" style="font-size:13px">${x[1]}</div></div>`).join("")}</div>
+      <div class="albl">Por qué (y desde cuándo)</div><div class="arow">${a.since}</div>
+      <div class="albl">Siguiente movimiento que espera</div><div class="arow">${a.next}</div>
+      <div class="albl">Pólvora</div><div class="arow">${a.powder}</div>
+      <div class="aq">${a.q}<span class="src">[${a.src}]</span></div>
+      ${a.audit?`<div class="arow" style="color:var(--hot);font-size:12px;margin-top:6px">${a.audit}</div>`:""}
+    </details>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
       <a class="btn" style="font-size:12px;padding:6px 10px" href="${a.fw}">📖 Su framework completo →</a>
       ${nSig?`<span class="chip" style="align-self:center">📚 ${nSig} señales en su KB${nCambios?` · ${nCambios} cambios de opinión`:""}</span>`:`<span class="chip" style="align-self:center">📚 KB de señales: generándose</span>`}
     </div>
@@ -533,10 +533,35 @@ async function renderChart(D,snaps,livePrice){
     xaxis:{gridcolor:line,type:"date"},yaxis:{gridcolor:line,type:"log",title:{text:"BTC (log)",font:{size:11}},tickprefix:"$"},hovermode:"closest"};
   window.Plotly.react("histChart",traces,layout,{displayModeBar:false,responsive:true});
 }
-async function loadHistory(D,livePrice){
+function renderDelta(R,snaps){
+  // "qué ha cambiado desde tu última visita": compara con el último snapshot semanal
+  // y añade el último cambio de opinión registrado en el KB de cada agente.
+  const el=$("#delta");const bits=[];
+  const last=snaps.length?snaps[snaps.length-1]:null;
+  if(last){
+    const dPx=R.price/last.price-1;
+    bits.push(`Desde el <b>${esc(last.date)}</b> (último registro): BTC <b style="color:${dPx>=0?'var(--bull)':'var(--bear)'}">${(dPx>=0?"+":"")+(dPx*100).toFixed(1)}%</b> (${fmtUSD(last.price)} → ${fmtUSD(R.price)})`);
+    if(last.action!==R.action)bits.push(`la acción cambió: <b>${esc(last.action)} → <span style="color:var(--vc,${R.vc})">${esc(R.action)}</span></b>`);
+    else bits.push(`acción sin cambio (<b>${esc(R.action)}</b>)`);
+    if(last.lit!==R.lit)bits.push(`señales encendidas: <b>${last.lit}/${last.tot} → ${R.lit}/${R.tot}</b>`);
+  }
+  for(const k of["lmec","cowen"]){
+    const kb=KB[k];const cam=kb&&Array.isArray(kb.cambios_opinion)&&kb.cambios_opinion.length?kb.cambios_opinion[kb.cambios_opinion.length-1]:null;
+    if(cam&&cam.fecha){
+      const days=(Date.now()-new Date(cam.fecha).getTime())/864e5;
+      if(days>=0&&days<=45)bits.push(`🧠 <b>${k==="lmec"?"LMEC":"Cowen"}</b> cambió de opinión el ${esc(cam.fecha)}: ${esc(cam.de||"")} → <b>${esc(cam.a||cam.resumen||"")}</b>`);
+    }
+  }
+  if(!bits.length){el.style.display="none";return;}
+  el.style.display="block";
+  el.innerHTML=`<b>🔄 Qué ha cambiado</b> · ${bits.join(" · ")}`;
+}
+async function loadHistory(D,R){
+  const livePrice=R.price;
   let hist=null;
   try{const r=await fetch("data/decision_history.json?_="+new Date().getTime(),{cache:"no-store"});if(r.ok)hist=await r.json();}catch(e){}
   const snaps=(hist&&Array.isArray(hist.snapshots))?hist.snapshots.filter(s=>s&&s.price>0):[];
+  renderDelta(R,snaps);
   if(!snaps.length)return;
   renderChart(D,snaps,livePrice);
   $("#histEmpty").style.display="none";$("#histFoot").style.display="block";
@@ -567,7 +592,7 @@ async function refreshAll(){
     await loadKB();
     renderAgents(R);
     renderPhaseChart(D);
-    loadHistory(D,R.price);
+    loadHistory(D,R);
     $("#statusDot").className="dot ok";
     const hh=new Date();const hm=String(hh.getHours()).padStart(2,"0")+":"+String(hh.getMinutes()).padStart(2,"0");
     $("#statusText").textContent="Actualizado "+hh.toISOString().slice(0,10)+" "+hm+" · se refresca cada 30 min · Binance"+(D.z!=null?" + Coin Metrics":"");
