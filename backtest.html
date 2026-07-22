@@ -127,7 +127,8 @@
             <option value="lmec_cycle">LMEC · Ciclo del halving (temporal)</option>
             <option value="lmec_bmsb">LMEC · Ruptura de la BMSB</option>
             <option value="cowen_seasonal">Cowen · Estacional midterm (compra H2 midterm / vende Q4 pre-midterm)</option>
-            <option value="cowen_mvrv">Cowen · Reset MVRV Z (&lt;0 dentro / &gt;7 fuera)</option>
+            <option value="cowen_risk">Cowen · Risk metric (DCA &lt;0,3 / salir &gt;0,6)</option>
+            <option value="cowen_mvrv">Cowen · Reset MVRV Z (&lt;0 dentro / &gt;3 fuera)</option>
             <option value="onchainmind_fng">OnChainMind · F&amp;G Cadence (batió al DCA 10× desde 2019)</option>
           </optgroup>
           <optgroup label="📐 Indicadores clásicos">
@@ -231,6 +232,31 @@ function macdParts(c,f,s,sig){const ef=ema(c,f),es=ema(c,s);const line=c.map((_,
 /* ---------- ciclo del halving (para señales temporales) ---------- */
 const HALVINGS=["2012-11-28","2016-07-09","2020-05-11","2024-04-19","2028-04-20"].map(d=>Date.parse(d));
 function halvSeries(){const WK=7*864e5;return DATA.t.map(ms=>{let H=HALVINGS[0];for(const h of HALVINGS)if(h<=ms)H=h;return (ms-H)/WK;});}
+/* Risk 0-1 (APROXIMACIÓN abierta al estilo Cowen — su métrica es propietaria).
+   Desviación de log(precio) sobre una regresión log-log (precio ~ tiempo desde génesis),
+   normalizada 0-1 con min/max expansivos. Walk-forward: en cada semana solo usa datos
+   pasados (sin lookahead). Cowen la usa así: DCA por debajo de ~0.3, salir gradualmente
+   por encima de ~0.6 (citas en el preset). */
+let RISK_CACHE=null;
+function riskSeries(){
+  if(RISK_CACHE&&RISK_CACHE.n===DATA.t.length)return RISK_CACHE.s;
+  const t0=Date.parse("2009-01-03");const out=Array(DATA.t.length).fill(null);
+  let n=0,sx=0,sy=0,sxx=0,sxy=0,dmin=Infinity,dmax=-Infinity;
+  for(let i=0;i<DATA.t.length;i++){
+    const w=(DATA.t[i]-t0)/(7*864e5);const c=DATA.c[i];
+    if(!(w>0)||!(c>0))continue;
+    const x=Math.log(w),y=Math.log(c);
+    n++;sx+=x;sy+=y;sxx+=x*x;sxy+=x*y;
+    if(n<52)continue; // necesita ≥1 año de datos para una regresión estable
+    const den=n*sxx-sx*sx;if(!(den>0))continue;
+    const b=(n*sxy-sx*sy)/den,a=(sy-b*sx)/n;
+    const d=y-(a+b*x);
+    if(d<dmin)dmin=d;if(d>dmax)dmax=d;
+    if(dmax>dmin)out[i]=(d-dmin)/(dmax-dmin);
+  }
+  RISK_CACHE={n:DATA.t.length,s:out};return out;
+}
+
 /* 2ª recuperación al alza de la BMSB (método LMEC: la 1ª es trampa, la 2ª marca el nuevo bull).
    Devuelve una serie con 1 en la barra de la 2ª ruptura al alza, 0 el resto. */
 function bmsb2Series(){
@@ -264,6 +290,7 @@ const INDS={
   macdh:{lbl:"MACD histog.",params:[["f",12],["s",26],["sig",9]],calc:p=>macdParts(DATA.c,p.f,p.s,p.sig).hist},
   bmsb:{lbl:"BMSB (banda)",params:[],calc:()=>{const a=sma(DATA.c,20),b=ema(DATA.c,21);return DATA.c.map((_,i)=>(a[i]!=null&&b[i]!=null)?Math.max(a[i],b[i]):null);}},
   bmsb2:{lbl:"BMSB · 2ª ruptura ▲",params:[],calc:()=>bmsb2Series()},
+  risk:{lbl:"Risk 0-1 (aprox Cowen)",params:[],calc:()=>riskSeries()},
   mvrvz:{lbl:"MVRV Z",params:[],calc:()=>OC?OC.z:DATA.c.map(()=>null)},
   fng:{lbl:"Fear & Greed",params:[],calc:()=>FNG?FNG.slice():DATA.c.map(()=>null)},
   fngcad:{lbl:"F&G cadencia 90d",params:[],calc:()=>fngCadence()},
@@ -532,6 +559,17 @@ const PRESETS={
     x:{logic:"all",conds:[
     {left:{ind:"ymod4",params:{}},op:"eq",right:{ind:"value",params:{v:1}}},
     {left:{ind:"month",params:{}},op:"gt",right:{ind:"value",params:{v:9}}}]}},
+  cowen_risk:{name:"Cowen · Risk metric (DCA por riesgo)",
+    desc:`<h4>Cowen · Risk metric 0-1</h4>Su método insignia: DCA cuando el riesgo está bajo, salir gradualmente cuando está alto.
+    <div class="q">"this cycle I think it makes the most amount of sense for me to DCA below .3 [risk]"<span class="src">[cowen/20260614-bitcoin-dynamic-dca]</span></div>
+    <div class="q">"perhaps I do absolutely nothing between .3 and 6 [0.6] and then above 6 [0.6] I might start to scale out slowly"<span class="src">[cowen/20260614]</span></div>
+    <div class="how"><div><b>Compra</b>: risk &lt; 0,3.</div><div><b>Vende</b>: risk &gt; 0,6.</div></div>
+    <b>Tip:</b> activa el <b>Modo DCA</b> — él entra y sale escalonado ("DCA out"), no de golpe.
+    <span class="warn">La métrica exacta de Cowen es propietaria. Aquí se usa una APROXIMACIÓN abierta (desviación del precio sobre regresión logarítmica, normalizada 0-1, sin lookahead). Los umbrales 0,3/0,6 sí son las cifras que él cita.</span>`,
+    e:{logic:"all",conds:[
+    {left:{ind:"risk",params:{}},op:"lt",right:{ind:"value",params:{v:0.3}}}]},
+    x:{logic:"all",conds:[
+    {left:{ind:"risk",params:{}},op:"gt",right:{ind:"value",params:{v:0.6}}}]}},
   cowen_mvrv:{name:"Cowen · Reset MVRV Z",
     desc:`<h4>Cowen · Reset MVRV Z</h4>Compra cuando el MVRV Z resetea a la franja baja (suelo on-chain) y reduce cuando se calienta.
     <span class="warn">Necesita datos on-chain (MVRV). Si arriba pone "on-chain n/d", no operará hasta que cargue Coin Metrics.</span>`,
