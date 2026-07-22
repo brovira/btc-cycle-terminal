@@ -5,48 +5,83 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cartera · estado actual</title>
 <style>
-  :root{--bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;--ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#3fa9f5;--bull:#2fc39b;--bear:#f2606d;--hot:#f2a33f;
+  :root{--bg:#0b111b;--bg2:#0e1622;--panel:#121c2b;--panel2:#18263a;--line:#22344b;--ink:#eaf0f8;--ink2:#aebccf;--muted:#7c8fa8;--accent:#3fa9f5;--bull:#2fc39b;--bear:#f2606d;--hot:#f2a33f;--mid:#f2a33f;--stable:#6f7bf7;--micro:#c07bf7;
     --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--mono:ui-monospace,"SF Mono","JetBrains Mono","Menlo","Consolas",monospace;--radius:16px}
-  @media (prefers-color-scheme: light){:root{--bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;--ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--accent:#1f74c0;--bull:#0e846a;--bear:#c93a48;--hot:#b9791a}}
-  :root[data-theme="dark"]{--bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;--ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#3fa9f5;--bull:#2fc39b;--bear:#f2606d;--hot:#f2a33f}
-  :root[data-theme="light"]{--bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;--ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--accent:#1f74c0;--bull:#0e846a;--bear:#c93a48;--hot:#b9791a}
+  @media (prefers-color-scheme: light){:root{--bg:#eef1f6;--bg2:#e7ecf3;--panel:#fff;--panel2:#f4f7fb;--line:#dde5ee;--ink:#0e1622;--ink2:#3d4c5e;--muted:#67788c;--accent:#1f74c0;--bull:#0e846a;--bear:#c93a48;--hot:#b9791a;--mid:#b9791a;--stable:#4a55d6;--micro:#8b3fc0}}
+  :root[data-theme="dark"]{--bg:#0b111b;--bg2:#0e1622;--panel:#121c2b;--panel2:#18263a;--line:#22344b;--ink:#eaf0f8;--ink2:#aebccf;--muted:#7c8fa8;--accent:#3fa9f5;--bull:#2fc39b;--bear:#f2606d;--hot:#f2a33f;--mid:#f2a33f;--stable:#6f7bf7;--micro:#c07bf7}
+  :root[data-theme="light"]{--bg:#eef1f6;--bg2:#e7ecf3;--panel:#fff;--panel2:#f4f7fb;--line:#dde5ee;--ink:#0e1622;--ink2:#3d4c5e;--muted:#67788c;--accent:#1f74c0;--bull:#0e846a;--bear:#c93a48;--hot:#b9791a;--mid:#b9791a;--stable:#4a55d6;--micro:#8b3fc0}
   *{box-sizing:border-box} html,body{margin:0}
-  body{background:radial-gradient(1200px 600px at 80% -10%,color-mix(in oklab,var(--accent) 9%,transparent),transparent 60%),linear-gradient(var(--bg),var(--bg2));color:var(--ink);font-family:var(--font);line-height:1.5;min-height:100vh}
-  .wrap{max-width:1080px;margin:0 auto;padding:26px 18px 70px}
+  body{background:radial-gradient(1100px 560px at 82% -12%,color-mix(in oklab,var(--accent) 8%,transparent),transparent 60%),linear-gradient(var(--bg),var(--bg2));color:var(--ink);font-family:var(--font);line-height:1.5;min-height:100vh}
+  .wrap{max-width:1160px;margin:0 auto;padding:24px 18px 70px}
   .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
-  header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+  header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px}
   .kicker{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600}
-  h1{margin:5px 0 0;font-size:clamp(23px,3.2vw,32px);font-weight:800;letter-spacing:-.02em}
+  h1{margin:5px 0 0;font-size:clamp(22px,3vw,30px);font-weight:800;letter-spacing:-.02em}
   .meta{color:var(--muted);font-size:12.5px;margin-top:6px}
   .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted);margin-right:6px;vertical-align:middle}
   .dot.ok{background:var(--bull)} .dot.err{background:var(--bear)}
   .btn{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:8px 12px;border-radius:10px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;text-decoration:none}
   .btn:hover{border-color:var(--accent);color:var(--accent)}
-  .btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
-  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 12px 32px -18px rgba(0,0,0,.5)}
-  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
-  .stat{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--sc,var(--accent));border-radius:13px;padding:13px 15px}
-  .stat .l{font-size:11.5px;color:var(--muted)} .stat .n{font-family:var(--mono);font-size:22px;font-weight:700;margin-top:2px} .stat .s{font-size:11.5px;color:var(--muted);margin-top:3px}
-  .sec-head{display:flex;align-items:center;gap:10px;margin:26px 2px 12px}
-  .sec-head h2{margin:0;font-size:15px;font-weight:750}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 14px 34px -22px rgba(0,0,0,.55)}
+  /* tabs Overview / Holdings */
+  .tabbar{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:8px 2px 18px}
+  .tab{font:inherit;font-size:15px;font-weight:700;color:var(--muted);background:none;border:0;border-bottom:2px solid transparent;padding:10px 4px;margin-right:22px;cursor:pointer;letter-spacing:-.01em}
+  .tab:hover{color:var(--ink)}
+  .tab.on{color:var(--ink);border-bottom-color:var(--accent)}
+  /* net worth */
+  .nw{display:grid;grid-template-columns:1.15fr 1fr;gap:18px;padding:20px 22px}
+  @media (max-width:720px){.nw{grid-template-columns:1fr}}
+  .nw .big{font-family:var(--mono);font-size:38px;font-weight:800;letter-spacing:-.02em;line-height:1}
+  .nw .lbl{font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .substats{display:flex;gap:26px;flex-wrap:wrap;margin-top:16px}
+  .substats .n{font-family:var(--mono);font-size:17px;font-weight:700;margin-top:3px}
+  .risk .seg{display:flex;height:10px;border-radius:6px;overflow:hidden;background:var(--panel2);margin-top:8px}
+  .risk .seg i{display:block;height:100%}
+  .risk .leg{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px}
+  .risk .leg span{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink2)}
+  .risk .leg b{font-family:var(--mono);color:var(--ink)}
+  .rdot{width:9px;height:9px;border-radius:50%;display:inline-block}
+  /* tables */
+  .sec-head{display:flex;align-items:center;gap:10px;margin:24px 2px 12px}
+  .sec-head h2{margin:0;font-size:14px;font-weight:750}
   .sec-head .rule{flex:1;height:1px;background:var(--line)}
   table{width:100%;border-collapse:collapse;font-size:13.5px}
-  th{text-align:right;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em;padding:9px 12px;border-bottom:1px solid var(--line)}
-  td{text-align:right;padding:9px 12px;border-bottom:1px solid var(--line);font-family:var(--mono)}
+  th{text-align:right;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em;padding:9px 14px;border-bottom:1px solid var(--line)}
+  td{text-align:right;padding:10px 14px;border-bottom:1px solid var(--line);font-family:var(--mono)}
   th:first-child,td:first-child{text-align:left;font-family:var(--font);font-weight:600}
+  tbody tr:last-child td{border-bottom:0}
   .note{font-size:12.5px;color:var(--muted);line-height:1.6}
   .addr{font-family:var(--mono);font-size:11px;color:var(--muted)}
-  .btn.on{border-color:var(--accent);color:var(--accent)}
-  .shbar{height:6px;background:var(--panel2);border-radius:4px;overflow:hidden;min-width:90px;flex:1}
-  .shbar i{display:block;height:100%;background:var(--bull)}
-  .shcell{display:flex;align-items:center;gap:8px;justify-content:flex-end}
-  .chip{font-size:10px;font-family:var(--mono);color:var(--muted);background:var(--panel2);border:1px solid var(--line);padding:1px 6px;border-radius:999px}
+  .shbar{height:6px;background:var(--panel2);border-radius:4px;overflow:hidden;min-width:70px;width:110px;display:inline-block;vertical-align:middle}
+  .shbar i{display:block;height:100%;background:var(--accent)}
+  .shcell{display:flex;align-items:center;gap:9px;justify-content:flex-end}
+  .chip{font-size:10px;font-family:var(--mono);color:var(--muted);background:var(--panel2);border:1px solid var(--line);padding:1px 7px;border-radius:999px;white-space:nowrap}
+  .tok{display:inline-flex;align-items:center;gap:8px}
+  .ticon{width:22px;height:22px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--ink2);flex:none}
   tr.grp{cursor:pointer} tr.grp:hover td{background:color-mix(in oklab,var(--accent) 6%,transparent)}
   tr.subrow{display:none} tr.subrow.show{display:table-row}
-  tr.subrow td{background:var(--panel2);font-size:12.5px;color:var(--ink2);border-bottom:1px solid var(--line)}
-  .caret{display:inline-block;width:14px;color:var(--muted);transition:transform .12s}
+  tr.subrow td{background:var(--panel2);font-size:12.5px;color:var(--ink2)}
+  .caret{display:inline-block;width:13px;color:var(--muted);transition:transform .12s;font-size:11px}
   tr.grp.open .caret{transform:rotate(90deg)}
-  footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;line-height:1.6}
+  .badge{font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px}
+  .badge.in{background:color-mix(in oklab,var(--bull) 20%,transparent);color:var(--bull)}
+  .badge.out{background:color-mix(in oklab,var(--bear) 20%,transparent);color:var(--bear)}
+  /* protocol section (Holdings) */
+  .chips{display:flex;gap:9px;flex-wrap:wrap;margin:2px 0 18px}
+  .pchip{display:flex;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 13px;cursor:pointer}
+  .pchip:hover{border-color:var(--accent)}
+  .pchip .pi{font-size:15px}
+  .pchip .pv{font-family:var(--mono);font-weight:700;font-size:14px}
+  .pchip .pl{font-size:11px;color:var(--muted)}
+  .proto{margin-bottom:14px}
+  .proto>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:11px;padding:13px 18px}
+  .proto>summary::-webkit-details-marker{display:none}
+  .proto>summary .pn{font-size:15px;font-weight:750;display:flex;align-items:center;gap:9px}
+  .proto>summary .pt{margin-left:auto;font-family:var(--mono);font-weight:750;font-size:15px}
+  .proto>summary .cv{color:var(--muted);transition:transform .12s;font-size:12px}
+  .proto[open]>summary .cv{transform:rotate(90deg)}
+  .proto .body{border-top:1px solid var(--line);overflow:auto}
+  footer{margin-top:30px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;line-height:1.6}
 </style>
 </head>
 <body>
@@ -54,7 +89,7 @@
   <header class="top">
     <div>
       <div class="kicker">DeFi · Cartera</div>
-      <h1>🧳 <b>Cartera</b> · estado actual</h1>
+      <h1>🧳 <b>Cartera</b></h1>
       <div class="meta"><span class="dot" id="statusDot"></span><span id="statusText">Cargando sesión privada</span></div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -70,40 +105,41 @@
   </div>
 
   <div id="content" style="display:none">
-    <div class="cards" id="totals" style="margin-top:6px"></div>
+    <div class="tabbar">
+      <button class="tab on" data-tab="ov">Overview</button>
+      <button class="tab" data-tab="ho">Holdings</button>
+    </div>
 
+    <!-- ============ OVERVIEW ============ -->
+    <div id="tab-ov">
+      <div class="panel nw" id="nwCard"></div>
+
+      <div class="sec-head"><h2>🪙 Token breakdown</h2><div class="rule"></div>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);cursor:pointer">
+          <input type="checkbox" id="dustToggle"> ocultar &lt;$5
+        </label>
+      </div>
+      <div class="panel" style="overflow:auto"><table id="tbTbl"></table></div>
+      <div class="note" style="margin-top:6px">Cada token suma <b>todas</b> sus ubicaciones (wallet + pools + staking). Pincha una fila para ver dónde está cada parte.</div>
+    </div>
+
+    <!-- ============ HOLDINGS ============ -->
+    <div id="tab-ho" style="display:none">
+      <div class="chips" id="protoChips"></div>
+      <div id="protoList"></div>
+      <div class="note" style="margin-top:6px">Cada protocolo por separado: qué tienes en la <b>wallet</b>, en <b>LPs</b>, en <b>lending</b> o en <b>staking</b>. Pincha para desplegar.</div>
+    </div>
+
+    <!-- ============ BELROGAM (siempre visible) ============ -->
     <div class="sec-head" id="belrogam" style="scroll-margin-top:16px"><h2>🏢 BELROGAM · plan de guerra</h2><div class="rule"></div><span class="addr">cashflow privado</span></div>
     <div class="panel" style="padding:16px 18px">
       <div class="note" id="cfMsg">Cargando cashflow…</div>
       <div id="cfBody" style="display:none;margin-top:12px"></div>
     </div>
-
-    <div class="sec-head"><h2>📊 Portfolio</h2><div class="rule"></div>
-      <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);cursor:pointer;margin-right:4px">
-        <input type="checkbox" id="dustToggle"> ocultar &lt;$5
-      </label>
-      <div style="display:flex;gap:6px" id="pfTabs">
-        <button class="btn on" data-pf="token">Token</button>
-        <button class="btn" data-pf="protocol">Protocol</button>
-        <button class="btn" data-pf="chain">Chain</button>
-        <button class="btn" data-pf="address">Address</button>
-      </div>
-    </div>
-    <div class="panel" style="overflow:auto"><table id="pfTbl"></table></div>
-    <div class="note" style="margin-top:6px">Pincha una fila para desplegar el detalle (dónde está cada parte: wallet, Orca, Uniswap, ProjectX, staking…).</div>
-
-    <div class="sec-head"><h2>◎ Wallet Solana</h2><div class="rule"></div><span class="addr" id="solAddr"></span></div>
-    <div class="panel" style="overflow:auto"><table id="solTbl"></table></div>
-    <div class="note" id="solNote" style="margin-top:8px"></div>
-
-    <div class="sec-head"><h2>⟠ Wallet EVM</h2><div class="rule"></div><span class="addr" id="evmAddr"></span></div>
-    <div class="panel" style="overflow:auto"><table id="evmTbl"></table></div>
-    <div class="note" id="evmNote" style="margin-top:8px"></div>
-    <div class="note" style="margin-top:4px">Se consultan <b>Ethereum</b> y <b>Base</b> (Blockscout) + posiciones <b>Uniswap V3</b> en ETH (RPC público). Cuando montes el loop en Aave/Base, aquí añadimos colateral, deuda y health factor.</div>
   </div>
 
   <footer>
-    Direcciones en <code>data/wallets.json</code> del repo privado. Fuentes gratis: RPC de Solana, Blockscout (ETH/Base, precios incluidos) y Binance (BTC/SOL). Las posiciones LP de Orca se valoran con el snapshot diario del DeFi-Tracker. <b>Uso educativo — no es asesoramiento financiero.</b>
+    Direcciones en <code>data/wallets.json</code> del repo privado. Fuentes gratis: RPC de Solana + Jupiter (precios), Blockscout (EVM), Hyperliquid y Binance. Las LPs de Orca se valoran con el snapshot diario del DeFi-Tracker. <b>Uso educativo — no es asesoramiento financiero.</b>
   </footer>
 </div>
 
@@ -113,37 +149,58 @@ const $=s=>document.querySelector(s);
 const fmtUSD=(v,d=0)=>v==null||isNaN(v)?"—":"$"+Number(v).toLocaleString("en-US",{maximumFractionDigits:d,minimumFractionDigits:d});
 const fmtEUR=v=>v==null||isNaN(v)?"—":(v<0?"-€":"€")+Math.abs(Math.round(v)).toLocaleString("en-US");
 const fmtAmt=v=>v==null?"—":Number(v).toLocaleString("en-US",{maximumFractionDigits:v>1000?0:(v>1?4:6)});
+const fmtPx=v=>v==null||!isFinite(v)||v<=0?"—":v>=1000?"$"+(v/1000).toFixed(2)+"K":"$"+Number(v).toLocaleString("en-US",{maximumFractionDigits:v<1?6:2});
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
 const BELROGAM_CUSHION=60000;
 (function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
 $("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);});
 
 function short(a){return a?a.slice(0,4)+"…"+a.slice(-4):"";}
-function tokenRows(tokens){
-  return (tokens||[]).map(t=>`<tr><td>${esc(t.sym)}</td><td>${fmtAmt(t.amount)}</td><td>${t.usd!=null?fmtUSD(t.usd,2):'<span style="color:var(--muted)">sin precio</span>'}</td></tr>`).join("");
+function initials(sym){const s=String(sym||"?").replace(/[^A-Za-z0-9]/g,"").toUpperCase();return s.slice(0,3)||"?";}
+function tokIcon(sym){return `<span class="ticon">${esc(initials(sym))}</span>`;}
+const STABLE=s=>/^(USD|DAI|USDC|USDT|USDT0|USDE|PYUSD|GUSD|CGUSD|USDA|EUROC|EURC)/i.test(String(s).replace(/[\s/].*/,""))||/USD$/i.test(String(s).replace(/[\s/].*/,""));
+function capTier(sym){
+  const s=String(sym).toUpperCase().replace(/[\s/].*/,"");
+  if(STABLE(s))return"stable";
+  if(/^(BTC|WBTC|CBBTC|TBTC|ETH|WETH|STETH|WSTETH|SOL|WSOL|BNB|WBNB|HYPE)$/.test(s))return"large";
+  if(/^(JUP|POL|MATIC|MATICX|AVAX|LINK|ARB|OP|KMNO|ORCA|RAY|AAVE|UNI|LDO|PYTH|RENDER|W)$/.test(s))return"mid";
+  return"micro";
 }
-/* Valor de las LPs abiertas de Orca: math V3 con el precio VIVO de BTC (el snapshot del
-   pipeline no trae valor "actual" — solo precios alrededor de cada tx). Igual que lp.html. */
-function v3Value(ls,btc){
+const TIERS=[["large","Large-cap","var(--bull)"],["stable","Estables","var(--stable)"],["mid","Mid-cap","var(--mid)"],["micro","Micro-cap","var(--micro)"]];
+const PROTO_META={ "Wallet":["👛",0],"Orca":["🌊",1],"Uniswap V3":["🦄",2],"ProjectX":["✖️",3],"Hyperliquid":["⚡",4],"Aave":["👻",5],"Kamino":["🅚",6],"Manual":["✍️",9] };
+function protoIcon(p){return (PROTO_META[p]||PROTO_META[Object.keys(PROTO_META).find(k=>p.startsWith(k))]||["🔹",8])[0];}
+function protoOrder(p){const m=PROTO_META[p]||PROTO_META[Object.keys(PROTO_META).find(k=>p.startsWith(k))];return m?m[1]:8;}
+
+/* ----- descompone una posición V3 (Orca) en sus dos tokens con el precio VIVO de BTC ----- */
+function v3Parts(ls,btc){
   if(!ls||!ls.liquidity||!btc)return null;
   const L=Number(ls.liquidity);if(!(L>0))return null;
   const tl=ls.tickLower,tu=ls.tickUpper;const usdc=ls.label0==="USDC"||ls.label1==="USDC";
-  let tc;
-  if(usdc){const btc0=ls.label0!=="USDC";const pr=(btc0?btc:1/btc)*Math.pow(10,ls.dec1-ls.dec0);tc=Math.log(pr)/Math.log(1.0001);}
-  else tc=(tl+tu)/2; // pool peg: midpoint (error mínimo, ambos lados ≈ BTC)
+  let tc,inRange=true;
+  if(usdc){const btc0=ls.label0!=="USDC";const pr=(btc0?btc:1/btc)*Math.pow(10,ls.dec1-ls.dec0);tc=Math.log(pr)/Math.log(1.0001);inRange=tc>=tl&&tc<=tu;}
+  else tc=(tl+tu)/2; // pool peg BTC/BTC: midpoint (error mínimo)
   const spa=Math.pow(1.0001,tl/2),spb=Math.pow(1.0001,tu/2);const spc=Math.min(Math.max(Math.pow(1.0001,tc/2),spa),spb);
   const a0=L*(spb-spc)/(spc*spb)/Math.pow(10,ls.dec0),a1=L*(spc-spa)/Math.pow(10,ls.dec1);
   const px=l=>l==="USDC"?1:btc;
-  return a0*px(ls.label0)+a1*px(ls.label1);
+  const parts=[{sym:ls.label0,amount:a0,usd:a0*px(ls.label0)},{sym:ls.label1,amount:a1,usd:a1*px(ls.label1)}];
+  parts.inRange=inRange;return parts;
 }
-async function loadLpValue(btc){
+async function loadOrca(btc){
   try{const r=await fetch("/api/private?file=orca_pnl",{cache:"no-store"});
-    if(!r.ok)return null;const data=await r.json();
-    const arr=Array.isArray(data)?data:(data.pnl||[]);
-    let v=0,n=0;for(const p of arr){if(p&&p.status==="open"&&p.isConfirmedPosition){const b=v3Value(p.liquidityState,btc);if(b!=null){v+=b;n++;}}}
-    return n?v:null;}catch(e){return null;}
+    if(!r.ok)return{positions:[],total:0};
+    const data=await r.json();const arr=Array.isArray(data)?data:(data.pnl||[]);
+    const positions=[];let total=0;
+    for(const p of arr){
+      if(!(p&&p.status==="open"&&p.isConfirmedPosition))continue;
+      const parts=v3Parts(p.liquidityState,btc);if(!parts)continue;
+      const usd=parts.reduce((s,x)=>s+x.usd,0);total+=usd;
+      positions.push({pair:parts.map(x=>x.sym).join(" / "),usd,inRange:parts.inRange,parts});
+    }
+    positions.sort((a,b)=>b.usd-a.usd);
+    return{positions,total};
+  }catch(e){return{positions:[],total:0};}
 }
-/* Activos manuales (sin API): data/manual_assets.json del repo privado, precio via Binance */
+/* activos manuales (sin API): data/manual_assets.json, precio via Binance */
 async function loadManual(){
   try{const r=await fetch("/api/private?file=manual_assets",{cache:"no-store"});
     if(!r.ok)return[];const doc=await r.json();const list=(doc&&doc.assets)||[];
@@ -160,99 +217,202 @@ async function loadManual(){
     }
     return out;}catch(e){return[];}
 }
+
 async function load(){
   $("#gateMsg").textContent="Cargando…";
   let j=null;
   try{const r=await fetch("/api/portfolio",{cache:"no-store"});
     j=await r.json().catch(()=>null);
     if(r.status===401){$("#gateMsg").textContent="La sesión ha caducado. Recarga la página para volver a entrar.";return;}
-    if(!r.ok||!j||j.error==="no_wallets"){$("#gateMsg").innerHTML=j&&j.message?esc(j.message):("Error "+(j&&j.error||r.status));if(j&&j.error==="no_wallets")$("#gateMsg").innerHTML="Aún no hay direcciones: rellena <code>data/wallets.json</code> en el repo privado (o pásamelas y las guardo yo).";return;}
+    if(!r.ok||!j||j.error==="no_wallets"){$("#gateMsg").innerHTML=j&&j.message?esc(j.message):("Error "+(j&&j.error||r.status));if(j&&j.error==="no_wallets")$("#gateMsg").innerHTML="Aún no hay direcciones: rellena <code>data/wallets.json</code> en el repo privado.";return;}
   }catch(e){$("#gateMsg").textContent="Error de red.";return;}
   const px=j.prices||{};
-  const [lpVal,manual]=await Promise.all([loadLpValue(px.BTC),loadManual()]);
+  const [orca,manual]=await Promise.all([loadOrca(px.BTC),loadManual()]);
   $("#gate").style.display="none";$("#content").style.display="";
   $("#statusDot").className="dot ok";$("#statusText").textContent="Actualizado "+new Date().toISOString().slice(0,16).replace("T"," ")+" · caché 2 min";
-  RAW={j,px,lpVal,manual};
+  RAW={j,px,orca,manual};
   rebuild();
   loadCashflow();
   if(location.hash==="#belrogam")requestAnimationFrame(()=>$("#belrogam").scrollIntoView({block:"start"}));
 }
+
 let RAW=null,DUST_HIDE=false;const DUST_MIN=5;
+let ASSETS=[],ASSETS_FULL=[],PROTOS=[],TOTAL_USD=0;
 function rebuild(){
   if(!RAW)return;
-  const{j,px,lpVal,manual}=RAW;
-  const sol=j.solana,evm=j.evm||{},uni=j.uniswap||{positions:[],totalUsd:0},prjx=j.projectx||{positions:[],totalUsd:0},hl=j.hyperliquid||{tokens:[],totalUsd:0};
-  // el toggle "ocultar <$5" solo afecta a lo que se MUESTRA (tablas); los totales de arriba
-  // y el Portfolio siempre sirven la cifra real, completa (como Nansen: Net Worth exacto).
-  const visTok=arr=>{const vis=[],hid={n:0};for(const t of (arr||[])){if(t.usd==null)hid.n++;else vis.push(t);}return{vis,hid:hid.n};};
-  const solV=visTok(sol&&sol.tokens);
+  const{j,px,orca,manual}=RAW;
+  const sol=j.solana,evm=j.evm||{},uni=j.uniswap||{positions:[]},prjx=j.projectx||{positions:[]},hl=j.hyperliquid||{tokens:[]};
   const chains=[["ethereum",evm.ethereum],["base",evm.base],["hyperevm",evm.hyperevm],["polygon",evm.polygon],["arbitrum",evm.arbitrum],["optimism",evm.optimism]].filter(x=>x[1]&&!x[1].error);
-  const STABLE=s=>/^USD|^DAI$|USD.?0$/i.test(String(s).replace(/\s.*/,""));
   const solAddr=sol&&sol.address?short(sol.address):"solana";
-  const evmAddr="EVM"; // una sola wallet EVM
+  const evmAddr="EVM";
 
-  // ---------- ASSETS unificados (token · chain · protocol · address) — SIEMPRE completos ----------
+  // ---------- ASSETS: un registro por (token · chain · protocol · ubicación) ----------
   ASSETS=[];
-  for(const t of solV.vis)ASSETS.push({sym:t.sym,chain:"solana",protocol:"Wallet",address:solAddr,amount:t.amount,usd:t.usd,kind:"token"});
-  if(lpVal!=null&&lpVal>0)ASSETS.push({sym:"cbBTC/USDC + peg (LP)",chain:"solana",protocol:"Orca",address:solAddr,amount:null,usd:lpVal,kind:"lp"});
-  for(const[name,c]of chains)for(const t of c.tokens||[]){
+  const push=o=>ASSETS.push(o);
+  // wallet Solana
+  if(sol&&!sol.error)for(const t of (sol.tokens||[]))if(t.usd!=null)push({sym:t.sym,chain:"solana",protocol:"Wallet",address:solAddr,amount:t.amount,usd:t.usd,kind:"token"});
+  // wallet EVM (Aave aTokens aparte)
+  for(const[name,c]of chains)for(const t of (c.tokens||[])){
     const aave=/^A(WETH|ETH|WBTC|CBBTC|USDC|USDT|DAI)/i.test(t.sym);
-    ASSETS.push({sym:t.sym,chain:name,protocol:aave?"Aave":"Wallet",address:evmAddr,amount:t.amount,usd:t.usd,kind:aave?"defi":"token"});}
-  for(const p of (uni.positions||[]))if(p.usd)ASSETS.push({sym:`${p.pair} (LP)`,chain:"ethereum",protocol:"Uniswap V3",address:evmAddr,amount:null,usd:p.usd,kind:"lp",extra:p});
-  for(const p of (prjx.positions||[]))if(p.usd)ASSETS.push({sym:`${p.pair} (LP)`,chain:"hyperevm",protocol:"ProjectX",address:evmAddr,amount:null,usd:p.usd,kind:"lp",extra:p});
-  for(const t of (hl.tokens||[]))ASSETS.push({sym:t.sym,chain:"hyperliquid",protocol:"Hyperliquid · spot",address:evmAddr,amount:t.amount,usd:t.usd,kind:"token"});
-  if(hl.staked&&hl.staked.usd)ASSETS.push({sym:"HYPE",chain:"hyperliquid",protocol:"Hyperliquid · staking",address:evmAddr,amount:hl.staked.amount,usd:hl.staked.usd,kind:"stake"});
-  const kam=j.kamino;if(kam&&kam.ok&&kam.usd>1)ASSETS.push({sym:"Depósitos (netos)",chain:"solana",protocol:"Kamino Lend",address:solAddr,amount:null,usd:kam.usd,kind:"defi"});
-  for(const m of (manual||[]))ASSETS.push({...m,address:m.chain==="solana"?solAddr:evmAddr});
-  const ASSETS_FULL=ASSETS.slice(); // para totales exactos, sin filtrar
-  if(DUST_HIDE)ASSETS=ASSETS.filter(a=>(a.usd||0)>=DUST_MIN); // lo que se MUESTRA en Portfolio
-
-  const sum=f=>ASSETS_FULL.filter(f).reduce((s,a)=>s+(a.usd||0),0);
-  const total=sum(()=>true);
-  const stables=sum(a=>a.kind==="token"&&STABLE(a.sym));
-  const liquid=sum(a=>a.kind==="token"&&!STABLE(a.sym));
-  const defi=sum(a=>a.kind==="lp"||a.kind==="stake"||a.kind==="defi");
-  TOTAL_USD=total;
-
-  // ---------- cabecera: total → líquido (estables) → tokens → LPs/DeFi ----------
-  $("#totals").innerHTML=[
-    {l:"TOTAL cartera",n:fmtUSD(total),s:px.BTC?("₿ "+(total/px.BTC).toFixed(5)+" · BTC "+fmtUSD(px.BTC)):"",c:"var(--accent)"},
-    {l:"💵 Líquido (estables)",n:fmtUSD(stables),s:"USDC/USDT — pólvora disponible",c:"var(--accent)"},
-    {l:"🪙 Tokens en cartera",n:fmtUSD(liquid),s:"BTC/ETH/SOL/HYPE… líquidos",c:"var(--bull)"},
-    {l:"💧 LPs + staking + DeFi",n:fmtUSD(defi),s:"Orca · UniV3 · Aave · HYPE staked",c:"var(--hot)"},
-  ].map(x=>`<div class="stat" style="--sc:${x.c}"><div class="l">${x.l}</div><div class="n">${x.n}</div><div class="s">${x.s||""}</div></div>`).join("");
-  renderPf(PF_MODE);
-
-  const dustFilt=arr=>DUST_HIDE?(arr||[]).filter(t=>(t.usd||0)>=DUST_MIN):(arr||[]);
-  // ---------- detalle Solana ----------
-  if(sol&&!sol.error){
-    const solDisp=dustFilt(solV.vis),solDust=solV.vis.length-solDisp.length;
-    $("#solAddr").textContent=short(sol.address);
-    $("#solTbl").innerHTML=`<thead><tr><th>Token</th><th>Cantidad</th><th>Valor</th></tr></thead><tbody>${tokenRows(solDisp)||'<tr><td colspan="3" class="note">Sin tokens.</td></tr>'}${lpVal!=null?`<tr><td>💧 Posiciones LP (Orca)</td><td>—</td><td>${fmtUSD(lpVal,2)}</td></tr>`:""}</tbody>`;
-    $("#solNote").textContent=(solV.hid?solV.hid+" sin precio (probable spam) · ":"")+(solDust?solDust+" ocultos por el filtro <$"+DUST_MIN+". ":"")+(sol.warning?("Aviso RPC: "+sol.warning):"");
-  }else{$("#solTbl").innerHTML=`<tbody><tr><td class="note">${sol?esc(sol.error||""):"sin dirección configurada"}</td></tr></tbody>`;}
-
-  // ---------- detalle EVM + Hyperliquid ----------
-  let evmHid=0;for(const[,c]of chains)evmHid+=c.hidden||0;
-  let evmDust=0;
-  let evmRows="";
-  for(const[ic,src,net]of[["🦄",uni,"ethereum"],["✖️",prjx,"hyperevm"]]){
-    for(const p of (src.positions||[])){
-      evmRows+=`<tr><td>${ic} ${esc(p.protocol||"V3")} ${esc(p.pair)} ${esc(p.fee)} ${p.inRange?'🟢':'🔴'} <span class="addr">${net}</span></td><td>${fmtAmt(p.amt0)} ${esc(p.sym0)} + ${fmtAmt(p.amt1)} ${esc(p.sym1)}</td><td>${p.usd!=null?fmtUSD(p.usd,2):'<span style="color:var(--muted)">sin precio</span>'}</td></tr>`;
-    }
+    push({sym:t.sym,chain:name,protocol:aave?"Aave":"Wallet",address:evmAddr,amount:t.amount,usd:t.usd,kind:aave?"defi":"token"});
   }
-  if(hl.staked)evmRows+=`<tr><td>🥩 ${esc(hl.staked.sym)} <span class="addr">hyperliquid</span></td><td>${fmtAmt(hl.staked.amount)}</td><td>${hl.staked.usd!=null?fmtUSD(hl.staked.usd,2):'—'}</td></tr>`;
-  for(const t of dustFilt(hl.tokens)){evmRows+=`<tr><td>${esc(t.sym)} <span class="addr">hyperliquid</span></td><td>${fmtAmt(t.amount)}</td><td>${t.usd!=null?fmtUSD(t.usd,2):'<span style="color:var(--muted)">sin precio</span>'}</td></tr>`;}
-  if(DUST_HIDE)evmDust+=(hl.tokens||[]).length-dustFilt(hl.tokens).length;
-  for(const[name,c]of chains){
-    const disp=dustFilt(c.tokens);if(DUST_HIDE)evmDust+=(c.tokens||[]).length-disp.length;
-    for(const t of disp)evmRows+=`<tr><td>${esc(t.sym)} <span class="addr">${name}</span></td><td>${fmtAmt(t.amount)}</td><td>${t.usd!=null?fmtUSD(t.usd,2):'<span style="color:var(--muted)">sin precio</span>'}</td></tr>`;
+  // Hyperliquid spot + staking
+  for(const t of (hl.tokens||[]))push({sym:t.sym,chain:"hyperliquid",protocol:"Hyperliquid",address:evmAddr,amount:t.amount,usd:t.usd,kind:"token"});
+  if(hl.staked&&hl.staked.usd)push({sym:"HYPE",chain:"hyperliquid",protocol:"Hyperliquid",address:evmAddr,amount:hl.staked.amount,usd:hl.staked.usd,kind:"stake"});
+  // Orca LPs → descompuestas por token (para que cbBTC sume wallet+pools)
+  for(const p of (orca.positions||[]))for(const x of p.parts)push({sym:x.sym,chain:"solana",protocol:"Orca",address:solAddr,amount:x.amount,usd:x.usd,kind:"lp"});
+  // Uniswap V3 / ProjectX → descompuestas por token (price0/price1 del backend)
+  for(const[src,net]of[[uni,"ethereum"],[prjx,"hyperevm"]])for(const p of (src.positions||[])){
+    const proto=p.protocol||(net==="ethereum"?"Uniswap V3":"ProjectX");
+    const u0=(p.price0!=null&&p.amt0!=null)?p.amt0*p.price0:null;
+    const u1=(p.price1!=null&&p.amt1!=null)?p.amt1*p.price1:null;
+    if(u0!=null)push({sym:p.sym0,chain:net,protocol:proto,address:evmAddr,amount:p.amt0,usd:u0,kind:"lp"});
+    if(u1!=null)push({sym:p.sym1,chain:net,protocol:proto,address:evmAddr,amount:p.amt1,usd:u1,kind:"lp"});
+    if(u0==null&&u1==null&&p.usd)push({sym:p.pair,chain:net,protocol:proto,address:evmAddr,amount:null,usd:p.usd,kind:"lp"});
   }
-  $("#evmTbl").innerHTML=`<thead><tr><th>Token · red</th><th>Cantidad</th><th>Valor</th></tr></thead><tbody>${evmRows||'<tr><td colspan="3" class="note">Sin tokens (o sin dirección configurada).</td></tr>'}</tbody>`;
-  $("#evmNote").textContent=(evmHid?evmHid+" sin precio (probable spam) · ":"")+(evmDust?evmDust+" ocultos por el filtro <$"+DUST_MIN+". ":"")+(hl.warning?("Hyperliquid: "+hl.warning):"");
+  // Kamino
+  const kam=j.kamino;if(kam&&kam.ok&&kam.usd>1)push({sym:"Depósitos",chain:"solana",protocol:"Kamino",address:solAddr,amount:null,usd:kam.usd,kind:"defi"});
+  // manuales
+  for(const m of (manual||[]))push({...m,address:m.chain==="solana"?solAddr:evmAddr});
+
+  ASSETS_FULL=ASSETS.slice();
+  if(DUST_HIDE)ASSETS=ASSETS.filter(a=>(a.usd||0)>=DUST_MIN);
+
+  TOTAL_USD=ASSETS_FULL.reduce((s,a)=>s+(a.usd||0),0);
+
+  // protocolos (para Holdings), guardamos también las posiciones crudas de las LPs
+  const pmap={};
+  for(const a of ASSETS){const o=pmap[a.protocol]||(pmap[a.protocol]={name:a.protocol,usd:0,items:[]});o.usd+=a.usd||0;o.items.push(a);}
+  PROTOS=Object.values(pmap).sort((x,y)=>protoOrder(x.name)-protoOrder(y.name)||y.usd-x.usd);
+  RAW.orcaPos=orca.positions;RAW.uniPos=(uni.positions||[]);RAW.prjxPos=(prjx.positions||[]);RAW.hl=hl;
+
+  renderNetWorth();
+  renderTokenBreakdown();
+  renderHoldings();
 }
 
-/* ---------- BELROGAM: cashflow → pólvora BTC ---------- */
+/* ---------------- OVERVIEW: net worth + risk profile ---------------- */
+function renderNetWorth(){
+  const{px}=RAW;
+  const total=TOTAL_USD;
+  const stables=ASSETS_FULL.filter(a=>capTier(a.sym)==="stable").reduce((s,a)=>s+(a.usd||0),0);
+  const tier={};for(const t of TIERS)tier[t[0]]=0;
+  for(const a of ASSETS_FULL){tier[capTier(a.sym)]+=(a.usd||0);}
+  const seg=TIERS.map(([k,,c])=>total?`<i style="width:${(tier[k]/total*100).toFixed(2)}%;background:${c}"></i>`:"").join("");
+  const leg=TIERS.filter(([k])=>tier[k]>0).map(([k,name,c])=>`<span><span class="rdot" style="background:${c}"></span>${name} <b>${(tier[k]/total*100).toFixed(total&&tier[k]/total<0.001?2:1)}%</b></span>`).join("");
+  $("#nwCard").innerHTML=`
+    <div>
+      <div class="lbl">Net worth</div>
+      <div class="big">${fmtUSD(total)}</div>
+      <div class="substats">
+        <div><div class="lbl">Total activos</div><div class="n">${fmtUSD(total)}</div></div>
+        <div><div class="lbl">Pasivos</div><div class="n">$0</div></div>
+        <div><div class="lbl">Pólvora (estables)</div><div class="n" style="color:var(--stable)">${fmtUSD(stables)}</div></div>
+        <div><div class="lbl">En BTC</div><div class="n" style="color:var(--hot)">${px.BTC?("₿ "+(total/px.BTC).toFixed(4)):"—"}</div></div>
+      </div>
+    </div>
+    <div class="risk">
+      <div class="lbl">Perfil de riesgo</div>
+      <div class="seg">${seg}</div>
+      <div class="leg">${leg}</div>
+    </div>`;
+}
+function bar(pct,color){return `<div class="shcell"><span class="mono" style="font-size:12px;color:var(--muted)">${pct<0.1?"<0.1":pct.toFixed(1)}%</span><div class="shbar"><i style="width:${Math.min(100,pct)}%${color?";background:"+color:""}"></i></div></div>`;}
+function whereLabel(a){
+  const via=` <span class="chip">${esc(a.chain)}</span>`;
+  const verb=a.protocol==="Wallet"?"Idle en Wallet":(a.kind==="stake"?"Staking en "+esc(a.protocol):(a.kind==="lp"?"LP en "+esc(a.protocol):"En "+esc(a.protocol)));
+  return `${verb}${via} <span class="addr">${esc(a.address)}</span>`;
+}
+function renderTokenBreakdown(){
+  if(!ASSETS.length){$("#tbTbl").innerHTML="";return;}
+  const strip=s=>String(s).replace(/[\s].*/,"");
+  const g={};
+  for(const a of ASSETS){const k=strip(a.sym).toUpperCase();const o=g[k]||(g[k]={key:k,sym:strip(a.sym),usd:0,amount:0,amtOk:true,items:[]});
+    o.usd+=a.usd||0;if(a.amount!=null)o.amount+=a.amount;else o.amtOk=false;o.items.push(a);}
+  const rows=Object.values(g).sort((a,b)=>b.usd-a.usd);
+  let html=`<thead><tr><th>Token</th><th>Precio</th><th>Cantidad</th><th>Share</th><th>Valor</th></tr></thead><tbody>`;
+  rows.forEach((r,ix)=>{
+    const share=TOTAL_USD?r.usd/TOTAL_USD*100:0;
+    const price=r.amtOk&&r.amount?r.usd/r.amount:null;
+    html+=`<tr class="grp" data-g="tb${ix}"><td><span class="caret">▶</span> <span class="tok">${tokIcon(r.sym)}${esc(r.sym)}</span></td>`+
+      `<td>${fmtPx(price)}</td><td>${r.amtOk?fmtAmt(r.amount):"—"}</td><td>${bar(share)}</td><td>${fmtUSD(r.usd,2)}</td></tr>`;
+    for(const a of r.items.sort((x,y)=>(y.usd||0)-(x.usd||0))){
+      const pctIn=r.usd?(a.usd||0)/r.usd*100:0;
+      html+=`<tr class="subrow" data-p="tb${ix}"><td style="padding-left:40px">${whereLabel(a)}</td><td></td><td>${a.amount!=null?fmtAmt(a.amount):"—"}</td><td>${bar(pctIn)}</td><td>${fmtUSD(a.usd,2)}</td></tr>`;
+    }
+  });
+  $("#tbTbl").innerHTML=html+`</tbody>`;
+}
+$("#tbTbl").addEventListener("click",e=>{
+  const tr=e.target.closest("tr.grp");if(!tr)return;
+  tr.classList.toggle("open");
+  document.querySelectorAll(`tr.subrow[data-p="${tr.dataset.g}"]`).forEach(s=>s.classList.toggle("show"));
+});
+
+/* ---------------- HOLDINGS: por protocolo ---------------- */
+function walletBody(items){
+  // agrupa por token, expandible por chain (como Nansen)
+  const g={};
+  for(const a of items){const k=a.sym.toUpperCase();const o=g[k]||(g[k]={sym:a.sym,usd:0,amount:0,amtOk:true,items:[]});o.usd+=a.usd||0;if(a.amount!=null)o.amount+=a.amount;else o.amtOk=false;o.items.push(a);}
+  const rows=Object.values(g).sort((a,b)=>b.usd-a.usd);const tot=rows.reduce((s,r)=>s+r.usd,0);
+  let h=`<table><thead><tr><th>Token</th><th>Precio</th><th>Cantidad</th><th>Share</th><th>Valor</th></tr></thead><tbody>`;
+  rows.forEach((r,ix)=>{
+    const price=r.amtOk&&r.amount?r.usd/r.amount:null,share=tot?r.usd/tot*100:0,multi=r.items.length>1;
+    h+=`<tr class="${multi?"grp":""}" data-g="w${ix}"><td>${multi?'<span class="caret">▶</span> ':''}<span class="tok">${tokIcon(r.sym)}${esc(r.sym)}</span></td><td>${fmtPx(price)}</td><td>${r.amtOk?fmtAmt(r.amount):"—"}</td><td>${bar(share)}</td><td>${fmtUSD(r.usd,2)}</td></tr>`;
+    if(multi)for(const a of r.items.sort((x,y)=>(y.usd||0)-(x.usd||0)))
+      h+=`<tr class="subrow" data-p="w${ix}"><td style="padding-left:40px"><span class="chip">${esc(a.chain)}</span></td><td></td><td>${fmtAmt(a.amount)}</td><td></td><td>${fmtUSD(a.usd,2)}</td></tr>`;
+  });
+  return h+`</tbody></table>`;
+}
+function lpBody(positions){
+  let h=`<table><thead><tr><th>Posición</th><th>Rango</th><th>Composición</th><th>Valor</th></tr></thead><tbody>`;
+  for(const p of positions){
+    const comp=(p.parts?p.parts.map(x=>`${fmtAmt(x.amount)} ${esc(x.sym)}`).join(" + "):`${fmtAmt(p.amt0)} ${esc(p.sym0)} + ${fmtAmt(p.amt1)} ${esc(p.sym1)}`);
+    h+=`<tr><td><span class="tok">🌊 ${esc(p.pair)}</span></td><td><span class="badge ${p.inRange?"in":"out"}">${p.inRange?"en rango":"fuera"}</span></td><td>${comp}</td><td>${p.usd!=null?fmtUSD(p.usd,2):"—"}</td></tr>`;
+  }
+  return h+`</tbody></table>`;
+}
+function simpleBody(items){
+  let h=`<table><thead><tr><th>Activo</th><th>Red</th><th>Cantidad</th><th>Valor</th></tr></thead><tbody>`;
+  for(const a of items.sort((x,y)=>(y.usd||0)-(x.usd||0)))
+    h+=`<tr><td><span class="tok">${tokIcon(a.sym)}${esc(a.sym)}${a.kind==="stake"?' <span class="chip">staked</span>':''}</span></td><td class="addr" style="text-align:left">${esc(a.chain)}</td><td>${a.amount!=null?fmtAmt(a.amount):"—"}</td><td>${fmtUSD(a.usd,2)}</td></tr>`;
+  return h+`</tbody></table>`;
+}
+function renderHoldings(){
+  const chipsEl=$("#protoChips"),listEl=$("#protoList");
+  chipsEl.innerHTML=PROTOS.map(p=>`<div class="pchip" data-p="${esc(p.name)}"><span class="pi">${protoIcon(p.name)}</span><div><div class="pv">${fmtUSD(p.usd)}</div><div class="pl">${esc(p.name)}</div></div></div>`).join("");
+  listEl.innerHTML=PROTOS.map((p,i)=>{
+    let body;
+    if(p.name==="Orca")body=lpBody(RAW.orcaPos||[]);
+    else if(p.name==="Uniswap V3")body=lpBody((RAW.uniPos||[]).filter(x=>x.usd));
+    else if(p.name==="ProjectX")body=lpBody((RAW.prjxPos||[]).filter(x=>x.usd));
+    else if(p.name==="Wallet")body=walletBody(p.items);
+    else body=simpleBody(p.items);
+    return `<details class="panel proto" id="proto-${i}" ${i<3?"open":""}>
+      <summary><span class="cv">▶</span><span class="pn">${protoIcon(p.name)} ${esc(p.name)}</span><span class="pt">${fmtUSD(p.usd)}</span></summary>
+      <div class="body">${body}</div>
+    </details>`;
+  }).join("");
+  // chips → scroll al protocolo + abrir
+  chipsEl.querySelectorAll(".pchip").forEach((c,i)=>c.addEventListener("click",()=>{
+    const idx=PROTOS.findIndex(p=>p.name===c.dataset.p);const d=$("#proto-"+idx);if(d){d.open=true;d.scrollIntoView({block:"start",behavior:"smooth"});}
+  }));
+  // subfilas expandibles dentro de Wallet
+  listEl.querySelectorAll("tr.grp").forEach(tr=>tr.addEventListener("click",()=>{
+    tr.classList.toggle("open");
+    tr.closest("table").querySelectorAll(`tr.subrow[data-p="${tr.dataset.g}"]`).forEach(s=>s.classList.toggle("show"));
+  }));
+}
+
+/* ---------------- tabs ---------------- */
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===t));
+  $("#tab-ov").style.display=t.dataset.tab==="ov"?"":"none";
+  $("#tab-ho").style.display=t.dataset.tab==="ho"?"":"none";
+}));
+$("#dustToggle").addEventListener("change",e=>{DUST_HIDE=e.target.checked;rebuild();});
+
+/* ---------------- BELROGAM: cashflow → pólvora BTC ---------------- */
 function addMonths(ym,k){const[y,m]=ym.split("-").map(Number);const d=new Date(Date.UTC(y,m-1+k,1));return d.toISOString().slice(0,7);}
 async function loadCashflow(){
   const msg=$("#cfMsg"),body=$("#cfBody");
@@ -263,7 +423,7 @@ async function loadCashflow(){
     j=await r.json().catch(()=>null);
     if(r.status===401){msg.textContent="La sesión ha caducado. Recarga la página para volver a entrar.";return;}
     if(!r.ok){msg.textContent=(j&&(j.message||j.error))||("Cashflow no disponible · error "+r.status);return;}
-  }catch(e){msg.textContent="Cashflow no disponible en esta preview local. Se prueba completo en Vercel Preview.";return;}
+  }catch(e){msg.textContent="Cashflow no disponible en esta preview local. Se prueba completo en Vercel.";return;}
 
   const done=(j.monthly||[]).filter(m=>m.completo).slice(-3);
   const avg=done.length?done.reduce((s,m)=>s+m.neto,0)/done.length:0;
@@ -281,11 +441,11 @@ async function loadCashflow(){
   msg.textContent="";
   body.style.display="";
   body.innerHTML=`
-    <div class="cards">
-      <div class="stat" style="--sc:var(--accent)"><div class="l">Cash hoy (Caixa+Wise)</div><div class="n">${fmtEUR(j.saldoTotal)}</div><div class="s">saldo operativo leído de Supabase</div></div>
-      <div class="stat" style="--sc:var(--bull)"><div class="l">Neto medio 3 meses</div><div class="n">${fmtEUR(avg)}</div><div class="s">meses completos</div></div>
-      <div class="stat" style="--sc:var(--hot)"><div class="l">Colchón intocable</div><div class="n">${fmtEUR(BELROGAM_CUSHION)}</div><div class="s">no se invierte</div></div>
-      <div class="stat" style="--sc:var(--bull)"><div class="l">Pólvora estimada en nov</div><div class="n">${fmtEUR(bolsa)}</div><div class="s">escenario prudente ×0,5</div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px">
+      <div class="panel" style="padding:12px 14px;border-left:3px solid var(--accent)"><div class="lbl">Cash hoy (Caixa+Wise)</div><div class="n mono" style="font-size:21px;font-weight:750">${fmtEUR(j.saldoTotal)}</div><div class="note">saldo leído de Supabase</div></div>
+      <div class="panel" style="padding:12px 14px;border-left:3px solid var(--bull)"><div class="lbl">Neto medio 3 meses</div><div class="n mono" style="font-size:21px;font-weight:750">${fmtEUR(avg)}</div><div class="note">meses completos</div></div>
+      <div class="panel" style="padding:12px 14px;border-left:3px solid var(--hot)"><div class="lbl">Colchón intocable</div><div class="n mono" style="font-size:21px;font-weight:750">${fmtEUR(BELROGAM_CUSHION)}</div><div class="note">no se invierte</div></div>
+      <div class="panel" style="padding:12px 14px;border-left:3px solid var(--bull)"><div class="lbl">Pólvora estimada en nov</div><div class="n mono" style="font-size:21px;font-weight:750">${fmtEUR(bolsa)}</div><div class="note">escenario prudente ×0,5</div></div>
     </div>
     <div style="overflow:auto;margin-top:12px"><table><thead><tr><th style="text-align:left">Mes</th><th>Reservas confirmadas</th><th>Cash base</th><th>Cash prudente</th><th>Invertible</th></tr></thead><tbody>
       ${rows.map(r=>`<tr${(r.mes>="2026-09"&&r.mes<="2026-11")?' style="background:color-mix(in oklab,var(--bull) 7%,transparent)"':''}><td style="text-align:left" class="mono">${r.mes}</td><td>${r.conf?fmtEUR(r.conf):"—"}</td><td>${fmtEUR(r.base)}</td><td>${fmtEUR(r.prud)}</td><td style="color:var(--bull)">${fmtEUR(r.invPrud)} – ${fmtEUR(r.invBase)}</td></tr>`).join("")}
@@ -295,49 +455,6 @@ async function loadCashflow(){
       Antes del 31-ago: solo compra puntual si BTC &lt; $60k. Validar fiscalidad con Financial Group antes de la primera compra de BELROGAM SL.</div>`;
 }
 
-/* ---------- Portfolio estilo Nansen: Token / Protocol / Chain / Address (expandible) ---------- */
-let ASSETS=[],TOTAL_USD=0,PF_MODE="token";
-function bar(pct){return `<div class="shcell"><span class="mono" style="font-size:12px;color:var(--muted)">${pct.toFixed(1)}%</span><div class="shbar"><i style="width:${Math.min(100,pct)}%"></i></div></div>`;}
-function whereLabel(a){ // "Positions on Orca via solana" al estilo Nansen
-  const via=a.address?` <span class="chip">${esc(a.chain)}</span>`:"";
-  if(a.protocol==="Wallet")return`Idling en Wallet${via}`;
-  return`${esc(a.protocol)}${via}`;
-}
-function groupRender(keyFn,labelFn,headers,mode){
-  const g={};
-  for(const a of ASSETS){const k=keyFn(a);const o=g[k]||(g[k]={key:k,usd:0,amount:0,amtOk:true,items:[]});
-    o.usd+=a.usd||0;if(a.amount!=null)o.amount+=a.amount;else o.amtOk=false;o.items.push(a);}
-  const rows=Object.values(g).sort((a,b)=>b.usd-a.usd);
-  let html=`<thead><tr>${headers.map((h,i)=>`<th${i===0?' style="text-align:left"':''}>${h}</th>`).join("")}</tr></thead><tbody>`;
-  rows.forEach((r,ix)=>{
-    const share=TOTAL_USD?r.usd/TOTAL_USD*100:0;
-    html+=`<tr class="grp" data-g="${mode}${ix}"><td style="text-align:left"><span class="caret">▶</span>${labelFn(r)}</td>`+
-      (mode==="token"?`<td>${r.amtOk?fmtAmt(r.amount):"—"}</td>`:`<td>${r.items.length}</td>`)+
-      `<td>${bar(share)}</td><td>${fmtUSD(r.usd,2)}</td></tr>`;
-    for(const a of r.items.sort((x,y)=>(y.usd||0)-(x.usd||0))){
-      const pctIn=r.usd?(a.usd||0)/r.usd*100:0;
-      html+=`<tr class="subrow" data-p="${mode}${ix}"><td style="text-align:left;padding-left:34px">${mode==="token"?whereLabel(a):esc(a.sym)+' <span class="chip">'+esc(a.chain)+'</span>'+(a.protocol!=="Wallet"?' <span class="chip">'+esc(a.protocol)+'</span>':"")}</td><td>${a.amount!=null?fmtAmt(a.amount):"—"}</td><td>${bar(pctIn)}</td><td>${fmtUSD(a.usd,2)}</td></tr>`;
-    }
-  });
-  return html+`</tbody>`;
-}
-function renderPf(mode){
-  PF_MODE=mode;
-  document.querySelectorAll("#pfTabs .btn").forEach(b=>b.classList.toggle("on",b.dataset.pf===mode));
-  if(!ASSETS.length){$("#pfTbl").innerHTML="";return;}
-  const strip=s=>s.replace(/\s*\((LP|staked|HL spot|Base)\)$/i,"");
-  if(mode==="token")$("#pfTbl").innerHTML=groupRender(a=>strip(a.sym).toUpperCase().replace(/^ETH \(BASE\)$/,"ETH"),r=>esc(strip(r.items[0].sym)),["Token","Cantidad","Share","Valor"],mode);
-  else if(mode==="protocol")$("#pfTbl").innerHTML=groupRender(a=>a.protocol,r=>esc(r.key),["Protocolo","#","Share","Valor"],mode);
-  else if(mode==="chain")$("#pfTbl").innerHTML=groupRender(a=>a.chain,r=>esc(r.key),["Blockchain","#","Share","Valor"],mode);
-  else $("#pfTbl").innerHTML=groupRender(a=>a.address,r=>esc(r.key),["Dirección","#","Share","Valor"],mode);
-}
-$("#pfTbl").addEventListener("click",e=>{
-  const tr=e.target.closest("tr.grp");if(!tr)return;
-  tr.classList.toggle("open");
-  document.querySelectorAll(`tr.subrow[data-p="${tr.dataset.g}"]`).forEach(s=>s.classList.toggle("show"));
-});
-document.querySelectorAll("#pfTabs .btn").forEach(b=>b.addEventListener("click",()=>renderPf(b.dataset.pf)));
-$("#dustToggle").addEventListener("change",e=>{DUST_HIDE=e.target.checked;rebuild();});
 localStorage.removeItem("lp-dash-pw");sessionStorage.removeItem("lp-dash-pw");
 load();
 setInterval(()=>{if($("#content").style.display!=="none")load();},10*60*1000);
