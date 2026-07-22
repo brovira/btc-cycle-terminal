@@ -141,11 +141,12 @@ async function fetchEvmChain(base, chain, addr) {
 }
 
 /* ---- Posiciones V3 (Uniswap en ETH, ProjectX en HyperEVM, cualquier fork estilo V3) ----
-   Auto-detección: lista los NFTs ERC-721 de la wallet y a cada contrato le prueba
-   positions(tokenId); si responde con el layout V3, es un position manager. El pool sale
-   de factory()+getPool() y el precio actual de slot0(). Sin hardcodear direcciones. */
+   Para protocolos conocidos se enumeran sus NFTs directamente en el position manager.
+   Para forks desconocidos se usa la lista paginada de ERC-721 de Blockscout y se prueba
+   positions(tokenId). El pool sale de factory()+getPool() y el precio actual de slot0(). */
 const ETH_RPCS = ["https://eth.llamarpc.com", "https://cloudflare-eth.com", "https://rpc.ankr.com/eth"];
 const HYPE_RPCS = ["https://rpc.hyperliquid.xyz/evm"];
+const UNISWAP_V3_POSITION_MANAGER = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
 const pad = (h) => h.replace(/^0x/, "").padStart(64, "0");
 const word = (hex, i) => BigInt("0x" + (hex.replace(/^0x/, "").slice(i * 64, i * 64 + 64) || "0"));
 const toInt = (v) => (v > (1n << 255n) ? v - (1n << 256n) : v);
@@ -166,15 +167,59 @@ async function tokenInfo(baseUrl, address) {
     if (r.ok) { const j = await r.json(); return { sym: j.symbol || "?", dec: +(j.decimals || 18), px: j.exchange_rate != null ? +j.exchange_rate : null }; } } catch (e) {}
   return { sym: "?", dec: 18, px: null };
 }
-async function fetchV3Positions(baseUrl, rpcs, addr, protoLabel) {
+
+function nftContract(item) {
+  return (((item.token && (item.token.address_hash || item.token.address)) || "") + "").toLowerCase();
+}
+
+async function ownedPositionNfts(call, addr, managers) {
+  const items = [];
+  let checked = false;
+  for (const manager of managers) {
+    const balance = await call(manager, "0x70a08231" + pad(addr)); // balanceOf(address)
+    if (!balance) continue;
+    checked = true;
+    const count = Number(word(balance, 0));
+    for (let i = 0; i < Math.min(count, 100); i++) {
+      const tokenId = await call(manager, "0x2f745c59" + pad(addr) + pad(BigInt(i).toString(16))); // tokenOfOwnerByIndex
+      if (tokenId) items.push({ id: word(tokenId, 0).toString(), token: { address_hash: manager } });
+    }
+  }
+  return { items, checked };
+}
+
+async function blockscoutNfts(baseUrl, addr, wantedContracts = []) {
+  const endpoint = `${baseUrl}/api/v2/addresses/${addr}/nft`;
+  const wanted = new Set(wantedContracts.map(x => x.toLowerCase()));
+  const items = [];
+  let params = { type: "ERC-721" };
+  for (let page = 0; page < 10; page++) {
+    const url = new URL(endpoint);
+    for (const [key, value] of Object.entries(params)) {
+      if (value != null) url.searchParams.set(key, String(value));
+    }
+    const r = await fetch(url, { headers: { "User-Agent": "portfolio" } });
+    if (!r.ok) break;
+    const body = await r.json();
+    const pageItems = (body.items || []).filter(it => it.id != null);
+    const matches = wanted.size ? pageItems.filter(it => wanted.has(nftContract(it))) : pageItems;
+    items.push(...matches);
+    if (!body.next_page_params || !Object.keys(body.next_page_params).length) break;
+    params = { type: "ERC-721", ...body.next_page_params };
+  }
+  return items;
+}
+
+async function fetchV3Positions(baseUrl, rpcs, addr, protoLabel, knownManagers = []) {
   const out = { positions: [], totalUsd: 0, protocol: protoLabel };
   const call = rpcCaller(rpcs);
   try {
-    const r = await fetch(`${baseUrl}/api/v2/addresses/${addr}/nft?type=ERC-721`, { headers: { "User-Agent": "portfolio" } });
-    if (!r.ok) return out;
-    const items = ((await r.json()).items || []).filter(it => it.id != null);
-    for (const it of items.slice(0, 15)) {
-      const npm = (((it.token && (it.token.address_hash || it.token.address)) || "") + "").toLowerCase();
+    const direct = knownManagers.length ? await ownedPositionNfts(call, addr, knownManagers) : { items: [], checked: false };
+    const items = direct.checked
+      ? direct.items
+      : await blockscoutNfts(baseUrl, addr, knownManagers);
+    for (const it of items.slice(0, knownManagers.length ? 100 : 15)) {
+      const npm = nftContract(it);
       if (!npm) continue;
       const pos = await call(npm, "0x99fbab88" + pad(BigInt(it.id).toString(16)));
       if (!pos || pos.replace(/^0x/, "").length < 64 * 12) continue; // no es un position manager V3
@@ -298,7 +343,7 @@ module.exports = async (req, res) => {
       wallets.evm ? fetchEvmChain("https://arbitrum.blockscout.com", "arbitrum", wallets.evm).catch(e => ({ error: String(e.message || e) })) : null,
       wallets.evm ? fetchEvmChain("https://optimism.blockscout.com", "optimism", wallets.evm).catch(e => ({ error: String(e.message || e) })) : null,
       wallets.evm ? fetchHyperliquid(wallets.evm).catch(e => ({ tokens: [], totalUsd: 0, warning: String(e.message || e) })) : null,
-      wallets.evm ? fetchV3Positions("https://eth.blockscout.com", ETH_RPCS, wallets.evm, "Uniswap V3").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
+      wallets.evm ? fetchV3Positions("https://eth.blockscout.com", ETH_RPCS, wallets.evm, "Uniswap V3", [UNISWAP_V3_POSITION_MANAGER]).catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
       wallets.evm ? fetchV3Positions("https://hyperliquid.cloud.blockscout.com", HYPE_RPCS, wallets.evm, "ProjectX").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
       wallets.solana ? fetchKamino(wallets.solana).catch(e => ({ usd: 0, ok: false, warning: String(e.message || e) })) : null,
     ]);
