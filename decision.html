@@ -110,11 +110,26 @@
   </div>
   <div class="banner" id="banner"></div>
 
-  <div class="sec-head"><h2>Ciclo del halving (LMEC)</h2><div class="rule"></div><span class="mtxt" id="halvNext" style="font-size:12px"></span></div>
-  <div id="halvBox" style="border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:14px;background:var(--panel);padding:16px 18px">
-    <div style="font-size:19px;font-weight:800" id="halvPhase">—</div>
-    <div class="note" id="halvSub" style="margin-top:5px"></div>
-    <div class="levels" id="halvCards" style="margin-top:12px"></div>
+  <div class="sec-head"><h2>Relojes de ciclo — LMEC · Cowen · OCM</h2><div class="rule"></div><span class="mtxt" id="halvNext" style="font-size:12px"></span></div>
+  <div class="agrid">
+    <div id="halvBox" style="border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:14px;background:var(--panel);padding:16px 18px">
+      <div class="albl" style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">🎯 LMEC · semanas del halving</div>
+      <div style="font-size:17px;font-weight:800;margin-top:4px" id="halvPhase">—</div>
+      <div class="note" id="halvSub" style="margin-top:5px"></div>
+      <div class="levels" id="halvCards" style="margin-top:12px"></div>
+    </div>
+    <div style="border:1px solid var(--line);border-top:3px solid var(--hot);border-radius:14px;background:var(--panel);padding:16px 18px">
+      <div class="albl" style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">📊 Cowen · ciclo midterm (4 años)</div>
+      <div style="font-size:17px;font-weight:800;margin-top:4px" id="cowenPhase">—</div>
+      <div class="note" id="cowenSub" style="margin-top:5px"></div>
+      <div class="levels" id="cowenCards" style="margin-top:12px"></div>
+    </div>
+    <div style="border:1px solid var(--line);border-top:3px solid var(--accum);border-radius:14px;background:var(--panel);padding:16px 18px">
+      <div class="albl" style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">🧠 OCM · ventana de suelo on-chain</div>
+      <div style="font-size:17px;font-weight:800;margin-top:4px" id="ocmPhase">—</div>
+      <div class="note" id="ocmSub" style="margin-top:5px"></div>
+      <div class="levels" id="ocmCards" style="margin-top:12px"></div>
+    </div>
   </div>
 
   <div class="sec-head"><h2>Los tres agentes — qué hacen AHORA</h2><div class="rule"></div><span class="mtxt" style="font-size:12px">de sus transcripts, citado</span></div>
@@ -347,6 +362,42 @@ function renderHalving(R){
   if(nextH)cards.push(["Próximo halving",fmtDate(nextH)]);
   $("#halvCards").innerHTML=cards.map(x=>`<div class="lv"><div class="l">${x[0]}</div><div class="n">${x[1]}</div></div>`).join("");
   $("#halvNext").textContent = wk<buyA?("faltan ~"+Math.ceil(buyA-wk)+" sem para comprar") : (wk<=buyB?"en ventana de compra":"");
+  renderCowenClock(R);renderOcmClock(R);
+}
+
+/* Reloj de Cowen: ciclo de 4 años (midterm). Sus citas: acumular tras el June low en la
+   2ª mitad del midterm; ago-sep negativos en los 3 midterms previos; mínimo base en Q4
+   (octubre el mes más probable); invalidación = reclaim sostenido de la 50W (~86,5k). */
+function renderCowenClock(R){
+  const now=new Date();const y=now.getUTCFullYear(),ym=y%4,mo=now.getUTCMonth()+1;
+  const names={0:"post-halving (venta)",1:"pre-midterm",2:"MIDTERM (acumulación)",3:"pre-halving"};
+  let phase,sub,pc="var(--hot)";
+  const oct1=Date.parse(y+"-10-01");const wksToOct=Math.max(0,Math.ceil((oct1-now.getTime())/(7*864e5)));
+  if(ym===2&&mo>=7){phase="🟢 Acumulación H2 midterm — ACTIVA";pc="var(--bull)";
+    sub=`Su ventana de compra está <b>abierta</b> (él ya hace DCA desde el June low ~$57k, risk <0,3). Ago-sep fueron <b>negativos en los 3 midterms</b> previos (−18/−15/−15%) → guarda la mayoría de la pólvora para el mínimo de <b>Q4</b> (octubre, en ~${wksToOct} sem).`;}
+  else if(ym===2){phase="Midterm · 1ª mitad";sub="Él la ignora: 'just ignore Bitcoin for the first half of the midterm year'. La ventana abre tras el June low.";}
+  else{phase="Año "+names[ym];sub=ym===1?"Acumular cash: la ventana de compra llega en el midterm (año que viene).":"Fuera de su ventana de acumulación.";}
+  $("#cowenPhase").textContent=phase;$("#cowenPhase").style.color=pc;
+  $("#cowenSub").innerHTML=sub;
+  $("#cowenCards").innerHTML=[["Año del ciclo",names[ym]||ym],["Mínimo esperado","Q4 · oct"],["Hasta octubre","~"+wksToOct+" sem"],["Invalidación","50W ~$86,5k"]]
+    .map(x=>`<div class="lv"><div class="l">${x[0]}</div><div class="n">${x[1]}</div></div>`).join("");
+}
+
+/* Reloj de OCM: ventana de suelo por capitulación por TIEMPO (fin-ago → oct 2026) y sus
+   métricas citadas. El Omega Score es propietario → se muestra el último valor que ÉL dio
+   en vídeo (no calculable en vivo aquí). */
+function renderOcmClock(R){
+  const now=Date.now();const winA=Date.parse("2026-08-25"),winB=Date.parse("2026-10-31");
+  let phase,sub,pc="var(--accum)";
+  if(now<winA){const w=Math.ceil((winA-now)/(7*864e5));phase="Suelo «cerca, no aquí»";
+    sub=`Su ventana de suelo (<b>fin-ago → oct</b>) empieza en <b>~${w} sem</b>. Espera capitulación por TIEMPO ("pain by boredom"), no un crash. Mientras: DCA acelerado (Omega ~9-11% en jun-jul, casi "ballistic").`;}
+  else if(now<=winB){phase="🟢 EN ventana de suelo";pc="var(--bull)";
+    sub=`Dentro de su ventana (fin-ago → oct). Vigilar sus hitos: LTH-in-loss 41→~45% y cruce STH/LTH realized (~fin sep-oct).`;}
+  else{phase="Ventana pasada";sub="Su ventana de suelo (fin-ago → oct 2026) ya quedó atrás.";}
+  $("#ocmPhase").textContent=phase;$("#ocmPhase").style.color=pc;
+  $("#ocmSub").innerHTML=sub;
+  $("#ocmCards").innerHTML=[["Ventana de suelo","25 ago – oct"],["Omega (citado)","9-11% jun-jul"],["Hito on-chain","LTH-in-loss →45%"],["Fin del bear","reclaim $93-96k"]]
+    .map(x=>`<div class="lv"><div class="l">${x[0]}</div><div class="n">${x[1]}</div></div>`).join("");
 }
 
 /* ---------- los tres agentes: postura actual (citada) + consejo con las métricas de hoy ---------- */
