@@ -144,7 +144,7 @@ async function fetchEvmChain(base, chain, addr) {
    Para protocolos conocidos se enumeran sus NFTs directamente en el position manager.
    Para forks desconocidos se usa la lista paginada de ERC-721 de Blockscout y se prueba
    positions(tokenId). El pool sale de factory()+getPool() y el precio actual de slot0(). */
-const ETH_RPCS = ["https://eth.llamarpc.com", "https://cloudflare-eth.com", "https://rpc.ankr.com/eth"];
+const ETH_RPCS = ["https://eth.blockscout.com/api/eth-rpc", "https://eth.llamarpc.com", "https://cloudflare-eth.com", "https://rpc.ankr.com/eth"];
 const HYPE_RPCS = ["https://rpc.hyperliquid.xyz/evm"];
 const UNISWAP_V3_POSITION_MANAGER = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
 const pad = (h) => h.replace(/^0x/, "").padStart(64, "0");
@@ -154,7 +154,7 @@ function rpcCaller(rpcs) {
   return async (to, data) => {
     for (const rpc of rpcs) {
       try {
-        const r = await fetch(rpc, { method: "POST", headers: { "Content-Type": "application/json" },
+        const r = await fetch(rpc, { method: "POST", headers: { "Content-Type": "application/json", "User-Agent": "portfolio" },
           body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_call", params: [{ to, data }, "latest"] }) });
         if (!r.ok) continue; const j = await r.json(); if (j.result && j.result !== "0x") return j.result;
       } catch (e) {}
