@@ -69,9 +69,24 @@
   .rangefoot strong.in{color:var(--bull)} .rangefoot strong.out{color:var(--bear)}
   .poolmeta{font-family:var(--mono);font-size:10px;color:var(--muted);font-weight:500;margin-top:2px}
   .na{color:var(--muted)}
-  .tabbar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+  .position-toolbar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .tabbar{display:flex;gap:6px;flex-wrap:wrap}
   .tabbar button{font:inherit;font-size:13px;font-weight:650;color:var(--muted);background:var(--panel);border:1px solid var(--line);padding:8px 14px;border-radius:10px;cursor:pointer}
   .tabbar button.on{color:var(--ink);border-color:var(--accent);background:color-mix(in oklab,var(--accent) 12%,var(--panel))}
+  .columns-wrap{position:relative;flex:0 0 auto}
+  .columns-btn{display:flex;align-items:center;gap:7px;white-space:nowrap}
+  .columns-menu{position:absolute;z-index:20;top:calc(100% + 7px);right:0;width:250px;max-height:min(520px,70vh);overflow:auto;padding:10px;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 16px 36px rgba(0,0,0,.28)}
+  .columns-menu[hidden]{display:none}
+  .columns-title{padding:3px 5px 8px;color:var(--muted);font-size:10.5px;font-weight:750;text-transform:uppercase;letter-spacing:.04em}
+  .column-option{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:8px 5px;cursor:pointer;font-size:12.5px;color:var(--ink2)}
+  .column-option input{position:absolute;opacity:0;pointer-events:none}
+  .switch{position:relative;width:34px;height:20px;flex:0 0 34px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);transition:background .16s,border-color .16s}
+  .switch:after{content:"";position:absolute;top:3px;left:3px;width:12px;height:12px;border-radius:50%;background:var(--muted);transition:transform .16s,background .16s}
+  .column-option input:checked+.switch{background:color-mix(in oklab,var(--accent) 30%,var(--panel2));border-color:var(--accent)}
+  .column-option input:checked+.switch:after{transform:translateX(14px);background:var(--accent)}
+  .column-option input:focus-visible+.switch{outline:2px solid var(--accent);outline-offset:2px}
+  .columns-reset{width:100%;margin-top:7px;padding:8px 10px;border:1px solid var(--line);border-radius:7px;background:var(--panel2);color:var(--ink2);font:inherit;font-size:12px;font-weight:650;cursor:pointer}
+  #tabPosWrap{overflow-x:auto;overflow-y:visible;overscroll-behavior-x:contain;scrollbar-gutter:stable}
   table.ot{width:100%;border-collapse:collapse;font-size:12.5px;min-width:640px}
   table.ot th,table.ot td{padding:9px 11px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:middle}
   table.ot th:first-child,table.ot td:first-child{text-align:left}
@@ -79,6 +94,15 @@
   table.ot td{font-family:var(--mono)}
   table.ot tr td:first-child{font-family:var(--font);font-weight:650}
   table.ot .sub{font-size:11px;color:var(--muted)}
+  table.ot.configurable{width:max-content;min-width:100%}
+  #positionsTable th:first-child,#positionsTable td:first-child{position:sticky;left:0;background:var(--panel);box-shadow:1px 0 0 var(--line)}
+  #positionsTable th:first-child{z-index:4}
+  #positionsTable td:first-child{z-index:2}
+  #positionsTable [data-col="pool"]{min-width:245px}
+  #positionsTable [data-col="balance"]{min-width:120px}
+  #positionsTable [data-col="pnl"],#positionsTable [data-col="fees"],#positionsTable [data-col="yield"],#positionsTable [data-col="duration"]{min-width:108px}
+  #positionsTable [data-col="range"]{min-width:270px}
+  #positionsTable [data-col="current"],#positionsTable [data-col="entry"],#positionsTable [data-col="tokenA"],#positionsTable [data-col="tokenB"]{min-width:150px}
   .pilltok{display:inline-block;font-size:9.5px;font-weight:700;color:var(--muted);background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:1px 6px;margin-left:6px}
   #feeChart{width:100%;height:340px}
   table.t{width:100%;border-collapse:collapse;font-size:12.5px}
@@ -89,6 +113,7 @@
   .note{color:var(--muted);font-size:12px;line-height:1.6}
   .soon{border:1px dashed var(--line);border-radius:var(--radius);padding:14px 16px;color:var(--muted);font-size:12.5px;line-height:1.6}
   footer{margin-top:34px;padding-top:18px;border-top:1px solid var(--line)}
+  @media (max-width:720px){.position-toolbar{align-items:stretch}.columns-menu{position:fixed;top:auto;right:12px;left:12px;bottom:12px;width:auto;max-height:72vh}}
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
   .jl{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
   .jl input,.jl select,.jl textarea{padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:13px;font-family:inherit}
@@ -159,12 +184,22 @@
 
   <!-- VISTA UNIFICADA TIPO ORCA -->
   <div class="section" id="orcaView" style="display:none">
-    <div class="tabbar" id="tabbar">
-      <button data-tab="pos" class="on">Posiciones</button>
-      <button data-tab="hist">History</button>
-      <button data-tab="closed">Cerradas + benchmarks</button>
+    <div class="position-toolbar">
+      <div class="tabbar" id="tabbar">
+        <button data-tab="pos" class="on">Posiciones</button>
+        <button data-tab="hist">History</button>
+        <button data-tab="closed">Cerradas + benchmarks</button>
+      </div>
+      <div class="columns-wrap" id="columnsWrap">
+        <button class="btn columns-btn" id="columnsBtn" type="button" aria-expanded="false" aria-controls="columnsMenu" title="Elegir columnas">☷ Columnas</button>
+        <div class="columns-menu" id="columnsMenu" hidden>
+          <div class="columns-title">Columnas visibles</div>
+          <div id="columnOptions"></div>
+          <button class="columns-reset" id="columnsReset" type="button">Restablecer</button>
+        </div>
+      </div>
     </div>
-    <div class="panel" id="tabPosWrap" style="overflow:auto;padding:6px"><div id="tabPos"></div></div>
+    <div class="panel" id="tabPosWrap" style="padding:6px"><div id="tabPos"></div></div>
     <div class="panel" id="tabHistWrap" style="overflow:auto;padding:6px;display:none"><div id="tabHist"></div></div>
     <div id="tabClosedWrap" style="display:none">
       <div class="panel" style="overflow:auto;padding:6px"><div id="tabClosed"></div></div>
@@ -235,6 +270,27 @@ const pct=(v,d=1)=>v==null||isNaN(v)?"—":(v>=0?"+":"")+v.toFixed(d)+"%";
 const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
 const LKEY="orca-csv-v1";
+const LP_COLUMNS_KEY="lp-visible-columns-v1";
+const POSITION_COLUMNS=[
+  {id:"nft",label:"NFT / posición",detail:true},
+  {id:"balance",label:"Balance"},
+  {id:"pnl",label:"Total PnL"},
+  {id:"fees",label:"Fees"},
+  {id:"yield",label:"Est. yield"},
+  {id:"duration",label:"Duración"},
+  {id:"range",label:"Rango"},
+  {id:"current",label:"Precio actual"},
+  {id:"entry",label:"Entrada media"},
+  {id:"tokenA",label:"Token A"},
+  {id:"tokenB",label:"Token B"},
+];
+const DEFAULT_POSITION_COLUMNS=Object.fromEntries(POSITION_COLUMNS.map(c=>[c.id,true]));
+let POSITION_COLUMN_STATE={...DEFAULT_POSITION_COLUMNS};
+try{
+  const savedColumns=JSON.parse(localStorage.getItem(LP_COLUMNS_KEY)||"null");
+  if(savedColumns&&typeof savedColumns==="object")for(const c of POSITION_COLUMNS)if(typeof savedColumns[c.id]==="boolean")POSITION_COLUMN_STATE[c.id]=savedColumns[c.id];
+}catch(e){}
+const columnVisible=id=>POSITION_COLUMN_STATE[id]!==false;
 
 /* ---------- CSV parse ---------- */
 function parseCSV(text){
@@ -373,14 +429,16 @@ function byPairOrder(pair,items){
   };
   return [...(items||[])].sort((a,b)=>rank(a.symbol)-rank(b.symbol));
 }
-function balanceMarkup(total,assets){
+function balanceMarkup(total){
+  return Number.isFinite(total)?fmtUSD(total):'<span class="na">sin precio</span>';
+}
+function tokenMarkup(asset,assets){
+  if(!asset||!asset.symbol||!Number.isFinite(asset.amount))return'<span class="na">n/d</span>';
   const valid=(assets||[]).filter(a=>a&&a.symbol&&Number.isFinite(a.amount));
   const valuedTotal=valid.reduce((s,a)=>s+(Number.isFinite(a.usd)?a.usd:0),0);
-  const detail=valid.map(a=>{
-    const pct=valuedTotal>0&&Number.isFinite(a.usd)?` · ${(a.usd/valuedTotal*100).toFixed(1)}%`:"";
-    return `<div class="sub">${fmtTokenAmount(a.amount)} ${esc(a.symbol)}${pct}</div>`;
-  }).join("");
-  return `${Number.isFinite(total)?fmtUSD(total):'<span class="na">sin precio</span>'}${detail}`;
+  const share=valuedTotal>0&&Number.isFinite(asset.usd)?asset.usd/valuedTotal*100:null;
+  const detail=[share!=null?share.toFixed(1)+"%":null,Number.isFinite(asset.usd)?fmtUSD(asset.usd,0):null].filter(Boolean).join(" · ");
+  return `${fmtTokenAmount(asset.amount)} ${esc(asset.symbol)}${detail?`<div class="sub">${detail}</div>`:""}`;
 }
 function entryPricesFromCashflows(cashflows){
   const bySymbol={};
@@ -399,7 +457,13 @@ function feeMarkup(claimed,pending,digits=2){
   const row=(value,label)=>`<div>${Number.isFinite(value)?fmtUSD(value,digits):'<span class="na">n/d</span>'}<span class="sub"> ${label}</span></div>`;
   return row(claimed,"cobradas")+row(pending,"pendientes");
 }
-function rangeVisual(r,current){
+function currentPriceMarkup(r,current){
+  const cur=current!=null?+current:null;
+  if(cur==null||!isFinite(cur)||cur<=0)return'<span class="na">n/d</span>';
+  const unit=(r&&r.quote&&r.base)?`${r.quote} por ${r.base}`:"precio";
+  return `${fmtRangePrice(cur)}<div class="sub">${esc(unit)}</div>`;
+}
+function rangeVisual(r,current,showCurrent=true){
   if(!r||!(r.priceHigh>r.priceLow))return'<span class="na">n/d</span>';
   const lo=+r.priceLow,hi=+r.priceHigh,cur=current!=null?+current:null;
   const has=cur!=null&&isFinite(cur)&&cur>0;
@@ -411,7 +475,7 @@ function rangeVisual(r,current){
   return `<div class="rangebox" title="${esc(state)}">
     <div class="rangeends"><span>${fmtRangePrice(lo)}</span><span>${fmtRangePrice(hi)}</span></div>
     <div class="rbar mini"><div class="fill"></div>${has?`<div class="mark" style="left:${pos}%;background:${inr?'var(--bull)':'var(--bear)'}"></div>`:""}</div>
-    <div class="rangefoot"><span>${has?`Actual ${fmtRangePrice(cur)} ${esc(unit)}`:esc(unit)}</span><strong class="${inr?'in':'out'}">${state}</strong></div>
+    <div class="rangefoot"><span>${showCurrent&&has?`Actual ${fmtRangePrice(cur)} ${esc(unit)}`:esc(unit)}</span><strong class="${inr?'in':'out'}">${state}</strong></div>
   </div>`;
 }
 function rangeMarkup(r){
@@ -588,33 +652,40 @@ function renderPnl(){
   renderTabPos(M,BTC);renderTabHist(M);renderTabClosed(M,BTC);renderFresh();
 }
 function renderTabPos(M,BTC){
+  const th=(id,label)=>columnVisible(id)?`<th data-col="${id}">${label}</th>`:"";
+  const td=(id,content,attrs="")=>columnVisible(id)?`<td data-col="${id}"${attrs?` ${attrs}`:""}>${content}</td>`:"";
+  const visibleCount=1+POSITION_COLUMNS.filter(c=>!c.detail&&columnVisible(c.id)).length;
   const orcaRows=M.open.map(p=>{
     const bal=p._bal, pnl=bal!=null?bal+(p.fees||0)+(p._pendingFees||0)-(p.invested||0):null, pct=(pnl!=null&&p.invested)?pnl/p.invested*100:null;
     const entry=byPairOrder(p.pair,entryPricesFromCashflows(p.cf)),ey=estYield(p,p._pendingFees);
     const current=p.range&&p.range.quote==="USDC"?BTC:PEG_RATIO;
-    const range=rangeVisual(p.range,current);
+    const range=rangeVisual(p.range,current,!columnVisible("current"));
     const fee=p.feePercent!=null?` <span class="pilltok">${p.feePercent}%</span>`:'';
-    const nft=p.mint?` · <span title="${esc(p.mint)}">NFT ${esc(shortNft(p.mint))}</span>`:'';
+    const nft=columnVisible("nft")&&p.mint?` · <span title="${esc(p.mint)}">NFT ${esc(shortNft(p.mint))}</span>`:'';
     const v=p._position;
     const assets=byPairOrder(p.pair,v?[{amount:v.amt0,symbol:p.ls.label0,usd:v.usd0},{amount:v.amt1,symbol:p.ls.label1,usd:v.usd1}]:[]);
-    return `<tr><td>${esc(p.pair)}${fee}<div class="poolmeta">Orca · Solana${nft}</div></td><td>${balanceMarkup(bal,assets)}</td><td class="${(pnl||0)>=0?'up':'down'}">${pnl!=null?fmtUSD(pnl,0):'—'}${pct!=null?`<div class="sub ${pct>=0?'up':'down'}">${pct>=0?'+':''}${pct.toFixed(2)}%</div>`:''}</td><td class="up">${feeMarkup(p.fees,p._pendingFees,2)}</td><td>${ey!=null?ey.toFixed(1)+'%':'—'}</td><td>${p.days.toFixed(0)}d</td><td style="text-align:left">${range}</td><td>${entryMarkup(entry)}</td></tr>`;
+    return `<tr><td data-col="pool">${esc(p.pair)}${fee}<div class="poolmeta">Orca · Solana${nft}</div></td>${td("balance",balanceMarkup(bal))}${td("pnl",`${pnl!=null?fmtUSD(pnl,0):'—'}${pct!=null?`<div class="sub ${pct>=0?'up':'down'}">${pct>=0?'+':''}${pct.toFixed(2)}%</div>`:''}`,`class="${(pnl||0)>=0?'up':'down'}"`)}${td("fees",feeMarkup(p.fees,p._pendingFees,2),'class="up"')}${td("yield",ey!=null?ey.toFixed(1)+'%':'—')}${td("duration",p.days.toFixed(0)+'d')}${td("range",range,'style="text-align:left"')}${td("current",currentPriceMarkup(p.range,current))}${td("entry",entryMarkup(entry))}${td("tokenA",tokenMarkup(assets[0],assets))}${td("tokenB",tokenMarkup(assets[1],assets))}</tr>`;
   }).join("");
   const liveRows=LIVE_LPS.map(p=>{
     const h=p.history;
     const entry=entryMarkup(byPairOrder(p.pair,(h&&h.entryPrices)||[]));
     const histState=h&&!h.complete?'<div class="sub">histórico parcial</div>':'';
+    const nft=columnVisible("nft")?` · NFT #${esc(p.id)}`:"";
+    const assets=byPairOrder(p.pair,[{amount:p.amt0,symbol:p.sym0,usd:p.price0!=null?p.amt0*p.price0:null},{amount:p.amt1,symbol:p.sym1,usd:p.price1!=null?p.amt1*p.price1:null}]);
+    const current=p.range&&p.range.currentPrice;
     return `<tr>
-      <td>${esc(p.pair)} <span class="pilltok">${esc(p.fee)}</span><div class="poolmeta">${esc(p.protocol)} · ${esc(p.network||"EVM")} · NFT #${esc(p.id)}</div></td>
-      <td>${balanceMarkup(p.usd,byPairOrder(p.pair,[{amount:p.amt0,symbol:p.sym0,usd:p.price0!=null?p.amt0*p.price0:null},{amount:p.amt1,symbol:p.sym1,usd:p.price1!=null?p.amt1*p.price1:null}]))}</td>
-      <td class="${h&&h.pnlUsd>=0?'up':'down'}">${h?fmtUSD(h.pnlUsd,0):'<span class="na">n/d</span>'}${h?`<div class="sub ${h.pnlPct>=0?'up':'down'}">${h.pnlPct>=0?'+':''}${h.pnlPct.toFixed(2)}%</div>`:'<div class="sub">sin histórico</div>'}${histState}</td>
-      <td class="${h?'up':''}">${h?feeMarkup(h.claimedFeesUsd,h.pendingFeesUsd,2):feeMarkup(null,null,2)}</td>
-      <td>${h?`${h.annualizedYieldPct.toFixed(1)}%`:'<span class="na">n/d</span>'}</td>
-      <td>${h?`${h.durationDays.toFixed(0)}d`:'<span class="na">n/d</span>'}</td>
-      <td style="text-align:left">${rangeVisual(p.range,p.range&&p.range.currentPrice)}</td><td>${entry}</td>
+      <td data-col="pool">${esc(p.pair)} <span class="pilltok">${esc(p.fee)}</span><div class="poolmeta">${esc(p.protocol)} · ${esc(p.network||"EVM")}${nft}</div></td>
+      ${td("balance",balanceMarkup(p.usd))}
+      ${td("pnl",`${h?fmtUSD(h.pnlUsd,0):'<span class="na">n/d</span>'}${h?`<div class="sub ${h.pnlPct>=0?'up':'down'}">${h.pnlPct>=0?'+':''}${h.pnlPct.toFixed(2)}%</div>`:'<div class="sub">sin histórico</div>'}${histState}`,`class="${h&&h.pnlUsd>=0?'up':'down'}"`)}
+      ${td("fees",h?feeMarkup(h.claimedFeesUsd,h.pendingFeesUsd,2):feeMarkup(null,null,2),`class="${h?'up':''}"`)}
+      ${td("yield",h?`${h.annualizedYieldPct.toFixed(1)}%`:'<span class="na">n/d</span>')}
+      ${td("duration",h?`${h.durationDays.toFixed(0)}d`:'<span class="na">n/d</span>')}
+      ${td("range",rangeVisual(p.range,current,!columnVisible("current")),'style="text-align:left"')}
+      ${td("current",currentPriceMarkup(p.range,current))}${td("entry",entry)}${td("tokenA",tokenMarkup(assets[0],assets))}${td("tokenB",tokenMarkup(assets[1],assets))}
     </tr>`;
   }).join("");
   const rows=orcaRows+liveRows;
-  $("#tabPos").innerHTML=`<table class="ot" style="min-width:980px"><thead><tr><th>Pool</th><th>Balance</th><th>Total PnL</th><th>Fees · estado</th><th>Est.Yield</th><th>Duración</th><th>Rango · precio</th><th>Entrada media</th></tr></thead><tbody>${rows||'<tr><td colspan="8" class="note">Sin abiertas.</td></tr>'}</tbody></table>`;
+  $("#tabPos").innerHTML=`<table class="ot configurable" id="positionsTable"><thead><tr><th data-col="pool">Pool</th>${th("balance","Balance")}${th("pnl","Total PnL")}${th("fees","Fees")}${th("yield","Est. yield")}${th("duration","Duración")}${th("range","Rango")}${th("current","Precio actual")}${th("entry","Entrada media")}${th("tokenA","Token A")}${th("tokenB","Token B")}</tr></thead><tbody>${rows||`<tr><td colspan="${visibleCount}" class="note">Sin abiertas.</td></tr>`}</tbody></table>`;
 }
 const HIST_ACT={open:'Open Position',increase:'Increase Liquidity',decrease:'Decrease Liquidity',collect_fees:'Collect Fees',close:'Close Position',collect_reward:'Collect Reward'};
 function renderTabHist(M){
@@ -642,7 +713,32 @@ $("#tabbar").addEventListener("click",e=>{const b=e.target.closest("button");if(
   $("#tabPosWrap").style.display=t==="pos"?"":"none";
   $("#tabHistWrap").style.display=t==="hist"?"":"none";
   $("#tabClosedWrap").style.display=t==="closed"?"":"none";
+  $("#columnsWrap").style.display=t==="pos"?"":"none";
+  if(t!=="pos")setColumnsMenuOpen(false);
 });
+function setColumnsMenuOpen(open){
+  $("#columnsMenu").hidden=!open;
+  $("#columnsBtn").setAttribute("aria-expanded",String(open));
+}
+function renderPositionColumnMenu(){
+  $("#columnOptions").innerHTML=POSITION_COLUMNS.map(c=>`<label class="column-option"><span>${esc(c.label)}</span><input type="checkbox" data-column="${c.id}" ${columnVisible(c.id)?"checked":""}><span class="switch" aria-hidden="true"></span></label>`).join("");
+}
+$("#columnsBtn").addEventListener("click",e=>{e.stopPropagation();setColumnsMenuOpen($("#columnsMenu").hidden);});
+$("#columnsMenu").addEventListener("click",e=>e.stopPropagation());
+$("#columnOptions").addEventListener("change",e=>{
+  const input=e.target.closest("input[data-column]");if(!input)return;
+  POSITION_COLUMN_STATE[input.dataset.column]=input.checked;
+  localStorage.setItem(LP_COLUMNS_KEY,JSON.stringify(POSITION_COLUMN_STATE));
+  redraw();
+});
+$("#columnsReset").addEventListener("click",()=>{
+  POSITION_COLUMN_STATE={...DEFAULT_POSITION_COLUMNS};
+  localStorage.setItem(LP_COLUMNS_KEY,JSON.stringify(POSITION_COLUMN_STATE));
+  renderPositionColumnMenu();redraw();
+});
+document.addEventListener("click",e=>{if(!$("#columnsWrap").contains(e.target))setColumnsMenuOpen(false);});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")setColumnsMenuOpen(false);});
+renderPositionColumnMenu();
 
 /* ---------- render (CSV) ---------- */
 function poolColor(pool){return /USDC/.test(pool)?"var(--accum)":"var(--hot)";}
