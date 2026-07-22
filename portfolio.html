@@ -210,6 +210,15 @@ function v3Parts(ls,btc){
   const parts=[{sym:ls.label0,amount:a0,usd:a0*px(ls.label0)},{sym:ls.label1,amount:a1,usd:a1*px(ls.label1)}];
   parts.inRange=inRange;return parts;
 }
+/* fee tier de Orca a partir del tickSpacing (mismo mapa que lp.html) */
+const ORCA_FEE_BY_TICK_SPACING={1:.01,2:.02,4:.04,8:.05,16:.1,64:.3,128:1};
+function gcdInt(a,b){a=Math.abs(Math.trunc(a));b=Math.abs(Math.trunc(b));while(b){const r=a%b;a=b;b=r;}return a;}
+function orcaFee(ls){
+  if(!ls)return null;
+  const spacing=ls.tickSpacing||gcdInt(ls.tickLower,ls.tickUpper);
+  const f=ORCA_FEE_BY_TICK_SPACING[spacing];
+  return f==null?null:f+"%";
+}
 async function loadOrca(btc){
   try{const r=await fetch("/api/private?file=orca_pnl",{cache:"no-store"});
     if(!r.ok)return{positions:[],total:0};
@@ -219,7 +228,7 @@ async function loadOrca(btc){
       if(!(p&&p.status==="open"&&p.isConfirmedPosition))continue;
       const parts=v3Parts(p.liquidityState,btc);if(!parts)continue;
       const usd=parts.reduce((s,x)=>s+x.usd,0);total+=usd;
-      positions.push({pair:parts.map(x=>x.sym).join(" / "),usd,inRange:parts.inRange,parts});
+      positions.push({pair:parts.map(x=>x.sym).join(" / "),usd,inRange:parts.inRange,parts,fee:orcaFee(p.liquidityState)});
     }
     positions.sort((a,b)=>b.usd-a.usd);
     return{positions,total};
