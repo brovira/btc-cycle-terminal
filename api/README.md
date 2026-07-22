@@ -34,6 +34,22 @@ muestra un aviso de "configura tu key" — nada se rompe.
 
 ---
 
+## `../middleware.js` — contraseña para ENTRAR en toda la web
+
+Gate de **servidor** (Vercel Edge Middleware, en la raíz del repo): antes de servir
+cualquier página, pide una contraseña. No es un JS del frontend que se salte "viendo
+código" — sin la cookie correcta, Vercel no entrega el HTML.
+
+- **Configurar:** Vercel → `btc-cycle-terminal` → Settings → Environment Variables →
+  `SITE_PASSWORD = <la contraseña para entrar>` (Production + Preview) → Redeploy.
+- Mientras `SITE_PASSWORD` **no** esté puesta, **no bloquea nada** (así no te dejas fuera).
+- Al entrar bien, deja una cookie `site_auth` (HttpOnly, 90 días); no vuelve a pedirla.
+- Es distinta de `DASH_PASSWORD`: `SITE_PASSWORD` = entrar en la web; `DASH_PASSWORD` =
+  ver tus datos personales del DeFi-Tracker. Puedes poner la misma o distintas.
+- El repo es público, así que el **código** sigue en GitHub; esto protege el **sitio**.
+
+---
+
 ## `private.js` + `journal.js` — datos PERSONALES con contraseña
 
 Tus posiciones/PnL (DeFi-Tracker) y tu **diario de operativa** son **datos personales**.
