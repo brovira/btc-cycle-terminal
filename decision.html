@@ -100,6 +100,12 @@
   <div class="sec-head"><h2>Niveles en vivo</h2><div class="rule"></div></div>
   <div class="levels" id="levels"></div>
 
+  <div class="sec-head" id="chartSec" style="display:none"><h2>Gráfica del histórico</h2><div class="rule"></div></div>
+  <div id="histChartWrap" style="display:none">
+    <div style="padding:8px 6px 4px;border:1px solid var(--line);border-radius:13px;background:var(--panel)"><div id="histChart" style="width:100%;min-height:360px"></div></div>
+    <div class="note" style="margin-top:8px">▲ verde = comprar por niveles · ● ámbar = DCA base · ○ azul = esperar (dip/seasonality) · ▼ naranja = tomar beneficio. Pasa el ratón por cada punto para ver las señales y el retorno de BTC desde ahí.</div>
+  </div>
+
   <div class="sec-head"><h2>Historial y acierto</h2><div class="rule"></div><span class="mtxt" id="histCount" style="font-size:12px"></span></div>
   <div id="histWrap">
     <div class="note" id="histEmpty">El sistema <b>registra cada semana</b> la recomendación y luego mide su resultado (retorno de BTC desde entonces). Aún no hay histórico — se llena solo cada lunes. Para sembrarlo ya: GitHub → <b>Actions</b> → «Decision history snapshot» → <b>Run workflow</b>.</div>
@@ -122,7 +128,8 @@ const $=s=>document.querySelector(s);
 const fmtUSD=(v,d=0)=>v==null||isNaN(v)?"—":"$"+Number(v).toLocaleString("en-US",{maximumFractionDigits:d,minimumFractionDigits:d});
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
 (function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
-$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);});
+let LASTCHART=null;
+$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);if(LASTCHART)renderChart(LASTCHART.D,LASTCHART.snaps,LASTCHART.live);});
 
 /* ---------- indicadores ---------- */
 function sma(a,n){const o=Array(a.length).fill(null);let s=0,c=0;for(let i=0;i<a.length;i++){if(a[i]==null){o[i]=null;continue;}s+=a[i];c++;if(i>=n){s-=a[i-n];}if(i>=n-1)o[i]=s/n;}return o;}
@@ -262,11 +269,40 @@ function hitOf(action,fwd){
   if(BUY_ACTIONS.has(action))return fwd>0;       // comprar/esperar antes de una subida = acierto
   return null;
 }
-async function loadHistory(livePrice){
+async function ensurePlotly(){if(window.Plotly)return;
+  for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){
+    try{await new Promise((res,rej)=>{const s=document.createElement("script");s.src=u;s.onload=res;s.onerror=rej;document.head.appendChild(s);});if(window.Plotly)return;}catch(e){}}}
+async function renderChart(D,snaps,livePrice){
+  LASTCHART={D,snaps,live:livePrice};
+  await ensurePlotly();if(!window.Plotly)return;
+  $("#chartSec").style.display="";$("#histChartWrap").style.display="";
+  const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const bull=css("--bull"),accum=css("--accum"),hot=css("--hot"),accent=css("--accent"),ink=css("--ink"),muted=css("--muted"),line=css("--line");
+  const N=D.t.length,start=Math.max(0,N-180);
+  const px=[],py=[];for(let i=start;i<N;i++){px.push(new Date(D.t[i]).toISOString().slice(0,10));py.push(D.c[i]);}
+  const traces=[{x:px,y:py,type:"scatter",mode:"lines",name:"BTC",line:{color:muted,width:1.4},hovertemplate:"%{x}<br>$%{y:,.0f}<extra></extra>"}];
+  const styleOf=a=>a==="Comprar por niveles"?{c:bull,s:"triangle-up",n:"Comprar por niveles"}
+    :a==="DCA base"?{c:accent,s:"circle",n:"DCA base"}
+    :a==="Tomar beneficio"?{c:hot,s:"triangle-down",n:"Tomar beneficio"}
+    :{c:accum,s:"circle-open",n:"Esperar"};
+  const groups={};
+  for(const sn of snaps){const st=styleOf(sn.action);(groups[st.n]=groups[st.n]||{st,pts:[]}).pts.push(sn);}
+  for(const k in groups){const g=groups[k];
+    traces.push({x:g.pts.map(s=>s.date),y:g.pts.map(s=>s.price),type:"scatter",mode:"markers",name:k,
+      marker:{color:g.st.c,symbol:g.st.s,size:11,line:{color:ink,width:.6}},
+      customdata:g.pts.map(s=>{const fwd=livePrice/s.price-1;return [s.action,s.lit+"/"+s.tot,(fwd>=0?"+":"")+(fwd*100).toFixed(1)+"%"];}),
+      hovertemplate:"%{x}<br><b>%{customdata[0]}</b><br>Señales %{customdata[1]}<br>Desde entonces %{customdata[2]}<extra></extra>"});}
+  const layout={margin:{l:54,r:12,t:6,b:32},height:360,paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
+    font:{color:ink,size:11},showlegend:true,legend:{orientation:"h",y:1.14,font:{size:11}},
+    xaxis:{gridcolor:line,type:"date"},yaxis:{gridcolor:line,type:"log",title:{text:"BTC (log)",font:{size:11}},tickprefix:"$"},hovermode:"closest"};
+  window.Plotly.react("histChart",traces,layout,{displayModeBar:false,responsive:true});
+}
+async function loadHistory(D,livePrice){
   let hist=null;
   try{const r=await fetch("data/decision_history.json?_="+new Date().getTime(),{cache:"no-store"});if(r.ok)hist=await r.json();}catch(e){}
   const snaps=(hist&&Array.isArray(hist.snapshots))?hist.snapshots.filter(s=>s&&s.price>0):[];
   if(!snaps.length)return;
+  renderChart(D,snaps,livePrice);
   $("#histEmpty").style.display="none";$("#histFoot").style.display="block";
   $("#histCount").textContent=snaps.length+(snaps.length===1?" semana registrada":" semanas registradas");
   // scorecard por tipo de acción
@@ -292,7 +328,7 @@ async function loadHistory(livePrice){
     const [z,fng]=await Promise.all([fetchMVRVZ().catch(()=>null),fetchFNG().catch(()=>null)]);
     D.z=z;D.fng=fng;
     const R=evaluate(D);render(R);
-    loadHistory(R.price);
+    loadHistory(D,R.price);
     $("#statusDot").className="dot ok";
     $("#statusText").textContent="Actualizado · "+new Date().toISOString().slice(0,10)+" · fuente: Binance"+(z!=null?" + Coin Metrics":"");
   }catch(e){
