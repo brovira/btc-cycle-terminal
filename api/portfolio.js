@@ -40,11 +40,32 @@ async function solRpc(method, params) {
   return j.result;
 }
 
+/* Jupiter (gratis, sin key): precio y metadata de CUALQUIER token de Solana por mint.
+   Sustituye la lista fija de 3 mints — así aparecen JUP, KMNO, MELANIA, etc. solos. */
+async function jupiterPrices(mints) {
+  if (!mints.length) return {};
+  try {
+    const r = await fetch(`https://api.jup.ag/price/v2?ids=${mints.map(encodeURIComponent).join(",")}`, { headers: { "User-Agent": "portfolio" } });
+    if (!r.ok) return {};
+    const j = await r.json(); const out = {};
+    for (const m of mints) { const d = j.data && j.data[m]; if (d && d.price != null) out[m] = +d.price; }
+    return out;
+  } catch (e) { return {}; }
+}
+async function jupiterMeta(mint) {
+  try {
+    const r = await fetch(`https://tokens.jup.ag/token/${mint}`, { headers: { "User-Agent": "portfolio" } });
+    if (r.ok) { const j = await r.json(); if (j && j.symbol) return j.symbol; }
+  } catch (e) {}
+  return null;
+}
+
 async function fetchSolana(addr, px) {
   const out = { address: addr, tokens: [], totalUsd: 0 };
   const bal = await solRpc("getBalance", [addr]);
   const sol = (bal && bal.value != null ? bal.value : 0) / 1e9;
   if (sol > 0) { const usd = sol * (px.SOL || 0); out.tokens.push({ sym: "SOL", amount: sol, usd }); out.totalUsd += usd; }
+  const unknown = []; // {mint, amount} — tokens fuera de la lista KNOWN (cbBTC/WBTC/USDC)
   for (const programId of ["TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"]) {
     try {
       const res = await solRpc("getTokenAccountsByOwner", [addr, { programId }, { encoding: "jsonParsed" }]);
@@ -59,10 +80,25 @@ async function fetchSolana(addr, px) {
         } else if (info.tokenAmount.decimals === 0 && amt === 1) {
           out.nfts = (out.nfts || 0) + 1; // NFTs de posición (Orca) — se valoran en lp.html
         } else {
-          out.tokens.push({ sym: mint.slice(0, 6) + "…", amount: amt, usd: null });
+          unknown.push({ mint, amount: amt });
         }
       }
     } catch (e) { out.warning = String(e.message || e); }
+  }
+  if (unknown.length) {
+    const mints = [...new Set(unknown.map(u => u.mint))];
+    const [prices, metaPairs] = await Promise.all([
+      jupiterPrices(mints),
+      Promise.all(mints.map(m => jupiterMeta(m).then(sym => [m, sym]))),
+    ]);
+    const metaMap = Object.fromEntries(metaPairs);
+    for (const u of unknown) {
+      const price = prices[u.mint];
+      if (price == null) continue; // sin precio en Jupiter = sin liquidez real → probable spam/polvo, se descarta
+      const usd = u.amount * price;
+      out.tokens.push({ sym: metaMap[u.mint] || (u.mint.slice(0, 6) + "…"), amount: u.amount, usd });
+      out.totalUsd += usd;
+    }
   }
   out.tokens.sort((a, b) => (b.usd || 0) - (a.usd || 0));
   return out;
@@ -76,7 +112,7 @@ async function fetchEvmChain(base, chain, addr) {
       const j = await a.json();
       const wei = +(j.coin_balance || 0); const eth = wei / 1e18;
       const rate = +(j.exchange_rate || 0);
-      const nativeSym = chain === "hyperevm" ? "HYPE" : "ETH";
+      const nativeSym = chain === "hyperevm" ? "HYPE" : chain === "polygon" ? "POL" : "ETH";
       if (eth > 0) { const usd = eth * rate; out.tokens.push({ sym: nativeSym, amount: eth, usd: usd || null }); if (usd) out.totalUsd += usd; }
     } else if (a.status !== 404) { out.warning = "blockscout_" + a.status; }
     const t = await fetch(`${base}/api/v2/addresses/${addr}/token-balances`, { headers: { "User-Agent": "portfolio" } });
@@ -85,12 +121,14 @@ async function fetchEvmChain(base, chain, addr) {
         const tok = row.token || {}; const dec = +(tok.decimals || 18);
         const amt = +(row.value || 0) / Math.pow(10, dec);
         if (!amt || amt <= 0 || tok.type !== "ERC-20") continue;
-        // ANTI-SPAM: solo se valoran tokens con market cap real en Blockscout.
-        // Los scam-airdrops reportan exchange_rate falso e inflan el total.
-        const legit = tok.circulating_market_cap != null && +tok.circulating_market_cap > 0;
-        const rate = legit && tok.exchange_rate != null ? +tok.exchange_rate : null;
-        const usd = rate != null ? amt * rate : null;
-        if (usd == null || usd < 20) { out.hidden++; continue; } // polvo/spam (<$20) fuera
+        // ANTI-SPAM: token "legítimo" si tiene market cap real EN Blockscout, o si no lo
+        // tiene pero el precio existe y la cantidad es razonable (spam suele mandar
+        // cantidades absurdas, billones/trillones de unidades, para inflar un precio falso).
+        const hasMcap = tok.circulating_market_cap != null && +tok.circulating_market_cap > 0;
+        const rate = tok.exchange_rate != null ? +tok.exchange_rate : null;
+        const plausible = rate != null && (hasMcap || amt < 1e9);
+        const usd = plausible ? amt * rate : null;
+        if (usd == null) { out.hidden++; continue; } // sin precio fiable → fuera (spam/ilíquido)
         out.tokens.push({ sym: tok.symbol || "?", amount: amt, usd });
         out.totalUsd += usd;
       }
@@ -249,18 +287,21 @@ module.exports = async (req, res) => {
       return res.end(JSON.stringify({ error: "no_wallets", message: "Rellena data/wallets.json en el repo privado: {\"solana\":\"...\",\"evm\":\"...\"}" }));
     }
     const px = await fetchPrices();
-    const [sol, eth, base, hyperevm, hl, uni, prjx, kamino] = await Promise.all([
+    const [sol, eth, base, hyperevm, polygon, arbitrum, optimism, hl, uni, prjx, kamino] = await Promise.all([
       wallets.solana ? fetchSolana(wallets.solana, px).catch(e => ({ error: String(e.message || e) })) : null,
       wallets.evm ? fetchEvmChain("https://eth.blockscout.com", "ethereum", wallets.evm).catch(e => ({ error: String(e.message || e) })) : null,
       wallets.evm ? fetchEvmChain("https://base.blockscout.com", "base", wallets.evm).catch(e => ({ error: String(e.message || e) })) : null,
       wallets.evm ? fetchEvmChain("https://hyperliquid.cloud.blockscout.com", "hyperevm", wallets.evm).catch(e => ({ error: String(e.message || e) })) : null,
+      wallets.evm ? fetchEvmChain("https://polygon.blockscout.com", "polygon", wallets.evm).catch(e => ({ error: String(e.message || e) })) : null,
+      wallets.evm ? fetchEvmChain("https://arbitrum.blockscout.com", "arbitrum", wallets.evm).catch(e => ({ error: String(e.message || e) })) : null,
+      wallets.evm ? fetchEvmChain("https://optimism.blockscout.com", "optimism", wallets.evm).catch(e => ({ error: String(e.message || e) })) : null,
       wallets.evm ? fetchHyperliquid(wallets.evm).catch(e => ({ tokens: [], totalUsd: 0, warning: String(e.message || e) })) : null,
       wallets.evm ? fetchV3Positions("https://eth.blockscout.com", ETH_RPCS, wallets.evm, "Uniswap V3").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
       wallets.evm ? fetchV3Positions("https://hyperliquid.cloud.blockscout.com", HYPE_RPCS, wallets.evm, "ProjectX").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
       wallets.solana ? fetchKamino(wallets.solana).catch(e => ({ usd: 0, ok: false, warning: String(e.message || e) })) : null,
     ]);
     res.setHeader("Cache-Control", "private, max-age=120");
-    return res.end(JSON.stringify({ prices: px, solana: sol, evm: { ethereum: eth, base, hyperevm }, hyperliquid: hl, uniswap: uni, projectx: prjx, kamino }));
+    return res.end(JSON.stringify({ prices: px, solana: sol, evm: { ethereum: eth, base, hyperevm, polygon, arbitrum, optimism }, hyperliquid: hl, uniswap: uni, projectx: prjx, kamino }));
   } catch (e) {
     res.statusCode = 502; return res.end(JSON.stringify({ error: "fetch_error", message: String((e && e.message) || e) }));
   }

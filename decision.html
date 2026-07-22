@@ -125,7 +125,8 @@
     <div id="wcBody" style="display:none;margin-top:12px"></div>
   </div>
 
-  <div class="sec-head"><h2>Los tres agentes — qué hacen AHORA</h2><div class="rule"></div><span class="mtxt" style="font-size:12px">de sus transcripts, citado</span></div>
+  <div class="sec-head"><h2>LMEC · Cowen — qué hacen AHORA</h2><div class="rule"></div><span class="mtxt" style="font-size:12px">de sus transcripts, citado · señales en vivo</span></div>
+  <div class="note" style="margin-bottom:10px">🧠 OnChainMind se retiró de esta comparativa: auditado (sep-25→jul-26), <b>nunca dio señal de venta en tiempo real</b>, ni en el techo. Solo sirve para timing de compra. Su panel sigue en <a href="onchainmind.html" style="color:var(--accent)">onchainmind.html</a>.</div>
   <div class="agrid" id="agentCards"></div>
 
   <div class="sec-head"><h2>Fases del ciclo sobre el precio</h2><div class="rule"></div></div>
@@ -215,6 +216,22 @@ const MESES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","
 function fmtDate(ms){const d=new Date(ms);return d.getUTCDate()+" "+MESES[d.getUTCMonth()]+" "+d.getUTCFullYear();}
 function weekToMs(lastH,w){return lastH+w*7*864e5;}
 
+/* Risk 0-1 (APROXIMACIÓN abierta al estilo Cowen — su métrica exacta es propietaria).
+   Desviación de log(precio) sobre una regresión log-log (precio ~ tiempo desde génesis),
+   normalizada 0-1 con min/max de toda la serie. Mismo método que el backtester. */
+function cowenRiskNow(D){
+  const t0=Date.parse("2009-01-03");let n=0,sx=0,sy=0,sxx=0,sxy=0;const pts=[];
+  for(let i=0;i<D.t.length;i++){const w=(D.t[i]-t0)/(7*864e5),c=D.c[i];if(!(w>0)||!(c>0))continue;
+    const x=Math.log(w),y=Math.log(c);n++;sx+=x;sy+=y;sxx+=x*x;sxy+=x*y;pts.push([x,y]);}
+  if(n<52)return null;
+  const den=n*sxx-sx*sx;if(!(den>0))return null;
+  const b=(n*sxy-sx*sy)/den,a=(sy-b*sx)/n;
+  let dmin=Infinity,dmax=-Infinity,last=null;
+  for(const[x,y]of pts){const dv=y-(a+b*x);if(dv<dmin)dmin=dv;if(dv>dmax)dmax=dv;last=dv;}
+  if(!(dmax>dmin))return null;
+  return(last-dmin)/(dmax-dmin);
+}
+
 /* ---------- evaluación ---------- */
 function evaluate(D){
   const c=D.c,n=c.length,price=c[n-1];
@@ -261,6 +278,17 @@ function evaluate(D){
      ds:accumWindow?`Ventana de acumulación del halving (sem 120-180 ≈ ${accumStart} → ${accumEnd}).`:(cowenSeason?`2ª mitad del año midterm: Cowen acumula tras el mínimo de junio (jul–dic ${yr} y principios de ${yr+1}).`:(distWindow?"Sem 70-110 = zona de techo/distribución del ciclo.":`Fuera de ventana. Acumulación del halving: sem 120-180 (≈ ${accumStart} → ${accumEnd}).`)),
      q:"after the June low is when I bought and I just DCA… the second half of the midterm year.",src:"Cowen · dynamic-dca"},
   ];
+
+  // señales EXCLUSIVAS de Cowen (risk metric aproximado, en vivo — su cifra exacta es propietaria)
+  const riskNow=cowenRiskNow(D);
+  const COWEN_SIG=[
+    {key:"risk-buy",nm:"Risk metric < 0,3 (DCA)",who:"Cowen",on:riskNow!=null?riskNow<0.3:null,nd:riskNow==null,val:riskNow!=null?riskNow.toFixed(2):"n/d",
+     ds:"Aproximación abierta (regresión log-log); el umbral 0,3 es el que él cita. Por debajo → sigue con el DCA.",
+     q:"this cycle I think it makes the most amount of sense for me to DCA below .3 [risk].",src:"Cowen · dynamic-dca 14-jun-2026"},
+    {key:"risk-sell",nm:"Risk metric > 0,6 (venta)",who:"Cowen",on:riskNow!=null?riskNow>0.6:null,nd:riskNow==null,val:riskNow!=null?riskNow.toFixed(2):"n/d",
+     ds:"Por encima de 0,6 empezaría a escalar ventas ('scale out slowly').",
+     q:"perhaps I do absolutely nothing between .3 and 6 [0.6] and then above 6 [0.6] I might start to scale out slowly.",src:"Cowen · dynamic-dca 14-jun-2026"},
+  ];
   const withData=SIG.filter(s=>s.on!=null);
   const lit=withData.filter(s=>s.on).length;
   const tot=withData.length;
@@ -287,7 +315,7 @@ function evaluate(D){
     action="Esperar dip";vc="var(--muted)";regime="Ciclo · sin descuento";
     sub="Pocas señales de compra y precio sin descuento. Paciencia: deja límites en soportes y espera a que se enciendan las señales.";
   }
-  return {SIG,lit,tot,action,sub,vc,regime,price,bmsbHi,bmsbLo,ma200,rsiV,z,fng,realized,hw,lastH,nextH};
+  return {SIG,COWEN_SIG,lit,tot,action,sub,vc,regime,price,bmsbHi,bmsbLo,ma200,rsiV,z,fng,realized,hw,lastH,nextH,riskNow};
 }
 
 function render(R){
@@ -312,6 +340,7 @@ function render(R){
     ["RSI semanal",R.rsiV!=null?R.rsiV.toFixed(0):"—"],
     ["Fear & Greed",R.fng!=null?String(R.fng):"n/d"],
     ["Semana del halving",Math.round(R.hw)],
+    ["Risk metric (aprox Cowen)",R.riskNow!=null?R.riskNow.toFixed(2):"n/d"],
   ];
   $("#levels").innerHTML=lv.map(x=>`<div class="lv"><div class="l">${x[0]}</div><div class="n">${x[1]}</div></div>`).join("");
   $("#logic").innerHTML=`Cada señal es una <b>regla real de un agente</b> (la cita está en su tarjeta). Solo se cuentan las que tienen dato.
@@ -451,25 +480,31 @@ function renderAgents(R){
        if(m.ma200&&m.price<=Math.max(53000,m.ma200*0.85))return`Zona de despliegue fuerte (≤realized ~53k): <b>sube el tamaño del DCA</b> (su escalera 2-3×).`;
        if(m.price>=70000)return`Precio en su techo del rebote (200d ~70k): <b>no comprar aquí</b>; acumula cash para ago-oct.`;
        return`<b>DCA pequeño ya</b> (risk <0,3) y guarda la mayoría de la pólvora para el mínimo de Q4 (octubre). Ago-sep suelen ser rojos: no tener prisa.<br><span style="color:var(--hot)">⚠️ Auditado (2021-26): excelente leyendo el RÉGIMEN, pero no dio señal de venta en NINGUNO de los 2 techos (en el top de 2021: "see you at 100k"; en el de 126k su risk marcaba "moderate"). Fiable para acumular por fases; no para clavar techos. [track_record.md]</span>`;}},
-    {name:"🧠 OnChainMind",color:"var(--accum)",state:"DCA acelerado (Omega ~9-11%)",kb:"onchainmind",fw:"onchainmind.html",clock:ocmClock(),
-     now:`<b>Dentro del mercado y comprando</b>: DCA cuya intensidad la marca su Omega Score — normal <50%, fuerte <20%, "ballistic" <10%. En jun-jul 2026 el Omega ronda <b>9-11%</b> → entre fuerte y ballistic. (La venta de sep-2025 a $111k fue de su ESTRATEGIA Cadence en el Strategy Lab — sigue en cash sin señal de compra — no de su cartera.)`,
-     since:`Acumulando todo el bear; en feb-mar 2026 el Omega llegó a ~6% ("deep value").`,
-     next:`Suelo <b>"cerca, no aquí"</b>: ventana <b>fin-ago → oct-2026</b>, por capitulación por TIEMPO ("pain by boredom"). Vigila: supply in loss 50/50 (ya), LTH-in-loss 41%→~45%, cruce STH/LTH realized (~fin sep-oct). El bear "termina matemáticamente" al recuperar <b>$93-96k</b>.`,
-     powder:`NO guarda para un all-in: "comprar a 10% de riesgo vs 0% es basically a rounding error"; esperar el número mágico = "lazy thinking dressed up as patience".`,
-     q:`"I'll DCA on a regular basis whenever the score is below 50%… ramp up my accumulation below 20 and I go absolutely ballistic below 10."`,src:"OCM · 16-jun-2026",
-     advice:m=>{
-       return`<b>DCA ya, con intensidad alta</b> — el riesgo on-chain está en zona de máxima asimetría. No intentes clavar el mínimo: despliega escalonado semana a semana hasta el suelo (fin-ago→oct).<br><span style="color:var(--hot)">⚠️ Sesgo auditado (sep-25→jul-26): NUNCA dio señal de venta en tiempo real — en el techo (~$111k) decía "not a time to be defensive yet". Úsalo para COMPRAR; para SALIR, LMEC/Cowen. [track_record.md]</span>`;}},
   ];
+  // OnChainMind se retiró de esta comparativa (auditoría: nunca dio señal de venta en tiempo
+  // real, ni siquiera en el techo de $111k — "not a time to be defensive yet". Solo sirve
+  // para timing de COMPRA, no de decisión completa). Su panel y KB siguen disponibles en
+  // onchainmind.html si quieres consultar sus métricas on-chain.
   $("#agentCards").innerHTML=A.map(a=>{
     const kb=KB[a.kb];const reg=kb&&kb.regimen_actual;
     const nSig=kb&&Array.isArray(kb.senales)?kb.senales.length:0;
     const nCambios=kb&&Array.isArray(kb.cambios_opinion)?kb.cambios_opinion.length:0;
+    const word=a.name.replace(/[^\w\s]/g,"").trim().split(" ").pop(); // "LMEC" / "Cowen" (para casar con who)
+    const own=(R.SIG||[]).filter(s=>s.who&&s.who.includes(word));
+    const extra=word==="Cowen"?(R.COWEN_SIG||[]):[];
+    const chk=[...own,...extra];
+    const chkHtml=chk.length?`<div class="albl">Señales en vivo (motor de reglas del KB)</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:2px">${chk.map(s=>{
+        const cls=s.nd?"nd":(s.on?"on":"off");const dot=s.nd?"n/d":(s.on==null?"—":(s.on?"🟢":"⚪"));
+        return `<span class="chip" style="padding:4px 9px" title="${esc(s.ds||"")}">${dot} ${esc(s.nm)}${s.val?" · "+esc(s.val):""}</span>`;
+      }).join("")}</div>`:"";
     return `<div class="acard" style="--ac:${a.color}">
     <h3>${a.name} <span class="astate">${a.state}</span></h3>
     <div class="albl">1 · Fase del ciclo (según él)</div>
     <div class="arow"><b style="color:${a.clock.pc}">${a.clock.phase}</b>${reg?` — <i>"${esc(reg.fase||"")}"</i>`:""}<br>${a.clock.sub}</div>
     ${reg&&reg.quote?`<div class="aq">"${esc(reg.quote)}"<span class="src">[${esc(reg.src||"")}]</span></div>`:""}
     <div class="levels" style="margin:4px 0 2px">${a.clock.cards.map(x=>`<div class="lv"><div class="l">${x[0]}</div><div class="n" style="font-size:13px">${x[1]}</div></div>`).join("")}</div>
+    ${chkHtml}
     <div class="albl">2 · Qué está haciendo</div><div class="arow">${a.now}</div>
     <div class="albl">3 · Por qué (y desde cuándo)</div><div class="arow">${a.since}</div>
     <div class="albl">Siguiente movimiento que espera</div><div class="arow">${a.next}</div>

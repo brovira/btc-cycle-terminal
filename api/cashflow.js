@@ -20,21 +20,27 @@ module.exports = async (req, res) => {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   const url = new URL(req.url, "http://x");
   const pass = process.env.DASH_PASSWORD;
-  // tolerante a variantes/typos del nombre (SUPABASE_URL, SUPBASE_URL, SUPABASE-URL…):
-  // vale cualquier env que empiece por SUP y termine en URL / KEY.
-  let SB = process.env.SUPABASE_URL, KEY = process.env.SUPABASE_SERVICE_KEY;
+  // tolerante a variantes/typos del nombre (SUPABASE_URL, SUPBASE_URL, SUPABASE-URL…) y a
+  // espacios/saltos de línea accidentales al pegar el valor en Vercel (trim()).
+  const clean = (v) => (v == null ? "" : String(v).trim());
+  let SB = clean(process.env.SUPABASE_URL), KEY = clean(process.env.SUPABASE_SERVICE_KEY);
   if (!SB || !KEY) {
     for (const k of Object.keys(process.env)) {
-      if (!SB && /^SUP/i.test(k) && /URL$/i.test(k)) SB = process.env[k];
-      if (!KEY && /^SUP/i.test(k) && /KEY$/i.test(k)) KEY = process.env[k];
+      if (!SB && /^SUP/i.test(k) && /URL$/i.test(k)) SB = clean(process.env[k]);
+      if (!KEY && /^SUP/i.test(k) && /KEY$/i.test(k)) KEY = clean(process.env[k]);
     }
   }
   if (!pass) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password" })); }
   if (!passwordOk(req, url, pass)) { await new Promise(r => setTimeout(r, 600)); res.statusCode = 401; return res.end(JSON.stringify({ error: "bad_password" })); }
   if (!SB || !KEY) {
-    const seen = Object.keys(process.env).filter(k => /SUP/i.test(k)); // solo NOMBRES, nunca valores
+    // diagnóstico: nombres + LONGITUD de lo que hay (nunca el valor) — así se ve si está
+    // vacía, si tiene solo espacios, o si directamente no existe la variable.
+    const diag = Object.keys(process.env).filter(k => /SUP/i.test(k)).map(k => {
+      const raw = process.env[k] || ""; const len = raw.length, trimmed = raw.trim().length;
+      return `${k} (${len === 0 ? "vacía" : trimmed === 0 ? "solo espacios/saltos de línea" : `${len} caracteres, OK`})`;
+    });
     res.statusCode = 503;
-    return res.end(JSON.stringify({ error: "no_supabase", message: "No encuentro las variables de Supabase. Nombres esperados: SUPABASE_URL y SUPABASE_SERVICE_KEY. Variables parecidas que SÍ veo: " + (seen.length ? seen.join(", ") : "ninguna") + ". Tras corregir, Redeploy." }));
+    return res.end(JSON.stringify({ error: "no_supabase", message: "No encuentro SUPABASE_URL / SUPABASE_SERVICE_KEY con valor. Lo que veo con ese nombre: " + (diag.length ? diag.join(" · ") : "ninguna variable con 'SUP' en el nombre") + ". Si pone 'vacía', bórrala y vuelve a pegar el valor en Vercel (a veces el campo Value se queda en blanco). Tras corregir, Redeploy." }));
   }
 
   const H = { apikey: KEY, Authorization: `Bearer ${KEY}` };

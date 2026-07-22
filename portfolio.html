@@ -78,6 +78,9 @@
     <div class="cards" id="totals" style="margin-top:6px"></div>
 
     <div class="sec-head"><h2>📊 Portfolio</h2><div class="rule"></div>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);cursor:pointer;margin-right:4px">
+        <input type="checkbox" id="dustToggle"> ocultar &lt;$5
+      </label>
       <div style="display:flex;gap:6px" id="pfTabs">
         <button class="btn on" data-pf="token">Token</button>
         <button class="btn" data-pf="protocol">Protocol</button>
@@ -168,16 +171,24 @@ async function load(pw){
   const [lpVal,manual]=await Promise.all([loadLpValue(pw,px.BTC),loadManual(pw)]);
   $("#gate").style.display="none";$("#content").style.display="";
   $("#statusDot").className="dot ok";$("#statusText").textContent="Actualizado "+new Date().toISOString().slice(0,16).replace("T"," ")+" · caché 2 min";
+  RAW={j,px,lpVal,manual};
+  rebuild();
+}
+let RAW=null,DUST_HIDE=false;const DUST_MIN=5;
+function rebuild(){
+  if(!RAW)return;
+  const{j,px,lpVal,manual}=RAW;
   const sol=j.solana,evm=j.evm||{},uni=j.uniswap||{positions:[],totalUsd:0},prjx=j.projectx||{positions:[],totalUsd:0},hl=j.hyperliquid||{tokens:[],totalUsd:0};
-  const MIN=20; // ocultar polvo/spam por debajo de $20 (solo en las listas de blockchain)
-  const visTok=arr=>{const vis=[],hid={n:0};for(const t of (arr||[])){if(t.usd==null||t.usd<MIN)hid.n++;else vis.push(t);}return{vis,hid:hid.n};};
+  // el toggle "ocultar <$5" solo afecta a lo que se MUESTRA (tablas); los totales de arriba
+  // y el Portfolio siempre sirven la cifra real, completa (como Nansen: Net Worth exacto).
+  const visTok=arr=>{const vis=[],hid={n:0};for(const t of (arr||[])){if(t.usd==null)hid.n++;else vis.push(t);}return{vis,hid:hid.n};};
   const solV=visTok(sol&&sol.tokens);
-  const chains=[["ethereum",evm.ethereum],["base",evm.base],["hyperevm",evm.hyperevm]].filter(x=>x[1]&&!x[1].error);
+  const chains=[["ethereum",evm.ethereum],["base",evm.base],["hyperevm",evm.hyperevm],["polygon",evm.polygon],["arbitrum",evm.arbitrum],["optimism",evm.optimism]].filter(x=>x[1]&&!x[1].error);
   const STABLE=s=>/^USD|^DAI$|USD.?0$/i.test(String(s).replace(/\s.*/,""));
   const solAddr=sol&&sol.address?short(sol.address):"solana";
   const evmAddr="EVM"; // una sola wallet EVM
 
-  // ---------- ASSETS unificados (token · chain · protocol · address) ----------
+  // ---------- ASSETS unificados (token · chain · protocol · address) — SIEMPRE completos ----------
   ASSETS=[];
   for(const t of solV.vis)ASSETS.push({sym:t.sym,chain:"solana",protocol:"Wallet",address:solAddr,amount:t.amount,usd:t.usd,kind:"token"});
   if(lpVal!=null&&lpVal>0)ASSETS.push({sym:"cbBTC/USDC + peg (LP)",chain:"solana",protocol:"Orca",address:solAddr,amount:null,usd:lpVal,kind:"lp"});
@@ -190,8 +201,10 @@ async function load(pw){
   if(hl.staked&&hl.staked.usd)ASSETS.push({sym:"HYPE",chain:"hyperliquid",protocol:"Hyperliquid · staking",address:evmAddr,amount:hl.staked.amount,usd:hl.staked.usd,kind:"stake"});
   const kam=j.kamino;if(kam&&kam.ok&&kam.usd>1)ASSETS.push({sym:"Depósitos (netos)",chain:"solana",protocol:"Kamino Lend",address:solAddr,amount:null,usd:kam.usd,kind:"defi"});
   for(const m of (manual||[]))ASSETS.push({...m,address:m.chain==="solana"?solAddr:evmAddr});
+  const ASSETS_FULL=ASSETS.slice(); // para totales exactos, sin filtrar
+  if(DUST_HIDE)ASSETS=ASSETS.filter(a=>(a.usd||0)>=DUST_MIN); // lo que se MUESTRA en Portfolio
 
-  const sum=f=>ASSETS.filter(f).reduce((s,a)=>s+(a.usd||0),0);
+  const sum=f=>ASSETS_FULL.filter(f).reduce((s,a)=>s+(a.usd||0),0);
   const total=sum(()=>true);
   const stables=sum(a=>a.kind==="token"&&STABLE(a.sym));
   const liquid=sum(a=>a.kind==="token"&&!STABLE(a.sym));
@@ -207,15 +220,18 @@ async function load(pw){
   ].map(x=>`<div class="stat" style="--sc:${x.c}"><div class="l">${x.l}</div><div class="n">${x.n}</div><div class="s">${x.s||""}</div></div>`).join("");
   renderPf(PF_MODE);
 
+  const dustFilt=arr=>DUST_HIDE?(arr||[]).filter(t=>(t.usd||0)>=DUST_MIN):(arr||[]);
   // ---------- detalle Solana ----------
   if(sol&&!sol.error){
+    const solDisp=dustFilt(solV.vis),solDust=solV.vis.length-solDisp.length;
     $("#solAddr").textContent=short(sol.address);
-    $("#solTbl").innerHTML=`<thead><tr><th>Token</th><th>Cantidad</th><th>Valor</th></tr></thead><tbody>${tokenRows(solV.vis)||'<tr><td colspan="3" class="note">Sin tokens.</td></tr>'}${lpVal!=null?`<tr><td>💧 Posiciones LP (Orca)</td><td>—</td><td>${fmtUSD(lpVal,2)}</td></tr>`:""}</tbody>`;
-    $("#solNote").textContent=(solV.hid?solV.hid+" tokens ocultos (<$"+MIN+" o sin precio — probable spam/polvo). ":"")+(sol.warning?("Aviso RPC: "+sol.warning):"");
+    $("#solTbl").innerHTML=`<thead><tr><th>Token</th><th>Cantidad</th><th>Valor</th></tr></thead><tbody>${tokenRows(solDisp)||'<tr><td colspan="3" class="note">Sin tokens.</td></tr>'}${lpVal!=null?`<tr><td>💧 Posiciones LP (Orca)</td><td>—</td><td>${fmtUSD(lpVal,2)}</td></tr>`:""}</tbody>`;
+    $("#solNote").textContent=(solV.hid?solV.hid+" sin precio (probable spam) · ":"")+(solDust?solDust+" ocultos por el filtro <$"+DUST_MIN+". ":"")+(sol.warning?("Aviso RPC: "+sol.warning):"");
   }else{$("#solTbl").innerHTML=`<tbody><tr><td class="note">${sol?esc(sol.error||""):"sin dirección configurada"}</td></tr></tbody>`;}
 
   // ---------- detalle EVM + Hyperliquid ----------
   let evmHid=0;for(const[,c]of chains)evmHid+=c.hidden||0;
+  let evmDust=0;
   let evmRows="";
   for(const[ic,src,net]of[["🦄",uni,"ethereum"],["✖️",prjx,"hyperevm"]]){
     for(const p of (src.positions||[])){
@@ -223,12 +239,14 @@ async function load(pw){
     }
   }
   if(hl.staked)evmRows+=`<tr><td>🥩 ${esc(hl.staked.sym)} <span class="addr">hyperliquid</span></td><td>${fmtAmt(hl.staked.amount)}</td><td>${hl.staked.usd!=null?fmtUSD(hl.staked.usd,2):'—'}</td></tr>`;
-  for(const t of (hl.tokens||[]))evmRows+=`<tr><td>${esc(t.sym)} <span class="addr">hyperliquid</span></td><td>${fmtAmt(t.amount)}</td><td>${t.usd!=null?fmtUSD(t.usd,2):'<span style="color:var(--muted)">sin precio</span>'}</td></tr>`;
+  for(const t of dustFilt(hl.tokens)){evmRows+=`<tr><td>${esc(t.sym)} <span class="addr">hyperliquid</span></td><td>${fmtAmt(t.amount)}</td><td>${t.usd!=null?fmtUSD(t.usd,2):'<span style="color:var(--muted)">sin precio</span>'}</td></tr>`;}
+  if(DUST_HIDE)evmDust+=(hl.tokens||[]).length-dustFilt(hl.tokens).length;
   for(const[name,c]of chains){
-    for(const t of c.tokens||[])evmRows+=`<tr><td>${esc(t.sym)} <span class="addr">${name}</span></td><td>${fmtAmt(t.amount)}</td><td>${t.usd!=null?fmtUSD(t.usd,2):'<span style="color:var(--muted)">sin precio</span>'}</td></tr>`;
+    const disp=dustFilt(c.tokens);if(DUST_HIDE)evmDust+=(c.tokens||[]).length-disp.length;
+    for(const t of disp)evmRows+=`<tr><td>${esc(t.sym)} <span class="addr">${name}</span></td><td>${fmtAmt(t.amount)}</td><td>${t.usd!=null?fmtUSD(t.usd,2):'<span style="color:var(--muted)">sin precio</span>'}</td></tr>`;
   }
   $("#evmTbl").innerHTML=`<thead><tr><th>Token · red</th><th>Cantidad</th><th>Valor</th></tr></thead><tbody>${evmRows||'<tr><td colspan="3" class="note">Sin tokens (o sin dirección configurada).</td></tr>'}</tbody>`;
-  $("#evmNote").textContent=(evmHid?evmHid+" tokens ocultos (<$"+MIN+", sin market cap real, o spam con precio falso). ":"")+(hl.warning?("Hyperliquid: "+hl.warning):"");
+  $("#evmNote").textContent=(evmHid?evmHid+" sin precio (probable spam) · ":"")+(evmDust?evmDust+" ocultos por el filtro <$"+DUST_MIN+". ":"")+(hl.warning?("Hyperliquid: "+hl.warning):"");
 }
 
 /* ---------- Portfolio estilo Nansen: Token / Protocol / Chain / Address (expandible) ---------- */
@@ -273,6 +291,7 @@ $("#pfTbl").addEventListener("click",e=>{
   document.querySelectorAll(`tr.subrow[data-p="${tr.dataset.g}"]`).forEach(s=>s.classList.toggle("show"));
 });
 document.querySelectorAll("#pfTabs .btn").forEach(b=>b.addEventListener("click",()=>renderPf(b.dataset.pf)));
+$("#dustToggle").addEventListener("change",e=>{DUST_HIDE=e.target.checked;rebuild();});
 $("#pwForm").addEventListener("submit",e=>{e.preventDefault();load($("#pw").value);});
 (function(){const pw=localStorage.getItem(PWKEY)||sessionStorage.getItem(PWKEY);if(pw){$("#pw").value=pw;load(pw);}})();
 setInterval(()=>{const pw=localStorage.getItem(PWKEY);if(pw&&$("#content").style.display!=="none")load(pw);},10*60*1000);
