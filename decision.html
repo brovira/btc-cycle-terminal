@@ -83,13 +83,14 @@
   .btn{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:8px 12px;border-radius:10px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;text-decoration:none}
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
+<link rel="stylesheet" href="dashboard.css">
 </head>
-<body>
+<body class="dashboard-page page-decision">
 <div class="wrap">
   <header class="top">
     <div>
       <div class="kicker">Ciclos · Decisión</div>
-      <h1>🧭 ¿Qué hago hoy?</h1>
+      <h1>¿Qué hago hoy?</h1>
       <div class="meta"><span class="dot" id="statusDot"></span><span id="statusText">Cargando señales…</span></div>
     </div>
     <div class="controls">

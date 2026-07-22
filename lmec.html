@@ -125,13 +125,14 @@
   .rz-handle .grip{font-size:12px;line-height:1;color:#fff;background:color-mix(in oklab,var(--accent) 88%,#000);border-radius:7px;padding:1px 10px;opacity:.30;transition:opacity .15s;user-select:none;box-shadow:0 1px 4px rgba(0,0,0,.4)}
   #chart:hover .rz-handle .grip,.rz-handle:hover .grip{opacity:1}
 </style>
+<link rel="stylesheet" href="dashboard.css">
 </head>
-<body>
+<body class="dashboard-page page-lmec">
 <div class="wrap">
   <header class="top">
     <div>
       <div class="kicker">Bitcoin · Semanal · Estrategia de ciclo — método LMEC</div>
-      <h1>🎯 <b>LMEC</b> · Ciclo BTC</h1>
+      <h1><b>LMEC</b> · Ciclo BTC</h1>
       <div class="price-now"><span class="big mono" id="price">—</span><span class="chg" id="chg">—</span></div>
       <div class="meta"><span class="dot" id="statusDot"></span><span id="statusText">Cargando…</span></div>
     </div>
