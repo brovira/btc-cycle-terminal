@@ -313,11 +313,18 @@ function buildPnl(data){
   return{P,open,closed,realized,fees,gas,vsHoldTot,invOpen,
     first:P.length?Math.min(...P.map(p=>p.first)):0,last:P.length?Math.max(...P.map(p=>p.last)):0};
 }
-let BTC_PRICE=null;
+let BTC_PRICE=null,PEG_RATIO=null;
 async function fetchBtc(){
   for(const u of["https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT","https://api.binance.us/api/v3/ticker/price?symbol=BTCUSDT"]){
     try{const r=await fetch(u,{cache:"no-store"});if(r.ok){BTC_PRICE=+(await r.json()).price;return;}}catch(e){}}
   try{const r=await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd",{cache:"no-store"});if(r.ok){BTC_PRICE=(await r.json()).bitcoin.usd;}}catch(e){}
+}
+/* Ratio WBTC-por-cbBTC aproximado para el pool peg: no hay feed gratuito del par exacto,
+   así que se usa WBTC/BTC de Binance asumiendo cbBTC≈BTC → ratio = 1/(WBTC/BTC). */
+async function fetchPegRatio(){
+  for(const h of["api.binance.com","api.binance.us"]){
+    try{const r=await fetch(`https://${h}/api/v3/ticker/price?symbol=WBTCBTC`,{cache:"no-store"});
+      if(r.ok){const p=+(await r.json()).price;if(p>0){PEG_RATIO=1/p;return;}}}catch(e){}}
 }
 function rangeMarkup(r){
   if(!r)return `<div class="kv"><span class="k">Rango</span><span class="v" style="color:var(--muted)">—</span></div>`;
@@ -473,7 +480,11 @@ function renderTabPos(M,BTC){
     let range="—";
     if(p.range&&p.range.quote==="USDC"){const r=p.range,inr=BTC&&BTC>=r.priceLow&&BTC<=r.priceHigh,pos=BTC?Math.max(0,Math.min(1,(BTC-r.priceLow)/(r.priceHigh-r.priceLow)))*100:50;
       range=`<div class="sub">${fmtUSD(r.priceLow)}–${fmtUSD(r.priceHigh)} ${BTC?(inr?'🟢':'🔴'):''}</div><div class="rbar mini"><div class="fill"></div>${BTC?`<div class="mark" style="left:${pos}%;background:${inr?'var(--bull)':'var(--bear)'}"></div>`:''}</div>`;}
-    else if(p.range){range=`<div class="sub">${p.range.priceLow.toFixed(4)}–${p.range.priceHigh.toFixed(4)} · peg</div>`;}
+    else if(p.range){
+      let pegSt="";
+      if(PEG_RATIO){const inr=PEG_RATIO>=p.range.priceLow&&PEG_RATIO<=p.range.priceHigh;
+        pegSt=` ${inr?'🟢':'🔴'} ${PEG_RATIO.toFixed(4)} <span style="color:var(--muted)">(aprox)</span>`;}
+      range=`<div class="sub">${p.range.priceLow.toFixed(4)}–${p.range.priceHigh.toFixed(4)} · peg${pegSt}</div>`;}
     return `<tr><td>${esc(p.pair)}</td><td>${bal!=null?fmtUSD(bal):'—'}</td><td class="${(pnl||0)>=0?'up':'down'}">${pnl!=null?fmtUSD(pnl,0):'—'}${pct!=null?`<div class="sub ${pct>=0?'up':'down'}">${pct>=0?'+':''}${pct.toFixed(2)}%</div>`:''}</td><td class="up">${fmtUSD(p.fees,0)}</td><td>${ey!=null?ey.toFixed(1)+'%':'—'}</td><td>${p.days.toFixed(0)}d</td><td style="text-align:left;min-width:160px">${range}</td><td>${entry?fmtUSD(entry):'—'}</td></tr>`;
   }).join("");
   $("#tabPos").innerHTML=`<table class="ot"><thead><tr><th>Pool</th><th>Balance</th><th>Total PnL</th><th>Fees</th><th>Est.Yield</th><th>Duración</th><th>Rango · precio</th><th>Entrada media</th></tr></thead><tbody>${rows||'<tr><td colspan="8" class="note">Sin abiertas.</td></tr>'}</tbody></table>`;
@@ -674,7 +685,7 @@ $("#freshToggle").addEventListener("change",e=>{SHOW_OLD=e.target.checked;if(MOD
 $("#clearBtn").addEventListener("click",()=>{localStorage.removeItem(LKEY);localStorage.removeItem(PWKEY);sessionStorage.removeItem(PWKEY);location.reload();});
 $("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);redraw();});
 (function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);
-  fetchBtc().then(()=>redraw());
+  Promise.all([fetchBtc(),fetchPegRatio()]).then(()=>redraw());
   // 1) si hay contraseña guardada → auto-carga tus datos privados (sin descargar/subir nada)
   const pw=localStorage.getItem(PWKEY)||sessionStorage.getItem(PWKEY);
   if(pw){$("#privPw").value=pw;$("#privRemember").checked=!!localStorage.getItem(PWKEY);
