@@ -52,6 +52,9 @@
   .st.nd{color:var(--hot);background:color-mix(in oklab,var(--hot) 16%,transparent)}
   .sig .val{font-family:var(--mono);font-size:18px;font-weight:700;margin:7px 0 2px}
   .sig .ds{font-size:12px;color:var(--muted);line-height:1.45}
+  .sig .who{font-size:10px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+  .sig .q{margin-top:8px;font-size:11.5px;font-style:italic;color:var(--ink2);border-left:2px solid var(--line);padding-left:8px;line-height:1.42}
+  .sig .q .src{display:block;font-style:normal;font-size:10px;color:var(--muted);margin-top:3px;font-family:var(--mono)}
   /* levels */
   .levels{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
   .lv{border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:var(--panel2)}
@@ -163,12 +166,14 @@ async function cmGet(metrics){
     try{const r=await fetch(u,{cache:"no-store"});if(r.ok){const j=await r.json();if(j&&j.data&&j.data.length)return j.data;}}catch(e){}}
   return null;
 }
-async function fetchMVRVZ(){ // MVRV Z actual = (mktcap-realizedcap)/desv.est(mktcap)
-  const rows=await cmGet("CapMrktCurUSD,CapRealUSD");if(!rows)return null;
-  const mkt=[],real=[];for(const x of rows){if(x.CapMrktCurUSD!=null&&x.CapRealUSD!=null){mkt.push(+x.CapMrktCurUSD);real.push(+x.CapRealUSD);}}
-  if(mkt.length<50)return null;
+async function fetchOnchain(){ // MVRV Z = (mktcap-realizedcap)/desv.est(mktcap); realized price = realizedcap/supply
+  const rows=await cmGet("CapMrktCurUSD,CapRealUSD,SplyCur");if(!rows)return{z:null,realized:null};
+  const mkt=[],real=[],sply=[];for(const x of rows){if(x.CapMrktCurUSD!=null&&x.CapRealUSD!=null){mkt.push(+x.CapMrktCurUSD);real.push(+x.CapRealUSD);sply.push(x.SplyCur!=null?+x.SplyCur:null);}}
+  if(mkt.length<50)return{z:null,realized:null};
   const mean=mkt.reduce((a,b)=>a+b,0)/mkt.length;const sd=Math.sqrt(mkt.reduce((a,b)=>a+(b-mean)**2,0)/mkt.length);
-  if(!(sd>0))return null;return (mkt[mkt.length-1]-real[real.length-1])/sd;
+  const z=sd>0?(mkt[mkt.length-1]-real[real.length-1])/sd:null;
+  const ls=sply[sply.length-1];const realized=(ls&&ls>0)?real[real.length-1]/ls:null;
+  return{z,realized};
 }
 async function fetchFNG(){
   try{const r=await fetch("https://api.alternative.me/fng/?limit=1&format=json",{cache:"no-store"});
@@ -192,7 +197,7 @@ function evaluate(D){
   const bmsbLo=(()=>{const a=s20[n-1],b=e21[n-1];return(a!=null&&b!=null)?Math.min(a,b):null;})();
   const ma200=s200[n-1], rsiV=rsiA[n-1];
   const now=D.t[n-1];const hInfo=halvInfo(now);const hw=hInfo.week,lastH=hInfo.lastH,nextH=hInfo.nextH;const d=new Date(now);const ymod4=d.getUTCFullYear()%4,month=d.getUTCMonth()+1;
-  const z=D.z, fng=D.fng;
+  const z=D.z, fng=D.fng, realized=D.realized;
 
   // ventana de ciclo favorable a compra: acumulación LMEC (sem 120-180) o estacional Cowen (año midterm, 2ª mitad)
   const accumWindow = hw>=120&&hw<=180;
@@ -200,27 +205,35 @@ function evaluate(D){
   const distWindow = hw>=70&&hw<=110; // techo del ciclo → distribución, NO compra
   const cycleBuy = accumWindow||cowenSeason;
 
-  const belowBMSB = bmsbHi!=null? price<bmsbHi : null;
-  const near200 = ma200!=null? price<=ma200*1.05 : null;
-  const dist200 = ma200!=null? (price/ma200-1)*100 : null; // % del precio respecto a la 200W (>0 = por encima)
-  const zLow = z!=null? z<0.5 : null;
-  const rsiLow = rsiV!=null? rsiV<45 : null;
-  const fngFear = fng!=null? fng<30 : null;
+  // === Señales: cada una es una regla REAL de un agente, con su cita. Nada inventado. ===
+  const belowBMSB = bmsbHi!=null? price<bmsbHi : null;              // contexto caro/barato (no se cuenta como señal)
+  const touch200  = ma200!=null? price<=ma200 : null;              // LMEC: en bear el precio visita la 200W
+  const dist200   = ma200!=null? (price/ma200-1)*100 : null;
+  const rsiBand   = rsiV!=null? (rsiV>=34&&rsiV<=50) : null;       // LMEC: RSI 40-50 (y 34 al recuperar) = zona de suelo/compra
+  const zGreen    = z!=null? z<0 : null;                           // LMEC: "franja verde = infravaloración" (verde ≈ Z<0)
+  const belowReal = (realized!=null)? price<=realized : null;      // LMEC: el suelo perfora el realized price
+  const fngFear   = fng!=null? fng<45 : null;                      // OCM: comprar más "in fear or extreme fear" (índice: <45 = miedo)
   const accumStart=fmtDate(weekToMs(lastH,120)), accumEnd=fmtDate(weekToMs(lastH,180)), yr=d.getUTCFullYear();
 
   const SIG=[
-    {key:"bmsb",nm:"Precio bajo la BMSB",on:belowBMSB,val:bmsbHi!=null?fmtUSD(bmsbHi):"—",
-     ds:belowBMSB?"Por debajo de la Bull Market Support Band = zona de acumulación (LMEC).":"Por encima de la BMSB: tendencia alcista, no zona de acumulación barata."},
-    {key:"ma200",nm:(dist200!=null&&dist200<0?"Bajo la 200W MA":"Cerca de la 200W MA"),on:near200,val:ma200!=null?fmtUSD(ma200):"—",
-     ds:near200?(dist200!=null&&dist200<0?`Por DEBAJO de la 200W MA (${dist200.toFixed(0)}%) = soporte profundo → señal FUERTE.`:`A +${dist200!=null?dist200.toFixed(0):"≤5"}% de la 200W MA: pegado al soporte (zona DCA). Por debajo sería compra fuerte.`):`Lejos del soporte de 200 semanas (${dist200!=null?"+"+dist200.toFixed(0)+"%":">5%"} por encima).`},
-    {key:"mvrv",nm:"MVRV Z infravalorado",on:zLow,nd:z==null,val:z!=null?z.toFixed(2):"n/d",
-     ds:z==null?"On-chain no disponible (Coin Metrics). No cuenta.":(zLow?"MVRV Z en franja baja (<0,5) = infravalorado on-chain.":"MVRV Z fuera de la franja de suelo.")},
-    {key:"rsi",nm:"RSI semanal débil",on:rsiLow,val:rsiV!=null?rsiV.toFixed(0):"—",
-     ds:rsiLow?"RSI semanal <45 (por debajo del punto medio 50): sin sobrecompra → margen para acumular.":"RSI semanal ≥45: momentum caliente, no es descuento."},
-    {key:"fng",nm:"Miedo (Fear & Greed)",on:fngFear,nd:fng==null,val:fng!=null?String(fng):"n/d",
-     ds:fng==null?"F&G no disponible.":(fngFear?"Miedo (<30): históricamente buenas zonas de compra.":"Sin miedo extremo (≥30).")},
-    {key:"cycle",nm:"Ventana de ciclo",on:cycleBuy,val:"sem "+Math.round(hw),
-     ds:accumWindow?`Ventana de acumulación del halving (sem 120-180 ≈ ${accumStart} → ${accumEnd}).`:(cowenSeason?`2ª mitad del año midterm (estacional de Cowen): acumular jul–dic ${yr} y principios de ${yr+1}.`:(distWindow?"Sem 70-110 = zona de techo/distribución del ciclo.":`Fuera de ventana. La de acumulación del halving va sem 120-180 (≈ ${accumStart} → ${accumEnd}).`))},
+    {key:"ma200",nm:"Precio ≤ 200W MA",who:"LMEC",on:touch200,val:ma200!=null?fmtUSD(ma200):"—",
+     ds:touch200?`El precio ha tocado/perforado la media de 200 semanas (${dist200!=null?dist200.toFixed(0)+"%":""}).`:`Aún por encima de la 200W (+${dist200!=null?dist200.toFixed(0):"?"}%). LMEC: hasta tocarla, no es el suelo.`,
+     q:"En los bajistas anteriores BTC siempre terminó visitando la 200W… aún NO la ha tocado → los $60k probablemente no son el suelo.",src:"LMEC · plan-inversion-2026"},
+    {key:"rsi",nm:"RSI semanal 34-50",who:"LMEC",on:rsiBand,val:rsiV!=null?rsiV.toFixed(0):"—",
+     ds:rsiBand?"RSI en la franja 34-50 = zona de suelo/compra de LMEC (recuperando de sobreventa).":"RSI fuera de 34-50. LMEC compra cuando recupera hacia 34 y confirma en 40-50.",
+     q:"siempre que Bitcoin rompió por segunda vez la BMSB… el RSI… estuvo entre 40 y 50 puntos.",src:"LMEC · punto-exacto-bmsb"},
+    {key:"mvrv",nm:"MVRV Z · franja verde",who:"LMEC",on:zGreen,nd:z==null,val:z!=null?z.toFixed(2):"n/d",
+     ds:z==null?"On-chain no disponible (Coin Metrics). No cuenta.":(zGreen?"MVRV Z en la franja verde (infravaloración). La COMPRA de LMEC es la salida al alza de esta franja.":"MVRV Z fuera de la franja verde."),
+     q:"Franja roja = sobrevaloración extrema (zona de venta). Franja verde = infravaloración (zona de compra).",src:"LMEC · mvrv-zscore (verde≈Z<0, convención)"},
+    {key:"real",nm:"Precio ≤ realized price",who:"LMEC",on:belowReal,nd:realized==null,val:realized!=null?fmtUSD(realized):"n/d",
+     ds:realized==null?"On-chain no disponible. No cuenta.":(belowReal?"El precio está por debajo del precio medio de los holders (realized) = zona de capitulación/suelo.":"Precio por encima del realized price; aún sin capitulación."),
+     q:"BTC siempre perforó por abajo el precio medio de compra de los holders… cerca del suelo real.",src:"LMEC · mvrv-zscore"},
+    {key:"fng",nm:"Fear & Greed en miedo",who:"OnChainMind",on:fngFear,nd:fng==null,val:fng!=null?String(fng):"n/d",
+     ds:fng==null?"F&G no disponible.":(fngFear?"F&G en miedo (<45): OCM aumenta compras en miedo/miedo extremo.":"F&G sin miedo (≥45): OCM reduce compras."),
+     q:"selectively increasing your purchases when the market is in fear or extreme fear.",src:"OnChainMind · fear-greed"},
+    {key:"cycle",nm:"Ventana de ciclo",who:"LMEC + Cowen",on:cycleBuy,val:"sem "+Math.round(hw),
+     ds:accumWindow?`Ventana de acumulación del halving (sem 120-180 ≈ ${accumStart} → ${accumEnd}).`:(cowenSeason?`2ª mitad del año midterm: Cowen acumula tras el mínimo de junio (jul–dic ${yr} y principios de ${yr+1}).`:(distWindow?"Sem 70-110 = zona de techo/distribución del ciclo.":`Fuera de ventana. Acumulación del halving: sem 120-180 (≈ ${accumStart} → ${accumEnd}).`)),
+     q:"after the June low is when I bought and I just DCA… the second half of the midterm year.",src:"Cowen · dynamic-dca"},
   ];
   const withData=SIG.filter(s=>s.on!=null);
   const lit=withData.filter(s=>s.on).length;
@@ -248,7 +261,7 @@ function evaluate(D){
     action="Esperar dip";vc="var(--muted)";regime="Ciclo · sin descuento";
     sub="Pocas señales de compra y precio sin descuento. Paciencia: deja límites en soportes y espera a que se enciendan las señales.";
   }
-  return {SIG,lit,tot,action,sub,vc,regime,price,bmsbHi,bmsbLo,ma200,rsiV,z,fng,hw,lastH,nextH};
+  return {SIG,lit,tot,action,sub,vc,regime,price,bmsbHi,bmsbLo,ma200,rsiV,z,fng,realized,hw,lastH,nextH};
 }
 
 function render(R){
@@ -261,11 +274,14 @@ function render(R){
   $("#sigs").innerHTML=R.SIG.map(s=>{
     const cls=s.nd?"nd":(s.on?"on":"off");const lbl=s.nd?"n/d":(s.on==null?"—":(s.on?"✓ sí":"✗ no"));
     return `<div class="sig"><div class="r1"><span class="nm">${s.nm}</span><span class="st ${cls}">${lbl}</span></div>
-      <div class="val">${s.val}</div><div class="ds">${s.ds}</div></div>`;}).join("");
+      <div class="who">${esc(s.who||"")}</div>
+      <div class="val">${s.val}</div><div class="ds">${s.ds}</div>
+      ${s.q?`<div class="q">“${esc(s.q)}”<span class="src">${esc(s.src||"")}</span></div>`:""}</div>`;}).join("");
   const lv=[
     ["Precio BTC",fmtUSD(R.price)],
     ["BMSB (banda alta)",R.bmsbHi!=null?fmtUSD(R.bmsbHi):"—"],
     ["200W MA",R.ma200!=null?fmtUSD(R.ma200):"—"],
+    ["Realized price",R.realized!=null?fmtUSD(R.realized):"n/d"],
     ["MVRV Z",R.z!=null?R.z.toFixed(2):"n/d"],
     ["RSI semanal",R.rsiV!=null?R.rsiV.toFixed(0):"—"],
     ["Fear & Greed",R.fng!=null?String(R.fng):"n/d"],
@@ -273,21 +289,22 @@ function render(R){
   ];
   $("#levels").innerHTML=lv.map(x=>`<div class="lv"><div class="l">${x[0]}</div><div class="n">${x[1]}</div></div>`).join("");
   renderHalving(R);
-  $("#logic").innerHTML=`Se cuentan <b>6 señales de compra</b> (solo las que tienen dato) y la acción sale de combinarlas.
+  $("#logic").innerHTML=`Cada señal es una <b>regla real de un agente</b> (la cita está en su tarjeta). Solo se cuentan las que tienen dato.
     <div class="how" style="margin-top:8px">
-      <div><b>Umbrales (heurísticos, ajustables):</b><br>
-        · <b>BMSB</b>: precio por debajo de la banda = zona de acumulación.<br>
-        · <b>200W MA</b>: a ≤5% o por debajo = pegado al soporte (por <b>debajo</b> = compra fuerte; cerca por encima = DCA).<br>
-        · <b>MVRV Z</b> &lt; 0,5 = infravalorado on-chain.<br>
-        · <b>RSI</b> &lt; <b>45</b>: por debajo del punto medio 50 (30 = sobreventa, 70 = sobrecompra) → sin sobrecompra, margen para acumular. El 45 es un umbral elegido, no sagrado.<br>
-        · <b>F&amp;G</b> &lt; 30 = miedo.<br>
-        · <b>Ventana de ciclo</b>: acumulación del halving (sem 120-180) o 2ª mitad del año midterm (Cowen).</div>
+      <div><b>Señales y de quién salen:</b><br>
+        · <b>Precio ≤ 200W MA</b> (LMEC): en bear el precio siempre visita la 200W; hasta tocarla, no es el suelo.<br>
+        · <b>RSI 34-50</b> (LMEC): 34 al recuperar de sobreventa, 40-50 en la ruptura de compra.<br>
+        · <b>MVRV Z franja verde</b> (LMEC): verde = infravaloración (el límite Z&lt;0 es la convención de la franja; LMEC no da número).<br>
+        · <b>Precio ≤ realized price</b> (LMEC): el suelo perfora el precio medio de los holders (~capitulación).<br>
+        · <b>F&amp;G en miedo</b> (OnChainMind): comprar más en miedo/miedo extremo (índice: &lt;45 = miedo).<br>
+        · <b>Ventana de ciclo</b> (LMEC halving + Cowen): acumulación del ciclo o 2ª mitad del año midterm.</div>
       <div><b>Acción resultante:</b><br>
-        · <b>Tomar beneficio</b>: en la ventana de techo (sem 70-110) si el precio no está barato.<br>
-        · <b>Comprar por niveles</b>: ≥⅔ señales encendidas y precio &lt; BMSB.<br>
+        · <b>Tomar beneficio</b>: ventana de techo (sem 70-110) si el precio no está barato.<br>
+        · <b>Comprar por niveles</b>: mayoría de señales encendidas y precio &lt; BMSB.<br>
         · <b>Esperar dip</b>: la ventana acompaña pero el precio está caro (&gt; BMSB).<br>
         · <b>Esperar seasonality</b>: año midterm con pocas señales aún.<br>
-        · <b>DCA base</b>: señales mixtas.</div>
+        · <b>DCA base</b>: señales mixtas.<br>
+        <span style="color:var(--muted)">Nota: el gatillo de compra fuerte de LMEC es la <b>2ª ruptura al alza de la BMSB</b> (ver panel LMEC); aquí se vigila el entorno de suelo que la precede.</span></div>
     </div>`;
   const nd=R.SIG.some(s=>s.nd);
   if(nd){$("#banner").style.display="block";$("#banner").innerHTML="⚠️ Alguna señal on-chain (MVRV / F&amp;G) no cargó y no cuenta en el marcador. Si el MVRV sale <b>n/d</b> de forma persistente, el proveedor on-chain (Coin Metrics) está bloqueado — se arregla con el proxy <code>/api/coinmetrics</code> o Glassnode.";}
@@ -377,8 +394,8 @@ async function loadHistory(D,livePrice){
 (async function(){
   try{
     const D=await fetchWeekly();
-    const [z,fng]=await Promise.all([fetchMVRVZ().catch(()=>null),fetchFNG().catch(()=>null)]);
-    D.z=z;D.fng=fng;
+    const [oc,fng]=await Promise.all([fetchOnchain().catch(()=>({z:null,realized:null})),fetchFNG().catch(()=>null)]);
+    D.z=oc.z;D.realized=oc.realized;D.fng=fng;
     const R=evaluate(D);render(R);
     loadHistory(D,R.price);
     $("#statusDot").className="dot ok";

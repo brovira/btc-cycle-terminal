@@ -40,7 +40,26 @@ def fetch_fng():
     return None
 
 
-def decide(d, z, fng):
+def fetch_realized():
+    """Realized price = realized cap / circulating supply (referencia de suelo de LMEC)."""
+    try:
+        url = ("https://community-api.coinmetrics.io/v4/timeseries/asset-metrics"
+               "?assets=btc&metrics=CapRealUSD,SplyCur&frequency=1d&page_size=10000&start_time=2011-01-01")
+        rows = cs.http_json(url).get("data", [])
+        last_real = last_sply = None
+        for x in rows:
+            if x.get("CapRealUSD"):
+                last_real = float(x["CapRealUSD"])
+            if x.get("SplyCur"):
+                last_sply = float(x["SplyCur"])
+        if last_real and last_sply and last_sply > 0:
+            return last_real / last_sply
+    except Exception:
+        pass
+    return None
+
+
+def decide(d, z, fng, realized):
     c = d["c"]; n = len(c); price = c[-1]
     s20 = cs.sma(c, 20); e21 = cs.ema(c, 21); s200 = cs.sma(c, 200); rs = cs.rsi(c, 14)
     i = n - 1
@@ -52,15 +71,18 @@ def decide(d, z, fng):
     cowen = (ym == 2 and mo >= 7)
     dist = 70 <= hw <= 110
     cycle_buy = accum or cowen
-    below = (price < bh) if bh is not None else None
+    below = (price < bh) if bh is not None else None  # contexto caro/barato (no se cuenta)
 
+    # 6 señales fundamentadas en citas (ver decision.html):
+    #  200W (LMEC: el precio visita la 200W) · RSI 34-50 (LMEC) · MVRV franja verde Z<0 (LMEC)
+    #  · precio<=realized (LMEC) · F&G miedo <45 (OCM) · ventana de ciclo (LMEC halving + Cowen)
     sig = {
-        "below_bmsb":   below,
-        "near_200w":    (price <= ma200 * 1.05) if ma200 is not None else None,
-        "mvrv_low":     (zi < 0.5) if zi is not None else None,
-        "rsi_weak":     (rsiV < 45) if rsiV is not None else None,
-        "fear":         (fng < 30) if fng is not None else None,
-        "cycle_window": cycle_buy,
+        "price_le_200w":  (price <= ma200) if ma200 is not None else None,
+        "rsi_34_50":      (34 <= rsiV <= 50) if rsiV is not None else None,
+        "mvrv_green":     (zi < 0) if zi is not None else None,
+        "price_le_realized": (price <= realized) if realized is not None else None,
+        "fear":           (fng < 45) if fng is not None else None,
+        "cycle_window":   cycle_buy,
     }
     with_data = [v for v in sig.values() if v is not None]
     lit = sum(1 for v in with_data if v); tot = len(with_data)
@@ -87,6 +109,7 @@ def decide(d, z, fng):
         "metrics": {
             "bmsb": round(bh, 2) if bh is not None else None,
             "ma200": round(ma200, 2) if ma200 is not None else None,
+            "realized": round(realized, 2) if realized is not None else None,
             "mvrv_z": round(zi, 3) if zi is not None else None,
             "rsi": round(rsiV, 1) if rsiV is not None else None,
             "fng": fng,
@@ -99,7 +122,8 @@ def main():
     d = cs.load_price()
     z = cs.load_mvrv(d["t"])
     fng = fetch_fng()
-    snap = decide(d, z, fng)
+    realized = fetch_realized()
+    snap = decide(d, z, fng, realized)
 
     os.makedirs(os.path.dirname(HIST_PATH), exist_ok=True)
     hist = {"snapshots": []}

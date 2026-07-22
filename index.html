@@ -68,6 +68,8 @@
   .hbead.on{background:var(--hc,var(--cycles));box-shadow:none}
   .hero .hn{font-family:var(--mono);font-size:15px;color:var(--ink);font-weight:700}
   .hero .hgo{font-size:12px;font-weight:700;color:var(--muted)}
+  .hero .hcycle{margin-top:9px;font-size:12.5px;font-family:var(--mono);color:var(--ink2)}
+  .hero .hcycle b{color:var(--cycles)}
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
@@ -89,6 +91,7 @@
       <div class="kicker">Ciclos · Decisión</div>
       <div class="haction" id="hAction">🧭 ¿Qué hago hoy?</div>
       <div class="hsub" id="hSub">Agrega BMSB · 200W · MVRV Z · RSI · Fear&amp;Greed · ventana del ciclo → una acción clara.</div>
+      <div class="hcycle" id="hCycle"></div>
     </div>
     <div class="hright">
       <div class="hbeads" id="hBeads"></div>
@@ -193,23 +196,28 @@ document.getElementById("themeBtn").addEventListener("click",()=>{const r=docume
   const hW=ms=>{let H=HALV[0];for(const h of HALV)if(h<=ms)H=h;return(ms-H)/(7*864e5);};
   async function weekly(){for(const h of["api.binance.com","api.binance.us"]){try{const r=await fetch(`https://${h}/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=1000`,{cache:"no-store"});if(r.ok){const j=await r.json();return{t:j.map(k=>k[0]),c:j.map(k=>+k[4])};}}catch(e){}}return null;}
   async function fng(){try{const r=await fetch("https://api.alternative.me/fng/?limit=1&format=json",{cache:"no-store"});if(r.ok){const j=await r.json();const d=(j.data||[])[0];if(d)return +d.value;}}catch(e){}return null;}
-  async function mvrvz(){try{const q="assets=btc&metrics=CapMrktCurUSD,CapRealUSD&frequency=1d&page_size=10000&start_time=2011-01-01";
+  async function onchain(){try{const q="assets=btc&metrics=CapMrktCurUSD,CapRealUSD,SplyCur&frequency=1d&page_size=10000&start_time=2011-01-01";
     for(const u of["/api/coinmetrics?"+q,"https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?"+q]){try{const r=await fetch(u,{cache:"no-store"});if(r.ok){const j=await r.json();const rows=(j&&j.data)||[];if(!rows.length)continue;
-      const mk=[],re=[];for(const x of rows){if(x.CapMrktCurUSD!=null&&x.CapRealUSD!=null){mk.push(+x.CapMrktCurUSD);re.push(+x.CapRealUSD);}}if(mk.length<50)continue;
-      const m=mk.reduce((a,b)=>a+b,0)/mk.length,sd=Math.sqrt(mk.reduce((a,b)=>a+(b-m)**2,0)/mk.length);if(sd>0)return(mk[mk.length-1]-re[re.length-1])/sd;}}catch(e){}}}catch(e){}return null;}
+      const mk=[],re=[],sp=[];for(const x of rows){if(x.CapMrktCurUSD!=null&&x.CapRealUSD!=null){mk.push(+x.CapMrktCurUSD);re.push(+x.CapRealUSD);sp.push(x.SplyCur!=null?+x.SplyCur:null);}}if(mk.length<50)continue;
+      const m=mk.reduce((a,b)=>a+b,0)/mk.length,sd=Math.sqrt(mk.reduce((a,b)=>a+(b-m)**2,0)/mk.length);
+      const z=sd>0?(mk[mk.length-1]-re[re.length-1])/sd:null;const ls=sp[sp.length-1];const realized=(ls&&ls>0)?re[re.length-1]/ls:null;return{z,realized};}}catch(e){}}}catch(e){}return{z:null,realized:null};}
+  const MES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  const fmtD=ms=>{const d=new Date(ms);return d.getUTCDate()+" "+MES[d.getUTCMonth()]+" "+d.getUTCFullYear();};
   try{
     const D=await weekly();if(!D){document.getElementById("hN").textContent="";return;}
-    const [z,fg]=await Promise.all([mvrvz(),fng()]);
+    const [oc,fg]=await Promise.all([onchain(),fng()]);const z=oc.z,realized=oc.realized;
     const c=D.c,n=c.length,price=c[n-1];const s20=sma(c,20),e21=ema(c,21),s200=sma(c,200),rs=rsi(c,14);
     const bh=(s20[n-1]!=null&&e21[n-1]!=null)?Math.max(s20[n-1],e21[n-1]):null;const ma=s200[n-1],rv=rs[n-1];
     const now=D.t[n-1],hw=hW(now),d=new Date(now),ym=d.getUTCFullYear()%4,mo=d.getUTCMonth()+1;
+    let lastH=HALV[0];for(const h of HALV)if(h<=now)lastH=h;
     const accum=hw>=120&&hw<=180,cowen=ym===2&&mo>=7,dist=hw>=70&&hw<=110,cycleBuy=accum||cowen;
     const below=bh!=null?price<bh:null;
-    const S=[below, ma!=null?price<=ma*1.05:null, z!=null?z<0.5:null, rv!=null?rv<45:null, fg!=null?fg<30:null, cycleBuy];
+    // mismas 6 señales fundamentadas que decision.html: 200W(LMEC) · RSI 34-50(LMEC) · MVRV verde(LMEC) · realized(LMEC) · F&G miedo(OCM) · ventana(LMEC+Cowen)
+    const S=[ma!=null?price<=ma:null, rv!=null?(rv>=34&&rv<=50):null, z!=null?z<0:null, realized!=null?price<=realized:null, fg!=null?fg<45:null, cycleBuy];
     const withData=S.filter(x=>x!=null);const lit=withData.filter(Boolean).length,tot=withData.length;
     let action,hc;const expensive=below===false;
     if(dist&&(expensive||(z!=null&&z>2))){action="Tomar beneficio";hc="var(--hot)";}
-    else if(lit>=Math.ceil(tot*0.66)&&below){action="Comprar por niveles";hc="var(--trading)";}
+    else if(tot&&lit>=Math.ceil(tot*0.66)&&below){action="Comprar por niveles";hc="var(--trading)";}
     else if(cycleBuy&&expensive){action="Esperar dip a nivel";hc="var(--lps)";}
     else if(cowen&&lit>=2){action="Esperar seasonality";hc="var(--lps)";}
     else if(lit>=2){action="DCA base";hc="var(--cycles)";}
@@ -218,6 +226,13 @@ document.getElementById("themeBtn").addEventListener("click",()=>{const r=docume
     document.getElementById("hAction").textContent=action;
     document.getElementById("hN").textContent=lit+"/"+tot+" señales";
     document.getElementById("hBeads").innerHTML=Array.from({length:tot},(_,i)=>`<span class="hbead ${i<lit?"on":""}"></span>`).join("");
+    // contador del halving (LMEC): a qué semana estamos y cuánto para la ventana de compra
+    const cyc=Math.round(hw),buyA=120,buyB=180;const buyStart=lastH+buyA*7*864e5,buyEnd=lastH+buyB*7*864e5;
+    let ht;
+    if(hw<buyA)ht=`🎯 Halving: sem <b>${cyc}</b> · ventana de compra en <b>~${Math.ceil(buyA-hw)} sem</b> (≈ ${fmtD(buyStart)})`;
+    else if(hw<=buyB)ht=`🎯 Halving: sem <b>${cyc}</b> · <b>en ventana de compra</b> (hasta ≈ ${fmtD(buyEnd)})`;
+    else ht=`🎯 Halving: sem <b>${cyc}</b> · ventana de acumulación cerrada`;
+    document.getElementById("hCycle").innerHTML=ht;
   }catch(e){document.getElementById("hN").textContent="";}
 })();
 </script>
