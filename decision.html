@@ -79,6 +79,8 @@
   .acard .aq .src{display:block;font-style:normal;font-size:10px;color:var(--muted);margin-top:2px;font-family:var(--mono)}
   .acard .advice{margin-top:auto;padding:10px 12px;border-radius:10px;background:color-mix(in oklab,var(--ac) 10%,var(--panel2));font-size:13px;line-height:1.5}
   .acard .advice b{color:var(--ac)}
+  .chip{font-size:10.5px;font-family:var(--mono);color:var(--muted);background:var(--panel2);border:1px solid var(--line);padding:2px 8px;border-radius:999px}
+  .btn{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:8px 12px;border-radius:10px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;text-decoration:none}
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
@@ -110,27 +112,7 @@
   </div>
   <div class="banner" id="banner"></div>
 
-  <div class="sec-head"><h2>Relojes de ciclo — LMEC · Cowen · OCM</h2><div class="rule"></div><span class="mtxt" id="halvNext" style="font-size:12px"></span></div>
-  <div class="agrid">
-    <div id="halvBox" style="border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:14px;background:var(--panel);padding:16px 18px">
-      <div class="albl" style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">🎯 LMEC · semanas del halving</div>
-      <div style="font-size:17px;font-weight:800;margin-top:4px" id="halvPhase">—</div>
-      <div class="note" id="halvSub" style="margin-top:5px"></div>
-      <div class="levels" id="halvCards" style="margin-top:12px"></div>
-    </div>
-    <div style="border:1px solid var(--line);border-top:3px solid var(--hot);border-radius:14px;background:var(--panel);padding:16px 18px">
-      <div class="albl" style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">📊 Cowen · ciclo midterm (4 años)</div>
-      <div style="font-size:17px;font-weight:800;margin-top:4px" id="cowenPhase">—</div>
-      <div class="note" id="cowenSub" style="margin-top:5px"></div>
-      <div class="levels" id="cowenCards" style="margin-top:12px"></div>
-    </div>
-    <div style="border:1px solid var(--line);border-top:3px solid var(--accum);border-radius:14px;background:var(--panel);padding:16px 18px">
-      <div class="albl" style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">🧠 OCM · ventana de suelo on-chain</div>
-      <div style="font-size:17px;font-weight:800;margin-top:4px" id="ocmPhase">—</div>
-      <div class="note" id="ocmSub" style="margin-top:5px"></div>
-      <div class="levels" id="ocmCards" style="margin-top:12px"></div>
-    </div>
-  </div>
+<!-- (los relojes de ciclo viven ahora DENTRO de la tarjeta de cada agente) -->
 
   <div class="sec-head"><h2>💰 Plan de guerra — cashflow BELROGAM → cash para el suelo (sep-nov)</h2><div class="rule"></div><span class="mtxt" style="font-size:12px">🔒 privado</span></div>
   <div style="border:1px solid var(--line);border-top:3px solid var(--bull);border-radius:14px;background:var(--panel);padding:16px 18px">
@@ -332,7 +314,6 @@ function render(R){
     ["Semana del halving",Math.round(R.hw)],
   ];
   $("#levels").innerHTML=lv.map(x=>`<div class="lv"><div class="l">${x[0]}</div><div class="n">${x[1]}</div></div>`).join("");
-  renderHalving(R);
   $("#logic").innerHTML=`Cada señal es una <b>regla real de un agente</b> (la cita está en su tarjeta). Solo se cuentan las que tienen dato.
     <div class="how" style="margin-top:8px">
       <div><b>Señales y de quién salen:</b><br>
@@ -354,61 +335,48 @@ function render(R){
   if(nd){$("#banner").style.display="block";$("#banner").innerHTML="⚠️ Alguna señal on-chain (MVRV / F&amp;G) no cargó y no cuenta en el marcador. Si el MVRV sale <b>n/d</b> de forma persistente, el proveedor on-chain (Coin Metrics) está bloqueado — se arregla con el proxy <code>/api/coinmetrics</code> o Glassnode.";}
 }
 
-/* ---------- ciclo del halving: fase actual + cuándo empieza la ventana de compra ---------- */
-function renderHalving(R){
-  const wk=R.hw, lastH=R.lastH, nextH=R.nextH, cyc=Math.round(wk);
+/* ---------- relojes de ciclo (datos): viven DENTRO de la tarjeta de cada agente ---------- */
+function halvClock(R){
+  const wk=R.hw, lastH=R.lastH, cyc=Math.round(wk);
   const buyA=120,buyB=180,sellA=70,sellB=110;
   const buyStartMs=weekToMs(lastH,buyA),buyEndMs=weekToMs(lastH,buyB);
   let phase,sub,pc;
   if(wk<sellA){phase="Post-halving temprano";pc="var(--muted)";sub="Fase inicial del ciclo. Aún lejos de la ventana de acumulación.";}
-  else if(wk<=sellB){phase="Euforia / distribución";pc="var(--hot)";sub=`Zona de techo del ciclo (sem ${sellA}-${sellB}): tramo de tomar beneficio, no de comprar.`;}
+  else if(wk<=sellB){phase="Euforia / distribución";pc="var(--hot)";sub=`Zona de techo del ciclo (sem ${sellA}-${sellB}): tramo de tomar beneficio.`;}
   else if(wk<buyA){const falta=Math.ceil(buyA-wk);phase="Pre-acumulación";pc="var(--accum)";
-    sub=`Faltan <b>~${falta} semana(s)</b> para la ventana de compra del halving: empieza en sem ${buyA} (≈ <b>${fmtDate(buyStartMs)}</b>) y dura hasta sem ${buyB} (≈ ${fmtDate(buyEndMs)}). Prepara liquidez y niveles.`;}
+    sub=`Faltan <b>~${falta} sem</b> para su ventana temporal de compra: sem ${buyA}-${buyB} (≈ <b>${fmtDate(buyStartMs)}</b> → ${fmtDate(buyEndMs)}).`;}
   else if(wk<=buyB){const quedan=Math.ceil(buyB-wk);phase="🟢 Acumulación (ventana de compra)";pc="var(--bull)";
-    sub=`<b>ESTÁS dentro</b> de la ventana de compra del halving (sem ${buyA}-${buyB} ≈ ${fmtDate(buyStartMs)} → ${fmtDate(buyEndMs)}). Quedan ~${quedan} semanas. Fase para hacer DCA / comprar por niveles.`;}
-  else{phase="Pre-halving tardío";pc="var(--ink2)";sub="Ventana de acumulación cerrada. Siguiente gran fase: el próximo halving.";}
-  $("#halvPhase").textContent=phase;$("#halvPhase").style.color=pc;
-  $("#halvSub").innerHTML=sub;
-  const cards=[["Semana del ciclo",cyc+" / 208"],["Ventana de compra","sem "+buyA+"–"+buyB],["Empieza ≈",fmtDate(buyStartMs)],["Hasta ≈",fmtDate(buyEndMs)]];
-  if(nextH)cards.push(["Próximo halving",fmtDate(nextH)]);
-  $("#halvCards").innerHTML=cards.map(x=>`<div class="lv"><div class="l">${x[0]}</div><div class="n">${x[1]}</div></div>`).join("");
-  $("#halvNext").textContent = wk<buyA?("faltan ~"+Math.ceil(buyA-wk)+" sem para comprar") : (wk<=buyB?"en ventana de compra":"");
-  renderCowenClock(R);renderOcmClock(R);
+    sub=`<b>Dentro</b> de la ventana temporal (sem ${buyA}-${buyB}). Quedan ~${quedan} sem.`;}
+  else{phase="Pre-halving tardío";pc="var(--ink2)";sub="Ventana de acumulación cerrada.";}
+  return{phase,pc,sub,cards:[["Semana del ciclo",cyc+" / 208"],["Ventana compra","sem "+buyA+"–"+buyB],["Empieza ≈",fmtDate(buyStartMs)]]};
 }
-
-/* Reloj de Cowen: ciclo de 4 años (midterm). Sus citas: acumular tras el June low en la
-   2ª mitad del midterm; ago-sep negativos en los 3 midterms previos; mínimo base en Q4
-   (octubre el mes más probable); invalidación = reclaim sostenido de la 50W (~86,5k). */
-function renderCowenClock(R){
+function cowenClock(){
   const now=new Date();const y=now.getUTCFullYear(),ym=y%4,mo=now.getUTCMonth()+1;
   const names={0:"post-halving (venta)",1:"pre-midterm",2:"MIDTERM (acumulación)",3:"pre-halving"};
-  let phase,sub,pc="var(--hot)";
   const oct1=Date.parse(y+"-10-01");const wksToOct=Math.max(0,Math.ceil((oct1-now.getTime())/(7*864e5)));
-  if(ym===2&&mo>=7){phase="🟢 Acumulación H2 midterm — ACTIVA";pc="var(--bull)";
-    sub=`Su ventana de compra está <b>abierta</b> (él ya hace DCA desde el June low ~$57k, risk <0,3). Ago-sep fueron <b>negativos en los 3 midterms</b> previos (−18/−15/−15%) → guarda la mayoría de la pólvora para el mínimo de <b>Q4</b> (octubre, en ~${wksToOct} sem).`;}
-  else if(ym===2){phase="Midterm · 1ª mitad";sub="Él la ignora: 'just ignore Bitcoin for the first half of the midterm year'. La ventana abre tras el June low.";}
-  else{phase="Año "+names[ym];sub=ym===1?"Acumular cash: la ventana de compra llega en el midterm (año que viene).":"Fuera de su ventana de acumulación.";}
-  $("#cowenPhase").textContent=phase;$("#cowenPhase").style.color=pc;
-  $("#cowenSub").innerHTML=sub;
-  $("#cowenCards").innerHTML=[["Año del ciclo",names[ym]||ym],["Mínimo esperado","Q4 · oct"],["Hasta octubre","~"+wksToOct+" sem"],["Invalidación","50W ~$86,5k"]]
-    .map(x=>`<div class="lv"><div class="l">${x[0]}</div><div class="n">${x[1]}</div></div>`).join("");
+  let phase,sub,pc="var(--hot)";
+  if(ym===2&&mo>=7){phase="🟢 H2 midterm — ventana ACTIVA";pc="var(--bull)";
+    sub=`Ago-sep fueron <b>negativos en los 3 midterms</b> previos (−18/−15/−15%) → pólvora para el mínimo de <b>Q4</b> (octubre, en ~${wksToOct} sem).`;}
+  else if(ym===2){phase="Midterm · 1ª mitad";sub="'just ignore Bitcoin for the first half of the midterm year'.";}
+  else{phase="Año "+names[ym];sub=ym===1?"Acumular cash: la ventana llega el año que viene (midterm).":"Fuera de su ventana de acumulación.";}
+  return{phase,pc,sub,cards:[["Año del ciclo",names[ym]||ym],["Mínimo esperado","Q4 · oct"],["Invalidación","50W ~$86,5k"]]};
 }
-
-/* Reloj de OCM: ventana de suelo por capitulación por TIEMPO (fin-ago → oct 2026) y sus
-   métricas citadas. El Omega Score es propietario → se muestra el último valor que ÉL dio
-   en vídeo (no calculable en vivo aquí). */
-function renderOcmClock(R){
+function ocmClock(){
   const now=Date.now();const winA=Date.parse("2026-08-25"),winB=Date.parse("2026-10-31");
   let phase,sub,pc="var(--accum)";
   if(now<winA){const w=Math.ceil((winA-now)/(7*864e5));phase="Suelo «cerca, no aquí»";
-    sub=`Su ventana de suelo (<b>fin-ago → oct</b>) empieza en <b>~${w} sem</b>. Espera capitulación por TIEMPO ("pain by boredom"), no un crash. Mientras: DCA acelerado (Omega ~9-11% en jun-jul, casi "ballistic").`;}
-  else if(now<=winB){phase="🟢 EN ventana de suelo";pc="var(--bull)";
-    sub=`Dentro de su ventana (fin-ago → oct). Vigilar sus hitos: LTH-in-loss 41→~45% y cruce STH/LTH realized (~fin sep-oct).`;}
-  else{phase="Ventana pasada";sub="Su ventana de suelo (fin-ago → oct 2026) ya quedó atrás.";}
-  $("#ocmPhase").textContent=phase;$("#ocmPhase").style.color=pc;
-  $("#ocmSub").innerHTML=sub;
-  $("#ocmCards").innerHTML=[["Ventana de suelo","25 ago – oct"],["Omega (citado)","9-11% jun-jul"],["Hito on-chain","LTH-in-loss →45%"],["Fin del bear","reclaim $93-96k"]]
-    .map(x=>`<div class="lv"><div class="l">${x[0]}</div><div class="n">${x[1]}</div></div>`).join("");
+    sub=`Su ventana de suelo (<b>fin-ago → oct</b>) empieza en <b>~${w} sem</b>. Capitulación por TIEMPO ("pain by boredom"), no crash.`;}
+  else if(now<=winB){phase="🟢 EN ventana de suelo";pc="var(--bull)";sub="Vigilar: LTH-in-loss 41→~45% y cruce STH/LTH realized (~fin sep-oct).";}
+  else{phase="Ventana pasada";sub="Su ventana (fin-ago → oct 2026) quedó atrás.";}
+  return{phase,pc,sub,cards:[["Ventana de suelo","25 ago – oct"],["Omega (citado)","9-11%"],["Fin del bear","$93-96k"]]};
+}
+
+/* ---------- KB de señales por agente (agentes/<a>/senales.json, generado de sus transcripts) ---------- */
+let KB={};
+async function loadKB(){
+  for(const a of["lmec","cowen","onchainmind"]){
+    try{const r=await fetch(`agentes/${a}/senales.json`,{cache:"no-store"});if(r.ok)KB[a]=await r.json();}catch(e){}
+  }
 }
 
 /* ---------- plan de guerra: cashflow BELROGAM → cash invertible sep-nov ---------- */
@@ -463,7 +431,7 @@ $("#wcForm").addEventListener("submit",e=>{e.preventDefault();loadWarchest($("#w
 function renderAgents(R){
   const px=R.price;
   const A=[
-    {name:"🎯 LMEC",color:"var(--accent)",state:"Esperando con órdenes límite",
+    {name:"🎯 LMEC",color:"var(--accent)",state:"Esperando con órdenes límite",kb:"lmec",fw:"lmec.html",clock:halvClock(R),
      now:`Compra <b>por niveles</b> con órdenes límite ya puestas: ejecutó BTC en <b>70k, 65k y 60k</b> (feb→jun 2026); las siguientes esperan en <b>~55.300</b> y <b>~50.400</b>. Mantiene un corto de BTC como cobertura (TP 48k) y operativa mínima ("no voy a hacer nada o casi nada").`,
      since:`Comprando desde <b>dic-2025</b> (HYPE ~$24) y BTC desde el crash del <b>5-feb-2026</b> — no por señal, sino por ejecución mecánica del plan fijado en máximos: "si el mercado volvía a tocar determinadas zonas críticas, había que comprar sin excepciones".`,
      next:`Espera <b>rebote-trampa a 67-69k</b> (test de la BMSB) en jul/ago → más caídas después; suelo hacia <b>oct/nov-2026</b> (~45k su escenario central) y bull real en <b>mar/abr-2027</b> (280 días tras la 2ª ruptura).`,
@@ -473,7 +441,7 @@ function renderAgents(R){
        if(m.price<=55500)return`El precio ha llegado a su <b>nivel de compra ~55.3k</b> → ejecuta la orden (30% del tramo).`;
        if(m.bmsbHi&&m.price>=m.bmsbHi*0.97)return`Precio pegado a la BMSB (${fmtUSD(m.bmsbHi)}) = su <b>rebote-trampa</b>: NO comprar aquí; él abriría cortos en alts. Órdenes abajo (55.3k) y paciencia.`;
        return`<b>No comprar a mercado.</b> Deja órdenes límite (siguiente: ~55.3k) y espera. La compra fuerte es la ruptura confirmada de la BMSB (~mar-2027).`;}},
-    {name:"📊 Cowen",color:"var(--hot)",state:"Dynamic DCA activo (risk <0,3)",
+    {name:"📊 Cowen",color:"var(--hot)",state:"Dynamic DCA activo (risk <0,3)",kb:"cowen",fw:"cowen.html",clock:cowenClock(),
      now:`<b>Ya está comprando</b>: dynamic DCA solo cuando su risk metric está <b>bajo 0,3</b> (citó 0,296). Empezó tras el <b>mínimo de junio-2026</b> (~57k), calcando 2018 y 2022. Despliegue deliberadamente lento.`,
      since:`"I started accumulating Bitcoin after the June low… I just DCA" — evitó el mínimo de febrero a propósito ("far too early in the midterm year").`,
      next:`El rebote de verano muere en el <b>200d MA (~70k)</b> fin jul-ago; <b>ago-sep han sido negativos en LOS TRES midterms</b> (−18/−15/−15%); mínimo de ciclo en <b>Q4 (octubre)</b>, test del realized (~53k); balanced 38k = "greedy". Invalidación: recuperar la 50W (~86,5k).`,
@@ -483,7 +451,7 @@ function renderAgents(R){
        if(m.ma200&&m.price<=Math.max(53000,m.ma200*0.85))return`Zona de despliegue fuerte (≤realized ~53k): <b>sube el tamaño del DCA</b> (su escalera 2-3×).`;
        if(m.price>=70000)return`Precio en su techo del rebote (200d ~70k): <b>no comprar aquí</b>; acumula cash para ago-oct.`;
        return`<b>DCA pequeño ya</b> (risk <0,3) y guarda la mayoría de la pólvora para el mínimo de Q4 (octubre). Ago-sep suelen ser rojos: no tener prisa.`;}},
-    {name:"🧠 OnChainMind",color:"var(--accum)",state:"DCA acelerado (Omega ~9-11%)",
+    {name:"🧠 OnChainMind",color:"var(--accum)",state:"DCA acelerado (Omega ~9-11%)",kb:"onchainmind",fw:"onchainmind.html",clock:ocmClock(),
      now:`<b>Dentro del mercado y comprando</b>: DCA cuya intensidad la marca su Omega Score — normal <50%, fuerte <20%, "ballistic" <10%. En jun-jul 2026 el Omega ronda <b>9-11%</b> → entre fuerte y ballistic. (La venta de sep-2025 a $111k fue de su ESTRATEGIA Cadence en el Strategy Lab — sigue en cash sin señal de compra — no de su cartera.)`,
      since:`Acumulando todo el bear; en feb-mar 2026 el Omega llegó a ~6% ("deep value").`,
      next:`Suelo <b>"cerca, no aquí"</b>: ventana <b>fin-ago → oct-2026</b>, por capitulación por TIEMPO ("pain by boredom"). Vigila: supply in loss 50/50 (ya), LTH-in-loss 41%→~45%, cruce STH/LTH realized (~fin sep-oct). El bear "termina matemáticamente" al recuperar <b>$93-96k</b>.`,
@@ -492,15 +460,27 @@ function renderAgents(R){
      advice:m=>{
        return`<b>DCA ya, con intensidad alta</b> — el riesgo on-chain está en zona de máxima asimetría. No intentes clavar el mínimo: despliega escalonado semana a semana hasta el suelo (fin-ago→oct).`;}},
   ];
-  $("#agentCards").innerHTML=A.map(a=>`<div class="acard" style="--ac:${a.color}">
+  $("#agentCards").innerHTML=A.map(a=>{
+    const kb=KB[a.kb];const reg=kb&&kb.regimen_actual;
+    const nSig=kb&&Array.isArray(kb.senales)?kb.senales.length:0;
+    const nCambios=kb&&Array.isArray(kb.cambios_opinion)?kb.cambios_opinion.length:0;
+    return `<div class="acard" style="--ac:${a.color}">
     <h3>${a.name} <span class="astate">${a.state}</span></h3>
-    <div class="albl">Ahora</div><div class="arow">${a.now}</div>
-    <div class="albl">Desde cuándo y por qué</div><div class="arow">${a.since}</div>
-    <div class="albl">Corto plazo (ago-nov)</div><div class="arow">${a.next}</div>
+    <div class="albl">1 · Fase del ciclo (según él)</div>
+    <div class="arow"><b style="color:${a.clock.pc}">${a.clock.phase}</b>${reg?` — <i>"${esc(reg.fase||"")}"</i>`:""}<br>${a.clock.sub}</div>
+    ${reg&&reg.quote?`<div class="aq">"${esc(reg.quote)}"<span class="src">[${esc(reg.src||"")}]</span></div>`:""}
+    <div class="levels" style="margin:4px 0 2px">${a.clock.cards.map(x=>`<div class="lv"><div class="l">${x[0]}</div><div class="n" style="font-size:13px">${x[1]}</div></div>`).join("")}</div>
+    <div class="albl">2 · Qué está haciendo</div><div class="arow">${a.now}</div>
+    <div class="albl">3 · Por qué (y desde cuándo)</div><div class="arow">${a.since}</div>
+    <div class="albl">Siguiente movimiento que espera</div><div class="arow">${a.next}</div>
     <div class="albl">Pólvora</div><div class="arow">${a.powder}</div>
     <div class="aq">${a.q}<span class="src">[${a.src}]</span></div>
     <div class="advice">💬 <b>Con las métricas de hoy</b> (BTC ${fmtUSD(px)}): ${a.advice(R)}</div>
-  </div>`).join("");
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      <a class="btn" style="font-size:12px;padding:6px 10px" href="${a.fw}">📖 Su framework completo →</a>
+      ${nSig?`<span class="chip" style="align-self:center">📚 ${nSig} señales en su KB${nCambios?` · ${nCambios} cambios de opinión`:""}</span>`:`<span class="chip" style="align-self:center">📚 KB de señales: generándose</span>`}
+    </div>
+  </div>`;}).join("");
 }
 
 /* ---------- gráfica de fases del ciclo (sombras por semanas del halving) ---------- */
@@ -608,6 +588,7 @@ async function refreshAll(){
     const [oc,fng]=await Promise.all([fetchOnchain().catch(()=>({z:null,realized:null})),fetchFNG().catch(()=>null)]);
     D.z=oc.z;D.realized=oc.realized;D.fng=fng;
     const R=evaluate(D);render(R);
+    await loadKB();
     renderAgents(R);
     renderPhaseChart(D);
     loadHistory(D,R.price);

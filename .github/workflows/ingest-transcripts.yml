@@ -1,0 +1,51 @@
+name: Ingesta diaria de transcripts (YouTube)
+
+on:
+  schedule:
+    # Diario a las 06:30 UTC — baja los subtítulos de los vídeos NUEVOS (últimos 5
+    # por canal, --dateafter 10 días) de los 3 agentes y los commitea.
+    - cron: "30 6 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ingest-transcripts
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar yt-dlp
+        run: python -m pip install --quiet yt-dlp
+      - name: LMEC (es)
+        continue-on-error: true
+        run: |
+          python agentes/tools/fetch_captions.py --persona lmec --lang es --max 5 \
+            --since $(date -u -d '10 days ago' +%Y%m%d) \
+            "https://www.youtube.com/@LaMejorEstrategiaCriptomonedas/videos"
+      - name: Cowen (en)
+        continue-on-error: true
+        run: |
+          python agentes/tools/fetch_captions.py --persona cowen --lang en --max 5 \
+            --since $(date -u -d '10 days ago' +%Y%m%d) \
+            "https://www.youtube.com/@IntoTheCryptoverse/videos"
+      - name: OnChainMind (en)
+        continue-on-error: true
+        run: |
+          python agentes/tools/fetch_captions.py --persona onchainmind --lang en --max 5 \
+            --since $(date -u -d '10 days ago' +%Y%m%d) \
+            "https://www.youtube.com/@OnChainMind/videos"
+      - name: Commit de transcripts nuevos
+        run: |
+          git config user.name "transcript-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add agentes/*/yt-transcripts/
+          git diff --cached --quiet || git commit -m "transcripts: ingesta diaria [skip ci]"
+          git push
