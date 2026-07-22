@@ -101,10 +101,22 @@ def decide(d, z, fng, realized):
     else:
         action = "Esperar dip"
 
+    # --- posturas mecánicas de cada agente (para la competición de aciertos) ---
+    # lmec: dentro en su ventana temporal de acumulación (sem 120-180 post-halving)
+    # cowen: dentro desde la 2ª mitad del midterm (ym==2, m>=7) hasta el Q4 del post-halving (ym==1, m<=9)
+    # ocm: DCA continuo escalado por riesgo (no es in/out binario) → se registra como 'dca'
+    cowen_in = (ym == 2 and mo >= 7) or ym == 3 or ym == 0 or (ym == 1 and mo <= 9)
+    stances = {
+        "lmec": "in" if accum else "out",
+        "cowen": "in" if cowen_in else "out",
+        "ocm": "dca",
+    }
+
     return {
         "date": dt.strftime("%Y-%m-%d"),
         "price": round(price, 2),
         "lit": lit, "tot": tot, "action": action,
+        "stances": stances,
         "signals": sig,
         "metrics": {
             "bmsb": round(bh, 2) if bh is not None else None,

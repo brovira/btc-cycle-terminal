@@ -68,6 +68,17 @@
   .htbl td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
   .how{display:flex;gap:20px;flex-wrap:wrap;margin-top:6px}
   .how>div{flex:1;min-width:230px;line-height:1.7}
+  .agrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+  .acard{border:1px solid var(--line);border-top:3px solid var(--ac,var(--accent));border-radius:14px;background:var(--panel);padding:16px 17px;display:flex;flex-direction:column;gap:8px}
+  .acard h3{margin:0;font-size:16px;display:flex;align-items:center;gap:8px}
+  .acard .astate{font-size:11px;font-weight:800;font-family:var(--mono);padding:3px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.03em;background:color-mix(in oklab,var(--ac) 15%,transparent);color:var(--ac)}
+  .acard .arow{font-size:12.7px;line-height:1.55;color:var(--ink2)}
+  .acard .arow b{color:var(--ink)}
+  .acard .albl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:3px}
+  .acard .aq{font-size:11.5px;font-style:italic;color:var(--ink2);border-left:2px solid var(--ac,var(--line));padding-left:8px;line-height:1.45;margin-top:2px}
+  .acard .aq .src{display:block;font-style:normal;font-size:10px;color:var(--muted);margin-top:2px;font-family:var(--mono)}
+  .acard .advice{margin-top:auto;padding:10px 12px;border-radius:10px;background:color-mix(in oklab,var(--ac) 10%,var(--panel2));font-size:13px;line-height:1.5}
+  .acard .advice b{color:var(--ac)}
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
@@ -105,6 +116,13 @@
     <div class="note" id="halvSub" style="margin-top:5px"></div>
     <div class="levels" id="halvCards" style="margin-top:12px"></div>
   </div>
+
+  <div class="sec-head"><h2>Los tres agentes — qué hacen AHORA</h2><div class="rule"></div><span class="mtxt" style="font-size:12px">de sus transcripts, citado</span></div>
+  <div class="agrid" id="agentCards"></div>
+
+  <div class="sec-head"><h2>Fases del ciclo sobre el precio</h2><div class="rule"></div></div>
+  <div style="border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:8px 6px 2px"><div id="phaseChart" style="width:100%;min-height:380px"></div></div>
+  <div class="note" style="margin-top:8px">Sombras = fase del ciclo según las <b>semanas desde el halving</b> (marco LMEC/Cowen): <span style="color:var(--bull)">■</span> acumulación/DCA fuerte (sem 120-180) · <span style="color:var(--accum)">■</span> DCA pre-halving (sem 180+) · <span style="color:var(--hot)">■</span> distribución/vender (sem 70-110) · <span style="color:var(--muted)">■</span> preservación/cash (sem 110-120) · sin sombra = bull, dejar correr (sem 0-70). Líneas: BMSB y 200W MA — el "rango" que citan los tres.</div>
 
   <div class="sec-head"><h2>Señales</h2><div class="rule"></div></div>
   <div class="grid" id="sigs"></div>
@@ -331,6 +349,89 @@ function renderHalving(R){
   $("#halvNext").textContent = wk<buyA?("faltan ~"+Math.ceil(buyA-wk)+" sem para comprar") : (wk<=buyB?"en ventana de compra":"");
 }
 
+/* ---------- los tres agentes: postura actual (citada) + consejo con las métricas de hoy ---------- */
+function renderAgents(R){
+  const px=R.price;
+  const A=[
+    {name:"🎯 LMEC",color:"var(--accent)",state:"Esperando con órdenes límite",
+     now:`Compra <b>por niveles</b> con órdenes límite ya puestas: ejecutó BTC en <b>70k, 65k y 60k</b> (feb→jun 2026); las siguientes esperan en <b>~55.300</b> y <b>~50.400</b>. Mantiene un corto de BTC como cobertura (TP 48k) y operativa mínima ("no voy a hacer nada o casi nada").`,
+     since:`Comprando desde <b>dic-2025</b> (HYPE ~$24) y BTC desde el crash del <b>5-feb-2026</b> — no por señal, sino por ejecución mecánica del plan fijado en máximos: "si el mercado volvía a tocar determinadas zonas críticas, había que comprar sin excepciones".`,
+     next:`Espera <b>rebote-trampa a 67-69k</b> (test de la BMSB) en jul/ago → más caídas después; suelo hacia <b>oct/nov-2026</b> (~45k su escenario central) y bull real en <b>mar/abr-2027</b> (280 días tras la 2ª ruptura).`,
+     powder:`<b>45% en stables.</b> "Lo gordo" reservado para la ruptura alcista CONFIRMADA de la BMSB (+MACD verde+RSI 40-50+MVRV saliendo de verde).`,
+     q:`"Volveré a comprar [BTC] en los 55.000… cuanto más caen, más aumenta el porcentaje de la compra. Por eso es tan importante siempre mantener mucha liquidez disponible."`,src:"LMEC · 12-jun-2026 (plan completo 2027)",
+     advice:m=>{
+       if(m.price<=55500)return`El precio ha llegado a su <b>nivel de compra ~55.3k</b> → ejecuta la orden (30% del tramo).`;
+       if(m.bmsbHi&&m.price>=m.bmsbHi*0.97)return`Precio pegado a la BMSB (${fmtUSD(m.bmsbHi)}) = su <b>rebote-trampa</b>: NO comprar aquí; él abriría cortos en alts. Órdenes abajo (55.3k) y paciencia.`;
+       return`<b>No comprar a mercado.</b> Deja órdenes límite (siguiente: ~55.3k) y espera. La compra fuerte es la ruptura confirmada de la BMSB (~mar-2027).`;}},
+    {name:"📊 Cowen",color:"var(--hot)",state:"Dynamic DCA activo (risk <0,3)",
+     now:`<b>Ya está comprando</b>: dynamic DCA solo cuando su risk metric está <b>bajo 0,3</b> (citó 0,296). Empezó tras el <b>mínimo de junio-2026</b> (~57k), calcando 2018 y 2022. Despliegue deliberadamente lento.`,
+     since:`"I started accumulating Bitcoin after the June low… I just DCA" — evitó el mínimo de febrero a propósito ("far too early in the midterm year").`,
+     next:`El rebote de verano muere en el <b>200d MA (~70k)</b> fin jul-ago; <b>ago-sep han sido negativos en LOS TRES midterms</b> (−18/−15/−15%); mínimo de ciclo en <b>Q4 (octubre)</b>, test del realized (~53k); balanced 38k = "greedy". Invalidación: recuperar la 50W (~86,5k).`,
+     powder:`Escalonado creciente: $100→$200→$300 al caer el risk a 0,2/0,1/0. "La mayoría de los DCAs" reservada para Q4 — y pivot "in a heartbeat" si capitula antes.`,
+     q:`"There's nothing wrong… with DCA-ing Bitcoin in the second half of midterm years. That's what I've done and it's worked out pretty well."`,src:"Cowen · 08-jul-2026",
+     advice:m=>{
+       if(m.ma200&&m.price<=Math.max(53000,m.ma200*0.85))return`Zona de despliegue fuerte (≤realized ~53k): <b>sube el tamaño del DCA</b> (su escalera 2-3×).`;
+       if(m.price>=70000)return`Precio en su techo del rebote (200d ~70k): <b>no comprar aquí</b>; acumula cash para ago-oct.`;
+       return`<b>DCA pequeño ya</b> (risk <0,3) y guarda la mayoría de la pólvora para el mínimo de Q4 (octubre). Ago-sep suelen ser rojos: no tener prisa.`;}},
+    {name:"🧠 OnChainMind",color:"var(--accum)",state:"DCA acelerado (Omega ~9-11%)",
+     now:`<b>Dentro del mercado y comprando</b>: DCA cuya intensidad la marca su Omega Score — normal <50%, fuerte <20%, "ballistic" <10%. En jun-jul 2026 el Omega ronda <b>9-11%</b> → entre fuerte y ballistic. (La venta de sep-2025 a $111k fue de su ESTRATEGIA Cadence en el Strategy Lab — sigue en cash sin señal de compra — no de su cartera.)`,
+     since:`Acumulando todo el bear; en feb-mar 2026 el Omega llegó a ~6% ("deep value").`,
+     next:`Suelo <b>"cerca, no aquí"</b>: ventana <b>fin-ago → oct-2026</b>, por capitulación por TIEMPO ("pain by boredom"). Vigila: supply in loss 50/50 (ya), LTH-in-loss 41%→~45%, cruce STH/LTH realized (~fin sep-oct). El bear "termina matemáticamente" al recuperar <b>$93-96k</b>.`,
+     powder:`NO guarda para un all-in: "comprar a 10% de riesgo vs 0% es basically a rounding error"; esperar el número mágico = "lazy thinking dressed up as patience".`,
+     q:`"I'll DCA on a regular basis whenever the score is below 50%… ramp up my accumulation below 20 and I go absolutely ballistic below 10."`,src:"OCM · 16-jun-2026",
+     advice:m=>{
+       return`<b>DCA ya, con intensidad alta</b> — el riesgo on-chain está en zona de máxima asimetría. No intentes clavar el mínimo: despliega escalonado semana a semana hasta el suelo (fin-ago→oct).`;}},
+  ];
+  $("#agentCards").innerHTML=A.map(a=>`<div class="acard" style="--ac:${a.color}">
+    <h3>${a.name} <span class="astate">${a.state}</span></h3>
+    <div class="albl">Ahora</div><div class="arow">${a.now}</div>
+    <div class="albl">Desde cuándo y por qué</div><div class="arow">${a.since}</div>
+    <div class="albl">Corto plazo (ago-nov)</div><div class="arow">${a.next}</div>
+    <div class="albl">Pólvora</div><div class="arow">${a.powder}</div>
+    <div class="aq">${a.q}<span class="src">[${a.src}]</span></div>
+    <div class="advice">💬 <b>Con las métricas de hoy</b> (BTC ${fmtUSD(px)}): ${a.advice(R)}</div>
+  </div>`).join("");
+}
+
+/* ---------- gráfica de fases del ciclo (sombras por semanas del halving) ---------- */
+function phaseOf(hw){ // fases del marco temporal LMEC/Cowen sobre las semanas post-halving
+  if(hw<70)return null;                                    // bull: dejar correr (sin sombra)
+  if(hw<=110)return{c:"rgba(242,163,63,.12)",k:"vender"};  // distribución
+  if(hw<120)return{c:"rgba(127,146,171,.10)",k:"cash"};    // preservación
+  if(hw<=180)return{c:"rgba(47,195,155,.12)",k:"dca+"};    // acumulación fuerte
+  return{c:"rgba(63,169,245,.10)",k:"dca"};                // pre-halving
+}
+async function renderPhaseChart(D){
+  await ensurePlotly();if(!window.Plotly)return;
+  const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const ink=css("--ink"),muted=css("--muted"),line=css("--line"),accent=css("--accent"),accum=css("--accum");
+  const n=D.c.length,start=Math.max(0,n-Math.min(n,470)); // ~9 años
+  const xs=[],ys=[];for(let i=start;i<n;i++){xs.push(new Date(D.t[i]).toISOString().slice(0,10));ys.push(D.c[i]);}
+  // BMSB y 200W
+  const s20=sma(D.c,20),e21=ema(D.c,21),s200=sma(D.c,200);
+  const bm=[],m2=[];for(let i=start;i<n;i++){bm.push((s20[i]!=null&&e21[i]!=null)?Math.max(s20[i],e21[i]):null);m2.push(s200[i]);}
+  // sombras por fase (segmentos contiguos con la misma fase)
+  const shapes=[];let cur=null,x0=null;
+  for(let i=start;i<n;i++){
+    const ph=phaseOf(halvWeeks(D.t[i]));const key=ph?ph.k:"none";
+    if(!cur||cur.key!==key){
+      if(cur&&cur.ph)shapes.push({type:"rect",xref:"x",yref:"paper",x0:cur.x0,x1:new Date(D.t[i]).toISOString().slice(0,10),y0:0,y1:1,fillcolor:cur.ph.c,line:{width:0},layer:"below"});
+      cur={key,ph,x0:new Date(D.t[i]).toISOString().slice(0,10)};
+    }
+  }
+  if(cur&&cur.ph)shapes.push({type:"rect",xref:"x",yref:"paper",x0:cur.x0,x1:xs[xs.length-1],y0:0,y1:1,fillcolor:cur.ph.c,line:{width:0},layer:"below"});
+  const traces=[
+    {x:xs,y:ys,type:"scatter",mode:"lines",name:"BTC",line:{color:ink,width:1.5},hovertemplate:"%{x}<br>$%{y:,.0f}<extra></extra>"},
+    {x:xs,y:bm,type:"scatter",mode:"lines",name:"BMSB",line:{color:accent,width:1,dash:"dot"}},
+    {x:xs,y:m2,type:"scatter",mode:"lines",name:"200W MA",line:{color:accum,width:1,dash:"dash"}},
+  ];
+  const layout={margin:{l:56,r:12,t:8,b:32},height:380,paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
+    font:{color:ink,size:11},showlegend:true,legend:{orientation:"h",y:1.12,font:{size:11}},shapes,
+    xaxis:{gridcolor:line,type:"date"},yaxis:{gridcolor:line,type:"log",tickprefix:"$",title:{text:"BTC (log)",font:{size:11}}},hovermode:"x unified",
+    hoverlabel:{bordercolor:muted,font:{size:11}}};
+  window.Plotly.react("phaseChart",traces,layout,{displayModeBar:false,responsive:true});
+}
+
 /* ---------- historial: lee data/decision_history.json y puntúa el acierto ---------- */
 const BUY_ACTIONS=new Set(["Comprar por niveles","DCA base","Esperar dip a nivel","Esperar seasonality","Esperar dip"]);
 function hitOf(action,fwd){
@@ -391,20 +492,25 @@ async function loadHistory(D,livePrice){
         <td>${h==null?'<span class="st off">n/a</span>':(h?'<span class="st on">✓</span>':'<span class="st nd">✗</span>')}</td></tr>`;}).join("")+`</tbody>`;
 }
 
-(async function(){
+async function refreshAll(){
   try{
     const D=await fetchWeekly();
     const [oc,fng]=await Promise.all([fetchOnchain().catch(()=>({z:null,realized:null})),fetchFNG().catch(()=>null)]);
     D.z=oc.z;D.realized=oc.realized;D.fng=fng;
     const R=evaluate(D);render(R);
+    renderAgents(R);
+    renderPhaseChart(D);
     loadHistory(D,R.price);
     $("#statusDot").className="dot ok";
-    $("#statusText").textContent="Actualizado · "+new Date().toISOString().slice(0,10)+" · fuente: Binance"+(z!=null?" + Coin Metrics":"");
+    const hh=new Date();const hm=String(hh.getHours()).padStart(2,"0")+":"+String(hh.getMinutes()).padStart(2,"0");
+    $("#statusText").textContent="Actualizado "+hh.toISOString().slice(0,10)+" "+hm+" · se refresca cada 30 min · Binance"+(D.z!=null?" + Coin Metrics":"");
   }catch(e){
     $("#statusDot").className="dot err";$("#statusText").textContent="No se pudieron cargar los datos: "+((e&&e.message)||e);
     $("#action").textContent="Sin datos";$("#actionSub").textContent="Reintenta en un momento.";
   }
-})();
+}
+refreshAll();
+setInterval(refreshAll,30*60*1000); // precio, señales y consejos de los agentes cada 30 min
 </script>
 </body>
 </html>
