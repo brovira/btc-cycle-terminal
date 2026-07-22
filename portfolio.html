@@ -42,6 +42,13 @@
   .risk .leg span{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink2)}
   .risk .leg b{font-family:var(--font);font-variant-numeric:tabular-nums;color:var(--ink);font-weight:700}
   .rdot{width:9px;height:9px;border-radius:50%;display:inline-block}
+  /* filtros + toggle de agrupación (estilo Nansen) */
+  .sel{font:inherit;font-size:12.5px;font-weight:600;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:6px 10px;cursor:pointer}
+  .sel:hover{border-color:var(--accent)}
+  .modes{display:inline-flex;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:2px}
+  .mbtn{font:inherit;font-size:12.5px;font-weight:600;color:var(--muted);background:none;border:0;padding:5px 11px;border-radius:8px;cursor:pointer}
+  .mbtn:hover{color:var(--ink)}
+  .mbtn.on{background:var(--accent);color:#fff}
   /* tables */
   .sec-head{display:flex;align-items:center;gap:10px;margin:24px 2px 12px}
   .sec-head h2{margin:0;font-size:14px;font-weight:750}
@@ -115,13 +122,21 @@
     <div id="tab-ov">
       <div class="panel nw" id="nwCard"></div>
 
-      <div class="sec-head"><h2>🪙 Token breakdown</h2><div class="rule"></div>
+      <div class="sec-head" style="flex-wrap:wrap;gap:8px"><h2>🪙 Token breakdown</h2><div class="rule"></div>
+        <select id="fWallet" class="sel" title="Filtrar por wallet"></select>
+        <select id="fChain" class="sel" title="Filtrar por blockchain"></select>
+        <div class="modes" id="gbModes">
+          <button class="mbtn on" data-m="activo">Activo</button>
+          <button class="mbtn" data-m="token">Token</button>
+          <button class="mbtn" data-m="protocol">Protocolo</button>
+          <button class="mbtn" data-m="chain">Chain</button>
+        </div>
         <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);cursor:pointer">
           <input type="checkbox" id="dustToggle"> ocultar &lt;$5
         </label>
       </div>
       <div class="panel" style="overflow:auto"><table id="tbTbl"></table></div>
-      <div class="note" style="margin-top:6px">Cada token suma <b>todas</b> sus ubicaciones (wallet + pools + staking). Pincha una fila para ver dónde está cada parte.</div>
+      <div class="note" id="tbNote" style="margin-top:6px"><b>Activo</b> agrupa por subyacente (todos tus BTC juntos en ₿ y $, ídem ETH, USD…). Pincha una fila para desglosarla.</div>
     </div>
 
     <!-- ============ HOLDINGS ============ -->
@@ -132,7 +147,7 @@
     </div>
 
     <!-- ============ BELROGAM (siempre visible) ============ -->
-    <div class="sec-head" id="belrogam" style="scroll-margin-top:16px"><h2>🏢 BELROGAM · plan de guerra</h2><div class="rule"></div><span class="addr">cashflow privado</span></div>
+    <div class="sec-head" id="belrogam" style="scroll-margin-top:16px"><h2>🏢 BELROGAM · 4-year cycle plan</h2><div class="rule"></div><span class="addr">cashflow privado</span></div>
     <div class="panel" style="padding:16px 18px">
       <div class="note" id="cfMsg">Cargando cashflow…</div>
       <div id="cfBody" style="display:none;margin-top:12px"></div>
@@ -295,7 +310,8 @@ function rebuild(){
   RAW.orcaPos=orca.positions;RAW.uniPos=(uni.positions||[]);RAW.prjxPos=(prjx.positions||[]);RAW.hl=hl;
 
   renderNetWorth();
-  renderTokenBreakdown();
+  populateFilters();
+  renderBreakdown();
   renderHoldings();
 }
 
@@ -331,31 +347,93 @@ function whereLabel(a){
   const verb=a.protocol==="Wallet"?"Idle en Wallet":(a.kind==="stake"?"Staking en "+esc(a.protocol):(a.kind==="lp"?"LP en "+esc(a.protocol):"En "+esc(a.protocol)));
   return `${verb}${via} <span class="addr">${esc(a.address)}</span>`;
 }
-function renderTokenBreakdown(){
-  if(!ASSETS.length){$("#tbTbl").innerHTML="";return;}
-  const strip=s=>String(s).replace(/[\s].*/,"");
+let GB_MODE="activo",FILT_W="all",FILT_C="all";
+const strip=s=>String(s).replace(/[\s].*/,"");
+/* activo = subyacente: todos los BTC juntos (cbBTC/WBTC/UBTC…), ETH+WETH, BNB, HYPE, estables→USD */
+function underlying(sym){
+  const s=String(sym).toUpperCase().replace(/[\s/].*/,"");
+  if(STABLE(s))return"USD";
+  if(/BTC$/.test(s)||/^(BTC|BTCB|SATS|XBT)$/.test(s))return"BTC";
+  if(/^(ETH|WETH|STETH|WSTETH|BETH|UETH)$/.test(s))return"ETH";
+  if(/^(BNB|WBNB)$/.test(s))return"BNB";
+  if(/^(HYPE|WHYPE)$/.test(s))return"HYPE";
+  if(/^(SOL|WSOL)$/.test(s))return"SOL";
+  return strip(sym);
+}
+function walletOf(a){return a.chain==="solana"?"solana":"evm";}
+function viewAssets(){
+  let arr=ASSETS_FULL.slice();
+  if(DUST_HIDE)arr=arr.filter(a=>(a.usd||0)>=DUST_MIN);
+  if(FILT_W!=="all")arr=arr.filter(a=>walletOf(a)===FILT_W);
+  if(FILT_C!=="all")arr=arr.filter(a=>a.chain===FILT_C);
+  return arr;
+}
+function groupBy(arr,keyFn){
   const g={};
-  for(const a of ASSETS){const k=strip(a.sym).toUpperCase();const o=g[k]||(g[k]={key:k,sym:strip(a.sym),usd:0,amount:0,amtOk:true,items:[]});
-    o.usd+=a.usd||0;if(a.amount!=null)o.amount+=a.amount;else o.amtOk=false;o.items.push(a);}
-  const rows=Object.values(g).sort((a,b)=>b.usd-a.usd);
-  let html=`<thead><tr><th>Token</th><th>Precio</th><th>Cantidad</th><th>Share</th><th>Valor</th></tr></thead><tbody>`;
-  rows.forEach((r,ix)=>{
-    const share=TOTAL_USD?r.usd/TOTAL_USD*100:0;
-    const price=r.amtOk&&r.amount?r.usd/r.amount:null;
-    html+=`<tr class="grp" data-g="tb${ix}"><td><span class="caret">▶</span> <span class="tok">${tokIcon(r.sym)}${esc(r.sym)}</span></td>`+
-      `<td>${fmtPx(price)}</td><td>${r.amtOk?fmtAmt(r.amount):"—"}</td><td>${bar(share)}</td><td>${fmtUSD(r.usd,2)}</td></tr>`;
-    for(const a of r.items.sort((x,y)=>(y.usd||0)-(x.usd||0))){
-      const pctIn=r.usd?(a.usd||0)/r.usd*100:0;
-      html+=`<tr class="subrow" data-p="tb${ix}"><td style="padding-left:40px">${whereLabel(a)}</td><td></td><td>${a.amount!=null?fmtAmt(a.amount):"—"}</td><td>${bar(pctIn)}</td><td>${fmtUSD(a.usd,2)}</td></tr>`;
+  for(const a of arr){const k=keyFn(a);const o=g[k]||(g[k]={key:k,usd:0,amount:0,amtOk:true,items:[]});o.usd+=a.usd||0;if(a.amount!=null)o.amount+=a.amount;else o.amtOk=false;o.items.push(a);}
+  return Object.values(g).sort((x,y)=>y.usd-x.usd);
+}
+function whereText(a){
+  const w=a.protocol==="Wallet"?"Idle en Wallet":(a.kind==="stake"?"Staking "+a.protocol:(a.kind==="lp"?"LP "+a.protocol:a.protocol));
+  return w+" · "+a.chain;
+}
+function populateFilters(){
+  const wl=$("#fWallet"),cl=$("#fChain");
+  const wallets=[...new Set(ASSETS_FULL.map(walletOf))];
+  const chains=[...new Set(ASSETS_FULL.map(a=>a.chain))].sort();
+  const wName={solana:"Solana",evm:"EVM"};
+  wl.innerHTML=[["all","Wallet · todas"],...wallets.map(w=>[w,wName[w]||w])].map(([v,n])=>`<option value="${v}"${v===FILT_W?" selected":""}>${esc(n)}</option>`).join("");
+  cl.innerHTML=[["all","Chain · todas"],...chains.map(c=>[c,c])].map(([v,n])=>`<option value="${v}"${v===FILT_C?" selected":""}>${esc(n)}</option>`).join("");
+}
+function renderBreakdown(){
+  const arr=viewAssets();
+  const total=arr.reduce((s,a)=>s+(a.usd||0),0)||1;
+  const topKey = GB_MODE==="activo"?(a=>underlying(a.sym))
+              : GB_MODE==="token"?(a=>strip(a.sym).toUpperCase())
+              : GB_MODE==="protocol"?(a=>a.protocol) : (a=>a.chain);
+  const subKey = GB_MODE==="token"?(a=>a.protocol+"|"+a.chain+"|"+a.kind+"|"+a.address) : (a=>strip(a.sym).toUpperCase());
+  const amtMode = GB_MODE==="activo"||GB_MODE==="token";
+  const th0 = GB_MODE==="protocol"?"Protocolo":GB_MODE==="chain"?"Blockchain":GB_MODE==="activo"?"Activo":"Token";
+  const groups=groupBy(arr,topKey);
+  let html=`<thead><tr><th>${th0}</th><th>Precio</th><th>Cantidad</th><th>Share</th><th>Valor</th></tr></thead><tbody>`;
+  groups.forEach((r,ix)=>{
+    const share=r.usd/total*100, price=amtMode&&r.amtOk&&r.amount?r.usd/r.amount:null;
+    let glab;
+    if(GB_MODE==="protocol")glab=`<span class="tok">${protoIcon(r.key)} ${esc(r.key)}</span>`;
+    else if(GB_MODE==="chain")glab=`<span class="tok">${esc(r.key)}</span>`;
+    else glab=`<span class="tok">${tokIcon(GB_MODE==="activo"?r.key:r.items[0].sym)}${esc(GB_MODE==="activo"?r.key:strip(r.items[0].sym))}</span>`;
+    const amtCell = amtMode ? (r.amtOk?`${fmtAmt(r.amount)}${GB_MODE==="activo"?` <span class="addr">${esc(r.key)}</span>`:""}`:"—") : `<span class="addr">${r.items.length} activos</span>`;
+    html+=`<tr class="grp" data-g="tb${ix}"><td><span class="caret">▶</span> ${glab}</td><td>${fmtPx(price)}</td><td>${amtCell}</td><td>${bar(share)}</td><td>${fmtUSD(r.usd,2)}</td></tr>`;
+    for(const sg of groupBy(r.items,subKey)){
+      const pctIn=r.usd?sg.usd/r.usd*100:0, a0=sg.items[0];
+      let slab;
+      if(GB_MODE==="token")slab=whereLabel(a0);
+      else if(GB_MODE==="activo")slab=`<span class="tok">${tokIcon(a0.sym)}${esc(strip(a0.sym))}</span>`;
+      else slab=`<span class="tok">${tokIcon(a0.sym)}${esc(strip(a0.sym))}</span> <span class="chip">${esc(GB_MODE==="protocol"?a0.chain:a0.protocol)}</span>`;
+      html+=`<tr class="subrow" data-p="tb${ix}"><td style="padding-left:40px">${slab}</td><td></td><td>${sg.amtOk?fmtAmt(sg.amount):"—"}</td><td>${bar(pctIn)}</td><td>${fmtUSD(sg.usd,2)}</td></tr>`;
     }
   });
-  $("#tbTbl").innerHTML=html+`</tbody>`;
+  $("#tbTbl").innerHTML= groups.length?html+`</tbody>`:`<tbody><tr><td class="note" style="padding:16px">Nada que mostrar con estos filtros.</td></tr></tbody>`;
 }
 $("#tbTbl").addEventListener("click",e=>{
   const tr=e.target.closest("tr.grp");if(!tr)return;
   tr.classList.toggle("open");
   document.querySelectorAll(`tr.subrow[data-p="${tr.dataset.g}"]`).forEach(s=>s.classList.toggle("show"));
 });
+const TB_NOTE={
+  activo:"<b>Activo</b> agrupa por subyacente: todos tus BTC juntos (en ₿ y $), ídem ETH+WETH, BNB, HYPE, y estables→USD. Pincha para ver de qué tokens se compone.",
+  token:"<b>Token</b>: cada token por separado. Pincha para ver dónde está (wallet, LP, staking).",
+  protocol:"<b>Protocolo</b>: agrupado por dónde está el capital (Wallet, Orca, Uniswap…).",
+  chain:"<b>Chain</b>: agrupado por blockchain."
+};
+document.querySelectorAll("#gbModes .mbtn").forEach(b=>b.addEventListener("click",()=>{
+  GB_MODE=b.dataset.m;
+  document.querySelectorAll("#gbModes .mbtn").forEach(x=>x.classList.toggle("on",x===b));
+  $("#tbNote").innerHTML=TB_NOTE[GB_MODE]+" Filtra por wallet/chain arriba.";
+  renderBreakdown();
+}));
+$("#fWallet").addEventListener("change",e=>{FILT_W=e.target.value;renderBreakdown();});
+$("#fChain").addEventListener("change",e=>{FILT_C=e.target.value;renderBreakdown();});
 
 /* ---------------- HOLDINGS: por protocolo ---------------- */
 function walletBody(items){
