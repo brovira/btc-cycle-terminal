@@ -333,7 +333,8 @@ async function fetchPositionHistory({ baseUrl, rpcs, call, owner, manager, token
   receipts.sort((a, b) => a.block - b.block);
 
   let deposited0 = 0, deposited1 = 0, investedUsd = 0, withdrawnUsd = 0;
-  let claimedFeesUsd = 0, gasUsd = 0, gasComplete = true, owed0 = 0, owed1 = 0;
+  let claimedFeesUsd = 0, claimedFeeAmount0 = 0, claimedFeeAmount1 = 0;
+  let gasUsd = 0, gasComplete = true, owed0 = 0, owed1 = 0;
   let entryCost0 = 0, entryCost1 = 0, openedAt = mint.timestamp;
   const nativeSymbol = network === "Ethereum" ? "ETH" : network === "HyperEVM" ? "HYPE" : null;
   const events = [];
@@ -366,7 +367,9 @@ async function fetchPositionHistory({ baseUrl, rpcs, call, owner, manager, token
         if (eventPx0 == null || eventPx1 == null) return null;
         withdrawnUsd += event.amount0 * eventPx0 + event.amount1 * eventPx1;
         const principal0 = Math.min(owed0, event.amount0), principal1 = Math.min(owed1, event.amount1);
-        claimedFeesUsd += (event.amount0 - principal0) * eventPx0 + (event.amount1 - principal1) * eventPx1;
+        const fee0 = event.amount0 - principal0, fee1 = event.amount1 - principal1;
+        claimedFeeAmount0 += fee0; claimedFeeAmount1 += fee1;
+        claimedFeesUsd += fee0 * eventPx0 + fee1 * eventPx1;
         owed0 -= principal0; owed1 -= principal1;
       }
     }
@@ -389,7 +392,9 @@ async function fetchPositionHistory({ baseUrl, rpcs, call, owner, manager, token
   if (!isUsdStable(token1.sym) && deposited1 > 0) entryPrices.push({ symbol: token1.sym === "WETH" ? "ETH" : token1.sym, priceUsd: entryCost1 / deposited1 });
   return {
     openedAt, durationDays, deposited0, deposited1, investedUsd, withdrawnUsd,
-    claimedFeesUsd, pendingFeesUsd, feesUsd, gasUsd: gasComplete ? gasUsd : null,
+    claimedFeesUsd, claimedFeeAmount0, claimedFeeAmount1,
+    pendingFeesUsd, pendingFeeAmount0: pendingAmount0, pendingFeeAmount1: pendingAmount1,
+    feesUsd, gasUsd: gasComplete ? gasUsd : null,
     pnlUsd, pnlPct: pnlUsd / investedUsd * 100,
     annualizedYieldPct: feesUsd / investedUsd * 365 / durationDays * 100,
     entryPrices, events,
