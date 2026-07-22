@@ -135,7 +135,7 @@
           <button class="mbtn" data-m="chain">Chain</button>
         </div>
         <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);cursor:pointer">
-          <input type="checkbox" id="dustToggle"> ocultar &lt;$5
+          <input type="checkbox" id="dustToggle" checked> ocultar &lt;$5
         </label>
       </div>
       <div class="panel" style="overflow:auto"><table id="tbTbl"></table></div>
@@ -271,7 +271,7 @@ async function load(){
   if(location.hash==="#belrogam")requestAnimationFrame(()=>$("#belrogam").scrollIntoView({block:"start"}));
 }
 
-let RAW=null,DUST_HIDE=false;const DUST_MIN=5;
+let RAW=null,DUST_HIDE=true;const DUST_MIN=5;
 let ASSETS=[],ASSETS_FULL=[],PROTOS=[],TOTAL_USD=0;
 function rebuild(){
   if(!RAW)return;
@@ -491,7 +491,7 @@ function renderHoldings(){
     else if(p.name==="ProjectX")body=lpBody((RAW.prjxPos||[]).filter(x=>x.usd));
     else if(p.name==="Wallet")body=walletBody(p.items);
     else body=simpleBody(p.items);
-    return `<details class="panel proto" id="proto-${i}" ${i<3?"open":""}>
+    return `<details class="panel proto" id="proto-${i}">
       <summary><span class="cv">▶</span><span class="pn">${protoIcon(p.name)} ${esc(p.name)}</span><span class="pt">${fmtUSD(p.usd)} <span class="addr" style="font-weight:600;margin-left:4px">${pct(p.usd).toFixed(1)}%</span></span></summary>
       <div class="body">${body}</div>
     </details>`;

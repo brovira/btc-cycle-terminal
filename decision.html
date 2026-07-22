@@ -81,6 +81,7 @@
   .acard .advice b{color:var(--ac)}
   .chip{font-size:10.5px;font-family:var(--mono);color:var(--muted);background:var(--panel2);border:1px solid var(--line);padding:2px 8px;border-radius:999px}
   .btn{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:8px 12px;border-radius:10px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;text-decoration:none}
+  .btn.on{border-color:var(--accent);color:var(--accent)}
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 <link rel="stylesheet" href="dashboard.css">
@@ -122,9 +123,15 @@
   <div class="sec-head"><h2>₿ Mis compras BTC de este ciclo</h2><div class="rule"></div><span class="mtxt" style="font-size:12px">privado · round-up Revolut + órdenes BELROGAM</span></div>
   <div class="note" id="buysBox" style="border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:14px 16px">Cargando compras…</div>
 
-  <div class="sec-head"><h2>Fases del ciclo sobre el precio <span class="mtxt" style="font-weight:400;font-size:12px">· marco temporal LMEC/Cowen</span></h2><div class="rule"></div></div>
+  <div class="sec-head"><h2>Ventanas de compra/venta sobre el precio</h2><div class="rule"></div>
+    <div style="display:flex;gap:6px" id="phTabs">
+      <button class="btn" data-ph="lmec" style="font-size:12px;padding:5px 10px">🎯 LMEC</button>
+      <button class="btn" data-ph="cowen" style="font-size:12px;padding:5px 10px">📊 Cowen</button>
+      <button class="btn on" data-ph="both" style="font-size:12px;padding:5px 10px">Ambos (overlap)</button>
+    </div>
+  </div>
   <div style="border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:8px 6px 2px"><div id="phaseChart" style="width:100%;min-height:380px"></div></div>
-  <div class="note" style="margin-top:8px">Sombras = fase del ciclo según las <b>semanas desde el halving</b> (marco LMEC/Cowen): <span style="color:var(--bull)">■</span> acumulación/DCA fuerte (sem 120-180) · <span style="color:var(--accum)">■</span> DCA pre-halving (sem 180+) · <span style="color:var(--hot)">■</span> distribución/vender (sem 70-110) · <span style="color:var(--muted)">■</span> preservación/cash (sem 110-120) · sin sombra = bull, dejar correr (sem 0-70). Líneas: BMSB y 200W MA — el "rango" que citan los tres.</div>
+  <div class="note" style="margin-top:8px" id="phaseNote"></div>
 
   <div class="sec-head" id="chartSec" style="display:none"><h2>Gráfica del histórico</h2><div class="rule"></div></div>
   <div id="histChartWrap" style="display:none">
@@ -467,33 +474,55 @@ function renderAgents(R){
   </div>`;}).join("");
 }
 
-/* ---------- gráfica de fases del ciclo (sombras por semanas del halving) ---------- */
-function phaseOf(hw){ // fases del marco temporal LMEC/Cowen sobre las semanas post-halving
-  if(hw<70)return null;                                    // bull: dejar correr (sin sombra)
-  if(hw<=110)return{c:"rgba(242,163,63,.12)",k:"vender"};  // distribución
-  if(hw<120)return{c:"rgba(127,146,171,.10)",k:"cash"};    // preservación
-  if(hw<=180)return{c:"rgba(47,195,155,.12)",k:"dca+"};    // acumulación fuerte
-  return{c:"rgba(63,169,245,.10)",k:"dca"};                // pre-halving
+/* ---------- ventanas de compra/venta: bandas REALES de cada agente (citadas) ----------
+   LMEC (su indicador Halving Cycle Profit, mismas bandas que su panel lmec.html):
+     · venta = semanas 40-80 post-halving · compra/DCA = semanas 125-165 post-halving
+   Cowen (calendario electoral EEUU, citas en su KB):
+     · compra = 2ª mitad del midterm year ("right after that June low… accumulation through
+       the end of the midterm year") + pre-halving year ("the time to buy it was in the
+       midterm year or in the pre-halving year")
+     · venta = Q4 del post-halving year ("I'm going to sell Bitcoin in Q4 of the post-halving years")
+   Verde = comprar · naranja = vender. En "Ambos", el solape (color más denso) = los dos coinciden. */
+const PH_HALVINGS=["2012-11-28","2016-07-09","2020-05-11","2024-04-19","2028-04-20"].map(d=>Date.parse(d));
+const PH_WKMS=7*864e5;
+let PH_MODE="both",PH_LASTD=null;
+function phRect(x0,x1,color){return{type:"rect",xref:"x",yref:"paper",x0,x1,y0:0,y1:1,fillcolor:color,line:{width:0},layer:"below"};}
+function lmecBands(alpha){
+  const s=[];const iso=ms=>new Date(ms).toISOString().slice(0,10);
+  for(const H of PH_HALVINGS){
+    s.push(phRect(iso(H+40*PH_WKMS),iso(H+80*PH_WKMS),`rgba(242,163,63,${alpha})`));   // venta sem 40-80
+    s.push(phRect(iso(H+125*PH_WKMS),iso(H+165*PH_WKMS),`rgba(47,195,155,${alpha})`)); // DCA sem 125-165
+  }
+  return s;
 }
+function cowenBands(alpha){
+  const s=[];
+  for(let y=2013;y<=2028;y++){
+    const m=y%4;
+    if(m===2){ // midterm (2014/18/22/26): compra desde el June low → fin de año
+      s.push(phRect(`${y}-07-01`,`${y}-12-31`,`rgba(47,195,155,${alpha})`));
+      s.push(phRect(`${y+1}-01-01`,`${y+1}-12-31`,`rgba(47,195,155,${alpha*0.45})`)); // pre-halving year (compra, más suave)
+    }
+    if(m===1)s.push(phRect(`${y}-10-01`,`${y}-12-31`,`rgba(242,163,63,${alpha})`)); // post-halving (2013/17/21/25): venta Q4
+  }
+  return s;
+}
+const PH_NOTES={
+  lmec:`🎯 <b>Bandas LMEC</b> (su Halving Cycle Profit, idénticas a su panel): <span style="color:var(--hot)">■ venta</span> sem 40-80 post-halving · <span style="color:var(--bull)">■ DCA/compra</span> sem 125-165. Líneas: BMSB y 200W MA.`,
+  cowen:`📊 <b>Bandas Cowen</b> (calendario, citado): <span style="color:var(--bull)">■ compra</span> = 2ª mitad del midterm year <i>("right after that June low")</i> + pre-halving year (suave) · <span style="color:var(--hot)">■ venta</span> = Q4 del post-halving year <i>("I'm going to sell Bitcoin in Q4 of the post-halving years")</i>.`,
+  both:`<b>Ambos marcos superpuestos</b> — donde el color se hace más denso, LMEC y Cowen COINCIDEN: <span style="color:var(--bull)">■■ doble verde</span> = ambos comprarían (p.ej. H2-2026 → 2027) · <span style="color:var(--hot)">■■ doble naranja</span> = ambos venderían (Q4 post-halving ≈ sem 40-80). Verde = comprar · naranja = vender.`
+};
 async function renderPhaseChart(D){
+  PH_LASTD=D;
   await ensurePlotly();if(!window.Plotly)return;
   const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
   const ink=css("--ink"),muted=css("--muted"),line=css("--line"),accent=css("--accent"),accum=css("--accum");
   const n=D.c.length,start=Math.max(0,n-Math.min(n,470)); // ~9 años
   const xs=[],ys=[];for(let i=start;i<n;i++){xs.push(new Date(D.t[i]).toISOString().slice(0,10));ys.push(D.c[i]);}
-  // BMSB y 200W
   const s20=sma(D.c,20),e21=ema(D.c,21),s200=sma(D.c,200);
   const bm=[],m2=[];for(let i=start;i<n;i++){bm.push((s20[i]!=null&&e21[i]!=null)?Math.max(s20[i],e21[i]):null);m2.push(s200[i]);}
-  // sombras por fase (segmentos contiguos con la misma fase)
-  const shapes=[];let cur=null,x0=null;
-  for(let i=start;i<n;i++){
-    const ph=phaseOf(halvWeeks(D.t[i]));const key=ph?ph.k:"none";
-    if(!cur||cur.key!==key){
-      if(cur&&cur.ph)shapes.push({type:"rect",xref:"x",yref:"paper",x0:cur.x0,x1:new Date(D.t[i]).toISOString().slice(0,10),y0:0,y1:1,fillcolor:cur.ph.c,line:{width:0},layer:"below"});
-      cur={key,ph,x0:new Date(D.t[i]).toISOString().slice(0,10)};
-    }
-  }
-  if(cur&&cur.ph)shapes.push({type:"rect",xref:"x",yref:"paper",x0:cur.x0,x1:xs[xs.length-1],y0:0,y1:1,fillcolor:cur.ph.c,line:{width:0},layer:"below"});
+  const shapes=PH_MODE==="lmec"?lmecBands(0.16):PH_MODE==="cowen"?cowenBands(0.16):[...lmecBands(0.11),...cowenBands(0.11)];
+  $("#phaseNote").innerHTML=PH_NOTES[PH_MODE];
   const traces=[
     {x:xs,y:ys,type:"scatter",mode:"lines",name:"BTC",line:{color:ink,width:1.5},hovertemplate:"%{x}<br>$%{y:,.0f}<extra></extra>"},
     {x:xs,y:bm,type:"scatter",mode:"lines",name:"BMSB",line:{color:accent,width:1,dash:"dot"}},
@@ -501,10 +530,15 @@ async function renderPhaseChart(D){
   ];
   const layout={margin:{l:56,r:12,t:8,b:32},height:380,paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
     font:{color:ink,size:11},showlegend:true,legend:{orientation:"h",y:1.12,font:{size:11}},shapes,
-    xaxis:{gridcolor:line,type:"date"},yaxis:{gridcolor:line,type:"log",tickprefix:"$",title:{text:"BTC (log)",font:{size:11}}},hovermode:"x unified",
+    xaxis:{gridcolor:line,type:"date",range:[xs[0],xs[xs.length-1]]},yaxis:{gridcolor:line,type:"log",tickprefix:"$",title:{text:"BTC (log)",font:{size:11}}},hovermode:"x unified",
     hoverlabel:{bordercolor:muted,font:{size:11}}};
   window.Plotly.react("phaseChart",traces,layout,{displayModeBar:false,responsive:true});
 }
+document.querySelectorAll("#phTabs .btn").forEach(b=>b.addEventListener("click",()=>{
+  PH_MODE=b.dataset.ph;
+  document.querySelectorAll("#phTabs .btn").forEach(x=>x.classList.toggle("on",x===b));
+  if(PH_LASTD)renderPhaseChart(PH_LASTD);
+}));
 
 /* ---------- historial: lee data/decision_history.json y puntúa el acierto ---------- */
 const BUY_ACTIONS=new Set(["Comprar por niveles","DCA base","Esperar dip a nivel","Esperar seasonality","Esperar dip"]);
@@ -594,25 +628,30 @@ async function loadBuys(R){
   try{const r=await fetch("/api/private?file=btc_compras",{cache:"no-store"});status=r.status;if(r.ok)j=await r.json();}catch(e){}
   if(!j){
     el.innerHTML=status===404
-      ?`Aún no hay datos. Crea <code>data/btc_compras.json</code> en el repo privado <b>DeFi-Tracker</b> (pídeme el formato en el chat y te lo doy relleno con tu plan) y esta sección se pinta sola: escalera del round-up, órdenes de BELROGAM y totales del ciclo.`
+      ?`<b>Tu libro de compras del ciclo, vacío y esperando.</b> 3 libros: 👤 Personal (round-up Revolut) · 🏢 BELROGAM (órdenes) · 🔄 Loop (Aave, futuro).
+        Crea <code>data/btc_compras.json</code> en el repo privado <b>DeFi-Tracker</b> (pídeme el formato en el chat y te lo doy relleno con tu plan) — o simplemente dime "compré X€ a Y" y lo apunto yo.`
       :`No se pudo cargar (${status||"red"}). ¿Sesión caducada? Recarga la página.`;
     return;
   }
-  const px=R.price;
-  const sumB=arr=>(arr||[]).reduce((s,c)=>s+(+c.btc||0),0);
-  const sumE=arr=>(arr||[]).reduce((s,c)=>s+(+c.eur||0),0);
-  const block=(title,compras,extra)=>{
-    const b=sumB(compras),e=sumE(compras),avg=b>0?e/b:null;
-    const val=b*px*(j.eurusd?1/j.eurusd:0.86); // aprox €: si no hay tipo, 0.86 conservador
-    const pnl=b>0?val-e:null;
-    return `<div style="margin-bottom:14px"><b>${title}</b>${extra||""}
-      ${b>0?`<div style="display:flex;gap:22px;flex-wrap:wrap;margin-top:6px" class="mono">
-        <span>Acumulado <b>${fmtBTC(b)}</b></span><span>Invertido <b>${fmtEUR(e)}</b></span>
-        <span>Precio medio <b>${avg?fmtEUR(avg)+"/₿":"—"}</b></span>
-        <span>Ahora <b>${fmtEUR(val)}</b> <span style="color:${pnl>=0?'var(--bull)':'var(--bear)'}">(${pnl>=0?"+":""}${fmtEUR(pnl)})</span></span>
-      </div>`:`<div class="mtxt" style="margin-top:4px">sin compras registradas aún</div>`}</div>`;
+  const px=R.price;                       // BTC en USD (vivo)
+  const usd2eur=j.eurusd?1/j.eurusd:0.86; // € por $ (si no hay tipo en el JSON, 0.86)
+  const norm=c=>{                         // cada compra: {fecha,eur,precio,btc?} → btc calculado si falta
+    const btc=+c.btc||((+c.eur||0)/usd2eur)/(+c.precio||px);
+    const val=btc*px*usd2eur, pct=c.eur>0?(val/c.eur-1)*100:null;
+    return{...c,btc,val,pct};
   };
-  const p=j.personal||{},b=j.belrogam||{};
+  const table=(compras)=>{
+    if(!compras||!compras.length)return`<div class="mtxt" style="margin:6px 0 2px">— sin compras aún · <i>la primera fila siempre es la que más cuesta escribir</i></div>`;
+    const rows=compras.map(norm).sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha)));
+    const tb=rows.reduce((s,c)=>s+c.btc,0),te=rows.reduce((s,c)=>s+(+c.eur||0),0);
+    const tval=tb*px*usd2eur,tpct=te>0?(tval/te-1)*100:null,avg=tb>0?te/tb:null;
+    return`<div style="overflow:auto;margin-top:6px"><table style="font-size:12.5px">
+      <thead><tr><th style="text-align:left">Fecha</th><th>Comprado</th><th>Precio BTC</th><th>BTC</th><th>Valor hoy</th><th>%</th></tr></thead><tbody>
+      ${rows.map(c=>`<tr><td style="text-align:left" class="mono">${esc(c.fecha||"—")}</td><td class="mono">${fmtEUR(c.eur)}</td><td class="mono">${c.precio?fmtUSD(c.precio):"—"}</td><td class="mono">${fmtBTC(c.btc)}</td><td class="mono">${fmtEUR(c.val)}</td><td class="mono" style="color:${c.pct>=0?'var(--bull)':'var(--bear)'}">${c.pct!=null?(c.pct>=0?"+":"")+c.pct.toFixed(1)+"%":"—"}</td></tr>`).join("")}
+      <tr style="font-weight:750;background:color-mix(in oklab,var(--accent) 5%,transparent)"><td style="text-align:left">TOTAL</td><td class="mono">${fmtEUR(te)}</td><td class="mono">${avg?fmtEUR(avg)+"/₿":"—"}</td><td class="mono">${fmtBTC(tb)}</td><td class="mono">${fmtEUR(tval)}</td><td class="mono" style="color:${tpct>=0?'var(--bull)':'var(--bear)'}">${tpct!=null?(tpct>=0?"+":"")+tpct.toFixed(1)+"%":"—"}</td></tr>
+      </tbody></table></div>`;
+  };
+  const p=j.personal||{},b=j.belrogam||{},lp=j.loop||{};
   const ladder=(p.escalera||[]).map(s=>{
     const active=px<s.bajo&&(!s.hasta||px>=s.hasta);
     return `<span class="chip" style="padding:4px 9px;${active?"border-color:var(--bull);color:var(--bull);font-weight:700":""}">&lt;${(s.bajo/1000)}k → ×${s.mult}${active?" · ACTIVO":""}</span>`;
@@ -622,12 +661,27 @@ async function loadBuys(R){
     const near=!filled&&px<=o.precio*1.03;
     return `<span class="chip" style="padding:4px 9px;${filled?"text-decoration:line-through;opacity:.6":near?"border-color:var(--hot);color:var(--hot);font-weight:700":""}">${(o.precio/1000)}k · ${fmtEUR(o.eur)}${filled?" ✓":near?" · CERCA":""}</span>`;
   }).join(" ");
-  el.innerHTML=
-    block(`👤 Personal — Revolut round-up`,p.compras,
-      ladder?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${ladder}</div><div class="mtxt" style="margin-top:3px">multiplicador según precio (BTC ahora: ${fmtUSD(px)})</div>`:"")+
-    block(`🏢 BELROGAM — órdenes escalonadas`,b.compras,
-      orders?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${orders}</div>${b.presupuesto_eur?`<div class="mtxt" style="margin-top:3px">presupuesto actual ${fmtEUR(b.presupuesto_eur)}${b.nota?" · "+esc(b.nota):""}</div>`:""}`:"")+
-    `<div class="mtxt">Para actualizar: dime las compras en el chat o súbeme el informe de Revolut y actualizo el JSON del repo privado.</div>`;
+  // resumen global de los 3 libros
+  const all=[...(p.compras||[]),...(b.compras||[]),...(lp.compras||[])].map(norm);
+  const gB=all.reduce((s,c)=>s+c.btc,0),gE=all.reduce((s,c)=>s+(+c.eur||0),0);
+  const gVal=gB*px*usd2eur,gPnl=gVal-gE,gPct=gE>0?(gVal/gE-1)*100:null;
+  const head=gB>0?`<div style="display:flex;gap:26px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:color-mix(in oklab,var(--accent) 5%,transparent);margin-bottom:14px" class="mono">
+      <span>₿ TOTAL CICLO <b style="font-size:15px">${fmtBTC(gB)}</b></span>
+      <span>Invertido <b>${fmtEUR(gE)}</b></span>
+      <span>Valor hoy <b>${fmtEUR(gVal)}</b></span>
+      <span style="color:${gPnl>=0?'var(--bull)':'var(--bear)'}">PnL <b>${gPnl>=0?"+":""}${fmtEUR(gPnl)} (${gPct!=null?(gPct>=0?"+":"")+gPct.toFixed(1)+"%":"—"})</b></span>
+      <span class="mtxt">BTC ${fmtUSD(px)}</span>
+    </div>`:"";
+  el.innerHTML=head+
+    `<div style="margin-bottom:16px"><b>👤 Personal — Revolut round-up</b>
+      ${ladder?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${ladder}</div>`:""}
+      ${table(p.compras)}</div>`+
+    `<div style="margin-bottom:16px"><b>🏢 BELROGAM — órdenes escalonadas</b>
+      ${orders?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${orders}</div>${b.presupuesto_eur?`<div class="mtxt" style="margin-top:3px">presupuesto ${fmtEUR(b.presupuesto_eur)}${b.nota?" · "+esc(b.nota):""}</div>`:""}`:""}
+      ${table(b.compras)}</div>`+
+    `<div style="margin-bottom:10px"><b>🔄 Loop — BTC apalancado en Aave</b>${lp.nota?` <span class="mtxt">· ${esc(lp.nota)}</span>`:""}
+      ${table(lp.compras)}</div>`+
+    `<div class="mtxt">➕ ¿Compraste? Dímelo en el chat ("personal: 25€ a 64.2k el 22-jul") o súbeme el informe de Revolut y actualizo el libro.</div>`;
 }
 async function refreshAll(){
   try{
