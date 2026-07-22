@@ -149,6 +149,16 @@
     <div class="note" id="sumNote" style="margin-top:10px"></div>
   </div>
 
+  <!-- FRESH START: farming desde cero (solo pares con estable) -->
+  <div class="section" id="freshSec" style="display:none">
+    <div class="sec-head"><h2>🚀 Farming desde cero</h2><div class="rule"></div>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);cursor:pointer">
+        <input type="checkbox" id="freshToggle"> ver histórico anterior
+      </label>
+    </div>
+    <div class="panel" id="freshBody" style="padding:16px"></div>
+  </div>
+
   <!-- VISTA TIPO ORCA (modo JSON) -->
   <div class="section" id="orcaView" style="display:none">
     <div class="tabbar" id="tabbar">
@@ -358,8 +368,87 @@ function benchmarks(p,btc){
 }
 function estYield(p){return (p.invested&&p.days)?(p.fees/p.invested)/p.days*365*100:null;}
 
+/* ========== FRESH START: farming desde cero (línea base + filtro) ========== */
+let BASELINE=null, SHOW_OLD=false;
+const FRESH_SCOPE=p=>((BASELINE&&BASELINE.scope)||["cbBTC / USDC"]).includes(p.pair);
+async function loadBaseline(){
+  if(!PW)return;
+  try{const r=await fetch("/api/baseline",{cache:"no-store",headers:{"x-dash-pw":PW}});
+    if(r.ok){const j=await r.json();BASELINE=j.baseline||null;}}catch(e){}
+  if(MODE==="pnl"&&PNL&&window.Plotly!==undefined)renderPnl();
+}
+function freshFlows(){ // flujos on-chain de los pares estables DESDE la línea base
+  let dep=0,wd=0,depB=0,wdB=0;
+  for(const p of PNL.P){if(!FRESH_SCOPE(p))continue;
+    for(const c of (p.cf||[])){const t=(c.blockTime||0)*1000;if(t<BASELINE.ts)continue;
+      if(c.bucket==="deposit"){dep+=c.usdValue||0;depB+=c.btcValue||0;}
+      else{wd+=c.usdValue||0;wdB+=c.btcValue||0;}}}
+  return{dep,wd,depB,wdB};
+}
+function freshView(){ // subconjunto que ven las tabs cuando el fresh start está activo
+  if(!BASELINE||SHOW_OLD)return PNL;
+  const ts=BASELINE.ts;
+  const P=PNL.P.filter(p=>FRESH_SCOPE(p)&&(p.status==="open"||(p.last||0)>=ts));
+  const open=P.filter(p=>p.status==="open"),closed=P.filter(p=>p.status==="closed");
+  const realized=closed.filter(p=>p.computed).reduce((s,p)=>s+(p.pnl||0),0);
+  const fees=P.reduce((s,p)=>s+(p.fees||0),0);
+  return{...PNL,P,open,closed,realized,fees,_minTs:ts,fresh:true};
+}
+function renderFresh(){
+  const sec=$("#freshSec");
+  if(MODE!=="pnl"||!PNL||!PW){sec.style.display="none";return;}
+  sec.style.display="";
+  $("#freshToggle").checked=SHOW_OLD;
+  const body=$("#freshBody");
+  const dataDate=PNL.last?new Date(PNL.last).toISOString().slice(0,10):"?";
+  const stale=PNL.last&&(Date.now()-PNL.last)>36*3600*1000;
+  const staleNote=stale?`<div class="note" style="color:var(--hot);margin-top:8px">⚠️ Datos on-chain hasta <b>${dataDate}</b> (el pipeline corre a diario a las 05:15 UTC). Si has operado hoy, corre antes la Action del DeFi-Tracker (GitHub → Actions → Daily Solana Ingestion → Run workflow) y recarga.</div>`:"";
+  if(!BASELINE){
+    body.innerHTML=`<div class="note" style="margin-bottom:10px">Marca el <b>día cero</b> de tu farming: se fotografía el valor ACTUAL de tus posiciones con estable (<b>cbBTC/USDC</b>; la de WBTC/cbBTC se ignora) y a partir de ahí el PnL se calcula solo con lo que pase después. El <b>capital fresco</b> que añadas se detecta on-chain como depósito y <b>se descuenta solo</b> — no infla el PnL.</div>
+      <button class="btn pri" id="setBaseBtn">🚀 Fijar línea base HOY</button>
+      <span class="note" id="baseMsg" style="margin-left:10px"></span>${staleNote}`;
+    $("#setBaseBtn").addEventListener("click",setBaseline);
+    return;
+  }
+  // --- con línea base: contabilidad desde cero ---
+  const BTC=BTC_PRICE;let cur=0;
+  for(const p of PNL.open){if(FRESH_SCOPE(p)){const v=BTC?v3Value(p.ls,BTC):null;cur+=v?v.balance:0;}}
+  const f=freshFlows();
+  const baseBtc=BASELINE.btc!=null?BASELINE.btc:(BASELINE.btcPrice?BASELINE.usd/BASELINE.btcPrice:null);
+  const pnl=cur+f.wd-f.dep-BASELINE.usd;
+  const pnlPct=BASELINE.usd>0?pnl/BASELINE.usd*100:null;
+  const curBtc=BTC?cur/BTC:null;
+  const pnlBtc=(curBtc!=null&&baseBtc!=null)?curBtc+f.wdB-f.depB-baseBtc:null;
+  const card=(l,n,s,c)=>`<div class="stat" style="--sc:${c||"var(--accent)"}"><div class="l">${l}</div><div class="n" style="color:${c||"inherit"}">${n}</div><div class="s">${s||""}</div></div>`;
+  body.innerHTML=`<div class="cards">
+    ${card("Inicio ("+esc(BASELINE.date)+")",fmtUSD(BASELINE.usd),baseBtc!=null?("₿ "+baseBtc.toFixed(5)+(BASELINE.btcPrice?" · BTC "+fmtUSD(BASELINE.btcPrice):"")):"","var(--accent)")}
+    ${card("Valor actual (estables)",BTC?fmtUSD(cur):"—",curBtc!=null?("₿ "+curBtc.toFixed(5)):"precio n/d","var(--accum)")}
+    ${card("Capital fresco añadido",fmtUSD(f.dep),"depósitos on-chain desde el inicio (descontados)","var(--muted)")}
+    ${card("Retiradas + fees cobradas",fmtUSD(f.wd),"salidas a wallet desde el inicio","var(--muted)")}
+    ${card("PnL desde el inicio",BTC?fmtUSD(pnl,0):"—",(pnlPct!=null?((pnlPct>=0?"+":"")+pnlPct.toFixed(2)+"%"):"")+(pnlBtc!=null?" · ₿ "+(pnlBtc>=0?"+":"")+pnlBtc.toFixed(5):""),pnl>=0?"var(--bull)":"var(--bear)")}
+  </div>
+  <div class="note" style="margin-top:10px">Fórmula: <b>valor actual + retiradas − depósitos − capital inicial</b>. Solo pares ${esc((BASELINE.scope||[]).join(", "))}; ${SHOW_OLD?"<b>histórico completo visible</b> (el de antes del inicio no cuenta en estas cifras)":"el histórico anterior al inicio está <b>oculto</b> (actívalo arriba)"}·${esc(BASELINE.note||"")}</div>${staleNote}`;
+}
+async function setBaseline(){
+  if(!PNL||!BTC_PRICE){$("#baseMsg").textContent="Espera a que carguen datos y precio.";return;}
+  let cur=0,nOpen=0;
+  for(const p of PNL.open){if(p.pair==="cbBTC / USDC"){const v=v3Value(p.ls,BTC_PRICE);cur+=v?v.balance:0;nOpen++;}}
+  const dataDate=PNL.last?new Date(PNL.last).toISOString().slice(0,10):"?";
+  const stale=PNL.last&&(Date.now()-PNL.last)>36*3600*1000;
+  const msg=`Fijar línea base HOY:\n\n· ${nOpen} posiciones cbBTC/USDC abiertas\n· Valor: ${fmtUSD(cur)} (₿ ${(cur/BTC_PRICE).toFixed(5)} a BTC ${fmtUSD(BTC_PRICE)})\n${stale?"\n⚠️ OJO: tus datos on-chain son del "+dataDate+". Si has abierto/cerrado posiciones después, corre primero la Action del DeFi-Tracker y recarga.\n":""}\n¿Confirmar?`;
+  if(!confirm(msg))return;
+  $("#baseMsg").textContent="Guardando…";
+  try{
+    const r=await fetch("/api/baseline",{method:"POST",headers:{"x-dash-pw":PW,"Content-Type":"application/json"},
+      body:JSON.stringify({ts:Date.now(),usd:cur,btc:cur/BTC_PRICE,btcPrice:BTC_PRICE,scope:["cbBTC / USDC"]})});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok){$("#baseMsg").textContent="Error: "+(j.message||j.error||r.status);return;}
+    BASELINE=j.baseline;renderPnl();
+  }catch(e){$("#baseMsg").textContent="Error de red.";}
+}
+
 function renderPnl(){
-  const M=PNL, BTC=BTC_PRICE;
+  const M=freshView(), BTC=BTC_PRICE;
   $("#loadSec").style.display="none";$("#clearBtn").style.display="";
   ["sumSec","liveSec","orcaView"].forEach(id=>$("#"+id).style.display="");
   ["openSec","feeSec","closedSec","actSec"].forEach(id=>$("#"+id).style.display="none");
@@ -375,7 +464,7 @@ function renderPnl(){
     {l:"Fees / rewards (total)",n:fmtUSD(M.fees,0),s:"verificado vs CSV",c:"var(--bull)"},
   ].map(x=>`<div class="stat" style="--sc:${x.c}"><div class="l">${x.l}</div><div class="n ${x.cl||""}">${x.n}</div><div class="s">${x.s}</div></div>`).join("");
   $("#sumNote").innerHTML="✓ <b>Réplica de Orca, verificada al céntimo.</b> Balance por math V3 desde la liquidez on-chain; Total PnL = Balance + fees − invertido. En <b>Cerradas</b> tienes los 3 benchmarks (vs HOLD USD / tokens / BTC).";
-  renderTabPos(M,BTC);renderTabHist(M);renderTabClosed(M,BTC);
+  renderTabPos(M,BTC);renderTabHist(M);renderTabClosed(M,BTC);renderFresh();
 }
 function renderTabPos(M,BTC){
   const rows=M.open.map(p=>{
@@ -391,8 +480,10 @@ function renderTabPos(M,BTC){
 }
 const HIST_ACT={open:'Open Position',increase:'Increase Liquidity',decrease:'Decrease Liquidity',collect_fees:'Collect Fees',close:'Close Position',collect_reward:'Collect Reward'};
 function renderTabHist(M){
-  const groups={};
-  for(const p of M.P){for(const c of (p.cf||[])){const k=(c.signature||'')+'|'+c.eventType+'|'+p.pair;
+  const groups={};const minTs=M._minTs||0;
+  for(const p of M.P){for(const c of (p.cf||[])){
+    if(minTs&&((c.blockTime||0)*1000)<minTs)continue; // fresh start: oculta lo anterior al día cero
+    const k=(c.signature||'')+'|'+c.eventType+'|'+p.pair;
     const g=groups[k]||(groups[k]={t:c.blockTime,act:c.eventType,pair:p.pair,toks:{}});
     g.toks[c.symbol]=(g.toks[c.symbol]||0)+(c.bucket==='deposit'?1:-1)*(c.amount||0);}}
   const list=Object.values(groups).sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,60);
@@ -510,6 +601,7 @@ async function loadPrivate(pw,remember){
     if(remember)localStorage.setItem(PWKEY,pw);else sessionStorage.setItem(PWKEY,pw);
     PW=pw; // habilita el diario (lectura/escritura) con la misma contraseña
     privMsg("✓ Datos privados cargados.",false);
+    await loadBaseline(); // línea base del fresh start ANTES de pintar (para filtrar desde el primer render)
     loadText(text,false); // NO cachear datos personales en el dispositivo: se re-piden con la contraseña
     loadJournal();
     return true;
@@ -578,6 +670,7 @@ const drop=$("#drop");
 ["dragover","dragenter"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("over");}));
 ["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("over");}));
 drop.addEventListener("drop",e=>{const f=e.dataTransfer.files[0];if(f){const r=new FileReader();r.onload=()=>loadText(r.result);r.readAsText(f);}});
+$("#freshToggle").addEventListener("change",e=>{SHOW_OLD=e.target.checked;if(MODE==="pnl"&&PNL)renderPnl();});
 $("#clearBtn").addEventListener("click",()=>{localStorage.removeItem(LKEY);localStorage.removeItem(PWKEY);sessionStorage.removeItem(PWKEY);location.reload();});
 $("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);redraw();});
 (function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);
