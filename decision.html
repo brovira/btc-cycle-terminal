@@ -114,17 +114,6 @@
 
 <!-- (los relojes de ciclo viven ahora DENTRO de la tarjeta de cada agente) -->
 
-  <div class="sec-head"><h2>💰 Plan de guerra — cashflow BELROGAM → cash para el suelo (sep-nov)</h2><div class="rule"></div><span class="mtxt" style="font-size:12px">🔒 privado</span></div>
-  <div style="border:1px solid var(--line);border-top:3px solid var(--bull);border-radius:14px;background:var(--panel);padding:16px 18px">
-    <form id="wcForm" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-      <input type="password" id="wcPw" placeholder="Contraseña (la de tus datos)" autocomplete="current-password"
-        style="flex:1;min-width:180px;max-width:280px;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:13.5px">
-      <button class="btn" type="submit" style="background:var(--bull);border-color:var(--bull);color:#fff">Cargar cashflow</button>
-      <span class="note" id="wcMsg"></span>
-    </form>
-    <div id="wcBody" style="display:none;margin-top:12px"></div>
-  </div>
-
   <div class="sec-head"><h2>LMEC · Cowen — qué hacen AHORA</h2><div class="rule"></div><span class="mtxt" style="font-size:12px">de sus transcripts, citado · señales en vivo</span></div>
   <div class="note" style="margin-bottom:10px">🧠 OnChainMind se retiró de esta comparativa: auditado (sep-25→jul-26), <b>nunca dio señal de venta en tiempo real</b>, ni en el techo. Solo sirve para timing de compra. Su panel sigue en <a href="onchainmind.html" style="color:var(--accent)">onchainmind.html</a>.</div>
   <div class="agrid" id="agentCards"></div>
@@ -407,54 +396,6 @@ async function loadKB(){
     try{const r=await fetch(`agentes/${a}/senales.json`,{cache:"no-store"});if(r.ok)KB[a]=await r.json();}catch(e){}
   }
 }
-
-/* ---------- plan de guerra: cashflow BELROGAM → cash invertible sep-nov ---------- */
-const WCKEY="lp-dash-pw"; // misma contraseña/almacén que lp.html y portfolio
-const COLCHON=60000; // colchón operativo intocable de la empresa (€)
-const fmtEUR=v=>v==null||isNaN(v)?"—":(v<0?"-€":"€")+Math.abs(Math.round(v)).toLocaleString("en-US");
-function addMonths(ym,k){const[y,m]=ym.split("-").map(Number);const d=new Date(Date.UTC(y,m-1+k,1));return d.toISOString().slice(0,7);}
-async function loadWarchest(pw){
-  if(!pw){$("#wcMsg").textContent="Escribe la contraseña.";return;}
-  $("#wcMsg").textContent="Cargando…";
-  let j=null;
-  try{const r=await fetch("/api/cashflow",{headers:{"x-dash-pw":pw},cache:"no-store"});
-    j=await r.json().catch(()=>null);
-    if(r.status===401){$("#wcMsg").textContent="Contraseña incorrecta.";return;}
-    if(!r.ok){$("#wcMsg").textContent=(j&&(j.message||j.error))||("Error "+r.status);return;}
-  }catch(e){$("#wcMsg").textContent="Error de red.";return;}
-  localStorage.setItem(WCKEY,pw);$("#wcMsg").textContent="";
-  const done=(j.monthly||[]).filter(m=>m.completo).slice(-3);
-  const avg=done.length?done.reduce((s,m)=>s+m.neto,0)/done.length:0;
-  const prudente=avg*0.5;
-  const fut={};for(const f of (j.future||[]))fut[f.mes]=f.eur;
-  // proyección: saldo hoy + neto estimado de cada mes futuro (el mes en curso no suma: ya está a medias en el saldo)
-  const rows=[];let base=j.saldoTotal,prud=j.saldoTotal;
-  for(let k=1;k<=5;k++){
-    const mes=addMonths(j.curMonth,k);if(mes>"2026-12")break;
-    base+=avg;prud+=prudente;
-    rows.push({mes,base,prud,conf:fut[mes]||0,invBase:Math.max(0,base-COLCHON),invPrud:Math.max(0,prud-COLCHON)});
-  }
-  const nov=rows.find(r=>r.mes==="2026-11")||rows[rows.length-1]||{invPrud:0,invBase:0};
-  const bolsa=nov.invPrud; // pólvora estimada (escenario prudente) llegando a noviembre
-  const t1=Math.round(bolsa*0.25),t2=Math.round(bolsa*0.40),t3=Math.round(bolsa*0.35);
-  $("#wcBody").style.display="";
-  $("#wcBody").innerHTML=`
-    <div class="levels">
-      <div class="lv"><div class="l">Cash HOY (Caixa+Wise)</div><div class="n">${fmtEUR(j.saldoTotal)}</div></div>
-      <div class="lv"><div class="l">Neto medio (3 meses compl.)</div><div class="n">${fmtEUR(avg)}/mes</div></div>
-      <div class="lv"><div class="l">Colchón intocable</div><div class="n">${fmtEUR(COLCHON)}</div></div>
-      <div class="lv"><div class="l">Pólvora est. en NOV (prudente)</div><div class="n" style="color:var(--bull)">${fmtEUR(bolsa)}</div></div>
-    </div>
-    <div style="overflow:auto;margin-top:12px"><table class="htbl"><thead><tr><th>Mes</th><th>Reservas ya confirmadas</th><th>Cash proyectado (base)</th><th>Cash (prudente ×0,5)</th><th>Invertible sobre colchón</th></tr></thead><tbody>
-      ${rows.map(r=>`<tr${(r.mes>="2026-09"&&r.mes<="2026-11")?' style="background:color-mix(in oklab,var(--bull) 7%,transparent)"':''}><td class="mono">${r.mes}</td><td class="mono">${r.conf?fmtEUR(r.conf):"—"}</td><td class="mono">${fmtEUR(r.base)}</td><td class="mono">${fmtEUR(r.prud)}</td><td class="mono" style="color:var(--bull)">${fmtEUR(r.invPrud)} – ${fmtEUR(r.invBase)}</td></tr>`).join("")}
-    </tbody></table></div>
-    <div class="note" style="margin-top:10px"><b>Sugerencia de tramos para la ventana del suelo</b> (con la pólvora prudente, ponderada al Q4 como hace Cowen):
-      <b>sep ${fmtEUR(t1)}</b> (DCA semanal si hay debilidad) · <b>oct ${fmtEUR(t2)}</b> (ventana central del mínimo) · <b>nov ${fmtEUR(t3)}</b> (remate / derrame).
-      Antes del 31-ago: solo si BTC &lt; $60k. Las cifras se recalculan en cada carga con tus datos reales (reservas confirmadas: solo ~3 meses de visibilidad — agosto ya tiene ${fmtEUR(fut[addMonths(j.curMonth,1)]||0)} confirmados).
-      ⚠️ Tesorería de BELROGAM SL: valida el tratamiento fiscal con Financial Group antes de la primera compra.</div>`;
-}
-$("#wcForm").addEventListener("submit",e=>{e.preventDefault();loadWarchest($("#wcPw").value);});
-(function(){const pw=localStorage.getItem(WCKEY);if(pw){$("#wcPw").value=pw;loadWarchest(pw);}})();
 
 /* ---------- los tres agentes: postura actual (citada) + consejo con las métricas de hoy ---------- */
 function renderAgents(R){

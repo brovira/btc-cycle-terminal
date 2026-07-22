@@ -22,14 +22,20 @@ module.exports = async (req, res) => {
   const pass = process.env.DASH_PASSWORD;
   // tolerante a variantes/typos del nombre (SUPABASE_URL, SUPBASE_URL, SUPABASE-URL…) y a
   // espacios/saltos de línea accidentales al pegar el valor en Vercel (trim()).
-  const clean = (v) => (v == null ? "" : String(v).trim());
+  const clean = (v) => {
+    let s = v == null ? "" : String(v).trim();
+    if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) s = s.slice(1, -1).trim();
+    return s;
+  };
+  const cleanKey = (v) => clean(v).replace(/^Bearer\s+/i, "").trim();
   let SB = clean(process.env.SUPABASE_URL), KEY = clean(process.env.SUPABASE_SERVICE_KEY);
   if (!SB || !KEY) {
     for (const k of Object.keys(process.env)) {
-      if (!SB && /^SUP/i.test(k) && /URL$/i.test(k)) SB = clean(process.env[k]);
-      if (!KEY && /^SUP/i.test(k) && /KEY$/i.test(k)) KEY = clean(process.env[k]);
+      if (!SB && /SUPABASE/i.test(k) && /URL/i.test(k)) SB = clean(process.env[k]);
+      if (!KEY && /SUPABASE/i.test(k) && /(SERVICE|ROLE|KEY|TOKEN|SECRET)/i.test(k)) KEY = cleanKey(process.env[k]);
     }
   }
+  KEY = cleanKey(KEY);
   if (!pass) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password" })); }
   if (!passwordOk(req, url, pass)) { await new Promise(r => setTimeout(r, 600)); res.statusCode = 401; return res.end(JSON.stringify({ error: "bad_password" })); }
   if (!SB || !KEY) {
@@ -43,10 +49,18 @@ module.exports = async (req, res) => {
     return res.end(JSON.stringify({ error: "no_supabase", message: "No encuentro SUPABASE_URL / SUPABASE_SERVICE_KEY con valor. Lo que veo con ese nombre: " + (diag.length ? diag.join(" · ") : "ninguna variable con 'SUP' en el nombre") + ". Si pone 'vacía', bórrala y vuelve a pegar el valor en Vercel (a veces el campo Value se queda en blanco). Tras corregir, Redeploy." }));
   }
 
+  if (!/^https:\/\/[^/]+\.supabase\.co\/?$/i.test(SB)) {
+    res.statusCode = 503;
+    return res.end(JSON.stringify({ error: "bad_supabase_url", message: "SUPABASE_URL debe ser algo como https://xxxxx.supabase.co (sin /rest/v1 al final)." }));
+  }
+
   const H = { apikey: KEY, Authorization: `Bearer ${KEY}` };
   const get = async (path) => {
-    const r = await fetch(`${SB}/rest/v1/${path}`, { headers: H });
-    if (!r.ok) throw new Error("supabase_" + r.status + " en " + path.split("?")[0]);
+    const r = await fetch(`${SB.replace(/\/+$/, "")}/rest/v1/${path}`, { headers: H });
+    if (!r.ok) {
+      const txt = await r.text().catch(() => "");
+      throw new Error("supabase_" + r.status + " en " + path.split("?")[0] + (txt ? ": " + txt.slice(0, 220) : ""));
+    }
     return r.json();
   };
 

@@ -77,6 +77,12 @@
   <div id="content" style="display:none">
     <div class="cards" id="totals" style="margin-top:6px"></div>
 
+    <div class="sec-head"><h2>🏢 BELROGAM · plan de guerra</h2><div class="rule"></div><span class="addr">cashflow privado</span></div>
+    <div class="panel" style="padding:16px 18px">
+      <div class="note" id="cfMsg">Cargando cashflow…</div>
+      <div id="cfBody" style="display:none;margin-top:12px"></div>
+    </div>
+
     <div class="sec-head"><h2>📊 Portfolio</h2><div class="rule"></div>
       <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);cursor:pointer;margin-right:4px">
         <input type="checkbox" id="dustToggle"> ocultar &lt;$5
@@ -110,9 +116,11 @@
 "use strict";
 const $=s=>document.querySelector(s);
 const fmtUSD=(v,d=0)=>v==null||isNaN(v)?"—":"$"+Number(v).toLocaleString("en-US",{maximumFractionDigits:d,minimumFractionDigits:d});
+const fmtEUR=v=>v==null||isNaN(v)?"—":(v<0?"-€":"€")+Math.abs(Math.round(v)).toLocaleString("en-US");
 const fmtAmt=v=>v==null?"—":Number(v).toLocaleString("en-US",{maximumFractionDigits:v>1000?0:(v>1?4:6)});
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
 const PWKEY="lp-dash-pw"; // misma clave que lp.html: un solo login para todo lo personal
+const BELROGAM_CUSHION=60000;
 (function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
 $("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);});
 
@@ -173,6 +181,7 @@ async function load(pw){
   $("#statusDot").className="dot ok";$("#statusText").textContent="Actualizado "+new Date().toISOString().slice(0,16).replace("T"," ")+" · caché 2 min";
   RAW={j,px,lpVal,manual};
   rebuild();
+  loadCashflow(pw);
 }
 let RAW=null,DUST_HIDE=false;const DUST_MIN=5;
 function rebuild(){
@@ -247,6 +256,49 @@ function rebuild(){
   }
   $("#evmTbl").innerHTML=`<thead><tr><th>Token · red</th><th>Cantidad</th><th>Valor</th></tr></thead><tbody>${evmRows||'<tr><td colspan="3" class="note">Sin tokens (o sin dirección configurada).</td></tr>'}</tbody>`;
   $("#evmNote").textContent=(evmHid?evmHid+" sin precio (probable spam) · ":"")+(evmDust?evmDust+" ocultos por el filtro <$"+DUST_MIN+". ":"")+(hl.warning?("Hyperliquid: "+hl.warning):"");
+}
+
+/* ---------- BELROGAM: cashflow → pólvora BTC ---------- */
+function addMonths(ym,k){const[y,m]=ym.split("-").map(Number);const d=new Date(Date.UTC(y,m-1+k,1));return d.toISOString().slice(0,7);}
+async function loadCashflow(pw){
+  const msg=$("#cfMsg"),body=$("#cfBody");
+  msg.textContent="Cargando cashflow…";body.style.display="none";body.innerHTML="";
+  let j=null;
+  try{
+    const r=await fetch("/api/cashflow",{headers:{"x-dash-pw":pw},cache:"no-store"});
+    j=await r.json().catch(()=>null);
+    if(r.status===401){msg.textContent="Contraseña incorrecta para cashflow.";return;}
+    if(!r.ok){msg.textContent=(j&&(j.message||j.error))||("Cashflow no disponible · error "+r.status);return;}
+  }catch(e){msg.textContent="Cashflow no disponible en esta preview local. Se prueba completo en Vercel Preview.";return;}
+
+  const done=(j.monthly||[]).filter(m=>m.completo).slice(-3);
+  const avg=done.length?done.reduce((s,m)=>s+m.neto,0)/done.length:0;
+  const prudente=avg*0.5;
+  const fut={};for(const f of (j.future||[]))fut[f.mes]=f.eur;
+  const rows=[];let base=j.saldoTotal,prud=j.saldoTotal;
+  for(let k=1;k<=5;k++){
+    const mes=addMonths(j.curMonth,k);if(mes>"2026-12")break;
+    base+=avg;prud+=prudente;
+    rows.push({mes,base,prud,conf:fut[mes]||0,invBase:Math.max(0,base-BELROGAM_CUSHION),invPrud:Math.max(0,prud-BELROGAM_CUSHION)});
+  }
+  const nov=rows.find(r=>r.mes==="2026-11")||rows[rows.length-1]||{invPrud:0,invBase:0};
+  const bolsa=nov.invPrud;
+  const t1=Math.round(bolsa*0.25),t2=Math.round(bolsa*0.40),t3=Math.round(bolsa*0.35);
+  msg.textContent="";
+  body.style.display="";
+  body.innerHTML=`
+    <div class="cards">
+      <div class="stat" style="--sc:var(--accent)"><div class="l">Cash hoy (Caixa+Wise)</div><div class="n">${fmtEUR(j.saldoTotal)}</div><div class="s">saldo operativo leído de Supabase</div></div>
+      <div class="stat" style="--sc:var(--bull)"><div class="l">Neto medio 3 meses</div><div class="n">${fmtEUR(avg)}</div><div class="s">meses completos</div></div>
+      <div class="stat" style="--sc:var(--hot)"><div class="l">Colchón intocable</div><div class="n">${fmtEUR(BELROGAM_CUSHION)}</div><div class="s">no se invierte</div></div>
+      <div class="stat" style="--sc:var(--bull)"><div class="l">Pólvora estimada en nov</div><div class="n">${fmtEUR(bolsa)}</div><div class="s">escenario prudente ×0,5</div></div>
+    </div>
+    <div style="overflow:auto;margin-top:12px"><table><thead><tr><th style="text-align:left">Mes</th><th>Reservas confirmadas</th><th>Cash base</th><th>Cash prudente</th><th>Invertible</th></tr></thead><tbody>
+      ${rows.map(r=>`<tr${(r.mes>="2026-09"&&r.mes<="2026-11")?' style="background:color-mix(in oklab,var(--bull) 7%,transparent)"':''}><td style="text-align:left" class="mono">${r.mes}</td><td>${r.conf?fmtEUR(r.conf):"—"}</td><td>${fmtEUR(r.base)}</td><td>${fmtEUR(r.prud)}</td><td style="color:var(--bull)">${fmtEUR(r.invPrud)} – ${fmtEUR(r.invBase)}</td></tr>`).join("")}
+    </tbody></table></div>
+    <div class="note" style="margin-top:10px"><b>Tramos BTC propuestos:</b>
+      sep ${fmtEUR(t1)} · oct ${fmtEUR(t2)} · nov ${fmtEUR(t3)}.
+      Antes del 31-ago: solo compra puntual si BTC &lt; $60k. Validar fiscalidad con Financial Group antes de la primera compra de BELROGAM SL.</div>`;
 }
 
 /* ---------- Portfolio estilo Nansen: Token / Protocol / Chain / Address (expandible) ---------- */
