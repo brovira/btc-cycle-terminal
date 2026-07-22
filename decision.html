@@ -63,6 +63,8 @@
   .htbl{width:100%;border-collapse:collapse;font-size:13px}
   .htbl th{text-align:left;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
   .htbl td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+  .how{display:flex;gap:20px;flex-wrap:wrap;margin-top:6px}
+  .how>div{flex:1;min-width:230px;line-height:1.7}
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
@@ -93,6 +95,13 @@
     </div>
   </div>
   <div class="banner" id="banner"></div>
+
+  <div class="sec-head"><h2>Ciclo del halving (LMEC)</h2><div class="rule"></div><span class="mtxt" id="halvNext" style="font-size:12px"></span></div>
+  <div id="halvBox" style="border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:14px;background:var(--panel);padding:16px 18px">
+    <div style="font-size:19px;font-weight:800" id="halvPhase">—</div>
+    <div class="note" id="halvSub" style="margin-top:5px"></div>
+    <div class="levels" id="halvCards" style="margin-top:12px"></div>
+  </div>
 
   <div class="sec-head"><h2>Señales</h2><div class="rule"></div></div>
   <div class="grid" id="sigs"></div>
@@ -170,6 +179,10 @@ async function fetchFNG(){
 /* ---------- ciclo del halving ---------- */
 const HALVINGS=["2012-11-28","2016-07-09","2020-05-11","2024-04-19","2028-04-20"].map(d=>Date.parse(d));
 function halvWeeks(nowMs){let H=HALVINGS[0];for(const h of HALVINGS)if(h<=nowMs)H=h;return (nowMs-H)/(7*864e5);}
+function halvInfo(nowMs){let H=HALVINGS[0],next=null;for(let i=0;i<HALVINGS.length;i++){if(HALVINGS[i]<=nowMs){H=HALVINGS[i];next=HALVINGS[i+1]||null;}}return{lastH:H,nextH:next,week:(nowMs-H)/(7*864e5)};}
+const MESES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+function fmtDate(ms){const d=new Date(ms);return d.getUTCDate()+" "+MESES[d.getUTCMonth()]+" "+d.getUTCFullYear();}
+function weekToMs(lastH,w){return lastH+w*7*864e5;}
 
 /* ---------- evaluación ---------- */
 function evaluate(D){
@@ -178,7 +191,7 @@ function evaluate(D){
   const bmsbHi=(()=>{const a=s20[n-1],b=e21[n-1];return(a!=null&&b!=null)?Math.max(a,b):null;})();
   const bmsbLo=(()=>{const a=s20[n-1],b=e21[n-1];return(a!=null&&b!=null)?Math.min(a,b):null;})();
   const ma200=s200[n-1], rsiV=rsiA[n-1];
-  const now=D.t[n-1];const hw=halvWeeks(now);const d=new Date(now);const ymod4=d.getUTCFullYear()%4,month=d.getUTCMonth()+1;
+  const now=D.t[n-1];const hInfo=halvInfo(now);const hw=hInfo.week,lastH=hInfo.lastH,nextH=hInfo.nextH;const d=new Date(now);const ymod4=d.getUTCFullYear()%4,month=d.getUTCMonth()+1;
   const z=D.z, fng=D.fng;
 
   // ventana de ciclo favorable a compra: acumulación LMEC (sem 120-180) o estacional Cowen (año midterm, 2ª mitad)
@@ -189,23 +202,25 @@ function evaluate(D){
 
   const belowBMSB = bmsbHi!=null? price<bmsbHi : null;
   const near200 = ma200!=null? price<=ma200*1.05 : null;
+  const dist200 = ma200!=null? (price/ma200-1)*100 : null; // % del precio respecto a la 200W (>0 = por encima)
   const zLow = z!=null? z<0.5 : null;
   const rsiLow = rsiV!=null? rsiV<45 : null;
   const fngFear = fng!=null? fng<30 : null;
+  const accumStart=fmtDate(weekToMs(lastH,120)), accumEnd=fmtDate(weekToMs(lastH,180)), yr=d.getUTCFullYear();
 
   const SIG=[
     {key:"bmsb",nm:"Precio bajo la BMSB",on:belowBMSB,val:bmsbHi!=null?fmtUSD(bmsbHi):"—",
      ds:belowBMSB?"Por debajo de la Bull Market Support Band = zona de acumulación (LMEC).":"Por encima de la BMSB: tendencia alcista, no zona de acumulación barata."},
-    {key:"ma200",nm:"Cerca/bajo 200W MA",on:near200,val:ma200!=null?fmtUSD(ma200):"—",
-     ds:near200?"A ≤5% de la media de 200 semanas = soporte estructural profundo.":"Lejos del soporte de 200 semanas."},
+    {key:"ma200",nm:(dist200!=null&&dist200<0?"Bajo la 200W MA":"Cerca de la 200W MA"),on:near200,val:ma200!=null?fmtUSD(ma200):"—",
+     ds:near200?(dist200!=null&&dist200<0?`Por DEBAJO de la 200W MA (${dist200.toFixed(0)}%) = soporte profundo → señal FUERTE.`:`A +${dist200!=null?dist200.toFixed(0):"≤5"}% de la 200W MA: pegado al soporte (zona DCA). Por debajo sería compra fuerte.`):`Lejos del soporte de 200 semanas (${dist200!=null?"+"+dist200.toFixed(0)+"%":">5%"} por encima).`},
     {key:"mvrv",nm:"MVRV Z infravalorado",on:zLow,nd:z==null,val:z!=null?z.toFixed(2):"n/d",
      ds:z==null?"On-chain no disponible (Coin Metrics). No cuenta.":(zLow?"MVRV Z en franja baja (<0,5) = infravalorado on-chain.":"MVRV Z fuera de la franja de suelo.")},
     {key:"rsi",nm:"RSI semanal débil",on:rsiLow,val:rsiV!=null?rsiV.toFixed(0):"—",
-     ds:rsiLow?"RSI semanal <45 = sin sobrecompra, margen para acumular.":"RSI semanal alto: momentum caliente, no descuento."},
+     ds:rsiLow?"RSI semanal <45 (por debajo del punto medio 50): sin sobrecompra → margen para acumular.":"RSI semanal ≥45: momentum caliente, no es descuento."},
     {key:"fng",nm:"Miedo (Fear & Greed)",on:fngFear,nd:fng==null,val:fng!=null?String(fng):"n/d",
-     ds:fng==null?"F&G no disponible.":(fngFear?"Miedo (<30): históricamente buenas zonas de compra.":"Sin miedo extremo.")},
+     ds:fng==null?"F&G no disponible.":(fngFear?"Miedo (<30): históricamente buenas zonas de compra.":"Sin miedo extremo (≥30).")},
     {key:"cycle",nm:"Ventana de ciclo",on:cycleBuy,val:"sem "+Math.round(hw),
-     ds:accumWindow?"En la ventana de acumulación post-halving (sem 120-180).":(cowenSeason?"2ª mitad del año midterm (estacional de Cowen).":(distWindow?"Sem 70-110 = zona de techo/distribución del ciclo.":"Fuera de ventana de acumulación."))},
+     ds:accumWindow?`Ventana de acumulación del halving (sem 120-180 ≈ ${accumStart} → ${accumEnd}).`:(cowenSeason?`2ª mitad del año midterm (estacional de Cowen): acumular jul–dic ${yr} y principios de ${yr+1}.`:(distWindow?"Sem 70-110 = zona de techo/distribución del ciclo.":`Fuera de ventana. La de acumulación del halving va sem 120-180 (≈ ${accumStart} → ${accumEnd}).`))},
   ];
   const withData=SIG.filter(s=>s.on!=null);
   const lit=withData.filter(s=>s.on).length;
@@ -233,7 +248,7 @@ function evaluate(D){
     action="Esperar dip";vc="var(--muted)";regime="Ciclo · sin descuento";
     sub="Pocas señales de compra y precio sin descuento. Paciencia: deja límites en soportes y espera a que se enciendan las señales.";
   }
-  return {SIG,lit,tot,action,sub,vc,regime,price,bmsbHi,bmsbLo,ma200,rsiV,z,fng,hw};
+  return {SIG,lit,tot,action,sub,vc,regime,price,bmsbHi,bmsbLo,ma200,rsiV,z,fng,hw,lastH,nextH};
 }
 
 function render(R){
@@ -257,9 +272,46 @@ function render(R){
     ["Semana del halving",Math.round(R.hw)],
   ];
   $("#levels").innerHTML=lv.map(x=>`<div class="lv"><div class="l">${x[0]}</div><div class="n">${x[1]}</div></div>`).join("");
-  $("#logic").innerHTML=`Se cuentan <b>6 señales de compra</b> (las que tienen dato): precio bajo la <b>BMSB</b>, cerca de la <b>200W MA</b>, <b>MVRV Z</b> infravalorado, <b>RSI</b> semanal débil, <b>miedo</b> (F&amp;G&lt;30) y <b>ventana de ciclo</b> (acumulación post-halving sem 120-180, o estacional midterm de Cowen). La acción sale de combinarlas: <b>Tomar beneficio</b> en la ventana de techo (sem 70-110) si el precio no está barato · <b>Comprar por niveles</b> si ≥⅔ encendidas y precio &lt; BMSB · <b>Esperar dip</b> si la ventana acompaña pero el precio está caro · <b>Esperar seasonality</b> en año midterm · <b>DCA base</b> si están mixtas.`;
+  renderHalving(R);
+  $("#logic").innerHTML=`Se cuentan <b>6 señales de compra</b> (solo las que tienen dato) y la acción sale de combinarlas.
+    <div class="how" style="margin-top:8px">
+      <div><b>Umbrales (heurísticos, ajustables):</b><br>
+        · <b>BMSB</b>: precio por debajo de la banda = zona de acumulación.<br>
+        · <b>200W MA</b>: a ≤5% o por debajo = pegado al soporte (por <b>debajo</b> = compra fuerte; cerca por encima = DCA).<br>
+        · <b>MVRV Z</b> &lt; 0,5 = infravalorado on-chain.<br>
+        · <b>RSI</b> &lt; <b>45</b>: por debajo del punto medio 50 (30 = sobreventa, 70 = sobrecompra) → sin sobrecompra, margen para acumular. El 45 es un umbral elegido, no sagrado.<br>
+        · <b>F&amp;G</b> &lt; 30 = miedo.<br>
+        · <b>Ventana de ciclo</b>: acumulación del halving (sem 120-180) o 2ª mitad del año midterm (Cowen).</div>
+      <div><b>Acción resultante:</b><br>
+        · <b>Tomar beneficio</b>: en la ventana de techo (sem 70-110) si el precio no está barato.<br>
+        · <b>Comprar por niveles</b>: ≥⅔ señales encendidas y precio &lt; BMSB.<br>
+        · <b>Esperar dip</b>: la ventana acompaña pero el precio está caro (&gt; BMSB).<br>
+        · <b>Esperar seasonality</b>: año midterm con pocas señales aún.<br>
+        · <b>DCA base</b>: señales mixtas.</div>
+    </div>`;
   const nd=R.SIG.some(s=>s.nd);
   if(nd){$("#banner").style.display="block";$("#banner").innerHTML="⚠️ Alguna señal on-chain (MVRV / F&amp;G) no cargó y no cuenta en el marcador. Si el MVRV sale <b>n/d</b> de forma persistente, el proveedor on-chain (Coin Metrics) está bloqueado — se arregla con el proxy <code>/api/coinmetrics</code> o Glassnode.";}
+}
+
+/* ---------- ciclo del halving: fase actual + cuándo empieza la ventana de compra ---------- */
+function renderHalving(R){
+  const wk=R.hw, lastH=R.lastH, nextH=R.nextH, cyc=Math.round(wk);
+  const buyA=120,buyB=180,sellA=70,sellB=110;
+  const buyStartMs=weekToMs(lastH,buyA),buyEndMs=weekToMs(lastH,buyB);
+  let phase,sub,pc;
+  if(wk<sellA){phase="Post-halving temprano";pc="var(--muted)";sub="Fase inicial del ciclo. Aún lejos de la ventana de acumulación.";}
+  else if(wk<=sellB){phase="Euforia / distribución";pc="var(--hot)";sub=`Zona de techo del ciclo (sem ${sellA}-${sellB}): tramo de tomar beneficio, no de comprar.`;}
+  else if(wk<buyA){const falta=Math.ceil(buyA-wk);phase="Pre-acumulación";pc="var(--accum)";
+    sub=`Faltan <b>~${falta} semana(s)</b> para la ventana de compra del halving: empieza en sem ${buyA} (≈ <b>${fmtDate(buyStartMs)}</b>) y dura hasta sem ${buyB} (≈ ${fmtDate(buyEndMs)}). Prepara liquidez y niveles.`;}
+  else if(wk<=buyB){const quedan=Math.ceil(buyB-wk);phase="🟢 Acumulación (ventana de compra)";pc="var(--bull)";
+    sub=`<b>ESTÁS dentro</b> de la ventana de compra del halving (sem ${buyA}-${buyB} ≈ ${fmtDate(buyStartMs)} → ${fmtDate(buyEndMs)}). Quedan ~${quedan} semanas. Fase para hacer DCA / comprar por niveles.`;}
+  else{phase="Pre-halving tardío";pc="var(--ink2)";sub="Ventana de acumulación cerrada. Siguiente gran fase: el próximo halving.";}
+  $("#halvPhase").textContent=phase;$("#halvPhase").style.color=pc;
+  $("#halvSub").innerHTML=sub;
+  const cards=[["Semana del ciclo",cyc+" / 208"],["Ventana de compra","sem "+buyA+"–"+buyB],["Empieza ≈",fmtDate(buyStartMs)],["Hasta ≈",fmtDate(buyEndMs)]];
+  if(nextH)cards.push(["Próximo halving",fmtDate(nextH)]);
+  $("#halvCards").innerHTML=cards.map(x=>`<div class="lv"><div class="l">${x[0]}</div><div class="n">${x[1]}</div></div>`).join("");
+  $("#halvNext").textContent = wk<buyA?("faltan ~"+Math.ceil(buyA-wk)+" sem para comprar") : (wk<=buyB?"en ventana de compra":"");
 }
 
 /* ---------- historial: lee data/decision_history.json y puntúa el acierto ---------- */
