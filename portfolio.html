@@ -36,6 +36,11 @@
   th:first-child,td:first-child{text-align:left;font-family:var(--font);font-weight:600}
   .note{font-size:12.5px;color:var(--muted);line-height:1.6}
   .addr{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .btn.on{border-color:var(--accent);color:var(--accent)}
+  .shbar{height:6px;background:var(--panel2);border-radius:4px;overflow:hidden;min-width:90px;flex:1}
+  .shbar i{display:block;height:100%;background:var(--bull)}
+  .shcell{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+  .chip{font-size:10px;font-family:var(--mono);color:var(--muted);background:var(--panel2);border:1px solid var(--line);padding:1px 6px;border-radius:999px}
   footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;line-height:1.6}
 </style>
 </head>
@@ -66,6 +71,14 @@
 
   <div id="content" style="display:none">
     <div class="cards" id="totals" style="margin-top:6px"></div>
+
+    <div class="sec-head"><h2>📊 Portfolio</h2><div class="rule"></div>
+      <div style="display:flex;gap:6px">
+        <button class="btn on" data-pf="token" id="pfTok">Por token</button>
+        <button class="btn" data-pf="chain" id="pfCh">Por blockchain</button>
+      </div>
+    </div>
+    <div class="panel" style="overflow:auto"><table id="pfTbl"></table></div>
 
     <div class="sec-head"><h2>◎ Wallet Solana</h2><div class="rule"></div><span class="addr" id="solAddr"></span></div>
     <div class="panel" style="overflow:auto"><table id="solTbl"></table></div>
@@ -130,39 +143,87 @@ async function load(pw){
   const lpVal=await loadLpValue(pw,px.BTC);
   $("#gate").style.display="none";$("#content").style.display="";
   $("#statusDot").className="dot ok";$("#statusText").textContent="Actualizado "+new Date().toISOString().slice(0,16).replace("T"," ")+" · caché 2 min";
-  const sol=j.solana,evm=j.evm||{},uni=j.uniswap||{positions:[],totalUsd:0};
+  const sol=j.solana,evm=j.evm||{},uni=j.uniswap||{positions:[],totalUsd:0},hl=j.hyperliquid||{tokens:[],totalUsd:0};
   const MIN=20; // ocultar polvo/spam por debajo de $20 (solo en las listas de blockchain)
   const visTok=arr=>{const vis=[],hid={n:0};for(const t of (arr||[])){if(t.usd==null||t.usd<MIN)hid.n++;else vis.push(t);}return{vis,hid:hid.n};};
   const solV=visTok(sol&&sol.tokens);
-  let solTok=0;for(const t of solV.vis)solTok+=t.usd||0;
-  const chains=[["ethereum",evm.ethereum],["base",evm.base]].filter(x=>x[1]);
-  let evmTot=uni.totalUsd||0,evmHid=0;
-  for(const[,c]of chains){evmTot+=c.totalUsd||0;evmHid+=c.hidden||0;}
-  const total=solTok+(lpVal||0)+evmTot;
+  const chains=[["ethereum",evm.ethereum],["base",evm.base],["hyperevm",evm.hyperevm]].filter(x=>x[1]&&!x[1].error);
+  const STABLE=s=>/^USD|^DAI$|USD.?0$/i.test(String(s).replace(/\s.*/,""));
+
+  // ---------- ASSETS unificados (para el portfolio estilo Nansen) ----------
+  ASSETS=[];
+  for(const t of solV.vis)ASSETS.push({sym:t.sym,chain:"solana",amount:t.amount,usd:t.usd,kind:"token"});
+  if(lpVal!=null&&lpVal>0)ASSETS.push({sym:"LP Orca (cbBTC/USDC + peg)",chain:"solana",amount:null,usd:lpVal,kind:"lp"});
+  for(const[name,c]of chains)for(const t of c.tokens||[])ASSETS.push({sym:t.sym,chain:name,amount:t.amount,usd:t.usd,kind:/^A[A-Z]/.test(t.sym)?"defi":"token"});
+  for(const p of (uni.positions||[]))if(p.usd)ASSETS.push({sym:`LP UniV3 ${p.pair}`,chain:"ethereum",amount:null,usd:p.usd,kind:"lp",extra:p});
+  for(const t of (hl.tokens||[]))ASSETS.push({sym:t.sym,chain:"hyperliquid",amount:t.amount,usd:t.usd,kind:"token"});
+  if(hl.staked&&hl.staked.usd)ASSETS.push({sym:"HYPE",chain:"hyperliquid",amount:hl.staked.amount,usd:hl.staked.usd,kind:"stake"});
+
+  const sum=f=>ASSETS.filter(f).reduce((s,a)=>s+(a.usd||0),0);
+  const total=sum(()=>true);
+  const stables=sum(a=>a.kind==="token"&&STABLE(a.sym));
+  const liquid=sum(a=>a.kind==="token"&&!STABLE(a.sym));
+  const defi=sum(a=>a.kind==="lp"||a.kind==="stake"||a.kind==="defi");
+  TOTAL_USD=total;
+
+  // ---------- cabecera: total → líquido (estables) → tokens → LPs/DeFi ----------
   $("#totals").innerHTML=[
     {l:"TOTAL cartera",n:fmtUSD(total),s:px.BTC?("₿ "+(total/px.BTC).toFixed(5)+" · BTC "+fmtUSD(px.BTC)):"",c:"var(--accent)"},
-    {l:"Solana · tokens líquidos",n:fmtUSD(solTok),s:(sol&&sol.nfts?sol.nfts+" NFTs de posición":""),c:"var(--bull)"},
-    {l:"Solana · LPs (Orca)",n:lpVal!=null?fmtUSD(lpVal):"—",s:"math V3 + precio BTC en vivo",c:"var(--bull)"},
-    {l:"EVM (ETH + Base)",n:fmtUSD(evmTot),s:uni.totalUsd?("incluye Uniswap "+fmtUSD(uni.totalUsd)):"Blockscout",c:"var(--hot)"},
+    {l:"💵 Líquido (estables)",n:fmtUSD(stables),s:"USDC/USDT — pólvora disponible",c:"var(--accent)"},
+    {l:"🪙 Tokens en cartera",n:fmtUSD(liquid),s:"BTC/ETH/SOL/HYPE… líquidos",c:"var(--bull)"},
+    {l:"💧 LPs + staking + DeFi",n:fmtUSD(defi),s:"Orca · UniV3 · Aave · HYPE staked",c:"var(--hot)"},
   ].map(x=>`<div class="stat" style="--sc:${x.c}"><div class="l">${x.l}</div><div class="n">${x.n}</div><div class="s">${x.s||""}</div></div>`).join("");
-  // Solana
+  renderPf(PF_MODE);
+
+  // ---------- detalle Solana ----------
   if(sol&&!sol.error){
     $("#solAddr").textContent=short(sol.address);
     $("#solTbl").innerHTML=`<thead><tr><th>Token</th><th>Cantidad</th><th>Valor</th></tr></thead><tbody>${tokenRows(solV.vis)||'<tr><td colspan="3" class="note">Sin tokens.</td></tr>'}${lpVal!=null?`<tr><td>💧 Posiciones LP (Orca)</td><td>—</td><td>${fmtUSD(lpVal,2)}</td></tr>`:""}</tbody>`;
     $("#solNote").textContent=(solV.hid?solV.hid+" tokens ocultos (<$"+MIN+" o sin precio — probable spam/polvo). ":"")+(sol.warning?("Aviso RPC: "+sol.warning):"");
   }else{$("#solTbl").innerHTML=`<tbody><tr><td class="note">${sol?esc(sol.error||""):"sin dirección configurada"}</td></tr></tbody>`;}
-  // EVM (tokens + posiciones Uniswap V3)
+
+  // ---------- detalle EVM + Hyperliquid ----------
+  let evmHid=0;for(const[,c]of chains)evmHid+=c.hidden||0;
   let evmRows="";
   for(const p of (uni.positions||[])){
     evmRows+=`<tr><td>🦄 Uniswap V3 ${esc(p.pair)} ${esc(p.fee)} ${p.inRange?'🟢':'🔴'} <span class="addr">ethereum</span></td><td>${fmtAmt(p.amt0)} ${esc(p.sym0)} + ${fmtAmt(p.amt1)} ${esc(p.sym1)}</td><td>${p.usd!=null?fmtUSD(p.usd,2):'<span style="color:var(--muted)">sin precio</span>'}</td></tr>`;
   }
+  if(hl.staked)evmRows+=`<tr><td>🥩 ${esc(hl.staked.sym)} <span class="addr">hyperliquid</span></td><td>${fmtAmt(hl.staked.amount)}</td><td>${hl.staked.usd!=null?fmtUSD(hl.staked.usd,2):'—'}</td></tr>`;
+  for(const t of (hl.tokens||[]))evmRows+=`<tr><td>${esc(t.sym)} <span class="addr">hyperliquid</span></td><td>${fmtAmt(t.amount)}</td><td>${t.usd!=null?fmtUSD(t.usd,2):'<span style="color:var(--muted)">sin precio</span>'}</td></tr>`;
   for(const[name,c]of chains){
-    if(!c||c.error)continue;
     for(const t of c.tokens||[])evmRows+=`<tr><td>${esc(t.sym)} <span class="addr">${name}</span></td><td>${fmtAmt(t.amount)}</td><td>${t.usd!=null?fmtUSD(t.usd,2):'<span style="color:var(--muted)">sin precio</span>'}</td></tr>`;
   }
   $("#evmTbl").innerHTML=`<thead><tr><th>Token · red</th><th>Cantidad</th><th>Valor</th></tr></thead><tbody>${evmRows||'<tr><td colspan="3" class="note">Sin tokens (o sin dirección configurada).</td></tr>'}</tbody>`;
-  $("#evmNote").textContent=(evmHid?evmHid+" tokens ocultos (<$"+MIN+", sin market cap real, o spam con precio falso).":"");
+  $("#evmNote").textContent=(evmHid?evmHid+" tokens ocultos (<$"+MIN+", sin market cap real, o spam con precio falso). ":"")+(hl.warning?("Hyperliquid: "+hl.warning):"");
 }
+
+/* ---------- Portfolio estilo Nansen: por token / por blockchain ---------- */
+let ASSETS=[],TOTAL_USD=0,PF_MODE="token";
+function bar(pct){return `<div class="shcell"><span class="mono" style="font-size:12px;color:var(--muted)">${pct.toFixed(1)}%</span><div class="shbar"><i style="width:${Math.min(100,pct)}%"></i></div></div>`;}
+function renderPf(mode){
+  PF_MODE=mode;
+  $("#pfTok").classList.toggle("on",mode==="token");$("#pfCh").classList.toggle("on",mode==="chain");
+  if(!ASSETS.length){$("#pfTbl").innerHTML="";return;}
+  if(mode==="token"){
+    const g={};
+    for(const a of ASSETS){const k=a.sym.toUpperCase().replace(/\s*\(.*\)$/,"");
+      const o=g[k]||(g[k]={sym:a.sym.replace(/\s*\(.*\)$/,""),usd:0,amount:0,amtOk:true,chains:new Set()});
+      o.usd+=a.usd||0;if(a.amount!=null)o.amount+=a.amount;else o.amtOk=false;o.chains.add(a.chain);}
+    const rows=Object.values(g).sort((a,b)=>b.usd-a.usd);
+    $("#pfTbl").innerHTML=`<thead><tr><th>Token</th><th>Cantidad</th><th>Redes</th><th style="min-width:150px">Share</th><th>Valor</th></tr></thead><tbody>`+
+      rows.map(r=>`<tr><td>${esc(r.sym)}</td><td>${r.amtOk?fmtAmt(r.amount):"—"}</td><td style="text-align:left">${[...r.chains].map(c=>`<span class="chip">${esc(c)}</span>`).join(" ")}</td><td>${bar(TOTAL_USD?r.usd/TOTAL_USD*100:0)}</td><td>${fmtUSD(r.usd,2)}</td></tr>`).join("")+`</tbody>`;
+  }else{
+    const g={};
+    for(const a of ASSETS){const o=g[a.chain]||(g[a.chain]={chain:a.chain,usd:0,syms:{}});o.usd+=a.usd||0;
+      const k=a.sym.replace(/\s*\(.*\)$/,"");o.syms[k]=(o.syms[k]||0)+(a.usd||0);}
+    const rows=Object.values(g).sort((a,b)=>b.usd-a.usd);
+    $("#pfTbl").innerHTML=`<thead><tr><th>Blockchain</th><th style="text-align:left">Top posiciones</th><th style="min-width:150px">Share</th><th>Valor</th></tr></thead><tbody>`+
+      rows.map(r=>{const top=Object.entries(r.syms).sort((x,y)=>y[1]-x[1]).slice(0,3).map(([s,v])=>`${esc(s)} ${fmtUSD(v)}`).join(" · ");
+        return `<tr><td>${esc(r.chain)}</td><td style="text-align:left;font-family:var(--font);font-size:12px;color:var(--muted)">${top}</td><td>${bar(TOTAL_USD?r.usd/TOTAL_USD*100:0)}</td><td>${fmtUSD(r.usd,2)}</td></tr>`;}).join("")+`</tbody>`;
+  }
+}
+$("#pfTok").addEventListener("click",()=>renderPf("token"));
+$("#pfCh").addEventListener("click",()=>renderPf("chain"));
 $("#pwForm").addEventListener("submit",e=>{e.preventDefault();load($("#pw").value);});
 (function(){const pw=localStorage.getItem(PWKEY)||sessionStorage.getItem(PWKEY);if(pw){$("#pw").value=pw;load(pw);}})();
 setInterval(()=>{const pw=localStorage.getItem(PWKEY);if(pw&&$("#content").style.display!=="none")load(pw);},10*60*1000);

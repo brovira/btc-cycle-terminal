@@ -76,7 +76,8 @@ async function fetchEvmChain(base, chain, addr) {
       const j = await a.json();
       const wei = +(j.coin_balance || 0); const eth = wei / 1e18;
       const rate = +(j.exchange_rate || 0);
-      if (eth > 0) { const usd = eth * rate; out.tokens.push({ sym: chain === "base" ? "ETH (Base)" : "ETH", amount: eth, usd }); out.totalUsd += usd; }
+      const nativeSym = chain === "hyperevm" ? "HYPE" : "ETH";
+      if (eth > 0) { const usd = eth * rate; out.tokens.push({ sym: nativeSym, amount: eth, usd: usd || null }); if (usd) out.totalUsd += usd; }
     } else if (a.status !== 404) { out.warning = "blockscout_" + a.status; }
     const t = await fetch(`${base}/api/v2/addresses/${addr}/token-balances`, { headers: { "User-Agent": "portfolio" } });
     if (t.ok) {
@@ -160,6 +161,40 @@ async function fetchUniV3(baseUrl, addr) {
   return out;
 }
 
+/* ---- Hyperliquid L1: spot + HYPE en staking (API pública gratis) ---- */
+async function fetchHyperliquid(addr) {
+  const out = { tokens: [], staked: null, totalUsd: 0 };
+  const call = async (body) => {
+    const r = await fetch("https://api.hyperliquid.xyz/info", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error("hl_" + r.status);
+    return r.json();
+  };
+  try {
+    const [spot, stake, mids] = await Promise.all([
+      call({ type: "spotClearinghouseState", user: addr }).catch(() => null),
+      call({ type: "delegatorSummary", user: addr }).catch(() => null),
+      call({ type: "allMids" }).catch(() => null),
+    ]);
+    const px = (sym) => sym === "USDC" ? 1 : (mids && mids[sym] != null ? +mids[sym] : null);
+    if (spot && Array.isArray(spot.balances)) {
+      for (const b of spot.balances) {
+        const amt = +(b.total || 0); if (!(amt > 0)) continue;
+        const p = px(b.coin); const usd = p != null ? amt * p : null;
+        if (usd != null && usd < 20) continue;
+        out.tokens.push({ sym: b.coin, amount: amt, usd });
+        if (usd) out.totalUsd += usd;
+      }
+    }
+    if (stake) {
+      const st = +(stake.delegated || 0) + +(stake.undelegated || 0) + +(stake.totalPendingWithdrawal || 0);
+      if (st > 0) { const p = px("HYPE"); const usd = p != null ? st * p : null;
+        out.staked = { sym: "HYPE (staked)", amount: st, usd }; if (usd) out.totalUsd += usd; }
+    }
+  } catch (e) { out.warning = String(e.message || e); }
+  return out;
+}
+
 async function fetchPrices() {
   const px = { USDC: 1 };
   for (const [sym, pair] of [["BTC", "BTCUSDT"], ["SOL", "SOLUSDT"]]) {
@@ -184,14 +219,16 @@ module.exports = async (req, res) => {
       return res.end(JSON.stringify({ error: "no_wallets", message: "Rellena data/wallets.json en el repo privado: {\"solana\":\"...\",\"evm\":\"...\"}" }));
     }
     const px = await fetchPrices();
-    const [sol, eth, base, uni] = await Promise.all([
+    const [sol, eth, base, hyperevm, hl, uni] = await Promise.all([
       wallets.solana ? fetchSolana(wallets.solana, px).catch(e => ({ error: String(e.message || e) })) : null,
       wallets.evm ? fetchEvmChain("https://eth.blockscout.com", "ethereum", wallets.evm).catch(e => ({ error: String(e.message || e) })) : null,
       wallets.evm ? fetchEvmChain("https://base.blockscout.com", "base", wallets.evm).catch(e => ({ error: String(e.message || e) })) : null,
+      wallets.evm ? fetchEvmChain("https://hyperliquid.cloud.blockscout.com", "hyperevm", wallets.evm).catch(e => ({ error: String(e.message || e) })) : null,
+      wallets.evm ? fetchHyperliquid(wallets.evm).catch(e => ({ tokens: [], totalUsd: 0, warning: String(e.message || e) })) : null,
       wallets.evm ? fetchUniV3("https://eth.blockscout.com", wallets.evm).catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
     ]);
     res.setHeader("Cache-Control", "private, max-age=120");
-    return res.end(JSON.stringify({ prices: px, solana: sol, evm: { ethereum: eth, base }, uniswap: uni }));
+    return res.end(JSON.stringify({ prices: px, solana: sol, evm: { ethereum: eth, base, hyperevm }, hyperliquid: hl, uniswap: uni }));
   } catch (e) {
     res.statusCode = 502; return res.end(JSON.stringify({ error: "fetch_error", message: String((e && e.message) || e) }));
   }
