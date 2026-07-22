@@ -15,6 +15,8 @@
 // se mantiene como compatibilidad para desarrollo y clientes antiguos.
 
 const { authConfigured, requestAuthorized } = require("../lib/auth");
+const fs = require("fs");
+const pathLib = require("path");
 const REPO = process.env.PRIVATE_REPO || "brovira/DeFi-Tracker";
 const FILES = {                       // lista blanca de archivos que se pueden pedir
   orca_pnl: "data/normalized/orca_pnl.json",
@@ -28,16 +30,26 @@ module.exports = async (req, res) => {
   const url = new URL(req.url, "http://x");
   const token = process.env.GH_TOKEN;
 
-  if (!authConfigured()) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password", message: "Falta SITE_PASSWORD o DASH_PASSWORD en Vercel." })); }
+  if (!authConfigured(req)) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password", message: "Falta SITE_PASSWORD o DASH_PASSWORD en Vercel." })); }
   if (!requestAuthorized(req, url)) {
     await new Promise(r => setTimeout(r, 600)); // pequeño freno anti fuerza bruta
     res.statusCode = 401; return res.end(JSON.stringify({ error: "bad_password" }));
   }
-  if (!token) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_github_token", message: "Falta GH_TOKEN en Vercel." })); }
-
   const key = (url.searchParams.get("file") || "orca_pnl").toLowerCase();
   const path = FILES[key];
   if (!path) { res.statusCode = 400; return res.end(JSON.stringify({ error: "bad_file", files: Object.keys(FILES) })); }
+  if (process.env.LOCAL_DATA_DIR) {
+    try {
+      const localPath = pathLib.join(process.env.LOCAL_DATA_DIR, path.replace(/^data\//, ""));
+      const text = await fs.promises.readFile(localPath, "utf8");
+      res.setHeader("Cache-Control", "no-store");
+      return res.end(text);
+    } catch (e) {
+      res.statusCode = e && e.code === "ENOENT" ? 404 : 500;
+      return res.end(JSON.stringify({ error: "local_file", message: String((e && e.message) || e) }));
+    }
+  }
+  if (!token) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_github_token", message: "Falta GH_TOKEN en Vercel." })); }
 
   try {
     const r = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {

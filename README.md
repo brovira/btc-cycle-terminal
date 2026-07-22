@@ -17,6 +17,13 @@ con alertas por Telegram. Uso educativo — **no es asesoramiento financiero**.
 
 **Dashboard en vivo:** https://btc-cycle-terminal.vercel.app
 
+## Desarrollo local
+
+Arranca la web con `npm run dev` y abre `http://localhost:8000`. Este servidor ejecuta
+también las rutas `/api/*`, usa los datos de `../DeFi-Tracker-main/data` y desactiva la
+contraseña únicamente para peticiones desde `localhost`. No uses `python -m http.server`:
+solo sirve los HTML y provoca errores `404` en Portfolio, LPs y cashflow.
+
 ## Alertas por Telegram — configuración
 
 1. Crea un bot con [@BotFather](https://t.me/BotFather) → `/newbot` → copia el **token**.

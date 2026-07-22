@@ -10,6 +10,7 @@
 //   SITE_PASSWORD        = (la contraseña única de la web; DASH_PASSWORD sigue compatible)
 
 const { authConfigured, requestAuthorized } = require("../lib/auth");
+const fs = require("fs");
 
 module.exports = async (req, res) => {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
@@ -30,8 +31,18 @@ module.exports = async (req, res) => {
     }
   }
   KEY = cleanKey(KEY);
-  if (!authConfigured()) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password" })); }
+  if (!authConfigured(req)) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password" })); }
   if (!requestAuthorized(req, url)) { await new Promise(r => setTimeout(r, 600)); res.statusCode = 401; return res.end(JSON.stringify({ error: "bad_password" })); }
+  if (process.env.LOCAL_CASHFLOW_FILE) {
+    try {
+      const cached = await fs.promises.readFile(process.env.LOCAL_CASHFLOW_FILE, "utf8");
+      res.setHeader("Cache-Control", "no-store");
+      return res.end(cached);
+    } catch (e) {
+      res.statusCode = e && e.code === "ENOENT" ? 404 : 500;
+      return res.end(JSON.stringify({ error: "local_cashflow", message: String((e && e.message) || e) }));
+    }
+  }
   if (!SB || !KEY) {
     // diagnóstico: nombres + LONGITUD de lo que hay (nunca el valor) — así se ve si está
     // vacía, si tiene solo espacios, o si directamente no existe la variable.

@@ -11,6 +11,8 @@
 const REPO = process.env.PRIVATE_REPO || "brovira/DeFi-Tracker";
 const PATH = "data/baseline.json";
 const { authConfigured, requestAuthorized } = require("../lib/auth");
+const fs = require("fs");
+const pathLib = require("path");
 
 async function readBody(req) {
   if (req.body) return typeof req.body === "string" ? JSON.parse(req.body) : req.body;
@@ -24,14 +26,19 @@ module.exports = async (req, res) => {
   const url = new URL(req.url, "http://x");
   const token = process.env.GH_TOKEN;
 
-  if (!authConfigured()) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password" })); }
+  if (!authConfigured(req)) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password" })); }
   if (!requestAuthorized(req, url)) { await new Promise(r => setTimeout(r, 600)); res.statusCode = 401; return res.end(JSON.stringify({ error: "bad_password" })); }
-  if (!token) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_github_token" })); }
+  if (!token && !process.env.LOCAL_DATA_DIR) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_github_token" })); }
 
   const gh = (extra) => ({ Authorization: `Bearer ${token}`, "User-Agent": "lp-baseline", Accept: "application/vnd.github+json", ...extra });
   const contentsUrl = `https://api.github.com/repos/${REPO}/contents/${PATH}`;
+  const localPath = process.env.LOCAL_DATA_DIR && pathLib.join(process.env.LOCAL_DATA_DIR, "baseline.json");
 
   async function loadCurrent() {
+    if (localPath) {
+      try { return { sha: null, doc: JSON.parse(await fs.promises.readFile(localPath, "utf8")) }; }
+      catch (e) { if (e && e.code === "ENOENT") return { sha: null, doc: null }; throw e; }
+    }
     const r = await fetch(contentsUrl, { headers: gh() });
     if (r.status === 404) return { sha: null, doc: null };
     if (!r.ok) throw new Error("github_" + r.status);
@@ -54,6 +61,10 @@ module.exports = async (req, res) => {
         note: String(b.note || "Fresh start del farming (solo pares con estable)").slice(0, 200),
       };
       const { sha } = await loadCurrent();
+      if (localPath) {
+        await fs.promises.writeFile(localPath, JSON.stringify(doc, null, 2) + "\n", "utf8");
+        return res.end(JSON.stringify({ ok: true, baseline: doc }));
+      }
       const content = Buffer.from(JSON.stringify(doc, null, 2) + "\n", "utf8").toString("base64");
       const put = await fetch(contentsUrl, {
         method: "PUT",

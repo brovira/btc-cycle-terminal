@@ -14,6 +14,8 @@
 const REPO = process.env.PRIVATE_REPO || "brovira/DeFi-Tracker";
 const PATH = "data/journal.json";
 const { authConfigured, requestAuthorized } = require("../lib/auth");
+const fs = require("fs");
+const pathLib = require("path");
 
 async function readBody(req) {
   if (req.body) return typeof req.body === "string" ? JSON.parse(req.body) : req.body;
@@ -32,15 +34,26 @@ module.exports = async (req, res) => {
   const url = new URL(req.url, "http://x");
   const token = process.env.GH_TOKEN;
 
-  if (!authConfigured()) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password", message: "Falta SITE_PASSWORD o DASH_PASSWORD en Vercel." })); }
+  if (!authConfigured(req)) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password", message: "Falta SITE_PASSWORD o DASH_PASSWORD en Vercel." })); }
   if (!requestAuthorized(req, url)) { await new Promise(r => setTimeout(r, 600)); res.statusCode = 401; return res.end(JSON.stringify({ error: "bad_password" })); }
-  if (!token) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_github_token", message: "Falta GH_TOKEN en Vercel." })); }
+  if (!token && !process.env.LOCAL_DATA_DIR) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_github_token", message: "Falta GH_TOKEN en Vercel." })); }
 
   const gh = (extra) => ({ Authorization: `Bearer ${token}`, "User-Agent": "lp-journal", Accept: "application/vnd.github+json", ...extra });
   const contentsUrl = `https://api.github.com/repos/${REPO}/contents/${PATH}`;
+  const localPath = process.env.LOCAL_DATA_DIR && pathLib.join(process.env.LOCAL_DATA_DIR, "journal.json");
 
   // --- leer estado actual (sha + entradas) ---
   async function loadCurrent() {
+    if (localPath) {
+      try {
+        const doc = JSON.parse(await fs.promises.readFile(localPath, "utf8"));
+        if (!Array.isArray(doc.entries)) doc.entries = [];
+        return { sha: null, doc };
+      } catch (e) {
+        if (e && e.code === "ENOENT") return { sha: null, doc: { entries: [] } };
+        throw e;
+      }
+    }
     const r = await fetch(contentsUrl, { headers: gh() });
     if (r.status === 404) return { sha: null, doc: { entries: [] } };
     if (!r.ok) throw new Error("github_" + r.status);
@@ -74,6 +87,10 @@ module.exports = async (req, res) => {
 
       const { sha, doc } = await loadCurrent();
       doc.entries.unshift(entry); // más reciente primero
+      if (localPath) {
+        await fs.promises.writeFile(localPath, JSON.stringify(doc, null, 2) + "\n", "utf8");
+        return res.end(JSON.stringify({ ok: true, entry, count: doc.entries.length }));
+      }
       const content = Buffer.from(JSON.stringify(doc, null, 2) + "\n", "utf8").toString("base64");
       const put = await fetch(contentsUrl, {
         method: "PUT",

@@ -7,6 +7,8 @@
 // GET /api/portfolio  →  { solana:{...}, evm:{...}, prices:{...} }
 
 const { authConfigured, requestAuthorized } = require("../lib/auth");
+const fs = require("fs");
+const pathLib = require("path");
 const REPO = process.env.PRIVATE_REPO || "brovira/DeFi-Tracker";
 const SOL_RPC = process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
 const KNOWN = { // mints de Solana que ya conocemos → se valoran con precio BTC/USDC
@@ -16,6 +18,12 @@ const KNOWN = { // mints de Solana que ya conocemos → se valoran con precio BT
 };
 
 async function ghFile(token, path) {
+  if (process.env.LOCAL_DATA_DIR) {
+    try {
+      const localPath = pathLib.join(process.env.LOCAL_DATA_DIR, path.replace(/^data\//, ""));
+      return JSON.parse(await fs.promises.readFile(localPath, "utf8"));
+    } catch (e) { return null; }
+  }
   const r = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
     headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github.raw+json", "User-Agent": "portfolio" },
   });
@@ -271,9 +279,9 @@ module.exports = async (req, res) => {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   const url = new URL(req.url, "http://x");
   const token = process.env.GH_TOKEN;
-  if (!authConfigured()) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password" })); }
+  if (!authConfigured(req)) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password" })); }
   if (!requestAuthorized(req, url)) { await new Promise(r => setTimeout(r, 600)); res.statusCode = 401; return res.end(JSON.stringify({ error: "bad_password" })); }
-  if (!token) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_github_token" })); }
+  if (!token && !process.env.LOCAL_DATA_DIR) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_github_token" })); }
 
   try {
     const wallets = (await ghFile(token, "data/wallets.json")) || {};
