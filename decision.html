@@ -440,7 +440,7 @@ function renderAgents(R){
      advice:m=>{
        if(m.price<=55500)return`El precio ha llegado a su <b>nivel de compra ~55.3k</b> → ejecuta la orden (30% del tramo).`;
        if(m.bmsbHi&&m.price>=m.bmsbHi*0.97)return`Precio pegado a la BMSB (${fmtUSD(m.bmsbHi)}) = su <b>rebote-trampa</b>: NO comprar aquí; él abriría cortos en alts. Órdenes abajo (55.3k) y paciencia.`;
-       return`<b>No comprar a mercado.</b> Deja órdenes límite (siguiente: ~55.3k) y espera. La compra fuerte es la ruptura confirmada de la BMSB (~mar-2027).`;}},
+       return`<b>No comprar a mercado.</b> Deja órdenes límite (siguiente: ~55.3k) y espera. La compra fuerte es la ruptura confirmada de la BMSB (~mar-2027).<br><span style="color:var(--hot)">⚠️ Auditado (2022-26): el ÚNICO que vendió antes del techo en tiempo real (60-65% stables, "VENDE TODO" a ~110k). Pero: Terra "bajo riesgo" 6 sem antes del colapso sin post-mortem, y sus objetivos mutan (116k→180k). Su MÉTODO > sus números. [track_record.md]</span>`;}},
     {name:"📊 Cowen",color:"var(--hot)",state:"Dynamic DCA activo (risk <0,3)",kb:"cowen",fw:"cowen.html",clock:cowenClock(),
      now:`<b>Ya está comprando</b>: dynamic DCA solo cuando su risk metric está <b>bajo 0,3</b> (citó 0,296). Empezó tras el <b>mínimo de junio-2026</b> (~57k), calcando 2018 y 2022. Despliegue deliberadamente lento.`,
      since:`"I started accumulating Bitcoin after the June low… I just DCA" — evitó el mínimo de febrero a propósito ("far too early in the midterm year").`,
@@ -450,7 +450,7 @@ function renderAgents(R){
      advice:m=>{
        if(m.ma200&&m.price<=Math.max(53000,m.ma200*0.85))return`Zona de despliegue fuerte (≤realized ~53k): <b>sube el tamaño del DCA</b> (su escalera 2-3×).`;
        if(m.price>=70000)return`Precio en su techo del rebote (200d ~70k): <b>no comprar aquí</b>; acumula cash para ago-oct.`;
-       return`<b>DCA pequeño ya</b> (risk <0,3) y guarda la mayoría de la pólvora para el mínimo de Q4 (octubre). Ago-sep suelen ser rojos: no tener prisa.`;}},
+       return`<b>DCA pequeño ya</b> (risk <0,3) y guarda la mayoría de la pólvora para el mínimo de Q4 (octubre). Ago-sep suelen ser rojos: no tener prisa.<br><span style="color:var(--hot)">⚠️ Auditado (2021-26): excelente leyendo el RÉGIMEN, pero no dio señal de venta en NINGUNO de los 2 techos (en el top de 2021: "see you at 100k"; en el de 126k su risk marcaba "moderate"). Fiable para acumular por fases; no para clavar techos. [track_record.md]</span>`;}},
     {name:"🧠 OnChainMind",color:"var(--accum)",state:"DCA acelerado (Omega ~9-11%)",kb:"onchainmind",fw:"onchainmind.html",clock:ocmClock(),
      now:`<b>Dentro del mercado y comprando</b>: DCA cuya intensidad la marca su Omega Score — normal <50%, fuerte <20%, "ballistic" <10%. En jun-jul 2026 el Omega ronda <b>9-11%</b> → entre fuerte y ballistic. (La venta de sep-2025 a $111k fue de su ESTRATEGIA Cadence en el Strategy Lab — sigue en cash sin señal de compra — no de su cartera.)`,
      since:`Acumulando todo el bear; en feb-mar 2026 el Omega llegó a ~6% ("deep value").`,
