@@ -285,6 +285,14 @@ function primaryPair(tokens){const s=(tokens||[]).map(t=>t.symbol).filter(Boolea
   if(s.includes("cbBTC")&&s.includes("USDC"))return"cbBTC / USDC";
   if(s.includes("WBTC")&&s.includes("cbBTC"))return"WBTC / cbBTC";
   return s.slice(0,2).join(" / ")||"Orca";}
+const ORCA_FEE_BY_TICK_SPACING={1:.01,2:.02,4:.04,8:.05,16:.1,64:.3,128:1};
+function gcdInt(a,b){a=Math.abs(Math.trunc(a));b=Math.abs(Math.trunc(b));while(b){const r=a%b;a=b;b=r;}return a;}
+function orcaFeePercent(ls){
+  if(!ls)return null;
+  const spacing=ls.tickSpacing||gcdInt(ls.tickLower,ls.tickUpper);
+  return ORCA_FEE_BY_TICK_SPACING[spacing]??null;
+}
+function shortNft(mint){const s=String(mint||"");return s.length>15?s.slice(0,6)+"…"+s.slice(-5):s;}
 function buildPnl(data){
   const all=Array.isArray(data)?data:(data.pnl||data.positions||[]);
   const conf=all.filter(p=>p&&p.isConfirmedPosition!==false&&p.status!=="non_position"&&(p.positionKind==="confirmed_position"||p.status==="open"||p.status==="closed"))
@@ -294,7 +302,7 @@ function buildPnl(data){
       first:(p.firstSeen||0)*1000,last:(p.lastSeen||0)*1000,days:Math.max(1,((p.lastSeen-p.firstSeen)||0)/86400),
       invested:pf.investedValueUsd,withdrawn:pf.withdrawnValueUsd,fees:pf.feeLikeValueUsd,gas:pf.gasValueUsd,
       pnl:pf.netPnlUsd,pnlPct:pf.netPnlPct,vsHold:(vs.complete?vs.pnlUsd:null),current:pf.currentValueUsd,range:p.priceRange||null,
-      ls:p.liquidityState||null,cf:p.cashflows||[]};});
+      ls:p.liquidityState||null,feePercent:orcaFeePercent(p.liquidityState),cf:p.cashflows||[]};});
   P.sort((a,b)=>b.last-a.last);
   const open=P.filter(p=>p.status==="open"),closed=P.filter(p=>p.status==="closed");
   const realized=closed.filter(p=>p.computed).reduce((s,p)=>s+(p.pnl||0),0);
@@ -520,7 +528,9 @@ function renderTabPos(M,BTC){
     const bm=benchmarks(p,BTC); const entry=(bm.invUsd&&bm.invBtc)?bm.invUsd/bm.invBtc:null; const ey=estYield(p);
     const current=p.range&&p.range.quote==="USDC"?BTC:PEG_RATIO;
     const range=rangeVisual(p.range,current);
-    return `<tr><td>${esc(p.pair)}<div class="poolmeta">Orca · Solana</div></td><td>${bal!=null?fmtUSD(bal):'—'}</td><td class="${(pnl||0)>=0?'up':'down'}">${pnl!=null?fmtUSD(pnl,0):'—'}${pct!=null?`<div class="sub ${pct>=0?'up':'down'}">${pct>=0?'+':''}${pct.toFixed(2)}%</div>`:''}</td><td class="up">${fmtUSD(p.fees,0)}</td><td>${ey!=null?ey.toFixed(1)+'%':'—'}</td><td>${p.days.toFixed(0)}d</td><td style="text-align:left">${range}</td><td>${entry?fmtUSD(entry):'—'}</td></tr>`;
+    const fee=p.feePercent!=null?` <span class="pilltok">${p.feePercent}%</span>`:'';
+    const nft=p.mint?` · <span title="${esc(p.mint)}">NFT ${esc(shortNft(p.mint))}</span>`:'';
+    return `<tr><td>${esc(p.pair)}${fee}<div class="poolmeta">Orca · Solana${nft}</div></td><td>${bal!=null?fmtUSD(bal):'—'}</td><td class="${(pnl||0)>=0?'up':'down'}">${pnl!=null?fmtUSD(pnl,0):'—'}${pct!=null?`<div class="sub ${pct>=0?'up':'down'}">${pct>=0?'+':''}${pct.toFixed(2)}%</div>`:''}</td><td class="up">${fmtUSD(p.fees,0)}</td><td>${ey!=null?ey.toFixed(1)+'%':'—'}</td><td>${p.days.toFixed(0)}d</td><td style="text-align:left">${range}</td><td>${entry?fmtUSD(entry):'—'}</td></tr>`;
   }).join("");
   const liveRows=LIVE_LPS.map(p=>{
     const h=p.history;
@@ -530,7 +540,7 @@ function renderTabPos(M,BTC){
       <td>${esc(p.pair)} <span class="pilltok">${esc(p.fee)}</span><div class="poolmeta">${esc(p.protocol)} · ${esc(p.network||"EVM")} · NFT #${esc(p.id)}</div></td>
       <td>${p.usd!=null?fmtUSD(p.usd):'<span class="na">sin precio</span>'}<div class="sub">${fmtTokenAmount(p.amt0)} ${esc(p.sym0)} + ${fmtTokenAmount(p.amt1)} ${esc(p.sym1)}</div></td>
       <td class="${h&&h.pnlUsd>=0?'up':'down'}">${h?fmtUSD(h.pnlUsd,0):'<span class="na">n/d</span>'}${h?`<div class="sub ${h.pnlPct>=0?'up':'down'}">${h.pnlPct>=0?'+':''}${h.pnlPct.toFixed(2)}%</div>`:'<div class="sub">sin histórico</div>'}${histState}</td>
-      <td class="${h?'up':''}">${h?fmtUSD(h.feesUsd,0):'<span class="na">n/d</span>'}${h?`<div class="sub">${fmtUSD(h.pendingFeesUsd,2)} pendientes</div>`:''}</td>
+      <td class="${h?'up':''}">${h?fmtUSD(h.feesUsd,2):'<span class="na">n/d</span>'}${h?`<div class="sub">${h.pendingFeesUsd>0?'pendientes':'cobradas'}</div>`:''}</td>
       <td>${h?`${h.annualizedYieldPct.toFixed(1)}%`:'<span class="na">n/d</span>'}</td>
       <td>${h?`${h.durationDays.toFixed(0)}d`:'<span class="na">n/d</span>'}</td>
       <td style="text-align:left">${rangeVisual(p.range,p.range&&p.range.currentPrice)}</td><td>${entry}</td>
