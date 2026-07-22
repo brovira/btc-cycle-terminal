@@ -383,6 +383,15 @@ function entryMarkup(entries){
   if(!entries||!entries.length)return'<span class="na">n/d</span>';
   return entries.map((x,i)=>`${i?'<div class="sub">':''}${fmtUSD(x.priceUsd)} ${esc(x.symbol)}${i?'</div>':''}`).join("");
 }
+function feeMarkup(total,claimed,pending,digits=2){
+  if(!Number.isFinite(total))return'<span class="na">n/d</span>';
+  const hasClaimed=Number.isFinite(claimed)&&claimed>.005;
+  const hasPending=Number.isFinite(pending)&&pending>.005;
+  if(hasClaimed&&hasPending){
+    return `${fmtUSD(total,digits)}<div class="sub">${fmtUSD(claimed,digits)} cobradas</div><div class="sub">${fmtUSD(pending,digits)} pendientes</div>`;
+  }
+  return `${fmtUSD(total,digits)}<div class="sub">${hasPending?'pendientes':'cobradas'}</div>`;
+}
 function rangeVisual(r,current){
   if(!r||!(r.priceHigh>r.priceLow))return'<span class="na">n/d</span>';
   const lo=+r.priceLow,hi=+r.priceHigh,cur=current!=null?+current:null;
@@ -564,7 +573,7 @@ function renderTabPos(M,BTC){
     const nft=p.mint?` · <span title="${esc(p.mint)}">NFT ${esc(shortNft(p.mint))}</span>`:'';
     const v=p._position;
     const assets=byPairOrder(p.pair,v?[{amount:v.amt0,symbol:p.ls.label0,usd:v.usd0},{amount:v.amt1,symbol:p.ls.label1,usd:v.usd1}]:[]);
-    return `<tr><td>${esc(p.pair)}${fee}<div class="poolmeta">Orca · Solana${nft}</div></td><td>${balanceMarkup(bal,assets)}</td><td class="${(pnl||0)>=0?'up':'down'}">${pnl!=null?fmtUSD(pnl,0):'—'}${pct!=null?`<div class="sub ${pct>=0?'up':'down'}">${pct>=0?'+':''}${pct.toFixed(2)}%</div>`:''}</td><td class="up">${fmtUSD(p.fees,0)}</td><td>${ey!=null?ey.toFixed(1)+'%':'—'}</td><td>${p.days.toFixed(0)}d</td><td style="text-align:left">${range}</td><td>${entryMarkup(entry)}</td></tr>`;
+    return `<tr><td>${esc(p.pair)}${fee}<div class="poolmeta">Orca · Solana${nft}</div></td><td>${balanceMarkup(bal,assets)}</td><td class="${(pnl||0)>=0?'up':'down'}">${pnl!=null?fmtUSD(pnl,0):'—'}${pct!=null?`<div class="sub ${pct>=0?'up':'down'}">${pct>=0?'+':''}${pct.toFixed(2)}%</div>`:''}</td><td class="up">${feeMarkup(p.fees,p.fees,0,0)}</td><td>${ey!=null?ey.toFixed(1)+'%':'—'}</td><td>${p.days.toFixed(0)}d</td><td style="text-align:left">${range}</td><td>${entryMarkup(entry)}</td></tr>`;
   }).join("");
   const liveRows=LIVE_LPS.map(p=>{
     const h=p.history;
@@ -574,14 +583,14 @@ function renderTabPos(M,BTC){
       <td>${esc(p.pair)} <span class="pilltok">${esc(p.fee)}</span><div class="poolmeta">${esc(p.protocol)} · ${esc(p.network||"EVM")} · NFT #${esc(p.id)}</div></td>
       <td>${balanceMarkup(p.usd,byPairOrder(p.pair,[{amount:p.amt0,symbol:p.sym0,usd:p.price0!=null?p.amt0*p.price0:null},{amount:p.amt1,symbol:p.sym1,usd:p.price1!=null?p.amt1*p.price1:null}]))}</td>
       <td class="${h&&h.pnlUsd>=0?'up':'down'}">${h?fmtUSD(h.pnlUsd,0):'<span class="na">n/d</span>'}${h?`<div class="sub ${h.pnlPct>=0?'up':'down'}">${h.pnlPct>=0?'+':''}${h.pnlPct.toFixed(2)}%</div>`:'<div class="sub">sin histórico</div>'}${histState}</td>
-      <td class="${h?'up':''}">${h?fmtUSD(h.feesUsd,2):'<span class="na">n/d</span>'}${h?`<div class="sub">${h.pendingFeesUsd>0?'pendientes':'cobradas'}</div>`:''}</td>
+      <td class="${h?'up':''}">${h?feeMarkup(h.feesUsd,h.claimedFeesUsd,h.pendingFeesUsd,2):'<span class="na">n/d</span>'}</td>
       <td>${h?`${h.annualizedYieldPct.toFixed(1)}%`:'<span class="na">n/d</span>'}</td>
       <td>${h?`${h.durationDays.toFixed(0)}d`:'<span class="na">n/d</span>'}</td>
       <td style="text-align:left">${rangeVisual(p.range,p.range&&p.range.currentPrice)}</td><td>${entry}</td>
     </tr>`;
   }).join("");
   const rows=orcaRows+liveRows;
-  $("#tabPos").innerHTML=`<table class="ot" style="min-width:980px"><thead><tr><th>Pool</th><th>Balance</th><th>Total PnL</th><th>Fees</th><th>Est.Yield</th><th>Duración</th><th>Rango · precio</th><th>Entrada media</th></tr></thead><tbody>${rows||'<tr><td colspan="8" class="note">Sin abiertas.</td></tr>'}</tbody></table>`;
+  $("#tabPos").innerHTML=`<table class="ot" style="min-width:980px"><thead><tr><th>Pool</th><th>Balance</th><th>Total PnL</th><th>Fees · estado</th><th>Est.Yield</th><th>Duración</th><th>Rango · precio</th><th>Entrada media</th></tr></thead><tbody>${rows||'<tr><td colspan="8" class="note">Sin abiertas.</td></tr>'}</tbody></table>`;
 }
 const HIST_ACT={open:'Open Position',increase:'Increase Liquidity',decrease:'Decrease Liquidity',collect_fees:'Collect Fees',close:'Close Position',collect_reward:'Collect Reward'};
 function renderTabHist(M){
