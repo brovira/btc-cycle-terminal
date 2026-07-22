@@ -18,6 +18,7 @@ const FILES = {                       // lista blanca de archivos que se pueden 
   orca_pnl: "data/normalized/orca_pnl.json",
   orca_positions: "data/normalized/orca_positions.json",
   orca_events: "data/normalized/orca_events.json",
+  manual_assets: "data/manual_assets.json", // activos sin API pública (Jupiter DAO, CEX…)
 };
 
 module.exports = async (req, res) => {

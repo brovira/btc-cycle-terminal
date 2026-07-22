@@ -138,6 +138,23 @@ async function loadLpValue(pw,btc){
     let v=0,n=0;for(const p of arr){if(p&&p.status==="open"&&p.isConfirmedPosition){const b=v3Value(p.liquidityState,btc);if(b!=null){v+=b;n++;}}}
     return n?v:null;}catch(e){return null;}
 }
+/* Activos manuales (sin API): data/manual_assets.json del repo privado, precio via Binance */
+async function loadManual(pw){
+  try{const r=await fetch("/api/private?file=manual_assets",{headers:{"x-dash-pw":pw},cache:"no-store"});
+    if(!r.ok)return[];const doc=await r.json();const list=(doc&&doc.assets)||[];
+    const out=[];
+    for(const a of list){
+      if(!(a.amount>0)&&!(a.fixedUsd>0))continue;
+      let usd=a.fixedUsd>0?a.fixedUsd:null;
+      if(usd==null&&a.binance){
+        for(const h of["api.binance.com","api.binance.us"]){
+          try{const p=await fetch(`https://${h}/api/v3/ticker/price?symbol=${encodeURIComponent(a.binance)}`,{cache:"no-store"});
+            if(p.ok){const v=+(await p.json()).price;if(v>0){usd=a.amount*v;break;}}}catch(e){}}
+      }
+      out.push({sym:a.sym||"?",chain:a.chain||"manual",protocol:a.protocol||"Manual",amount:a.amount||null,usd,kind:"defi"});
+    }
+    return out;}catch(e){return[];}
+}
 async function load(pw){
   $("#gateMsg").textContent="Cargando…";
   let j=null;
@@ -148,7 +165,7 @@ async function load(pw){
   }catch(e){$("#gateMsg").textContent="Error de red.";return;}
   localStorage.setItem(PWKEY,pw);
   const px=j.prices||{};
-  const lpVal=await loadLpValue(pw,px.BTC);
+  const [lpVal,manual]=await Promise.all([loadLpValue(pw,px.BTC),loadManual(pw)]);
   $("#gate").style.display="none";$("#content").style.display="";
   $("#statusDot").className="dot ok";$("#statusText").textContent="Actualizado "+new Date().toISOString().slice(0,16).replace("T"," ")+" · caché 2 min";
   const sol=j.solana,evm=j.evm||{},uni=j.uniswap||{positions:[],totalUsd:0},prjx=j.projectx||{positions:[],totalUsd:0},hl=j.hyperliquid||{tokens:[],totalUsd:0};
@@ -171,6 +188,8 @@ async function load(pw){
   for(const p of (prjx.positions||[]))if(p.usd)ASSETS.push({sym:`${p.pair} (LP)`,chain:"hyperevm",protocol:"ProjectX",address:evmAddr,amount:null,usd:p.usd,kind:"lp",extra:p});
   for(const t of (hl.tokens||[]))ASSETS.push({sym:t.sym,chain:"hyperliquid",protocol:"Hyperliquid · spot",address:evmAddr,amount:t.amount,usd:t.usd,kind:"token"});
   if(hl.staked&&hl.staked.usd)ASSETS.push({sym:"HYPE",chain:"hyperliquid",protocol:"Hyperliquid · staking",address:evmAddr,amount:hl.staked.amount,usd:hl.staked.usd,kind:"stake"});
+  const kam=j.kamino;if(kam&&kam.ok&&kam.usd>1)ASSETS.push({sym:"Depósitos (netos)",chain:"solana",protocol:"Kamino Lend",address:solAddr,amount:null,usd:kam.usd,kind:"defi"});
+  for(const m of (manual||[]))ASSETS.push({...m,address:m.chain==="solana"?solAddr:evmAddr});
 
   const sum=f=>ASSETS.filter(f).reduce((s,a)=>s+(a.usd||0),0);
   const total=sum(()=>true);

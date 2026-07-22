@@ -169,6 +169,28 @@ async function fetchV3Positions(baseUrl, rpcs, addr, protoLabel) {
   return out;
 }
 
+/* ---- Kamino Lend (Solana): depósitos-préstamos del usuario vía su API pública ---- */
+const KAMINO_MARKETS = ["7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF"]; // main market
+async function fetchKamino(addr) {
+  const out = { usd: 0, detail: [], ok: false };
+  try {
+    for (const mkt of KAMINO_MARKETS) {
+      const r = await fetch(`https://api.kamino.finance/kamino-market/${mkt}/users/${addr}/obligations`, { headers: { "User-Agent": "portfolio" } });
+      if (!r.ok) { out.warning = "kamino_" + r.status; continue; }
+      const arr = await r.json();
+      for (const ob of Array.isArray(arr) ? arr : []) {
+        // parsing defensivo: buscamos los totales en refreshedStats (nombres estables del SDK)
+        const st = ob.refreshedStats || ob.stats || {};
+        const dep = +(st.userTotalDeposit ?? st.totalDeposit ?? 0);
+        const bor = +(st.userTotalBorrow ?? st.totalBorrow ?? 0);
+        const net = dep - bor;
+        if (net > 1) { out.usd += net; out.detail.push({ deposit: dep, borrow: bor }); out.ok = true; }
+      }
+    }
+  } catch (e) { out.warning = String(e.message || e); }
+  return out;
+}
+
 /* ---- Hyperliquid L1: spot + HYPE en staking (API pública gratis) ---- */
 async function fetchHyperliquid(addr) {
   const out = { tokens: [], staked: null, totalUsd: 0 };
@@ -227,7 +249,7 @@ module.exports = async (req, res) => {
       return res.end(JSON.stringify({ error: "no_wallets", message: "Rellena data/wallets.json en el repo privado: {\"solana\":\"...\",\"evm\":\"...\"}" }));
     }
     const px = await fetchPrices();
-    const [sol, eth, base, hyperevm, hl, uni, prjx] = await Promise.all([
+    const [sol, eth, base, hyperevm, hl, uni, prjx, kamino] = await Promise.all([
       wallets.solana ? fetchSolana(wallets.solana, px).catch(e => ({ error: String(e.message || e) })) : null,
       wallets.evm ? fetchEvmChain("https://eth.blockscout.com", "ethereum", wallets.evm).catch(e => ({ error: String(e.message || e) })) : null,
       wallets.evm ? fetchEvmChain("https://base.blockscout.com", "base", wallets.evm).catch(e => ({ error: String(e.message || e) })) : null,
@@ -235,9 +257,10 @@ module.exports = async (req, res) => {
       wallets.evm ? fetchHyperliquid(wallets.evm).catch(e => ({ tokens: [], totalUsd: 0, warning: String(e.message || e) })) : null,
       wallets.evm ? fetchV3Positions("https://eth.blockscout.com", ETH_RPCS, wallets.evm, "Uniswap V3").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
       wallets.evm ? fetchV3Positions("https://hyperliquid.cloud.blockscout.com", HYPE_RPCS, wallets.evm, "ProjectX").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
+      wallets.solana ? fetchKamino(wallets.solana).catch(e => ({ usd: 0, ok: false, warning: String(e.message || e) })) : null,
     ]);
     res.setHeader("Cache-Control", "private, max-age=120");
-    return res.end(JSON.stringify({ prices: px, solana: sol, evm: { ethereum: eth, base, hyperevm }, hyperliquid: hl, uniswap: uni, projectx: prjx }));
+    return res.end(JSON.stringify({ prices: px, solana: sol, evm: { ethereum: eth, base, hyperevm }, hyperliquid: hl, uniswap: uni, projectx: prjx, kamino }));
   } catch (e) {
     res.statusCode = 502; return res.end(JSON.stringify({ error: "fetch_error", message: String((e && e.message) || e) }));
   }
