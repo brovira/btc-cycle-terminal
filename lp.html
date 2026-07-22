@@ -352,6 +352,37 @@ function fmtTokenAmount(v){
   const a=Math.abs(v),d=a>=1?4:a>=.01?5:7;
   return Number(v).toLocaleString("en-US",{maximumFractionDigits:d});
 }
+function byPairOrder(pair,items){
+  const order=String(pair||"").split("/").map(s=>s.trim());
+  const rank=symbol=>{
+    let i=order.indexOf(symbol);
+    if(i<0&&symbol==="ETH")i=order.indexOf("WETH");
+    return i<0?order.length:i;
+  };
+  return [...(items||[])].sort((a,b)=>rank(a.symbol)-rank(b.symbol));
+}
+function balanceMarkup(total,assets){
+  const valid=(assets||[]).filter(a=>a&&a.symbol&&Number.isFinite(a.amount));
+  const valuedTotal=valid.reduce((s,a)=>s+(Number.isFinite(a.usd)?a.usd:0),0);
+  const detail=valid.map(a=>{
+    const pct=valuedTotal>0&&Number.isFinite(a.usd)?` · ${(a.usd/valuedTotal*100).toFixed(1)}%`:"";
+    return `<div class="sub">${fmtTokenAmount(a.amount)} ${esc(a.symbol)}${pct}</div>`;
+  }).join("");
+  return `${Number.isFinite(total)?fmtUSD(total):'<span class="na">sin precio</span>'}${detail}`;
+}
+function entryPricesFromCashflows(cashflows){
+  const bySymbol={};
+  for(const c of (cashflows||[])){
+    if(c.bucket!=="deposit"||!(c.amount>0)||!(c.usdValue>0)||!c.symbol||/^(USDC|USDT0|USD₮0)$/i.test(c.symbol))continue;
+    const item=bySymbol[c.symbol]||(bySymbol[c.symbol]={symbol:c.symbol,amount:0,usd:0});
+    item.amount+=c.amount;item.usd+=c.usdValue;
+  }
+  return Object.values(bySymbol).filter(x=>x.amount>0).map(x=>({symbol:x.symbol,priceUsd:x.usd/x.amount}));
+}
+function entryMarkup(entries){
+  if(!entries||!entries.length)return'<span class="na">n/d</span>';
+  return entries.map((x,i)=>`${i?'<div class="sub">':''}${fmtUSD(x.priceUsd)} ${esc(x.symbol)}${i?'</div>':''}`).join("");
+}
 function rangeVisual(r,current){
   if(!r||!(r.priceHigh>r.priceLow))return'<span class="na">n/d</span>';
   const lo=+r.priceLow,hi=+r.priceHigh,cur=current!=null?+current:null;
@@ -387,7 +418,7 @@ function rangeMarkup(r){
 /* --- math V3: valor actual de una posición desde la liquidez neta + rango + precio --- */
 function v3Value(ls,btc){
   if(!ls||!btc)return null;
-  const L=Number(ls.liquidity); if(!isFinite(L)||L<=0)return{balance:0,amt0:0,amt1:0};
+  const L=Number(ls.liquidity); if(!isFinite(L)||L<=0)return{balance:0,amt0:0,amt1:0,usd0:0,usd1:0};
   const tl=ls.tickLower,tu=ls.tickUpper; const usdc=ls.label0==="USDC"||ls.label1==="USDC";
   let tc;
   if(usdc){const btc0=ls.label0!=="USDC";const pr=(btc0?btc:1/btc)*Math.pow(10,ls.dec1-ls.dec0);tc=Math.log(pr)/Math.log(1.0001);}
@@ -398,7 +429,8 @@ function v3Value(ls,btc){
   const spa=Math.pow(1.0001,tl/2),spb=Math.pow(1.0001,tu/2);let spc=Math.min(Math.max(Math.pow(1.0001,tc/2),spa),spb);
   const a0=L*(spb-spc)/(spc*spb)/Math.pow(10,ls.dec0),a1=L*(spc-spa)/Math.pow(10,ls.dec1);
   const px=l=>l==="USDC"?1:((LIVE_PX&&LIVE_PX[l]>0)?LIVE_PX[l]:btc);
-  return{balance:a0*px(ls.label0)+a1*px(ls.label1),amt0:a0,amt1:a1};
+  const usd0=a0*px(ls.label0),usd1=a1*px(ls.label1);
+  return{balance:usd0+usd1,amt0:a0,amt1:a1,usd0,usd1};
 }
 /* --- benchmarks desde los cashflows: vs HOLD USD / tokens / BTC (funciona abierta y cerrada) --- */
 function benchmarks(p,btc){
@@ -507,7 +539,7 @@ function renderPnl(){
   $("#statusText").textContent=M.P.length+" Orca · "+LIVE_LPS.length+" EVM · histórico "+(M.first?new Date(M.first).toISOString().slice(0,10):"?")+" → "+(M.last?new Date(M.last).toISOString().slice(0,10):"?");
   $("#rangeTag").textContent=(M.open.length+LIVE_LPS.length)+" abiertas · "+M.closed.length+" cerradas";
   let openVal=0,openPnl=0;
-  for(const p of M.open){const v=BTC?v3Value(p.ls,BTC):null;p._bal=v?v.balance:null;openVal+=p._bal||0;openPnl+=(p._bal||0)+(p.fees||0)-(p.invested||0);}
+  for(const p of M.open){const v=BTC?v3Value(p.ls,BTC):null;p._position=v;p._bal=v?v.balance:null;openVal+=p._bal||0;openPnl+=(p._bal||0)+(p.fees||0)-(p.invested||0);}
   const liveVal=LIVE_LPS.reduce((s,p)=>s+(p.usd||0),0);openVal+=liveVal;
   const liveWithHistory=LIVE_LPS.filter(p=>p.history&&Number.isFinite(p.history.pnlUsd));
   const livePnl=liveWithHistory.reduce((s,p)=>s+p.history.pnlUsd,0);
@@ -525,20 +557,22 @@ function renderPnl(){
 function renderTabPos(M,BTC){
   const orcaRows=M.open.map(p=>{
     const bal=p._bal, pnl=bal!=null?bal+(p.fees||0)-(p.invested||0):null, pct=(pnl!=null&&p.invested)?pnl/p.invested*100:null;
-    const bm=benchmarks(p,BTC); const entry=(bm.invUsd&&bm.invBtc)?bm.invUsd/bm.invBtc:null; const ey=estYield(p);
+    const entry=byPairOrder(p.pair,entryPricesFromCashflows(p.cf)),ey=estYield(p);
     const current=p.range&&p.range.quote==="USDC"?BTC:PEG_RATIO;
     const range=rangeVisual(p.range,current);
     const fee=p.feePercent!=null?` <span class="pilltok">${p.feePercent}%</span>`:'';
     const nft=p.mint?` · <span title="${esc(p.mint)}">NFT ${esc(shortNft(p.mint))}</span>`:'';
-    return `<tr><td>${esc(p.pair)}${fee}<div class="poolmeta">Orca · Solana${nft}</div></td><td>${bal!=null?fmtUSD(bal):'—'}</td><td class="${(pnl||0)>=0?'up':'down'}">${pnl!=null?fmtUSD(pnl,0):'—'}${pct!=null?`<div class="sub ${pct>=0?'up':'down'}">${pct>=0?'+':''}${pct.toFixed(2)}%</div>`:''}</td><td class="up">${fmtUSD(p.fees,0)}</td><td>${ey!=null?ey.toFixed(1)+'%':'—'}</td><td>${p.days.toFixed(0)}d</td><td style="text-align:left">${range}</td><td>${entry?fmtUSD(entry):'—'}</td></tr>`;
+    const v=p._position;
+    const assets=byPairOrder(p.pair,v?[{amount:v.amt0,symbol:p.ls.label0,usd:v.usd0},{amount:v.amt1,symbol:p.ls.label1,usd:v.usd1}]:[]);
+    return `<tr><td>${esc(p.pair)}${fee}<div class="poolmeta">Orca · Solana${nft}</div></td><td>${balanceMarkup(bal,assets)}</td><td class="${(pnl||0)>=0?'up':'down'}">${pnl!=null?fmtUSD(pnl,0):'—'}${pct!=null?`<div class="sub ${pct>=0?'up':'down'}">${pct>=0?'+':''}${pct.toFixed(2)}%</div>`:''}</td><td class="up">${fmtUSD(p.fees,0)}</td><td>${ey!=null?ey.toFixed(1)+'%':'—'}</td><td>${p.days.toFixed(0)}d</td><td style="text-align:left">${range}</td><td>${entryMarkup(entry)}</td></tr>`;
   }).join("");
   const liveRows=LIVE_LPS.map(p=>{
     const h=p.history;
-    const entry=h&&h.entryPrices&&h.entryPrices.length?h.entryPrices.map((x,i)=>`${i?'<div class="sub">':''}${fmtUSD(x.priceUsd)} ${esc(x.symbol)}${i?'</div>':''}`).join(""):'<span class="na">n/d</span>';
+    const entry=entryMarkup(byPairOrder(p.pair,(h&&h.entryPrices)||[]));
     const histState=h&&!h.complete?'<div class="sub">histórico parcial</div>':'';
     return `<tr>
       <td>${esc(p.pair)} <span class="pilltok">${esc(p.fee)}</span><div class="poolmeta">${esc(p.protocol)} · ${esc(p.network||"EVM")} · NFT #${esc(p.id)}</div></td>
-      <td>${p.usd!=null?fmtUSD(p.usd):'<span class="na">sin precio</span>'}<div class="sub">${fmtTokenAmount(p.amt0)} ${esc(p.sym0)} + ${fmtTokenAmount(p.amt1)} ${esc(p.sym1)}</div></td>
+      <td>${balanceMarkup(p.usd,byPairOrder(p.pair,[{amount:p.amt0,symbol:p.sym0,usd:p.price0!=null?p.amt0*p.price0:null},{amount:p.amt1,symbol:p.sym1,usd:p.price1!=null?p.amt1*p.price1:null}]))}</td>
       <td class="${h&&h.pnlUsd>=0?'up':'down'}">${h?fmtUSD(h.pnlUsd,0):'<span class="na">n/d</span>'}${h?`<div class="sub ${h.pnlPct>=0?'up':'down'}">${h.pnlPct>=0?'+':''}${h.pnlPct.toFixed(2)}%</div>`:'<div class="sub">sin histórico</div>'}${histState}</td>
       <td class="${h?'up':''}">${h?fmtUSD(h.feesUsd,2):'<span class="na">n/d</span>'}${h?`<div class="sub">${h.pendingFeesUsd>0?'pendientes':'cobradas'}</div>`:''}</td>
       <td>${h?`${h.annualizedYieldPct.toFixed(1)}%`:'<span class="na">n/d</span>'}</td>
