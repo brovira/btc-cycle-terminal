@@ -1,0 +1,376 @@
+{
+  "agent": "onchainmind",
+  "updated": "2026-07-22",
+  "fases": [
+    {
+      "nombre": "Infravaloracion / acumulacion profunda",
+      "definicion": "Omega Score en digitos bajos/individuales, modelos deprimidos; mejores ventanas de acumulacion a largo plazo",
+      "quote": "Undervaluation is where the models were deeply depressed, like a few months ago. And that was the period where the best long-term accumulation opportunities appeared.",
+      "src": "20260526-the-exact-price-bitcoin-s-bull-market-returns.md",
+      "fecha": "2026-05-26"
+    },
+    {
+      "nombre": "Recuperacion",
+      "definicion": "El precio ha rebotado y el riesgo (Omega) ha mejorado, pero el bull no esta confirmado; Omega entre ~20% y 50%",
+      "quote": "Recovery is where we are now. Price has bounced, and risk has improved, and the market no longer looks as broken as it did a few months back.",
+      "src": "20260526-the-exact-price-bitcoin-s-bull-market-returns.md",
+      "fecha": "2026-05-26"
+    },
+    {
+      "nombre": "Confirmacion de bull market",
+      "definicion": "Reclamar los mid-$90k: 4 modelos convergen en $93-96k (Omega cruza >50%, regime divider, NVRV, Z-score)",
+      "quote": "But confirmation is the next stage, and confirmation likely requires Bitcoin to reclaim the mid-90,000 region.",
+      "src": "20260526-the-exact-price-bitcoin-s-bull-market-returns.md",
+      "fecha": "2026-05-26"
+    },
+    {
+      "nombre": "Euforia / techo de ciclo",
+      "definicion": "Todo techo historico ha llegado con el Omega Score entre 80 y 100%",
+      "quote": "historically, every cycle top has come when the omega score was reading between 80 to 100%. And right now, it's only at 66%.",
+      "src": "20250930-is-bitcoin-s-bull-cycle-about-to-slow-to-a-halt.md",
+      "fecha": "2025-09-30"
+    },
+    {
+      "nombre": "Bear market",
+      "definicion": "Empieza al cerrar varias veces por debajo de sus 3 niveles tecnicos clave: STH realized price, MA200d y MA365d",
+      "quote": "We've closed multiple times below all three of my key technical pricing levels. The short-term holder realized price, the 200 day moving average, and the 365day moving average. ... And every time this has happened in previous cycles, it's marked the beginning of a bare market.",
+      "src": "20251118-preparing-for-a-bitcoin-bear.md",
+      "fecha": "2025-11-18"
+    }
+  ],
+  "senales": [
+    {
+      "id": "omega-dca-escalado",
+      "tipo": "compra",
+      "nombre": "DCA escalado por zona del Omega Score",
+      "regla": "DCA 2.5x del importe normal en zona azul oscuro (riesgo minimo); 1.5x entre azul claro y verde claro; importe normal en verde oscuro-amarillo (fair value); parar el DCA y guardar cash al entrar en naranja",
+      "indicador": "omega",
+      "umbral": "azul oscuro=2.5x; azul claro-verde claro=1.5x; verde oscuro-amarillo=1x; naranja=0x",
+      "quote": "buy aggressively when the risk is at its lowest indicated by the dark blue zones on the score in these conditions you'll DCA 2.5 times your normal purchase amount ... if the risk is somewhere between light blue and light green you'll DCA at 1.5 times your normal amount ... as the risk climbs into the orange zones you stop your DCA altogether and save your cash",
+      "src": "20250416-maximize-bitcoin-profits-with-this-risk-model.md",
+      "fecha": "2025-04-16"
+    },
+    {
+      "id": "omega-venta-gradual-naranja-roja",
+      "tipo": "venta",
+      "nombre": "Venta gradual diaria en zonas naranja/roja del Omega",
+      "regla": "Vender 0.5% de las holdings por dia cuando Omega entra en naranja (claro u oscuro); subir a 1.5% por dia en zona roja, hasta que el riesgo baje",
+      "indicador": "omega",
+      "umbral": "naranja: 0.5%/dia; rojo: 1.5%/dia",
+      "quote": "once the risk hits the light or dark orange zones you could start selling 0.5% of your Holdings per day if the risk moves into the red zones you could increase that to 1.5% per day",
+      "src": "20250416-maximize-bitcoin-profits-with-this-risk-model.md",
+      "fecha": "2025-04-16"
+    },
+    {
+      "id": "omega-backtest-sell-rojo-3pct",
+      "tipo": "venta",
+      "nombre": "Backtest Omega: ventas incrementales en zona roja",
+      "regla": "Al entrar Omega en zona roja: primera venta 3% de la posicion, cada venta siguiente +1% (4%, 5%...), cap 25% por orden; recompra en la zona de riesgo minimo con 25% del cash disponible por senal",
+      "indicador": "omega",
+      "umbral": "rojo: 3% inicial +1% incremental, max 25%; recompra: 25% del cash en zona de menor riesgo",
+      "quote": "When the risk score reaches or exceeds its highest risk threshold, which is the red colored territory, we enter a sell zone. At our first sell event, we start selling 3% of our position. And then for every subsequent cell event, we increase this by 1%.",
+      "src": "20250617-this-bitcoin-strategy-beats-dca-by-10x.md",
+      "fecha": "2025-06-17"
+    },
+    {
+      "id": "omega-sub-20-acumulacion",
+      "tipo": "compra",
+      "nombre": "Omega < 20% = mejores ventanas de acumulacion",
+      "regla": "Acumular a largo plazo siempre que el Omega Score caiga por debajo del 20%; en digitos individuales (<10%) es acumulacion maxima ('deep value')",
+      "indicador": "omega",
+      "umbral": "20 (fuerte), <10 deep value",
+      "quote": "Historically, anytime the Omega score has dropped below 20%, it's marked some of the best long-term accumulation windows in Bitcoin's history.",
+      "src": "20260303-3-rare-signals-marking-the-bitcoin-bottom.md",
+      "fecha": "2026-03-03"
+    },
+    {
+      "id": "omega-dca-in-15-out-85",
+      "tipo": "compra",
+      "nombre": "Estrategia insignia: DCA-in <15%, DCA-out >85%",
+      "regla": "Escalar compras cuando Omega < 15% y escalar ventas cuando Omega > 85% (backtest: 386.000% desde 2012, 88% CAGR; 'la estrategia que sigo hace anos')",
+      "indicador": "omega",
+      "umbral": "compra <15; venta >85",
+      "quote": "We're going to scale into our buys whenever the risk score drops below 15% and then scale out of our positions whenever it climbs above 85%. So, it's a DCA in and a DCA out strategy.",
+      "src": "20260616-this-only-happens-near-bitcoin-bottoms.md",
+      "fecha": "2026-06-16"
+    },
+    {
+      "id": "omega-cruce-50-fin-bear",
+      "tipo": "compra",
+      "nombre": "Omega cruza >50% = bull market reanudado (~$93k)",
+      "regla": "El cruce del Omega de vuelta por encima del 50% confirma la reanudacion del bull; el estimador de precio para ese cruce esta en $93.000",
+      "indicador": "omega",
+      "umbral": "50% (precio estimado $93.000)",
+      "quote": "the target price estimator for when this Omega score is likely going to cross back above the 50% again is at $93,000.",
+      "src": "20260526-the-exact-price-bitcoin-s-bull-market-returns.md",
+      "fecha": "2026-05-26"
+    },
+    {
+      "id": "omega-top-80-100",
+      "tipo": "venta",
+      "nombre": "Techo de ciclo solo con Omega 80-100%",
+      "regla": "No tratar como techo de ciclo mientras Omega no lea 80-100%; a 66% (sep-2025) el setup clasico de techo no se habia disparado",
+      "indicador": "omega",
+      "umbral": "80-100",
+      "quote": "every cycle top has come when the omega score was reading between 80 to 100%. And right now, it's only at 66%. Which tells me that the classic setup just hasn't triggered yet.",
+      "src": "20250930-is-bitcoin-s-bull-cycle-about-to-slow-to-a-halt.md",
+      "fecha": "2025-09-30"
+    },
+    {
+      "id": "fng-cadence-cruce-cero",
+      "tipo": "compra",
+      "nombre": "Fear & Greed Cadence: cruce de cero (90 dias)",
+      "regla": "Cadence = F&G hoy menos F&G hace 90 dias (suavizado). Compra cuando cruza de negativo a positivo; venta cuando vuelve a negativo",
+      "indicador": "fng-cadence",
+      "umbral": "0 (ventana 90 dias)",
+      "quote": "When the Cadence moves from negative to positive, that becomes your buy signal. It tells you that sentiment has stopped deteriorating and has started improving again. And when it moves positive back into negative again, that's your sell signal.",
+      "src": "20260325-the-bitcoin-strategy-that-beat-dca-10x-since-2019.md",
+      "fecha": "2026-03-25"
+    },
+    {
+      "id": "fng-cadence-composite",
+      "tipo": "compra",
+      "nombre": "Estrategia composite: Cadence>0 + precio>MA200d + F&G>20",
+      "regla": "Comprar solo si se alinean las 3: cadence suavizado cruza >0, precio por encima de la MA de 200 dias, y F&G > 20 (filtra comprar en plena capitulacion). Mejor variante del backtest: +3.800%, 13 trades, 86% win rate",
+      "indicador": "fng-cadence",
+      "umbral": "cadence>0 AND precio>MA200d AND F&G>20",
+      "quote": "it waits for the smooth cadence to cross above zero. But on top of that, Bitcoin's price has to be trading above its 200-day moving average ... And then also the Fear & Greed Index itself has to be above 20, which just filters out buying into total capitulation",
+      "src": "20260325-the-bitcoin-strategy-that-beat-dca-10x-since-2019.md",
+      "fecha": "2026-03-25"
+    },
+    {
+      "id": "fng-cadence-venta-inmediata",
+      "tipo": "venta",
+      "nombre": "Cadence: salida inmediata al cruzar <0, sin filtros",
+      "regla": "La venta no lleva condiciones: en cuanto el cadence cruza por debajo de cero, salir del mercado de inmediato",
+      "indicador": "fng-cadence",
+      "umbral": "0",
+      "quote": "But for selling, I've just made it immediate. The moment the cadence crosses back below zero again, you get out. No filters, no waiting, just a swift exit.",
+      "src": "20260325-the-bitcoin-strategy-that-beat-dca-10x-since-2019.md",
+      "fecha": "2026-03-25"
+    },
+    {
+      "id": "fng-cadence-sell-sep-2025",
+      "tipo": "salida",
+      "nombre": "Ultima senal del composite: venta a ~$111k (sep-2025)",
+      "regla": "La estrategia composite vendio a mediados de sep-2025 (~$111.000) y quedo en cash, esquivando un drawdown de ~40%; sigue en cash hasta el proximo giro positivo del sentimiento",
+      "indicador": "fng-cadence",
+      "umbral": "venta sep-2025 a ~$111.000",
+      "quote": "the last signal that it generated was a sell in mid-September 2025, when Bitcoin was trading at around $111,000. And since that signal, Bitcoin has dropped roughly 40% in a drawdown from that $111,000 mark. And this strategy has sidestepped that entire move",
+      "src": "20260325-the-bitcoin-strategy-that-beat-dca-10x-since-2019.md",
+      "fecha": "2026-03-25"
+    },
+    {
+      "id": "fng-clasico-dca-fear",
+      "tipo": "compra",
+      "nombre": "F&G clasico: comprar mas en fear/extreme fear",
+      "regla": "En DCA, aumentar compras selectivamente con F&G en fear o extreme fear y reducirlas en greed/extreme greed",
+      "indicador": "fng",
+      "umbral": "fear/extreme fear = mas compra; greed/extreme greed = menos",
+      "quote": "selectively increasing your purchases when the market is in fear or extreme fear while scaling back when sentiment shifts into greed or extreme greed you'd have historically performed well over multiple Cycles",
+      "src": "20250223-how-to-use-the-fear-greed-index-for-bitcoin.md",
+      "fecha": "2025-02-23"
+    },
+    {
+      "id": "fng-no-sirve-para-bottoms",
+      "tipo": "aviso",
+      "nombre": "F&G no sirve para cronometrar suelos exactos",
+      "regla": "No usar el F&G para el suelo exacto: en bear markets se queda meses en extreme fear mientras el precio sigue cayendo; si es util en bull markets para comprar dips en fear con precio fuerte",
+      "indicador": "fng",
+      "umbral": "",
+      "quote": "trying to use this index to time the exact bottom isn't particularly effective Bitcoin tends to stay in fear or extreme fear for prolonged periods during bare markets",
+      "src": "20250223-how-to-use-the-fear-greed-index-for-bitcoin.md",
+      "fecha": "2025-02-23"
+    },
+    {
+      "id": "extreme-fear-prolongado",
+      "tipo": "compra",
+      "nombre": "~50 dias seguidos en extreme fear: entra el capital sofisticado",
+      "regla": "Un periodo prolongado de extreme fear (~50 dias consecutivos, mar-2026) es el entorno donde el retail vende y el capital sofisticado empieza a acumular",
+      "indicador": "fng",
+      "umbral": "~50 dias consecutivos en extreme fear",
+      "quote": "We're actually talking about roughly 50 consecutive days in extreme fear. ... But historically, this is also where the most sophisticated capital starts to step in.",
+      "src": "20260325-the-bitcoin-strategy-that-beat-dca-10x-since-2019.md",
+      "fecha": "2026-03-25"
+    },
+    {
+      "id": "supply-loss-50-50",
+      "tipo": "compra",
+      "nombre": "Split 50/50 profit/loss = suelo de todos los bears",
+      "regla": "Cuando el 50% del supply esta en perdida (50/50), se ha marcado el suelo de cada bear market desde 2010; <50% en profit = 7% inferior de todas las lecturas historicas",
+      "indicador": "supply-in-loss",
+      "umbral": "50% del supply en perdida",
+      "quote": "that exact 50/50 split, half in profit, half in loss, has marked the bottom of every major bear market since 2010.",
+      "src": "20260609-bitcoin-just-hit-its-most-reliable-bottom-signal.md",
+      "fecha": "2026-06-09"
+    },
+    {
+      "id": "lth-supply-loss-40-45",
+      "tipo": "compra",
+      "nombre": "LTH supply en perdida ~40-45% marca el suelo de ciclo",
+      "regla": "Umbral decreciente por ciclo: >50% (2015), ~45% (2019), ~40% (2022); en jun-2026 iba por ~41% y en el directo de jul-2026 apunta a ~45% como nivel de suelo",
+      "indicador": "sth-lth",
+      "umbral": "40-45% del supply LTH en perdida (2026: ~41% y subiendo)",
+      "quote": "pretty remarkable consistency that around 45% of the supply in loss um gets you to the cycle bottom",
+      "src": "20260714-has-bitcoin-already-bottomed-tom-matt-tristan-live.md",
+      "fecha": "2026-07-14"
+    },
+    {
+      "id": "sth-share-realized-cap-40",
+      "tipo": "compra",
+      "nombre": "STH < 40% del realized cap = zona de suelo",
+      "regla": "Cuando la cuota de los short-term holders en el realized cap cae por debajo de ~40%, ha coincidido con casi todos los suelos mayores; en jul-2026 esta en 26%",
+      "indicador": "sth-lth",
+      "umbral": "<40% (actual: 26%)",
+      "quote": "anytime this metric has dropped below about 40%, it's coincided with almost every major Bitcoin bottom in history. And it has marked some genuinely special accumulation opportunities. And right now, we're sitting in that zone.",
+      "src": "20260707-bitcoin-s-short-term-holders-have-exited.md",
+      "fecha": "2026-07-07"
+    },
+    {
+      "id": "cruce-sth-lth-realized-price",
+      "tipo": "compra",
+      "nombre": "Cruce STH realized price por debajo del LTH = suelo estructural",
+      "regla": "El cruce del cost basis STH por debajo del LTH marca la inversion completa de cost basis tipica de los suelos de bear; jun-2026: LTH RP ~$49k, STH RP ~$69k, convergencia estimada en ~14 semanas (finales sep / principios oct 2026)",
+      "indicador": "sth-lth",
+      "umbral": "STH RP < LTH RP (estimado: finales sep-oct 2026)",
+      "quote": "these two are on a genuine collision course, and right now they're estimated to meet in about 14 weeks, which lands us in about late September, early October.",
+      "src": "20260630-the-crowd-is-wrong-about-the-bitcoin-bottom.md",
+      "fecha": "2026-06-30"
+    },
+    {
+      "id": "tres-niveles-tecnicos-bear",
+      "tipo": "aviso",
+      "nombre": "Cierres bajo STH-RP + MA200d + MA365d = inicio de bear",
+      "regla": "Cerrar repetidamente por debajo de los tres niveles (STH realized price, MA200d, MA365d) ha marcado el inicio de cada bear market anterior; ocurrio en nov-2025 (STH-RP y MA200d en $110k, MA365d en $102k)",
+      "indicador": "realized",
+      "umbral": "cierre < STH-RP y < MA200d y < MA365d",
+      "quote": "We've closed multiple times below all three of my key technical pricing levels. The short-term holder realized price, the 200 day moving average, and the 365day moving average.",
+      "src": "20251118-preparing-for-a-bitcoin-bear.md",
+      "fecha": "2025-11-18"
+    },
+    {
+      "id": "capitulacion-por-tiempo",
+      "tipo": "aviso",
+      "nombre": "Capitulacion por TIEMPO, no por precio",
+      "regla": "No esperar un flush final de precio: el resto del suelo sera chop lateral prolongado ('pain by boredom'); seguir acumulando durante la fase aburrida en vez de esperar un crash",
+      "indicador": "otros",
+      "umbral": "",
+      "quote": "I expect a time-based capitulation for the remainder of this year, rather than a purely price-based one. More like pain by boredom, rather than pain by price dropping like a stone.",
+      "src": "20260609-bitcoin-just-hit-its-most-reliable-bottom-signal.md",
+      "fecha": "2026-06-09"
+    },
+    {
+      "id": "banda-93-96k-fin-bear",
+      "tipo": "compra",
+      "nombre": "Banda $93-96k = fin matematico del bear",
+      "regla": "Cuatro modelos convergen: regime divider $95k, NVRV $96k, Z-score $94k, Omega>50% $93k. Reclamar $93-96k = el bear termina y empieza el bull; se puede acumular abajo aceptando chop o pagar la confirmacion en esa banda",
+      "indicador": "otros",
+      "umbral": "$93.000-$96.000",
+      "quote": "four completely different mathematical lenses on the same network are all converging in a tight band between $93,000 and $96,000. So, that to me is the level where the bear market mathematically ends and the next bull market begins.",
+      "src": "20260526-the-exact-price-bitcoin-s-bull-market-returns.md",
+      "fecha": "2026-05-26"
+    },
+    {
+      "id": "urpd-soporte-60-62k",
+      "tipo": "compra",
+      "nombre": "URPD: cluster de soporte en $60-62k; hueco hasta $43k",
+      "regla": "Soporte mayor en ~$62k (cientos de miles de BTC, coins de 1-5 anos); si pierde $60k, el supply entre $45-55k es muy fino y el siguiente soporte real es ~$43k",
+      "indicador": "urpd",
+      "umbral": "$60.000-$62.000 (siguiente: $43.000)",
+      "quote": "we've hit such a sticking point here in the low $60,000 because this is one of the single biggest waves of the supply in the entire Bitcoin network.",
+      "src": "20260609-bitcoin-just-hit-its-most-reliable-bottom-signal.md",
+      "fecha": "2026-06-09"
+    },
+    {
+      "id": "break-level-20-30k-implausible",
+      "tipo": "aviso",
+      "nombre": "$30k/$20k matematicamente insostenible (break level)",
+      "regla": "A $50k solo el 43% del supply quedaria en profit (peor que cualquier suelo historico); a $30-20k mas del 70% de la red estaria en perdida, algo sin precedente: descartar esos targets",
+      "indicador": "supply-in-loss",
+      "umbral": "$50k = 57% en perdida; $43k = 60%; $30-20k = >70%",
+      "quote": "A move like that would send over 3 and 1/2 million more Bitcoin into a loss, which means that more than 70% of the entire network would be underwater. ... calling for those really low numbers is just mathematically unsound.",
+      "src": "20260609-bitcoin-just-hit-its-most-reliable-bottom-signal.md",
+      "fecha": "2026-06-09"
+    },
+    {
+      "id": "zona-bottom-55-65k",
+      "tipo": "compra",
+      "nombre": "Zona de suelo definitivo estimada: $55-65k",
+      "regla": "Combinando el cruce de cost basis y la rentabilidad de red, la zona de interes para el suelo definitivo es ~$55.000-65.000 (movil segun datos nuevos)",
+      "indicador": "realized",
+      "umbral": "$55.000-$65.000",
+      "quote": "it gives us a rough zone of interest between around 55,000 to 65,000 dollars, give or take, for a potential ultimate bottom based on the current conditions.",
+      "src": "20260408-bitcoin-s-bottom-is-near-here-s-how-to-spot-it.md",
+      "fecha": "2026-04-08"
+    },
+    {
+      "id": "zscore-extension-92pct",
+      "tipo": "compra",
+      "nombre": "Extension estadistica a la baja: 92% de probabilidad de subir a 12 meses",
+      "regla": "En los niveles actuales de extension bajista (Z-score), el precio ha estado mas alto el 92% de las veces 12 meses despues (y a 24 meses, media +460%)",
+      "indicador": "otros",
+      "umbral": "92% win rate a 12 meses",
+      "quote": "every time Bitcoin has been at these levels of downside extension, it has gone on to be higher 92% of the time over the following year.",
+      "src": "20260317-bitcoin-just-hit-a-92-probability-zone.md",
+      "fecha": "2026-03-17"
+    },
+    {
+      "id": "coin-time-conviction-alto",
+      "tipo": "compra",
+      "nombre": "Coin Time Conviction en percentil 92 = zona de acumulacion",
+      "regla": "Lectura alta (nadie mueve coins viejos) = zona barata de acumulacion; lectura baja (coins antiguos vendiendo en euforia) = zona de precaucion/techo. Jun-2026: percentil 92 y subiendo",
+      "indicador": "coin-time",
+      "umbral": "percentil 92 (jun-2026)",
+      "quote": "a high coin time conviction is the cheap, good to be greedy sort of accumulation zone and a low reading is the expensive time to be careful zone. And this metric has actually been rising incessantly over the past few months and it's currently sitting in its 92nd percentile.",
+      "src": "20260630-the-crowd-is-wrong-about-the-bitcoin-bottom.md",
+      "fecha": "2026-06-30"
+    },
+    {
+      "id": "cash-extracted-colapso",
+      "tipo": "compra",
+      "nombre": "Colapso del profit realizado (cash extracted) = formacion de suelo",
+      "regla": "El profit realizado a 30 dias cayo de ~$55B en el pico del ciclo a ~$3B (casi 10x menos): el colapso de la toma de beneficios es comportamiento de libro de formacion de suelo",
+      "indicador": "realized",
+      "umbral": "de $55B a $3B en 30 dias (~10x)",
+      "quote": "the cash extraction has collapsed from around $55 billion on a 30-day basis at the cycle peak to around $3 billion today. An almost 10x decrease, which is necessary to form a true bottoming process.",
+      "src": "20260609-bitcoin-just-hit-its-most-reliable-bottom-signal.md",
+      "fecha": "2026-06-09"
+    }
+  ],
+  "regimen_actual": {
+    "fase": "Bear market en fase final: acumulacion profunda / 'recovery' (Omega 11% el 16-jun, ~22% el 26-may tras minimos de un digito en feb-mar 2026). Suelo en proceso via capitulacion por tiempo (chop), zona favorable de compra/DCA; el bull solo se confirma reclamando $93-96k. Convergencia STH/LTH realized price apunta a finales sep - oct 2026",
+    "desde": "2026-02-03",
+    "quote": "That's when you want to start buying Bitcoin. ... we're at a pretty favorable time. ... that's why I've always been leaning towards it being a timebased capitulation next rather than a price one. ... the realized price while it may be hit and maybe not, we're pretty much at that zone.",
+    "src": "20260714-has-bitcoin-already-bottomed-tom-matt-tristan-live.md"
+  },
+  "cambios_opinion": [
+    {
+      "fecha": "2025-11-18",
+      "antes": "El 4-nov-2025 defendia que el ciclo de 4 anos estaba muerto y que el proximo pico llegaria a principios-mediados de 2026 ('the next major peak will most likely happen in early to mid 2026')",
+      "ahora": "Dos semanas despues, tras romper sus 3 niveles tecnicos clave, admite que hay que tomarse en serio el inicio de un bear market (y desde dic-2025 habla abiertamente de 'bear market')",
+      "quote": "something has just happened that hasn't happened once in this entire bull cycle so far. We've closed multiple times below all three of my key technical pricing levels. ... And every time this has happened in previous cycles, it's marked the beginning of a bare market.",
+      "src": "20251118-preparing-for-a-bitcoin-bear.md"
+    },
+    {
+      "fecha": "2026-03-25",
+      "antes": "En feb-2025 ensenaba a usar el NIVEL del F&G (comprar mas en fear/extreme fear, reducir en greed) como palanca del DCA",
+      "ahora": "El nivel estatico no es la senal: hay que medir la VELOCIDAD del sentimiento (Cadence a 90 dias); la estrategia con F&G crudo dio solo 42% de win rate frente al 86% del composite",
+      "quote": "Most people use the Fear & Greed Index as a static number. They look at today's extreme fear reading and treat that as the signal. And the issue is that a single number doesn't tell you about the direction of it.",
+      "src": "20260325-the-bitcoin-strategy-that-beat-dca-10x-since-2019.md"
+    },
+    {
+      "fecha": "2026-05-20",
+      "antes": "En nov-2025 contemplaba flushes de precio rapidos (perder $90k y caer en vacio hasta $70-75k) como via de capitulacion",
+      "ahora": "Ya no cree necesaria una gran capitulacion de precio: lo probable es una capitulacion por tiempo (chop lateral prolongado mientras los STH graduan a LTH)",
+      "quote": "I don't believe that we necessarily need a massive price-based capitulation from here. What seems more likely is a time-based capitulation, and I've been banging this drum for a while now.",
+      "src": "20260520-bitcoin-is-running-out-of-sellers.md"
+    },
+    {
+      "fecha": "2026-05-26",
+      "antes": "Usaba el Omega Score sobre todo para comprar suelos extremos (0-15%) y vender techos (85-100%)",
+      "ahora": "Anade un uso nuevo: el cruce de vuelta por encima del 50% como confirmacion de que el bull se reanuda (~$93k), sacrificando parte de la ganancia del suelo a cambio de certeza",
+      "quote": "while I personally like to use the Omega score to accumulate at the bottoms when it's down in single-digit territory it can absolutely be used to show you when the bull market is resuming again.",
+      "src": "20260526-the-exact-price-bitcoin-s-bull-market-returns.md"
+    }
+  ]
+}

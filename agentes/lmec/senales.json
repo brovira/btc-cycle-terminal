@@ -1,0 +1,365 @@
+{
+  "agent": "lmec",
+  "updated": "2026-07-22",
+  "fases": [
+    {
+      "nombre": "Fase final del mercado alcista / techo del ciclo",
+      "definicion": "Fase que precede al bajista: las metricas del ciclo del halving apuntan a fase final del alcista. Su plan de esa etapa era de VENTA escalonada (llego al 65% en stablecoins). El indicador Bitcoin Halving Cycle Profit 'clavo' el techo (~oct 2025, BTC >110k).",
+      "quote": "Si nos guiamos exclusivamente por los ciclos de Bitcoin y el halving, las métricas apuntan claramente a una fase final de mercado alcista, lo que históricamente ha precedido siempre una temporada bajista.",
+      "src": "20251107-previsi-n-bitcoin-y-altcoins-2026-te-sorprender.md",
+      "fecha": "2025-11-07"
+    },
+    {
+      "nombre": "Mercado bajista - Fase 1: desde hoy hasta el suelo (techo -> suelo = 53-54 semanas)",
+      "definicion": "Empieza con la 1a ruptura a la baja de la BMSB. Dura 53-54 semanas desde el maximo historico hasta el suelo (2018 y 2022 identicos) -> suelo proyectado oct/mediados de nov 2026. Que hacer: aguantar, ejecutar compras fuertes progresivas en cada caida, mantener mucha liquidez, farmeo solo selectivo (perp-DEX) y cortos especulativos pequenos.",
+      "quote": "Basándonos en los datos históricos que siempre se han cumplido, desde el máximo histórico hasta el suelo tenemos 53 semanas. En este caso nos pondría el suelo hacia octubre o noviembre de 2026. Evidentemente, esto no debemos tomarlo como una fecha exacta.",
+      "src": "20260612-mi-nuevo-plan-para-ganar-mucho-dinero-en-cripto.md",
+      "fecha": "2026-06-12"
+    },
+    {
+      "nombre": "Fase 2: suelo -> primeras subidas (la peor fase, ~19 semanas de lateral y apatia)",
+      "definicion": "Tras tocar suelo, ~19 semanas (4-5 meses) de lateralizacion sin nada interesante; la mayoria abandona ('las cripto estan muertas'). Para el es casi la mejor fase: deberes de compra ya hechos, toca investigar proyectos nuevos, farmear airdrops poco a poco y volver a DeFi con precaucion. Ahi nacen los ganadores del siguiente ciclo (Hyperliquid feb-2023, PancakeSwap sep-2020).",
+      "quote": "Estamos hablando aproximadamente de 19 semanas, o sea, unos cuatro o 5 meses, en una fase donde el mercado ya ha dejado de caer con fuerza, lo cual parece bueno, pero es que el mercado tampoco sube. Esta fase es como estar atrapado, meses y meses de lateralización sin nada interesante, una apatía absoluta y un desinterés total.",
+      "src": "20260612-mi-nuevo-plan-para-ganar-mucho-dinero-en-cripto.md",
+      "fecha": "2026-06-12"
+    },
+    {
+      "nombre": "Fase 3: vuelven las subidas fuertes / euforia (nuevo mercado alcista)",
+      "definicion": "Confirmada por la ruptura alcista definitiva de la BMSB (+MVRV, MACD, RSI). DeFi y farming a tope (vuelven volumen y rentabilidades) y, sobre todo, preparar el siguiente plan, que sera de VENTA. Matiz: el inicio del alcista NO es subida vertical, sino etapa lenta y fria con correcciones, donde aparecen las mejores compras.",
+      "quote": "Y en la tercera fase, cuando vuelvan las subidas fuertes y la euforia regrese al mercado, volveremos con fuerza a las Defi, al farming, a la acumulación de criptomonedas y a la búsqueda de más oportunidades. Pero sobre todo, en esa tercera fase empezaremos a preparar el siguiente gran plan de inversión porque el plan actual que estamos siguiendo está diseñado para comprar. Sin embargo, el siguiente plan estará diseñado para vender.",
+      "src": "20260612-mi-nuevo-plan-para-ganar-mucho-dinero-en-cripto.md",
+      "fecha": "2026-06-12"
+    }
+  ],
+  "senales": [
+    {
+      "id": "bmsb-ruptura-alcista-definitiva",
+      "tipo": "compra",
+      "nombre": "Ruptura alcista definitiva de la Bull Market Support Band (2a al alza; '3a' contando la bajista)",
+      "regla": "En velas semanales, comprar fuerte ('punto de compra obligatorio') en la SEGUNDA ruptura al alza de la BMSB (SMA20 + EMA21 semanales) dentro del bajista, confirmada con MACD recuperandose con histograma verde y RSI entre 40 y 50. 4/4 ciclos (2012, 2015, 2019, 2023) marco el inicio real del alcista; historicamente BTC no volvio a caer de ese precio.",
+      "indicador": "BMSB",
+      "umbral": "2a ruptura al alza de la BMSB semanal + MACD histograma verde + RSI 40-50",
+      "quote": "Primera ruptura alza la trampa. Seguimos corrigiendo. Segunda ruptura. Confirmación. Mercado alcista. Lo habéis visto. Cuatro veces ha pasado. Siempre ha sido igual.",
+      "src": "20260318-punto-exacto-donde-empezar-el-mercado-alcista-nunca-ha-fallado.md",
+      "fecha": "2026-03-18"
+    },
+    {
+      "id": "bmsb-primera-ruptura-trampa",
+      "tipo": "aviso",
+      "nombre": "1a ruptura al alza de la BMSB = trampa (rebote falso)",
+      "regla": "La primera ruptura al alza de la BMSB en un bajista NO es compra: es un rebote que sirve para despues seguir cayendo. En este ciclo proyectaba ese rebote hacia 80.000-82.000 dolares.",
+      "indicador": "BMSB",
+      "umbral": "1a ruptura al alza tras el inicio del bajista; rebote proyectado 80.000-82.000",
+      "quote": "Primero hay una ruptura inicial de la banda, un rebote que hace pensar a muchos que lo peor ya ha pasado, pero no es así. Realmente es como una trampa, es un rebote que sirve para después seguir cayendo.",
+      "src": "20260318-punto-exacto-donde-empezar-el-mercado-alcista-nunca-ha-fallado.md",
+      "fecha": "2026-03-18"
+    },
+    {
+      "id": "venta-parcial-rebote-trampa",
+      "tipo": "salida",
+      "regla": "Si se ve el rebote de la 1a ruptura (80.000-82.000), vender como MAXIMO un 20-30% de la posicion para recomprar mas abajo. NUNCA vender todo (riesgo de quedarse fuera si el indicador falla). El personalmente no lo hace con BTC (solo compra y holdea).",
+      "nombre": "Venta parcial 20-30% en el rebote de la 1a ruptura",
+      "indicador": "BMSB",
+      "umbral": "rebote a 80.000-82.000 -> vender 20-30% max",
+      "quote": "veo ese rebote hasta los 80.000 u 82,000, pues en ese caso decido vender un 20 o 30% de mi posición, unos 2000 o $3,000. Si el mercado después cae, perfecto, compraré Bitcoin más abajo con esa liquidez.",
+      "src": "20260318-punto-exacto-donde-empezar-el-mercado-alcista-nunca-ha-fallado.md",
+      "fecha": "2026-03-18"
+    },
+    {
+      "id": "macd-histograma-verde-en-ruptura",
+      "tipo": "compra",
+      "nombre": "MACD semanal: lineas recuperandose + histograma verde en la ruptura buena",
+      "regla": "Distincion mecanica entre la ruptura-trampa y la buena: en la 1a ruptura las lineas azul/naranja del MACD acaban de entrar en negativo e histograma rojo; en la 2a ruptura (compra) las lineas ya tocaron suelo y se recuperan con histograma en verde.",
+      "indicador": "MACD",
+      "umbral": "lineas MACD saliendo de negativo + histograma verde (semanal)",
+      "quote": "Sin embargo, en las segundas rupturas, las que nos interesan ese punto de compra obligatorio, vemos un escenario completamente diferente. Las líneas ya han tocado suelo y se están recuperando, además de que el histograma ya se encuentran valores verdes.",
+      "src": "20260318-punto-exacto-donde-empezar-el-mercado-alcista-nunca-ha-fallado.md",
+      "fecha": "2026-03-18"
+    },
+    {
+      "id": "rsi-40-50-en-ruptura",
+      "tipo": "compra",
+      "nombre": "RSI semanal entre 40 y 50 en la ruptura buena de la BMSB",
+      "regla": "En todas las segundas rupturas al alza de la BMSB el RSI semanal venia recuperandose desde sobreventa y estaba entre 40 y 50 puntos. Sirve para validar la ruptura.",
+      "indicador": "RSI",
+      "umbral": "RSI semanal 40-50, recuperandose desde abajo",
+      "quote": "Siempre que Bitcoin rompió por segunda vez la Bull Market Support Band, el RSI venía recuperándose de valores negativos y en todos los casos estuvo en valores entre 40 y 50 puntos.",
+      "src": "20260318-punto-exacto-donde-empezar-el-mercado-alcista-nunca-ha-fallado.md",
+      "fecha": "2026-03-18"
+    },
+    {
+      "id": "macd-cruce-azul-sobre-naranja",
+      "tipo": "compra",
+      "nombre": "MACD semanal: cruce de la linea azul sobre la naranja tras negativo prolongado",
+      "regla": "Cuando las dos lineas del MACD semanal llevan tiempo prolongado en negativo y la linea azul cruza a la naranja hacia arriba -> zona de compra a largo plazo (2019, 2020 pre-parabolica, 2022 con BTC ~22k).",
+      "indicador": "MACD",
+      "umbral": "cruce alcista azul>naranja saliendo de terreno negativo (semanal)",
+      "quote": "es tan fácil con que vayáis a Trading View, pongáis el indicador MACD y en cuanto veáis que la línea azul cruza a la línea naranja hacia arriba, se dará históricamente un buen punto de compra.",
+      "src": "20260211-esto-nos-hizo-ganar-mucho-dinero-y-volver-a-ocurrir.md",
+      "fecha": "2026-02-11"
+    },
+    {
+      "id": "rsi-34-tras-lateralizar",
+      "tipo": "compra",
+      "nombre": "RSI semanal recupera el 34 tras lateralizar bajo 30",
+      "regla": "No comprar solo porque el RSI semanal pierda 30. Tras perderlo, lateraliza (2015: 2 meses, 2019: 3, 2022: 5; cada ciclo tarda mas, con rebotes falsos sobre 30). La compra fuerte se hace cuando, tras esa lateralizacion, el RSI recupera hacia arriba el valor de 34 -> compra muy cerca del suelo (2015, 2019, 2022).",
+      "indicador": "RSI",
+      "umbral": "RSI semanal cruza 34 al alza tras lateralizar por debajo/alrededor de 30",
+      "quote": "La señal realmente importante aparece cuando tras ese periodo de lateralización, el RSI recupera hacia arriba el valor de 34. [...] siguiendo este patrón del RSI, no estás comprando en el suelo absoluto, pero sí estás comprando muy cerca de él cuando ocurre la confirmación de que vuelven a empezar las subidas.",
+      "src": "20260211-esto-nos-hizo-ganar-mucho-dinero-y-volver-a-ocurrir.md",
+      "fecha": "2026-02-11"
+    },
+    {
+      "id": "rsi-30-recuperacion-31-32",
+      "tipo": "compra",
+      "nombre": "RSI semanal: caer bajo 30 y recomprar al recuperar 31-32",
+      "regla": "Version de nov-2025 de la misma regla: esperar a que el RSI semanal caiga bajo 30 (solo 3 veces desde 2015: 2015, 2018, 2022, todas compras excelentes) y hacer la compra fuerte cuando vuelva por encima de 30, en 31-32 puntos, venga el precio donde venga.",
+      "indicador": "RSI",
+      "umbral": "RSI semanal <30 y luego recupera 31-32 viniendo desde abajo",
+      "quote": "Si estás buscando puntos de compra excelentes pensados a largo plazo, lo mejor es esperar a que el RSI caiga por debajo del valor de 30. Después esperar a que se recupere y en cuanto vuelva por encima de los 30, en los 31 o 32 puntos, ahí hacer la compra fuerte.",
+      "src": "20251121-alerta-bitcoin-la-evidente-se-al-que-nadie-est-viendo.md",
+      "fecha": "2025-11-21"
+    },
+    {
+      "id": "rsi-32-desde-arriba-no-comprar",
+      "tipo": "aviso",
+      "nombre": "RSI 30-32 tocado DESDE ARRIBA = debilidad, no comprar",
+      "regla": "Direccion importa: RSI semanal en 30-32 viniendo desde arriba (tendencia bajista del RSI) = debilidad y mas caidas (nov-2018: -54%, ene/may-2022: -60%+). Solo es compra cuando toca esos valores viniendo desde abajo (recuperandose de <30).",
+      "indicador": "RSI",
+      "umbral": "RSI 30-32 con tendencia bajista -> no comprar",
+      "quote": "Si como ahora el RSI toca los 30 o los 32 viniendo desde arriba, eso demuestra debilidad o lo que es lo mismo, mucho riesgo. Sin embargo, si el RSI toca los 32 puntos, como por aquí viniendo desde abajo, eso demuestra fortaleza.",
+      "src": "20251121-alerta-bitcoin-la-evidente-se-al-que-nadie-est-viendo.md",
+      "fecha": "2025-11-21"
+    },
+    {
+      "id": "mvrv-salida-franja-verde",
+      "tipo": "compra",
+      "nombre": "MVRV Z-Score: salida hacia arriba de la franja verde (la confirmacion)",
+      "regla": "3 hitos en el MVRV semanal: (1) entrada en la franja verde (no dice nada de cuanto mas caera; en 2022 entro con BTC 30k y cayo a 15k), (2) suelo absoluto (solo se ve a toro pasado), (3) SALIDA hacia arriba de la franja = la unica que importa: confirma fin del bajista e inicio del alcista (2011, 2015, 2019, 2023). Coincide casi identica con la ruptura alcista definitiva de la BMSB.",
+      "indicador": "MVRV",
+      "umbral": "MVRV Z-Score semanal cruza al alza el limite superior de la franja verde",
+      "quote": "Cada vez que el MVRV ha salido de la franja verde, se ha confirmado el final del ciclo bajista y el comienzo de un nuevo ciclo alcista. Sucedió en 2011, sucedió también en 2015, por supuesto, también sucedió en 2019. Y cómo no, también sucedió lo mismo en 2023.",
+      "src": "20260410-bitcoin-va-a-hacer-esto-100-comprobado.md",
+      "fecha": "2026-04-10"
+    },
+    {
+      "id": "mvrv-zona-negativa-capitulacion",
+      "tipo": "aviso",
+      "nombre": "MVRV en zona negativa = etapa de capitulacion/suelo (aun no visitada)",
+      "regla": "En todos los bajistas anteriores el MVRV visito terreno negativo (bajo la linea cero) y permanecio meses ahi, coincidiendo con la capitulacion y el suelo. A jun-2026 esta cerca pero aun no ha entrado -> suelo no confirmado.",
+      "indicador": "MVRV",
+      "umbral": "MVRV < 0 (zona negativa) durante meses",
+      "quote": "estamos muy cerca de la zona cero, esta línea discontinua verde. En todos los anteriores ciclos bajistas siempre hemos ido a visitar la zona negativa. [...] una vez entra dentro del terreno negativo, lo que observamos es que está dentro de él durante muchos meses. Meses que coinciden con la peor etapa del mercado, la etapa de capitulación.",
+      "src": "20260626-estoy-sorprendido-con-lo-que-he-descubierto.md",
+      "fecha": "2026-06-26"
+    },
+    {
+      "id": "cvdd-linea-intermedia-inferior",
+      "tipo": "aviso",
+      "nombre": "CVDD: en todo bajista BTC rompe la linea intermedia y visita la inferior",
+      "regla": "Indicador on-chain (valor de los BTC movidos ponderado por antiguedad). En 2014, 2018 y 2022 BTC siempre rompio la linea intermedia del CVDD y coticio dias/semanas bajo la linea inferior (suelo total). A jun-2026 ni siquiera se ha roto la intermedia -> faltan caidas.",
+      "indicador": "otros",
+      "umbral": "ruptura de linea intermedia + visita a linea inferior del CVDD",
+      "quote": "En anteriores mercados bajistas vemos como Bitcoin siempre rompió la línea intermedia. lo hizo en 2022, en 2018 y en 2014. Y también en los tres, Bitcoin estuvo cotizando algunos días o semanas por debajo de la línea inferior, la del suelo total. Actualmente estamos cerca, pero ni siquiera hemos roto la línea intermedia.",
+      "src": "20260626-estoy-sorprendido-con-lo-que-he-descubierto.md",
+      "fecha": "2026-06-26"
+    },
+    {
+      "id": "sma-200-semanas",
+      "tipo": "compra",
+      "nombre": "Visita a la media movil de 200 semanas",
+      "regla": "En los bajistas anteriores BTC siempre termino visitando la SMA de 200 semanas (2019: marco el suelo; 2022: fase final con BTC ~22k). En feb-2026 la 200W estaba en ~58.000 y BTC no la habia tocado -> los 60.000 no eran el suelo.",
+      "indicador": "200W",
+      "umbral": "precio toca la SMA 200 semanas (~58.000 dolares en feb-2026)",
+      "quote": "En los dos anteriores bajistas, el precio de Bitcoin siempre terminó visitando a la media móvil de 200 semanas esta línea roja. En 2019 la visita marcó el suelo. En 2022 la visita marcó la fase final del mercado bajista con Bitcoin en $22,000. [...] la cual actualmente está en un valor de $58,000 por Bitcoin. Todavía no hemos tocado a la media móvil de 200 semanas.",
+      "src": "20260211-esto-nos-hizo-ganar-mucho-dinero-y-volver-a-ocurrir.md",
+      "fecha": "2026-02-11"
+    },
+    {
+      "id": "perforacion-precio-medio-holders",
+      "tipo": "compra",
+      "nombre": "Perforacion del precio medio de compra de los holders (realized price)",
+      "regla": "En todo bajista BTC perforo por abajo el precio medio de compra de los holders (2022: medio 20k -> cayo a 15k; 2018: 4.5k -> 3k; 2014: 300 -> 200), coincidiendo con la capitulacion y zonas muy cercanas al suelo real. En abr-2026 (medio ~44.000) aun no perforado -> capitulacion no vista.",
+      "indicador": "otros",
+      "umbral": "precio de BTC por debajo del realized price (~44.000 dolares en abr-2026)",
+      "quote": "en los anteriores mercados bajistas Bitcoin siempre perforó por abajo ese precio medio de compra. En 2022 el precio medio estaba en 20,000, cayó a 15,000. En 2018 precio medio en 4,500, cayó a los 3,000. 2014 precio medio 300, cayó a los 200. [...] cada vez que Bitcoin perforó por abajo el precio medio de compra de los holders, coincidió con las fases más duras del mercado bajista, las fases de capitulación.",
+      "src": "20260410-bitcoin-va-a-hacer-esto-100-comprobado.md",
+      "fecha": "2026-04-10"
+    },
+    {
+      "id": "halving-cycle-54-semanas-suelo",
+      "tipo": "compra",
+      "nombre": "Bitcoin Halving Cycle Profit: 54 semanas techo->suelo -> comprar fuerte hacia oct/nov 2026",
+      "regla": "Su pilar de largo plazo. En 2018 y 2022: 54 semanas del techo al suelo. Aplicado a este ciclo: no empezar las compras fuertes hasta ~octubre, con suelo proyectado a mediados de noviembre de 2026 (fecha orientativa, se compra progresivo igualmente).",
+      "indicador": "halving",
+      "umbral": "54 semanas desde el maximo historico -> mediados de noviembre de 2026",
+      "quote": "según este indicador, que repito hasta la fecha nunca ha fallado, nos dice que no deberíamos empezar a hacer compras hasta más o menos octubre de 2026 [...] En 2018, 54 semanas hasta el suelo. En 2022, 54 semanas hasta el suelo. En 2026, según el indicador, 54 semanas. No nos pone en octubre, nos pone exactamente a mediados de noviembre de 2026.",
+      "src": "20260211-esto-nos-hizo-ganar-mucho-dinero-y-volver-a-ocurrir.md",
+      "fecha": "2026-02-11"
+    },
+    {
+      "id": "280-dias-entre-rupturas",
+      "tipo": "compra",
+      "nombre": "~280 dias entre la ruptura-rebote y la ruptura alcista definitiva de la BMSB",
+      "regla": "Media historica del tiempo entre la 2a y la 3a ruptura de la BMSB en un bajista: 2022 = 277 dias, 2018 = 246, 2014 = 318 -> ~280 dias. Contando desde la ruptura-rebote de este ciclo, situa las primeras subidas del nuevo alcista en marzo/abril de 2027.",
+      "indicador": "BMSB",
+      "umbral": "~280 dias tras la 2a ruptura -> marzo/abril 2027",
+      "quote": "¿Cuánto tiempo de media ha pasado entre la segunda y la tercera ruptura de la Bullm Support Band? En 2022 pasaron 277 días, en 2018 pasaron 246 días y en 2014 pasaron 318 días. Haciendo una simple media nos da como resultado más o menos 280 días. Bien, vamos al punto actual. Desde la segunda ruptura, 280 días, nos pone en marzo de 2027.",
+      "src": "20260612-mi-nuevo-plan-para-ganar-mucho-dinero-en-cripto.md",
+      "fecha": "2026-06-12"
+    },
+    {
+      "id": "niveles-compra-btc-escalonados",
+      "tipo": "compra",
+      "nombre": "Compras escalonadas de BTC cada ~5.000 dolares con ordenes limite (nunca numeros redondos)",
+      "regla": "Ordenes limite reales dejadas en el exchange, cada vez mas grandes cuanto mas cae: 70.200 (ejecutada), 65.200 (ejecutada), ~59.380 (casi ejecutada; luego compro la zona de 60.000), 55.300, 50.400; bajo 50.000 anade mas liquidez. Las ordenes limite garantizan cumplir el plan y capturar los 'velazos' de liquidaciones.",
+      "indicador": "precio",
+      "umbral": "70.200 / 65.200 / ~59.380 / 55.300 / 50.400; <50.000 mas liquidez",
+      "quote": "Había configurado mi primera orden aquí, como veis, en los 70,200, ejecutada segunda orden, en los 65,200 ejecutada tercera orden. [...] en los 5938. Por poco no se ejecutó [...] tengo mis siguientes órdenes configuradas en los 55 300, en los 50 400 y si pierde los 50 depositaré más liquidez para seguir acumulando a precios más bajos.",
+      "src": "20260211-esto-nos-hizo-ganar-mucho-dinero-y-volver-a-ocurrir.md",
+      "fecha": "2026-02-11"
+    },
+    {
+      "id": "artilleria-pesada-para-confirmaciones",
+      "tipo": "compra",
+      "nombre": "Compras progresivas pequenas ahora; lo gordo, para las 4 confirmaciones",
+      "regla": "Las compras en 70k/65k/60k son pequenas ('por si la estadistica falla'). La compra fuerte de verdad se reserva para la confluencia de confirmaciones: 2a ruptura al alza de la BMSB + MACD histograma verde + RSI ~40 + MVRV saliendo de la franja verde (escenario ideal dibujado: oct/nov 2026 con BTC ~42.000).",
+      "indicador": "BMSB",
+      "umbral": "confluencia BMSB + MACD verde + RSI ~40 + MVRV saliendo de franja verde",
+      "quote": "voy comprando por si acaso la estadística falla, ya que alguna vez fallará, pero me guardo lo fuerte para cuando aparezcan las señales que históricamente siempre han marcado el verdadero inicio del siguiente tramo alcista.",
+      "src": "20260410-bitcoin-va-a-hacer-esto-100-comprobado.md",
+      "fecha": "2026-04-10"
+    },
+    {
+      "id": "empezar-desde-cero-comprar-ya",
+      "tipo": "compra",
+      "nombre": "Si partes de cero y quieres acumular BTC a largo plazo: empezar a comprar YA",
+      "regla": "Todo el timing anterior es para quien YA tiene BTC y optimiza entradas. Sin exposicion alguna, la diferencia entre 70k/65k/55k pierde relevancia: construir posicion progresiva ya en vez de esperar una senal perfecta que quizas nunca llegue.",
+      "indicador": "otros",
+      "umbral": "sin umbral: empezar ya, progresivo",
+      "quote": "Si tú no tienes ningún tipo de exposición a Bitcoin, no tienes nada y tu objetivo a largo plazo es acumularlo, la diferencia entre comprarlo entre 70.000, 1000, 65,000 o 55,000 pierde relevancia por completo. [...] Si tú no tienes Bitcoin y quieres acumular, yo empezaría a comprar ya.",
+      "src": "20260211-esto-nos-hizo-ganar-mucho-dinero-y-volver-a-ocurrir.md",
+      "fecha": "2026-02-11"
+    },
+    {
+      "id": "dca-semanal-ultimo-tercio-bear",
+      "tipo": "compra",
+      "nombre": "DCA semanal durante el ultimo tercio del bajista (~80-90 dias restantes)",
+      "regla": "Alternativa mecanica sin indicadores: los bajistas duran de media 365-370 dias; a jul-2026 van 280 dias -> ultimo tercio. Comprar una cantidad fija CADA SEMANA (no mensual, quedaria corto) durante los ~80-90 dias que restan hasta el suelo estimado.",
+      "indicador": "otros",
+      "umbral": "compra fija semanal mientras queden ~80-90 dias de bajista (bear medio 365-370 dias; 280 cumplidos)",
+      "quote": "los mercados bajistas en Bitcoin y las criptomonedas suelen durar en torno a un año entero, una media de 365 o 370 días. Actualmente llevamos ya en un mercado bajista 280 días. [...] Si pensamos que nos quedan unos 80 o 90 días de mercado bajista, pues aplicar un DCA durante esos 80 o 90 días puede ser una de las mejores estrategias que podemos seguir.",
+      "src": "20260711-algo-muy-gordo-est-llegando-a-cripto-aprov-chalo.md",
+      "fecha": "2026-07-11"
+    },
+    {
+      "id": "short-ruptura-bmsb-abajo",
+      "tipo": "short",
+      "nombre": "Ruptura clara de la BMSB a la baja -> cortos agresivos en altcoins",
+      "regla": "Cuando BTC pierde con claridad la BMSB semanal (confirmacion = al menos un par de velas semanales por debajo de la banda, no una sola vela), vienen mas caidas y las altcoins caen mas que BTC -> abrir cortos agresivos en altcoins seleccionadas. Operativa secundaria, dinero pequeno, con stop loss.",
+      "indicador": "BMSB",
+      "umbral": ">= 2 velas semanales cerrando por debajo de la BMSB",
+      "quote": "La señal más importante para mí quedará el pistoletazo de salida sigue siendo la misma. Ver a Bitcoin perdiendo con claridad la Bullm Support Band semanal. [...] Cuando Bitcoin rompe por primera vez la bullet band dentro de un mercado bajista, vienen más caídas. Y si Bitcoin cae, las altcoins normalmente caen más fuerte que Bitcoin. Por lo tanto, si esto ocurre, la ruptura confirmada, volveré a abrir agresivamente posiciones en corto en altcoins seleccionadas.",
+      "src": "20260529-prep-rate-todo-est-a-punto-de-cambiar.md",
+      "fecha": "2026-05-29"
+    },
+    {
+      "id": "short-retest-bmsb",
+      "tipo": "short",
+      "nombre": "Retest de la BMSB entre la 2a y la 3a ruptura -> cortos en altcoins",
+      "regla": "Entre la ruptura-rebote y la ruptura definitiva, BTC siempre retestea la BMSB 1-2 veces (2022: 1; 2018 y 2014: 2). Si el rebote lleva a testear la banda (situaba ese test en ~67.000-69.000 en jul-2026), abrir cortos agresivos en altcoins porque tras el testeo toca volver a caer.",
+      "indicador": "BMSB",
+      "umbral": "rebote hasta testear la BMSB (~67.000-69.000 en jul-2026) -> cortos",
+      "quote": "si finalmente este rebote se produce, el que nos lleve a testear a la Bullmket Support Band, ahí sí volveré a abrir cortos agresivamente en las altcoins, ya que según nuestros análisis, una vez testeada la Bullmort Band, después nos tocaría volver a caer.",
+      "src": "20260711-algo-muy-gordo-est-llegando-a-cripto-aprov-chalo.md",
+      "fecha": "2026-07-11"
+    },
+    {
+      "id": "venta-rsi-70-sobrecompra",
+      "tipo": "venta",
+      "nombre": "RSI semanal > 70 = sobrecompra, zona de venta/toma de beneficios",
+      "regla": "En velas semanales (nunca diarias/4h): RSI < 30 = sobreventa (zona de compra historica); RSI > 70 = sobrecompra, zona ideal de venta o toma de beneficios. Decisiones estrategicas 1-2 veces al ano.",
+      "indicador": "RSI",
+      "umbral": "RSI semanal > 70 vender / < 30 zona de compra",
+      "quote": "Cuando el índice esté por debajo del valor de 30 [...] históricamente siempre ha sido una buena zona de compra. Por otro lado, si el RSI está por encima del valor de 70, significa sobrecompra, zonas ideales de venta o de toma de beneficios. Y muy importante, solo trabajamos con gráfico semanal.",
+      "src": "20251121-alerta-bitcoin-la-evidente-se-al-que-nadie-est-viendo.md",
+      "fecha": "2025-11-21"
+    },
+    {
+      "id": "venta-escalonada-euforia",
+      "tipo": "venta",
+      "nombre": "Venta escalonada en la euforia del techo (ejecutada 2025: hasta 65% stables)",
+      "regla": "El plan del alcista era de venta progresiva contra la euforia: vendio con BTC > 110.000, BNB en 1.000, ETH en 4.000, HYPE en 50, acabando con 65% del portafolio en stablecoins antes de las caidas. Nunca 100% dentro ni 100% fuera; ajustar porcentajes por fase.",
+      "indicador": "precio",
+      "umbral": "ventas ejecutadas: BTC >110.000, BNB 1.000, ETH 4.000, HYPE 50 -> 65% stables",
+      "quote": "cuando Bitcoin superó los $110,000, BNB los 1000, Hype los 50, Ethereum los 4,000. Mi plan me indicaba que debía empezar a vender y no fue fácil. [...] aquellas ventas de BNB en $1,000, de Ethereum en 4000, de Hype en 50, terminaron siendo acertadas.",
+      "src": "20260211-esto-nos-hizo-ganar-mucho-dinero-y-volver-a-ocurrir.md",
+      "fecha": "2026-02-11"
+    },
+    {
+      "id": "suelo-rango-45k",
+      "tipo": "aviso",
+      "nombre": "Rango de suelo estimado: 50.000-30.000, mas probable ~45.000; 60.000 NO es el suelo",
+      "regla": "Media de caidas historicas (93/86/84/77% -> ~72%) daria ~34.000-35.000, escenario que ve posible pero improbable sin cisne negro. Su escenario base: suelo no visto aun, dificil ver BTC muy por debajo de ~45.000 en mercado normal.",
+      "indicador": "precio",
+      "umbral": "suelo probable ~45.000; 34.000-35.000 solo con cisne negro",
+      "quote": "Mi opinión después de analizar todo esto es que no hemos visto el suelo definitivo, pero tampoco espero caídas tan agresivas como las de los ciclos anteriores. [...] si hablamos de un desarrollo de mercado relativamente normal, me cuesta ver a Bitcoin cayendo mucho más allá de la zona de los $45,000.",
+      "src": "20260211-esto-nos-hizo-ganar-mucho-dinero-y-volver-a-ocurrir.md",
+      "fecha": "2026-02-11"
+    },
+    {
+      "id": "aviso-ciclo-halving-vs-liquidez",
+      "tipo": "aviso",
+      "nombre": "No abandonar el ciclo de 4 anos por la narrativa de la liquidez global",
+      "regla": "Cuando el ciclo del halving apunta a caidas y el mercado abraza una narrativa nueva ('los ciclos ya no existen, ahora manda la liquidez/M2'), tratarlo como codicia disfrazada: cuanto mas tiempo desde el ultimo suelo, mayor el riesgo. El se quedo con el ciclo clasico (y acerto el techo).",
+      "indicador": "halving",
+      "umbral": "sin numero: fiarse del ciclo de 4 anos mientras siga cumpliendose",
+      "quote": "Da igual que hablemos de ciclos de halving que de ciclos de liquidez. Cuanto más tiempo pasa desde el último suelo del mercado, mayor es el riesgo que asumimos.",
+      "src": "20251107-previsi-n-bitcoin-y-altcoins-2026-te-sorprender.md",
+      "fecha": "2025-11-07"
+    }
+  ],
+  "regimen_actual": {
+    "fase": "Mercado bajista, fase 1 (tierra de nadie entre la ruptura-rebote y la ruptura alcista definitiva de la BMSB). 280 dias de bajista cumplidos (~ultimo tercio); todos sus indicadores (MACD, RSI, MVRV, BMSB) en standby sin confirmacion; espera rebote a testear la BMSB (~67.000-69.000) para abrir cortos en alts, suelo estimado oct/mediados-nov 2026 (~42.000-45.000) y primeras subidas del nuevo alcista en marzo/abril 2027.",
+    "desde": "2025-10-05 aprox (techo del ciclo; 280 dias antes del 11-jul-2026)",
+    "quote": "nuestros principales indicadores [...] Me refiero al MACD semanal, al RSI, al MVRV y a la Bullmket Support Band. Todos ellos están en standby. Seguimos esperando alguna confirmación para tomar decisiones de inversión. [...] Por el momento seguimos en tierra de nadie. [...] Actualmente llevamos ya en un mercado bajista 280 días.",
+    "src": "20260711-algo-muy-gordo-est-llegando-a-cripto-aprov-chalo.md"
+  },
+  "cambios_opinion": [
+    {
+      "fecha": "2025-11-21",
+      "antes": "No esperaba que el RSI semanal llegara tan pronto a la zona de 30 (pensaba que una senal asi tardaria al menos 6 meses de bajista).",
+      "ahora": "Acepta el dato y antepone el plan a su expectativa: si la senal llega antes de lo previsto, actua igualmente.",
+      "quote": "Yo no esperaba ver al R6 semanal tan pronto en el valor de los 30, pero aunque no lo esperas, si finalmente sucede, debo de tomar acción sí o sí.",
+      "src": "20251121-alerta-bitcoin-la-evidente-se-al-que-nadie-est-viendo.md"
+    },
+    {
+      "fecha": "2026-02-11",
+      "antes": "Primera compra de BNB fijada en los 500 dolares.",
+      "ahora": "Por la fortaleza relativa de BNB, sube el primer nivel de compra a ~600 (acabo ejecutandola en 575) y concentra los porcentajes en las primeras compras porque ve dificil que caiga de 400/350.",
+      "quote": "BNB es la única de las tres que no ha tocado nuestro primer precio objetivo, los $500. De hecho, viendo la fortaleza de BNB, perfectamente podríamos subir esta primera compra a los $600",
+      "src": "20260211-esto-nos-hizo-ganar-mucho-dinero-y-volver-a-ocurrir.md"
+    },
+    {
+      "fecha": "2026-04-10",
+      "antes": "Los indicadores clasicos de techo (Rainbow Chart, techos del MVRV) servian para vender en maximos.",
+      "ahora": "Los techos del MVRV son decrecientes y los indicadores clasicos ya no sirven para detectar techos (el Rainbow decia que BTC a 236.000 'estaba barato'); solo siguen siendo fiables para SUELOS.",
+      "quote": "ahora sí ya tenemos muy claro que estos indicadores clásicos ya no sirven para nada a la hora de detectar los techos del mercado, pero eso no significa que hayan dejado de servir por completo [...] algunos siguen siendo tremendamente útiles para detectar zonas de suelo.",
+      "src": "20260410-bitcoin-va-a-hacer-esto-100-comprobado.md"
+    },
+    {
+      "fecha": "2026-05-29",
+      "antes": "Abrio cortos en altcoins en cuanto vio UNA vela rompiendo la BMSB a la baja.",
+      "ahora": "Reconoce que se precipito (varios stop loss saltados) y endurece la regla: la confirmacion exige al menos un par de velas semanales por debajo de la banda antes de abrir cortos.",
+      "quote": "me adelanté y empecé ya a abrir operaciones en cortos sin tener esa confirmación de ruptura de la que hablábamos porque esto fue una simple vela y una confirmación tienen que ser por lo menos un par de velas por debajo de la banda. ¿Y qué pasó? pues que la mayoría de operaciones en corto que abrí, muchas de ellas tocaron el stop loss.",
+      "src": "20260529-prep-rate-todo-est-a-punto-de-cambiar.md"
+    },
+    {
+      "fecha": "2026-06-12",
+      "antes": "En marzo-2026 contaba las rupturas de la BMSB solo al alza: la '1a' era la trampa y la '2a' la compra. Ademas recomendaba ~10% de cartera en farming/DeFi.",
+      "ahora": "Renumera el patron como TRES rupturas por bajista (1a a la baja = confirmacion del bear, 2a al alza = rebote falso, 3a = inicio real del alcista; mismo evento, distinta cuenta) y reduce DeFi al 3% de la cartera por los hackeos, moviendo ese capital a BTC y altcoins core.",
+      "quote": "nosotros ya sabemos por análisis previos que históricamente siempre en un mercado bajista se producen tres rupturas en la Bullm support B. [...] he ido reduciendo poco a poco mis posiciones de ingresos pasivos en Defi. Ahora estas suponen más o menos un 3% de la cartera total.",
+      "src": "20260612-mi-nuevo-plan-para-ganar-mucho-dinero-en-cripto.md"
+    }
+  ]
+}

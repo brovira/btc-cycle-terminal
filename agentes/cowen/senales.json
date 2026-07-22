@@ -1,0 +1,368 @@
+{
+  "agent": "cowen",
+  "updated": "2026-07-22",
+  "fases": [
+    {
+      "nombre": "Ciclo de 4 años — midterm year como ventana de debilidad",
+      "definicion": "Divide el ciclo en 4 años tipo (halving, post-halving, midterm, pre-halving). El midterm year (2014/2018/2022/2026) es LA ventana de debilidad: todo el año es débil, con bolsillos de fuerza en momentos semi-predecibles.",
+      "quote": "the main window of weakness for Bitcoin is in this year, the first year, the midterm year.",
+      "src": "yt-transcripts/20260529-bitcoin-the-window-of-weakness.md",
+      "fecha": "2026-05-29"
+    },
+    {
+      "nombre": "Techo al final del post-halving year",
+      "definicion": "Bitcoin hace techo al final del año post-halving (oct-2025 ~126k), aunque esta vez sin euforia ni rotación a altcoins; eso no rompe el ciclo de 4 años.",
+      "quote": "while Bitcoin topped when it always tops at the end of at the end of the post having year there was no rotation into altcoins. That doesn't mean the four-year cycle broke.",
+      "src": "yt-transcripts/20260714-understanding-this-bitcoin-bear-market.md",
+      "fecha": "2026-07-14"
+    },
+    {
+      "nombre": "Post-apathetic top digestion phase (analogía 2019)",
+      "definicion": "Fase de digestión tras un techo en apatía (sin euforia, sin rotación a alts, techo ~2 meses antes del fin del QT, Fed recortó 3 veces), como 2019; esta vez coincide con el midterm year.",
+      "quote": "I have compared this post apathetic top digestion phase to 2019 a number of times and I stand by that assessment because Bitcoin topped on apathy and not euphoria.",
+      "src": "yt-transcripts/20260614-bitcoin-dynamic-dca-how-i-navigate-crypto.md",
+      "fecha": "2026-06-14"
+    },
+    {
+      "nombre": "Tres etapas del bear market",
+      "definicion": "Stage 1 (oct-2025→feb-2026): pocos creen que es bear. Stage 2 (feb→jun-2026): se rompe el mínimo y ~la mitad cree. Stage 3 (jun→oct-2026): mayoría cree; dura como las anteriores y termina en el suelo.",
+      "quote": "my argument now is that we are in fact in stage three of the bear market. I believe this stage will last approximately the same length as the first two stages. So, this one, in my opinion, will take us from June of 2026 to October of 2026.",
+      "src": "yt-transcripts/20260607-bitcoin-enters-the-3rd-stage-of-the-bear-market.md",
+      "fecha": "2026-06-07"
+    },
+    {
+      "nombre": "Calendario de mínimos dentro del midterm year",
+      "definicion": "Secuencia de mínimos del año bajista: ~1 mes tras el techo (fin del post-halving), febrero, fin de marzo/abril, junio (a veces julio temprano) y el suelo final normalmente en octubre.",
+      "quote": "It's the end of the post having year is the first one about a month after the top. The next one is February. The next one is like late March, early April, often a higher low, sometimes a lower low. The next one is June. Could it go into early July? It's possible. And then the next one after that's usually October.",
+      "src": "yt-transcripts/20260625-bitcoin-bottom-indicators-to-watch.md",
+      "fecha": "2026-06-25"
+    },
+    {
+      "nombre": "Fase de acumulación — segunda mitad del midterm year",
+      "definicion": "Con el June low puesto, la segunda mitad del midterm year abre la fase de acumulación, que se extiende hasta el arranque del pre-halving year.",
+      "quote": "now that we're approaching the back half of the midterm year, you could argue that the accumulation phase is is is starting.",
+      "src": "yt-transcripts/20260614-bitcoin-dynamic-dca-how-i-navigate-crypto.md",
+      "fecha": "2026-06-14"
+    }
+  ],
+  "senales": [
+    {
+      "id": "dca-solo-bajo-03-risk",
+      "tipo": "compra",
+      "nombre": "Este ciclo: DCA solo con risk < 0.3",
+      "regla": "No comprar nada con risk >= 0.3. Umbral rebajado cada ciclo: 0.5 (2018-19), 0.4 (2022), 0.3 (2026). Alternativa para perfiles menos aversos: 0.4 o 0.5. Risk actual en el video: 0.296.",
+      "indicador": "risk-metric",
+      "umbral": "0.3",
+      "quote": "two cycles ago when I made that video I DCA below 0.5 and then last cycle I DCA below point4 and then this cycle I think it makes the most amount of sense for me to DCA below.3.",
+      "src": "yt-transcripts/20260614-bitcoin-dynamic-dca-how-i-navigate-crypto.md",
+      "fecha": "2026-06-14"
+    },
+    {
+      "id": "escalera-dynamic-dca",
+      "tipo": "compra",
+      "nombre": "Escalera dynamic DCA por bandas de risk",
+      "regla": "Escalar el importe del DCA por banda de risk: X (p.ej. 100) en 0.3-0.4, 2X en 0.2-0.3, 3X en 0.1-0.2, 4X en 0-0.1 (versión mensual del video: 100 en 0.2-0.3, 200 en 0.1-0.2, 300 en 0-0.1). Cash acumulado al final del post-halving year se despliega en la 2ª mitad del midterm.",
+      "indicador": "risk-metric",
+      "umbral": "bandas 0.3-0.4 / 0.2-0.3 / 0.1-0.2 / 0-0.1",
+      "quote": "You buy a 100 at at between.3 and 04, 200 between point uh 2 to.3 uh 300 between 0.1 to point 2 and then 400 between 0 and.1.",
+      "src": "yt-transcripts/20260614-bitcoin-dynamic-dca-how-i-navigate-crypto.md",
+      "fecha": "2026-06-14"
+    },
+    {
+      "id": "empezar-tras-june-low-midterm",
+      "tipo": "compra",
+      "nombre": "Empezar a acumular justo después del June low del midterm year",
+      "regla": "Como en 2018 y 2022: empezar a comprar tras el mínimo de junio del midterm year y seguir acumulando hasta fin de año AUNQUE el precio siga cayendo (el suelo final suele ser más bajo, en Q4).",
+      "indicador": "seasonality",
+      "umbral": "junio del midterm year",
+      "quote": "usually the time to start getting back into the market for Bitcoin is right after that June low, then accumulation through the end of the midterm year even as price goes lower often works out the best.",
+      "src": "yt-transcripts/20260614-bitcoin-time-based-capitulation.md",
+      "fecha": "2026-06-14"
+    },
+    {
+      "id": "ignorar-primera-mitad-midterm",
+      "tipo": "aviso",
+      "nombre": "Ignorar Bitcoin la primera mitad del midterm year",
+      "regla": "No comprar en H1 del midterm year: todos los rallies de contratendencia se venden. Esperar a la segunda mitad para entrar.",
+      "indicador": "seasonality",
+      "umbral": "H1 del midterm year",
+      "quote": "I told you guys at the at the end of last year, just ignore Bitcoin for the first half of the midterm year. Just ignore it because all the counter trend rallies are going to get sold off.",
+      "src": "yt-transcripts/20260614-bitcoin-dynamic-dca-how-i-navigate-crypto.md",
+      "fecha": "2026-06-14"
+    },
+    {
+      "id": "lump-sum-bajo-02-risk",
+      "tipo": "compra",
+      "nombre": "Estrategia simple: comprar siempre que risk < 0.2",
+      "regla": "Versión mínima viable: comprar Bitcoin cada vez que el risk cae por debajo de 0.2 y no complicarlo más; implica pasar años sin comprar.",
+      "indicador": "risk-metric",
+      "umbral": "0.2",
+      "quote": "one of the easiest strategies was just buying Bitcoin anytime it goes below 0.2 risk, dcaing Bitcoin anytime it goes below 0.2 to risk and stop over complicating it.",
+      "src": "yt-transcripts/20260614-bitcoin-dynamic-dca-how-i-navigate-crypto.md",
+      "fecha": "2026-06-14"
+    },
+    {
+      "id": "comprar-en-lunes",
+      "tipo": "compra",
+      "nombre": "Ejecutar el DCA en lunes",
+      "regla": "Comprar los lunes: es el día con menor extensión media sobre la SMA de 7 días; en su simulación 2014-2026, lunes vs miércoles supuso ~15.000$ de diferencia sobre 18.3k invertidos.",
+      "indicador": "SMA",
+      "umbral": "lunes (7d SMA)",
+      "quote": "the best day to buy Bitcoin historically is Monday.",
+      "src": "yt-transcripts/20260614-bitcoin-dynamic-dca-how-i-navigate-crypto.md",
+      "fecha": "2026-06-14"
+    },
+    {
+      "id": "ventana-dca-1-2-anos",
+      "tipo": "compra",
+      "nombre": "Ventana de acumulación de 1-2 años, sin cazar el mínimo exacto",
+      "regla": "No intentar clavar el suelo: DCA durante 1-2 años (fin de midterm year + inicio de pre-halving year) y mantener hasta el bull market. El mínimo exacto es irrelevante a ese horizonte.",
+      "indicador": "seasonality",
+      "umbral": "1-2 años",
+      "quote": "It didn't matter if you timed it perfectly. As long as you DCAD for a year or two, you could then enjoy the spoils of the bull market.",
+      "src": "yt-transcripts/20260614-bitcoin-dynamic-dca-how-i-navigate-crypto.md",
+      "fecha": "2026-06-14"
+    },
+    {
+      "id": "comprar-midterm-o-pre-halving",
+      "tipo": "compra",
+      "nombre": "El momento de comprar es el midterm year o el pre-halving year",
+      "regla": "Meter el grueso del capital al final del midterm year y principio del pre-halving year; no perseguir el rally después (no comprar en el bull cuando todos preguntan si comprar).",
+      "indicador": "halving",
+      "umbral": "midterm year / inicio pre-halving year",
+      "quote": "in reality, the time to buy it was in the midterm year or in the pre-h having year.",
+      "src": "yt-transcripts/20260614-bitcoin-dynamic-dca-how-i-navigate-crypto.md",
+      "fecha": "2026-06-14"
+    },
+    {
+      "id": "pivot-inmediato-si-risk-01",
+      "tipo": "compra",
+      "nombre": "Si el risk se hunde a 0.1, comprar ya (no esperar a octubre)",
+      "regla": "Un nuke del risk a ~0.1 anula el timing temporal: pivotar alcista de inmediato. Bitcoin solo ha pasado 135 días de su historia en la banda 0-0.1 (2.34%); esas ventanas se van rápido.",
+      "indicador": "risk-metric",
+      "umbral": "0.1",
+      "quote": "If Bitcoin risk were to nuke to 0.1 tomorrow, do you think I would wait until October to flip bullish? Absolutely not.",
+      "src": "yt-transcripts/20260614-bitcoin-dynamic-dca-how-i-navigate-crypto.md",
+      "fecha": "2026-06-14"
+    },
+    {
+      "id": "capitulacion-precio-anula-tiempo",
+      "tipo": "compra",
+      "nombre": "Capitulación por precio (reset on-chain completo) anula la tesis bajista",
+      "regla": "Regla de precedencia: seguir capitulación por tiempo (suelo en Q4) SALVO capitulación por precio tipo mar-2020 que resetee todos los indicadores on-chain; en ese caso dejar de ser bajista de inmediato, sea el mes que sea.",
+      "indicador": "realized",
+      "umbral": "reset completo on-chain",
+      "quote": "if all the on-chain indicators reset, I wouldn't stay bearish any longer.",
+      "src": "yt-transcripts/20260614-bitcoin-time-based-capitulation.md",
+      "fecha": "2026-06-14"
+    },
+    {
+      "id": "suelo-bajo-realized-price-53k",
+      "tipo": "aviso",
+      "nombre": "Bitcoin siempre hace suelo por debajo del realized price (~53k)",
+      "regla": "No dar el suelo por hecho hasta ver precio bajo el realized price (~53k en jun-2026; era ~55k en feb-2026 — es un objetivo móvil). En 2018 no se perforó hasta noviembre; en 2014 hasta sep-oct; en 2022 en junio. Ir a ~54k lo activaría.",
+      "indicador": "realized",
+      "umbral": "~53000",
+      "quote": "Bitcoin historically bottoms below the realized price. Every single bare market.",
+      "src": "yt-transcripts/20260625-bitcoin-bottom-indicators-to-watch.md",
+      "fecha": "2026-06-25"
+    },
+    {
+      "id": "balanced-price-38k-capitulacion-total",
+      "tipo": "compra",
+      "nombre": "Llegar al balanced price (~38k) = capitulación por precio total: comprar sin mirar el calendario",
+      "regla": "Bitcoin solo pasa unos días bajo el balanced price (2011, 2015, 2018, 2022) y ahí bottomea. Si toca ~38k, ignorar el timing (da igual el mes): es LA oportunidad, con todo el on-chain reseteado. Suelo histórico del midterm: bajo balanced, no entre realized y balanced.",
+      "indicador": "balanced",
+      "umbral": "~38000",
+      "quote": "Bitcoin historically doesn't spend very much time below the balance price. Just a a few days.",
+      "src": "yt-transcripts/20260625-bitcoin-bottom-indicators-to-watch.md",
+      "fecha": "2026-06-25"
+    },
+    {
+      "id": "cruce-supply-profit-loss",
+      "tipo": "aviso",
+      "nombre": "Cruce supply in profit/loss: suelo en 1-4 meses",
+      "regla": "Cuando el % de supply en pérdida cruza al % en beneficio, el suelo de ciclo llega en 1-4 meses (2022: cruce jun→low nov; 2018: nov→dic; 2014: sep→ene; 2011: sep→nov). Cruzó en jun-2026 → ventana jul-oct. El % en profit suele hacer suelo en 35-45%.",
+      "indicador": "realized",
+      "umbral": "1-4 meses tras el cruce; profit 35-45%",
+      "quote": "Every time the supply of Bitcoin and profit and loss crossed, the low in the market occurred within 1 to 4 months.",
+      "src": "yt-transcripts/20260614-bitcoin-time-based-capitulation.md",
+      "fecha": "2026-06-14"
+    },
+    {
+      "id": "mvrv-z-bajo-cero",
+      "tipo": "aviso",
+      "nombre": "MVRV Z-Score < 0 antes del suelo",
+      "regla": "El mercado siempre ha hecho suelo después de que el MVRV Z-Score baje de 0 (exige precio bajo el realized price). En 0.251 el 25-jun (0.395 el 15-jul tras el rebote): el reset on-chain NO está completo.",
+      "indicador": "MVRV",
+      "umbral": "0",
+      "quote": "The market has always bottomed after this metric has gone below zero. It's currently at 0.251.",
+      "src": "yt-transcripts/20260625-bitcoin-bottom-indicators-to-watch.md",
+      "fecha": "2026-06-25"
+    },
+    {
+      "id": "onchain-risk-01-en-suelos",
+      "tipo": "aviso",
+      "nombre": "On-chain risk baja a ~0.1 en los suelos de ciclo",
+      "regla": "El on-chain risk compuesto (Puell, MVRV, MVRV-Z, fees, terminal price, thermocap, RHODL, supply P/L) marca los suelos cerca de 0.1. Estaba ~0.195 → aún queda recorrido de bear.",
+      "indicador": "risk-metric",
+      "umbral": "~0.1",
+      "quote": "Look at where the lows occur down near about that 0.1 risk level. We're currently at 0 2 just below 02.1 95.",
+      "src": "yt-transcripts/20260625-bitcoin-bottom-indicators-to-watch.md",
+      "fecha": "2026-06-25"
+    },
+    {
+      "id": "capitulacion-por-tiempo-50-60-semanas",
+      "tipo": "aviso",
+      "nombre": "Capitulación por tiempo: los bears duran 50-60 semanas",
+      "regla": "Los bear markets de midterm duran ~50-60 semanas desde el techo (2013-15: ~59; 2017-18: ~53; 2021-22: ~54). En jun-2026 iba por la semana 35 → suelo hacia final de año. La capitulación por tiempo manda salvo capitulación por precio.",
+      "indicador": "seasonality",
+      "umbral": "50-60 semanas desde el techo",
+      "quote": "history shows us that the bear markets take about 50 to 60 weeks to play out",
+      "src": "yt-transcripts/20260614-bitcoin-time-based-capitulation.md",
+      "fecha": "2026-06-14"
+    },
+    {
+      "id": "reloj-ciclo-dias-1424-1432",
+      "tipo": "aviso",
+      "nombre": "ROI desde el mínimo: suelos previos en días 1424-1432 → finales de Q3 / Q4",
+      "regla": "Su indicador favorito de timing (50% de la atención): los dos suelos previos llegaron en los días 1432 y 1424 desde el mínimo anterior. Desde el low del 21-nov-2022, eso proyecta ~oct-2026 (el techo llegó ~1 semana antes que los previos, sesgo a principios de octubre).",
+      "indicador": "seasonality",
+      "umbral": "días 1424-1432 desde el mínimo de ciclo",
+      "quote": "if we're currently on day 1324, that's just about 100 a little about a 100 days from now. 100 110 days from now. That would put you kind of like that late Q3 early Q4 time period.",
+      "src": "yt-transcripts/20260625-bitcoin-bottom-indicators-to-watch.md",
+      "fecha": "2026-06-25"
+    },
+    {
+      "id": "agosto-septiembre-negativos",
+      "tipo": "aviso",
+      "nombre": "Ago-sep del midterm: negativos las 3 veces; agosto ~-15/18%",
+      "regla": "Julio del midterm suele ser verde (trampa); agosto y septiembre han sido rojos en 2014, 2018 y 2022 sin excepción. No comprar el rally de julio como si fuera el arranque del bull; esperar la debilidad ago-sep hacia el suelo de Q4.",
+      "indicador": "seasonality",
+      "umbral": "-18%/-15%/-15% en agosto histórico",
+      "quote": "August and September have been negative in all three prior midterms without exception, and August in particular has been severe, printing losses of roughly 18%, 15% and 15%.",
+      "src": "reports/bitcoin-july-2026-memo.md",
+      "fecha": "2026-07-15"
+    },
+    {
+      "id": "suelo-base-q4-octubre",
+      "tipo": "aviso",
+      "nombre": "Ventana primaria de suelo: Q4-2026 (base: octubre)",
+      "regla": "Caso base: suelo de ciclo en Q4-2026, octubre el mes más probable (2/3 midterms previos bottomearon dentro del año: dic-2018, nov-2022; 2014 se fue a ene-2015). Tratar el rebote veraniego como contratendencia, no como suelo.",
+      "indicador": "seasonality",
+      "umbral": "Q4-2026 (octubre)",
+      "quote": "Fourth quarter 2026. Two of three prior midterm cycles bottomed within the year; 2014 spilled to January 2015.",
+      "src": "reports/bitcoin-july-2026-memo.md",
+      "fecha": "2026-07-15"
+    },
+    {
+      "id": "spike-volumen-marca-el-suelo",
+      "tipo": "aviso",
+      "nombre": "Ningún bear ha terminado sin un spike masivo de volumen",
+      "regla": "Confirmación del suelo: volumen bajo prolongado seguido de un pico masivo de capitulación (2014, 2018, 2020, 2022). Sin ese spike, desconfiar de que el mínimo esté puesto.",
+      "indicador": "precio",
+      "umbral": "spike de volumen sobre base deprimida",
+      "quote": "literally every example of every bear market that Bitcoin has ever had, it it it hasn't actually ended until you get a big spike in volume.",
+      "src": "yt-transcripts/20260614-bitcoin-time-based-capitulation.md",
+      "fecha": "2026-06-14"
+    },
+    {
+      "id": "200d-techo-de-rallies-70k",
+      "tipo": "aviso",
+      "nombre": "La 200d (~70k en ago-2026) es el techo de los rallies del bear",
+      "regla": "En bear markets la 200-day SMA actúa de resistencia (rechazos en may-2018, ago-2022, may-2026); tras tocarla se suele volver al menos a la 20W SMA. No perseguir rallies hacia la 200d; el rebote de verano suele morir a finales de julio / mediados de agosto.",
+      "indicador": "200d",
+      "umbral": "~70000 (nivel 200d hacia ago-2026)",
+      "quote": "by by late July, the 200-day moving average will probably be just north of 70K. By mid-August, it'll probably be at 70K.",
+      "src": "yt-transcripts/20260708-bitcoin-brief-window-of-strength.md",
+      "fecha": "2026-07-08"
+    },
+    {
+      "id": "venta-escalera-15avos",
+      "tipo": "venta",
+      "nombre": "Venta escalonada en 15avos por bandas de risk altas",
+      "regla": "Dividir la posición en 15avos y vender: 1/15 en 0.5-0.6, 2/15 en 0.6-0.7, 3/15 en 0.7-0.8, 4/15 en 0.8-0.9, 5/15 (1/3) en 0.9-1.0. (Formulación original 2019-20; hoy retrasa el inicio a >0.6.) En 2021 llevaba vendido el 87% cuando BTC tocó 58k.",
+      "indicador": "risk-metric",
+      "umbral": "bandas 0.5-0.6 ... 0.9-1.0 (1/15 a 5/15)",
+      "quote": "I would sell 115th between.5 and 6, two 15s between 6 and 7, 31 15 between 7 and 08, 4 between 08 and 0.9, and 51 15 or 1/3 of my Bitcoin between 0.9 9 and1 risk.",
+      "src": "yt-transcripts/20260614-bitcoin-dynamic-dca-how-i-navigate-crypto.md",
+      "fecha": "2026-06-14"
+    },
+    {
+      "id": "zona-gris-03-06-vender-sobre-06",
+      "tipo": "venta",
+      "nombre": "Zona gris 0.3-0.6: no operar; escalar ventas por encima de 0.6",
+      "regla": "Este ciclo: comprar hasta 0.3, no hacer NADA entre 0.3 y 0.6, y empezar a vender despacio por encima de 0.6. Motivo: en ciclos apáticos (2019, 2025) los picos apenas superan 0.6 y no llegan a 0.9 — esperar euforia hace perder la salida.",
+      "indicador": "risk-metric",
+      "umbral": "0.6",
+      "quote": "if this cycle I buy up to.3 risk then perhaps I do absolutely nothing between.3 and 6 and then above 6 I might start to scale out slowly.",
+      "src": "yt-transcripts/20260614-bitcoin-dynamic-dca-how-i-navigate-crypto.md",
+      "fecha": "2026-06-14"
+    },
+    {
+      "id": "vender-q4-post-halving",
+      "tipo": "salida",
+      "nombre": "Salida por tiempo: vender en Q4 del post-halving year",
+      "regla": "Venta por calendario aunque el risk no llegue a euforia: deshacer en Q4 de los años post-halving (2021, 2025) — nunca dejar pasar una buena burbuja. El error a evitar: vender y no recomprar nunca; la recompra va tras el June low del midterm.",
+      "indicador": "halving",
+      "umbral": "Q4 del post-halving year",
+      "quote": "meaning I'm going to sell Bitcoin, you know, in Q4 of the post-halving years.",
+      "src": "yt-transcripts/20260614-bitcoin-time-based-capitulation.md",
+      "fecha": "2026-06-14"
+    },
+    {
+      "id": "invalidacion-reclaim-50w-86500",
+      "tipo": "aviso",
+      "nombre": "Qué invalidaría la tesis bajista: 2 cierres semanales sobre la 50W (~86.5k)",
+      "regla": "El sesgo estructural sigue bajista hasta un reclaim sostenido de la 50-week SMA (~86.500$): dos cierres semanales consecutivos por encima. Un reclaim de la 200W (~63.1k) NO basta (en 2022 hubo break-reclaim-break antes del suelo). Aceleraría el suelo: capitulación con spike de volumen que resetee el on-chain.",
+      "indicador": "50W",
+      "umbral": "~86500 (2 cierres semanales)",
+      "quote": "A sustained weekly reclaim of the 50-week SMA, near $86,500, taken as two consecutive weekly closes above it.",
+      "src": "reports/bitcoin-july-2026-memo.md",
+      "fecha": "2026-07-15"
+    }
+  ],
+  "regimen_actual": {
+    "fase": "Stage 3 del bear market (jun→oct 2026), segunda mitad del midterm year: late-stage markdown en modo bottom-watch. BTC ~65.3k tras rebote veraniego desde ~57k; risk ~0.31, on-chain 0.188; suelo base Q4-2026 (octubre), reset on-chain aún incompleto (MVRV-Z 0.395 > 0, realized ~53k no perforado). Fase de acumulación arrancando tras el June low.",
+    "desde": "2026-06-07",
+    "quote": "Cycle status: Late-stage crypto markdown, bottom-watch window open",
+    "src": "reports/bitcoin-july-2026-memo.md"
+  },
+  "cambios_opinion": [
+    {
+      "fecha": "2026-06-14",
+      "antes": "Umbral de compra DCA en risk < 0.5 (ciclo 2018-19) y luego < 0.4 (ciclo 2021-22)",
+      "ahora": "DCA solo con risk < 0.3 este ciclo (cada vez más averso al riesgo)",
+      "quote": "two cycles ago when I made that video I DCA below 0.5 and then last cycle I DCA below point4 and then this cycle I think it makes the most amount of sense for me to DCA below.3.",
+      "src": "yt-transcripts/20260614-bitcoin-dynamic-dca-how-i-navigate-crypto.md"
+    },
+    {
+      "fecha": "2026-06-14",
+      "antes": "Compraba de 0 a 0.5 y vendía desde 0.5 — se solapaban compras y ventas semana a semana",
+      "ahora": "Zona gris sin operar entre el umbral de compra (0.3-0.4) y 0.6; solo vende por encima de 0.6",
+      "quote": "It was stupid now that I think about it. Back then I would buy you know from 0 to 0.5 risk and then I would sell about 0.5 risk.",
+      "src": "yt-transcripts/20260614-bitcoin-dynamic-dca-how-i-navigate-crypto.md"
+    },
+    {
+      "fecha": "2026-06-14",
+      "antes": "Esperar a que el risk llegara a bandas eufóricas (>0.9) para vender",
+      "ahora": "Venta por tiempo (Q4 post-halving): en topes apáticos como 2019/2025 el risk nunca llega a euforia y esperar te deja dentro del bear",
+      "quote": "If I had waited for, you know, for Bitcoin risk to hit the euphoric levels at the end of last year, then I just simply would have completely missed the bear market.",
+      "src": "yt-transcripts/20260614-bitcoin-time-based-capitulation.md"
+    },
+    {
+      "fecha": "2026-07-15",
+      "antes": "Los memos de Q1/marzo trataban el mínimo de febrero (~60k) como suelo plausible",
+      "ahora": "Reconoce que ese nivel se rompió (mínimo ~57k): la serie ha acertado dirección pero no niveles; el suelo sigue pendiente (Q4, test del realized price)",
+      "quote": "those same installments treated the February low near $60,000 as a plausible floor, and price broke it four months later, so the series has been better on direction than on level.",
+      "src": "reports/bitcoin-july-2026-memo.md"
+    },
+    {
+      "fecha": "2026-07-15",
+      "antes": "La proyección del suelo por duración de ciclo se anclaba al mínimo FTX del 9-nov-2022",
+      "ahora": "Se ancla al mínimo absoluto del 21-nov-2022, desplazando la ventana ~2 semanas más tarde (octubre, con margen a primeros de mes)",
+      "quote": "an earlier version of this calculation ran from the November 9, 2022 FTX-collapse low rather than the lower absolute low printed on November 21, which shifted the projection roughly two weeks earlier.",
+      "src": "reports/bitcoin-july-2026-memo.md"
+    }
+  ]
+}
