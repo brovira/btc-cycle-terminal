@@ -22,6 +22,7 @@
   .chartcard h3{margin:0 0 2px;font-size:15px;font-weight:800;letter-spacing:-.01em}
   .chartcard .csub{color:var(--ink2);font-size:12.5px;line-height:1.5;margin-bottom:8px}
   #revchart{width:100%;height:300px}
+  #swpechart{width:100%;height:340px}
   .note{margin-top:18px;border:1px solid var(--line);border-radius:13px;background:var(--panel2);padding:15px 17px;font-size:13px;line-height:1.6;color:var(--ink2)}
   .note h3{margin:0 0 8px;font-size:14.5px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
   .note b{color:var(--ink)}
@@ -60,6 +61,13 @@
 
   <div class="cards" id="cards"></div>
 
+  <div class="chartcard" id="swpechartWrap">
+    <h3>SWPE histórico · HYPE vs BTC</h3>
+    <div class="csub"><b>SWPE</b> (eje izq.) y <b>BTC</b> (eje der.) superpuestos, ~1 año. SWPE <b>bajo</b> = barato. Las líneas 🔓 marcan <b>unlocks futuros</b> de HYPE (si hay feed). Los unlocks <b>pasados ya están reflejados</b>: al desbloquearse suben el circulating → sube el float → sube el SWPE.</div>
+    <div id="swpechart"></div>
+    <div id="swpeEmpty" style="display:none;color:var(--muted);font-size:12.5px;padding:10px 2px">Sin serie histórica de SWPE ahora mismo (mira los avisos abajo).</div>
+  </div>
+
   <div class="chartcard">
     <h3>Tendencia del revenue diario (últimos ~90 días)</h3>
     <div class="csub">Ingresos diarios del protocolo (DefiLlama). Si <b>suben</b>, el revenue anualizado crece y el SWPE <b>baja</b> a igualdad de precio — la señal de "barato" que menciona skewga.</div>
@@ -90,7 +98,7 @@
 <script>
 "use strict";
 (function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
-document.getElementById("themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);if(window.__drawRev)window.__drawRev();});
+document.getElementById("themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);if(window.__drawRev)window.__drawRev();if(window.__drawSwpe)window.__drawSwpe();});
 
 const $=s=>document.querySelector(s);
 const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim()||"#888";
@@ -115,7 +123,7 @@ function band(swpe){
     desc:"El precio corre por delante de los ingresos del protocolo — zona <b>sobreextendida</b>."};
 }
 
-let REV=[];
+let REV=[],SWPES=[],BTCS=[],UNLOCKS=[];
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("no se pudo cargar Plotly");}
 function drawRev(){
@@ -132,6 +140,29 @@ function drawRev(){
   window.Plotly.react("revchart",trace?[trace]:[],layout,{responsive:true,displaylogo:false,scrollZoom:false,modeBarButtonsToRemove:["select2d","lasso2d"]});
 }
 window.__drawRev=drawRev;
+
+function drawSwpe(){
+  if(!window.Plotly)return;
+  const chart=$("#swpechart"),empty=$("#swpeEmpty");
+  if(!SWPES||!SWPES.length){ if(chart)chart.style.display="none"; if(empty)empty.style.display="block"; return; }
+  if(chart)chart.style.display=""; if(empty)empty.style.display="none";
+  const mut=cssv("--muted"),grid=cssv("--grid"),line=cssv("--line"),acc=cssv("--accent"),hot=cssv("--hot");
+  const traces=[{x:SWPES.map(p=>p[0]),y:SWPES.map(p=>p[1]),name:"SWPE",mode:"lines",yaxis:"y",
+    line:{color:acc,width:2.2},hovertemplate:"%{x}<br>SWPE %{y:.2f}<extra></extra>"}];
+  if(BTCS&&BTCS.length)traces.push({x:BTCS.map(p=>p[0]),y:BTCS.map(p=>p[1]),name:"BTC",mode:"lines",yaxis:"y2",
+    line:{color:mut,width:1.4},hovertemplate:"%{x}<br>BTC $%{y:,.0f}<extra></extra>"});
+  const shapes=(UNLOCKS||[]).map(u=>({type:"line",x0:u[0],x1:u[0],yref:"paper",y0:0,y1:1,line:{color:hot,width:1,dash:"dot"}}));
+  const anns=(UNLOCKS||[]).map(u=>({x:u[0],yref:"paper",y:1,text:"🔓",showarrow:false,font:{size:11},yanchor:"bottom"}));
+  const layout={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
+    margin:{l:52,r:62,t:12,b:34},height:340,font:{color:mut,size:11,family:"inherit"},hovermode:"x unified",
+    legend:{orientation:"h",y:1.12,x:0,font:{size:11}},
+    xaxis:{gridcolor:grid,linecolor:line,color:mut,type:"date"},
+    yaxis:{gridcolor:grid,linecolor:line,color:acc,title:{text:"SWPE",font:{size:11,color:acc}}},
+    yaxis2:{color:mut,title:{text:"BTC (USD)",font:{size:11}},overlaying:"y",side:"right",showgrid:false,tickprefix:"$"},
+    shapes:shapes,annotations:anns};
+  window.Plotly.react("swpechart",traces,layout,{responsive:true,displaylogo:false,scrollZoom:false,modeBarButtonsToRemove:["select2d","lasso2d"]});
+}
+window.__drawSwpe=drawSwpe;
 
 (async function(){
   let j=null;
@@ -174,7 +205,11 @@ window.__drawRev=drawRev;
   ];
   $("#cards").innerHTML=cards.map(c=>`<div class="card"><div class="k">${c.k}</div><div class="v">${c.v}</div><div class="d">${c.d}</div></div>`).join("");
 
-  // Mini-gráfico revenue
+  // Gráficos: SWPE histórico + BTC superpuesto, y tendencia de revenue
+  SWPES=Array.isArray(j.swpeSeries)?j.swpeSeries:[];
+  BTCS=Array.isArray(j.btcSeries)?j.btcSeries:[];
+  UNLOCKS=Array.isArray(j.unlocks)?j.unlocks:[];
+  drawSwpe();
   REV=Array.isArray(j.revChart)?j.revChart:[];
   drawRev();
 

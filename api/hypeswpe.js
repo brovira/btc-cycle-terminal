@@ -165,6 +165,71 @@ module.exports = async (req, res) => {
     out.swpeFdv = round(out.fdvUsd / out.revenue.annualized, 2);
   }
 
+  // ── 4) Series históricas: SWPE(t) + BTC(t) + unlocks ─────────────────────────────
+  out.swpeSeries = [];
+  out.btcSeries = [];
+  out.unlocks = [];
+  try {
+    // float mcap histórico (CoinGecko market_chart, ~365d diario) = precio × circulating cada día
+    const mc = await getJSON(
+      "https://api.coingecko.com/api/v3/coins/hyperliquid/market_chart?vs_currency=usd&days=365",
+      out.warnings, "cg_chart");
+    const mcaps = Array.isArray(mc && mc.market_caps) ? mc.market_caps : [];
+    // revenue diario por fecha (del totalDataChart de DefiLlama ya obtenido)
+    const revByDate = {};
+    if (revChart) for (const p of revChart) {
+      if (Array.isArray(p) && p[1] != null && !isNaN(+p[1])) revByDate[new Date((+p[0]) * 1000).toISOString().slice(0, 10)] = +p[1];
+    }
+    const revDates = Object.keys(revByDate).sort();
+    const revTs = revDates.map(d => Date.parse(d));
+    // por cada día de mcap: revenue anualizado = media diaria de la ventana de 30d previa × 365
+    for (const pt of mcaps) {
+      if (!Array.isArray(pt) || pt[1] == null) continue;
+      const dMs = +pt[0];
+      const lo = dMs - 30 * 864e5;
+      let sum = 0, cnt = 0;
+      for (let i = 0; i < revDates.length; i++) {
+        const t = revTs[i];
+        if (t > lo && t <= dMs) { sum += revByDate[revDates[i]]; cnt++; }
+        else if (t > dMs) break;
+      }
+      if (cnt >= 20) { // exige ~ventana completa para no dar SWPE ruidoso al principio
+        const ann = (sum / cnt) * 365;
+        if (ann > 0) out.swpeSeries.push([new Date(dMs).toISOString().slice(0, 10), round((+pt[1]) / ann, 2)]);
+      }
+    }
+  } catch (e) { out.warnings.push("swpe_series: " + ((e && e.message) || e)); }
+
+  // BTC diario (Binance) para superponer
+  for (const host of ["api.binance.com", "api.binance.us"]) {
+    try {
+      const r = await fetch(`https://${host}/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=365`, { headers: { "User-Agent": "btc-terminal" } });
+      if (!r.ok) continue;
+      const k = await r.json();
+      if (Array.isArray(k) && k.length) {
+        out.btcSeries = k.map(x => [new Date(+x[0]).toISOString().slice(0, 10), round(+x[4], 0)]).filter(p => p[1] != null);
+        break;
+      }
+    } catch (e) { /* siguiente host */ }
+  }
+  if (!out.btcSeries.length) out.warnings.push("btc_series: sin datos Binance");
+
+  // Unlocks futuros de HYPE (best-effort; DefiLlama emissions). Guardado: queda VACÍO si la forma
+  // no cuadra (no inventamos fechas). Nota: los unlocks PASADOS ya están en el float (circulating).
+  try {
+    const em = await getJSON("https://api.llama.fi/emission/Hyperliquid", out.warnings, "llama_emis");
+    const events = [];
+    const push = (ts, label) => {
+      if (ts == null) return;
+      const t = String(Math.trunc(+ts)).length >= 13 ? +ts : +ts * 1000;
+      if (!isNaN(t)) events.push({ t, label: label || "unlock" });
+    };
+    if (em && Array.isArray(em.unlocks)) for (const e of em.unlocks) push(e && (e.timestamp || e.date), e && (e.category || e.label));
+    const now = Date.now();
+    out.unlocks = events.filter(e => e.t > now).sort((a, b) => a.t - b.t).slice(0, 12).map(e => [new Date(e.t).toISOString().slice(0, 10), String(e.label)]);
+    if (!out.unlocks.length) out.warnings.push("unlocks: sin eventos futuros parseables (feed no conectado)");
+  } catch (e) { out.warnings.push("unlocks: sin feed (" + ((e && e.message) || e) + ")"); }
+
   // Redondeos de presentación
   out.price = round(out.price, out.price != null && out.price < 10 ? 4 : 2);
   out.circulatingSupply = round(out.circulatingSupply, 0);
