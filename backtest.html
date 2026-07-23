@@ -125,14 +125,16 @@
         <div class="fld"><label>Estrategia</label><select id="c_preset">
           <option value="">— elige una estrategia —</option>
           <option value="__new__">＋ Crear nueva (elige indicadores)</option>
-          <optgroup label="🔄 Ciclos · agentes">
-            <option value="lmec_cycle">LMEC · Ciclo del halving (temporal)</option>
-            <option value="lmec_bmsb">LMEC · Ruptura de la BMSB</option>
-            <option value="cowen_seasonal">Cowen · Estacional midterm (compra H2 midterm / vende Q4 pre-midterm)</option>
+          <optgroup label="⏱️ Estrategias temporales · 4-year cycle">
+            <option value="patron_temporal">Patrón · Techo→Suelo→Techo (compra 52-58 sem tras techo / vende 150-153 sem tras suelo)</option>
+            <option value="lmec_cycle">LMEC · Semanas desde el halving (compra sem 120-180 / vende sem 70-110)</option>
+            <option value="cowen_seasonal">Cowen · Año electoral (compra 2ª mitad midterm / vende Q4 post-halving)</option>
+          </optgroup>
+          <optgroup label="🔄 Señales de agentes">
+            <option value="lmec_bmsb">LMEC · Ruptura de la BMSB (2ª ruptura ▲)</option>
             <option value="cowen_risk">Cowen · Risk metric (DCA &lt;0,3 / salir &gt;0,6)</option>
             <option value="cowen_mvrv">Cowen · Reset MVRV Z (&lt;0 dentro / &gt;3 fuera)</option>
             <option value="onchainmind_fng">F&amp;G Cadence 90d (batió al DCA 10× desde 2019)</option>
-            <option value="patron_temporal">⏱️ Patrón temporal · Techo→Suelo→Techo (cálculo propio)</option>
           </optgroup>
           <optgroup label="📐 Indicadores clásicos">
             <option value="gc">Golden/Death Cross 50/200</option>

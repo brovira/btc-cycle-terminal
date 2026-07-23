@@ -116,6 +116,7 @@
       <div class="beads" id="beads"></div>
       <div class="mtxt"><b id="litN">—</b> <span id="litTot"></span> señales de compra encendidas</div>
     </div>
+    <div id="planPhase" style="margin-top:12px;padding:10px 13px;border-radius:11px;background:color-mix(in oklab,#9b8cff 10%,transparent);border:1px solid color-mix(in oklab,#9b8cff 30%,var(--line));font-size:13px;line-height:1.5"></div>
     <div class="levels" id="levels" style="margin-top:12px"></div>
   </div>
   <div class="banner" id="banner"></div>
@@ -321,6 +322,26 @@ function evaluate(D){
   return {SIG,COWEN_SIG,lit,tot,action,sub,vc,regime,price,bmsbHi,bmsbLo,ma200,rsiV,z,fng,realized,hw,lastH,nextH,riskNow};
 }
 
+/* en qué fase de NUESTRO plan estamos (según el patrón temporal) + qué hacemos + proyección */
+function renderPlanPhase(R){
+  const cs=cycleStats();
+  const fMY=ms=>new Date(ms).toLocaleDateString("es-ES",{month:"long",year:"numeric",timeZone:"UTC"});
+  const now=Date.now();
+  const monthsTop=(now-Date.parse("2025-10-06"))/(30.4368*864e5);
+  const toLo=(cs.projLoMs-now)/(30.4368*864e5),toHi=(cs.projHiMs-now)/(30.4368*864e5);
+  let fase,accion;
+  if(now<cs.projLoMs){
+    fase="🟢 ACUMULACIÓN — DCA en marcha";
+    accion=`DCA pequeño ya (Cowen) + comprar por niveles según cae (LMEC). <b>Artillería gorda guardada</b> para la ventana de suelo — faltan ~${Math.max(0,toLo).toFixed(0)}–${Math.max(0,toHi).toFixed(0)} meses.`;
+  }else if(now<=cs.projHiMs){
+    fase="🔥 VENTANA DE SUELO — desplegar";
+    accion=`Estamos en la ventana proyectada: <b>desplegar la artillería</b> y, si BTC toca mínimos, montar el loop en Aave (1,5×).`;
+  }else{
+    fase="🔵 HOLD — dejar correr";
+    accion=`Ventana de suelo superada: mantener; el patrón proyecta el próximo techo ~150 semanas tras el suelo.`;
+  }
+  $("#planPhase").innerHTML=`📍 <b>Nuestro plan:</b> ${fase} · llevamos <b>${monthsTop.toFixed(1)} meses</b> desde el techo (oct-2025), suelo proyectado <b style="text-transform:capitalize">${fMY(cs.projLoMs)}–${fMY(cs.projHiMs)}</b>. ${accion}`;
+}
 function render(R){
   const V=$("#verdict");V.style.setProperty("--vc",R.vc);
   $("#regime").textContent=R.regime;
@@ -328,6 +349,7 @@ function render(R){
   $("#actionSub").textContent=R.sub;
   $("#litN").textContent=R.lit+"/"+R.tot;$("#litTot").textContent="";
   $("#beads").innerHTML=Array.from({length:R.tot},(_,i)=>`<span class="bead ${i<R.lit?"on":""}"></span>`).join("");
+  renderPlanPhase(R);
   // (la sección "Señales" se fusionó en las tarjetas de agente: cada señal vive como chip
   //  en la tarjeta de quien la usa, con su tooltip; las citas están en el KB y el framework)
   const lv=[
@@ -528,8 +550,15 @@ function cycleStats(){
   const projLoMs=t4+lo*30.4368*864e5,projHiMs=t4+hi*30.4368*864e5,projAvgMs=t4+avg*30.4368*864e5;
   return{rows,avg,lo,hi,projLoMs,projHiMs,projAvgMs};
 }
-/* ventana de suelo proyectada por el patrón temporal — un único intervalo (este ciclo, aún abierto) */
-function patronIntervals(){const s=cycleStats();return[{t0:s.projLoMs,t1:s.projHiMs}];}
+/* bandas del patrón temporal en TODOS los ciclos (histórico + proyección, igual que LMEC/Cowen):
+   · COMPRA (cerca del suelo) = 52-58 semanas tras cada techo → incluye el suelo proyectado de este ciclo
+   · VENTA (cerca del techo)  = 150-153 semanas tras cada suelo → la del ciclo actual (desde B3) ya cayó
+     justo sobre el techo real de oct-2025. Mismas semanas exactas que el preset del backtest. */
+const CYCLE_TOPS_MS=CYCLE_EV.filter(e=>/^T/.test(e[0])).map(e=>Date.parse(e[2]));
+const CYCLE_BOTS_MS=CYCLE_EV.filter(e=>/^B/.test(e[0])).map(e=>Date.parse(e[2]));
+function patronBuy(){return CYCLE_TOPS_MS.map(T=>({t0:T+52*PH_WKMS,t1:T+58*PH_WKMS}));}
+function patronSell(){return CYCLE_BOTS_MS.map(B=>({t0:B+150*PH_WKMS,t1:B+153*PH_WKMS}));}
+function patronIntervals(){return patronBuy();} // compra = lo que aporta el patrón a la confluencia
 /* (la proyección del patrón vive ahora en su tarjeta de estrategia, arriba) */
 let PH_MODE="todos",PH_LASTD=null;
 function phRect(x0,x1,color){return{type:"rect",xref:"x",yref:"paper",x0,x1,y0:0,y1:1,fillcolor:color,line:{width:0},layer:"below"};}
@@ -575,7 +604,7 @@ function bandShapes(mode){
   const L=lmecIntervals(),C=cowenIntervals(),P=patronIntervals();
   if(mode==="lmec")return[...rectsFromIv(L.buy,`rgba(47,195,155,0.16)`),...rectsFromIv(L.sell,`rgba(242,163,63,0.16)`)];
   if(mode==="cowen")return[...rectsFromIv(C.buyStrong,`rgba(47,195,155,0.16)`),...rectsFromIv(C.buySoft,`rgba(63,169,245,0.16)`),...rectsFromIv(C.sell,`rgba(242,163,63,0.16)`)];
-  if(mode==="patron")return rectsFromIv(P,`rgba(155,140,255,0.22)`);
+  if(mode==="patron")return[...rectsFromIv(patronBuy(),`rgba(47,195,155,0.18)`),...rectsFromIv(patronSell(),`rgba(242,163,63,0.18)`)];
   // todos: clasificación de 3 vías (LMEC / Cowen / Patrón) por inclusión-exclusión — nunca por transparencia apilada
   const lmecBuy=ivMerge(L.buy),lmecSell=ivMerge(L.sell),cowenSell=ivMerge(C.sell),patron=ivMerge(P);
   const cowenBuyAll=ivMerge([...C.buyStrong,...C.buySoft]);
@@ -598,7 +627,7 @@ function bandShapes(mode){
 const PH_NOTES={
   lmec:`🎯 <b>Bandas LMEC</b> (su Halving Cycle Profit, idénticas a su panel): <span style="color:var(--hot)">■ venta</span> sem 40-80 post-halving · <span style="color:var(--bull)">■ DCA/compra</span> sem 125-165. Líneas: BMSB y 200W MA.`,
   cowen:`📊 <b>Bandas Cowen</b> (calendario, citado): <span style="color:var(--bull)">■ compra activa</span> = 2ª mitad del midterm year, arranca justo tras el mínimo de junio <i>("right after that June low… accumulation through the end of the midterm year")</i> · <span style="color:var(--accum)">■ sigue acumulando</span> = inicio del pre-halving year, no todo el año <i>("DCA durante 1-2 años: fin de midterm year + inicio de pre-halving year")</i> · <span style="color:var(--hot)">■ venta</span> = Q4 del post-halving year <i>("I'm going to sell Bitcoin in Q4 of the post-halving years")</i>. Ago-sep del midterm suelen ser rojos (−15/18% las 3 veces) — no le impide empezar a comprar en julio, solo avisa de que puede doler antes del suelo.`,
-  patron:`⏱️ <b>Patrón temporal</b> (cálculo propio, no cita de nadie): ventana de suelo proyectada aplicando la media histórica techo→suelo (12,5 meses) al techo de este ciclo (6-oct-2025). A diferencia de LMEC/Cowen, esto NO se repite cada ciclo por regla fija — es una proyección puntual para el ciclo aún abierto. Ver tabla arriba.`,
+  patron:`⏱️ <b>Patrón temporal</b> (cálculo propio, no cita de nadie): <span style="color:var(--bull)">■ compra</span> = 52-58 semanas tras cada techo (cerca del suelo) · <span style="color:var(--hot)">■ venta</span> = 150-153 semanas tras cada suelo (cerca del techo). Fíjate: la banda de venta de este ciclo (desde el suelo de nov-2022) cayó justo sobre el techo real de <b>oct-2025</b>, y la de compra proyecta el suelo en <b>oct-nov 2026</b>. Los intervalos son asombrosamente estables en los 3 ciclos.`,
   todos:`<b>Confluencia de 3 vías, CALCULADA</b> (inclusión-exclusión sobre fechas reales, nunca por transparencia apilada): <span style="color:#facc15">■ dorado</span> = LMEC + Cowen + Patrón coinciden los 3 en comprar (máxima confluencia) · <span style="color:#22d399">■ verde sólido</span> = exactamente 2 de los 3 coinciden en comprar · <span style="color:#f87171">■ rojo sólido</span> = LMEC + Cowen coinciden en vender · tenues = solo una fuente. Nunca antes de nov-2012: ningún framework mide "ciclo" sin halving previo.`
 };
 /* histórico completo: Coin Metrics (precio diario desde 2010-07-18, primeros mercados con
