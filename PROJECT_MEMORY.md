@@ -174,6 +174,12 @@ KB hecha (agente); claves:
   MACRO (tipos/social) no lo es con solo precio → documentar como contexto.
 - **DOS CUBOS** (decisión del usuario): **spot** (núcleo BTC + satélite alt *gated*, holdear) vs
   **LP/yield aparte** (liquidez distinta del spot).
+- **ESTRUCTURA DE CARTERA — DOS LIBROS** (clarificado jul-2026):
+  - **BELROGAM**: objetivo = **acumular 1 BTC** (spot, hold). Su plan de caja/órdenes ya montado.
+  - **Persona física (el usuario)**: **DCA pequeño de BTC** por ahora (round-up de Revolut,
+    aumentando según cae el precio) + **alts en spot** (las alts las compra ÉL, persona física) +
+    **loop en Aave** + **farming (LPs)**. Las alts y el loop/farming son cubos APARTE del spot.
+  - El panel de rotación de alts debe reflejar que las alts = compra de persona física, spot.
 - **Emparejamiento de LP por CORRELACIÓN** (matriz que dio el usuario, jul-2026): emparejar
   volátiles MUY correlacionadas minimiza el IL. **Spot** (baja corr): HYPE (0,48-0,59), GRAM/TON
   (0,36-0,56). **LP** (alta corr 0,77-0,89): ETH-SOL 0,89, BTC-ETH 0,88, BTC-SOL 0,84, BNB-ETH/SOL

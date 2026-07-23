@@ -70,8 +70,8 @@ const num=(v,d)=>v==null?"—":(+v).toFixed(d==null?2:d);
     {nm:"Tipos: Fed funds < 2y", on:g.rates, val:(j.fedFunds!=null&&j.twoYear!=null)?`${num(j.fedFunds,2)}% vs ${num(j.twoYear,2)}%`:"—",
      ds:"El gate MACRO decisivo. Solo pesar alts cuando el Fed funds caiga <b>duraderamente</b> por debajo del tipo neutral (proxy: 2-year yield).",
      q:"the alt season of 2016/2017 occurred while the Fed funds rate was below the 2-year yield… we're not really below the neutral rate."},
-    {nm:"«All Bitcoin pairs» (TOTAL3−USDT)/BTC", on:g.allBtcPairs, val:num(j.allBtcPairs,2)+" (aprox)",
-     ds:"No hay altseason antes de que esta métrica llegue a ~0,25 sostenido. <b>Cálculo aproximado</b> desde dominancias — contrasta con su gráfico de TradingView.",
+    {nm:"«All Bitcoin pairs» (TOTAL3−USDT)/BTC", on:null, val:num(j.allBtcPairs,2)+" (proxy)",
+     ds:"No hay altseason antes de que esta métrica llegue a ~0,25 sostenido. Es un <b>proxy sin calibrar</b> con su escala de TradingView → se muestra como <b>contexto</b>, no como gate verde (para no dar falsos positivos).",
      q:"no alt season has ever occurred before all Bitcoin pairs go to 0.25."},
     {nm:"BTC.D excl. stables", on:null, val:j.btcDominanceExStables!=null?num(j.btcDominanceExStables,1)+"%":"—",
      ds:"Mientras suba (techo previo ~70% jun-2025), sesgo pro-BTC. Rotación solo si <b>rompe a la baja de forma duradera</b> (necesita histórico → juicio).",
@@ -87,15 +87,30 @@ const num=(v,d)=>v==null?"—":(+v).toFixed(d==null?2:d);
     <div class="gq">"${x.q}"</div>
   </div>`).join("");
 
-  // VEREDICTO: hoy manda el gate de tipos + el sesgo bajista de Cowen
+  // VEREDICTO ACCIONABLE. Solo el gate de tipos es automático/fiable; el resto (all-pairs proxy,
+  // dominancia rompiendo, ETH/BTC reclaim 20M) son de JUICIO → el panel dice qué PREPARAR, no da
+  // luz verde a comprar en fuerza.
   const V=$("#verdict");
-  if(ratesOn){
-    V.style.setProperty("--vc","var(--bull)");
-    V.innerHTML=`<div class="big">⚠️ El gate macro se ha encendido</div><div class="sub">Fed funds ha caído por debajo del 2y. Es el primer requisito de Cowen para rotar. <b>Revisa el resto de gates</b> (all-BTC-pairs, dominancia rompiendo, ETH/BTC reclaim 20M) antes de mover — y empieza por <b>ETH</b>.</div>`;
+  let head,sub,vc,prep,buy;
+  if(!ratesOn){
+    vc="var(--hot)";head="🔴 Hoy: SOLO BTC — alts en espera";
+    sub="El gate decisivo (tipos) está apagado: política restrictiva → todo sangra hacia BTC. Cowen no espera altseason hasta que se afloje. Nada que preparar aún.";
+    prep="No — todavía no";buy="No";
   }else{
-    V.style.setProperty("--vc","var(--hot)");
-    V.innerHTML=`<div class="big">🔴 Hoy: NO rotar — seguir en BTC</div><div class="sub">El gate decisivo (tipos) está apagado y Cowen no espera altseason este ciclo. Las alts sangran hacia BTC hasta que la política monetaria se afloje. <b>Blue chips = satélite en espera</b>; HYPE/TON solo por convicción propia y tamaño mínimo.</div>`;
+    vc="var(--accent)";head="🟠 Hoy: PREPARAR — cash listo, primero ETH";
+    sub=`El gate de <b>tipos se ha encendido</b> (Fed funds &lt; 2y = primer requisito; el macro empieza a aflojar). Pero <b>faltan los gates de JUICIO</b>: que la <b>dominancia ex-stables rompa a la baja</b> y que <b>ETH/BTC recupere la 20-month MA</b>. Hasta que confirmen, <b>NO comprar alts en fuerza</b> — pero SÍ tener la munición lista y vigilar ETH. <span style="color:var(--muted)">(Ojo a la durabilidad: una lectura no es tendencia.)</span>`;
+    prep="Sí — cash listo para rotar";buy="Aún no en fuerza · 1ª compra = ETH cuando confirmen los gates de juicio";
   }
+  V.style.setProperty("--vc",vc);
+  const row=(k,v)=>`<div style="display:flex;gap:12px;font-size:13.5px;padding:2px 0"><span style="flex:0 0 132px;color:var(--muted)">${k}</span><b>${v}</b></div>`;
+  V.innerHTML=`<div class="big">${head}</div><div class="sub">${sub}</div>
+    <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px">
+      ${row("Preparar cash",prep)}
+      ${row("Comprar alts",buy)}
+      ${row("Vender","N/A — casi no tienes bolsas alt que vender")}
+      ${row("Orden de rotación","BTC → ETH → resto · nunca todo de golpe")}
+    </div>
+    <div class="note" style="margin-top:12px;background:var(--panel2)">Las alts las compras como <b>persona física</b>, en <b>spot</b> (BELROGAM va a lo suyo: acumular 1 BTC). El <b>loop (Aave)</b> y el <b>farming (LPs)</b> son cubos aparte del spot.</div>`;
 })();
 </script>
 </body>
