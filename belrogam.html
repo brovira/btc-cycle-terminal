@@ -16,8 +16,19 @@
   .stat .l{font-size:11.5px;color:var(--muted)} .stat .n{font-family:var(--font);font-variant-numeric:tabular-nums;font-size:22px;font-weight:750;margin-top:2px} .stat .s{font-size:11.5px;color:var(--muted);margin-top:3px}
   .obj{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;padding:12px 15px;border-radius:11px;background:var(--panel2);border:1px solid var(--line);margin-bottom:10px}
   .obj .g{font-weight:700;color:var(--bull);font-family:var(--mono)}
-  .pbar{height:8px;background:var(--panel2);border-radius:5px;overflow:hidden;border:1px solid var(--line);margin-top:7px}
+  .pbar{position:relative;height:9px;background:var(--panel2);border-radius:5px;overflow:hidden;border:1px solid var(--line);margin-top:7px}
   .pbar i{display:block;height:100%;background:var(--bull);transition:width .4s ease}
+  .pbar b{position:absolute;top:0;height:100%;background:var(--accent);transition:width .4s ease,left .4s ease}
+  .modes{display:inline-flex;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:2px}
+  .mbtn{font:inherit;font-size:12.5px;font-weight:600;color:var(--muted);background:none;border:0;padding:6px 12px;border-radius:8px;cursor:pointer}
+  .mbtn:hover{color:var(--ink)}
+  .mbtn.on{background:var(--accent);color:#fff}
+  .bigwrap{display:flex;align-items:baseline;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+  .bignum{font-family:var(--font);font-variant-numeric:tabular-nums;font-size:38px;font-weight:800;letter-spacing:-.02em;color:var(--bull)}
+  .brk{display:flex;justify-content:space-between;gap:10px;padding:8px 2px;border-bottom:1px solid var(--line);font-size:13px}
+  .brk:last-child{border-bottom:0;font-weight:750;padding-top:11px}
+  .brk .k{color:var(--ink2)} .brk .v{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .warnbox{padding:11px 14px;border-radius:11px;background:color-mix(in oklab,var(--hot) 12%,transparent);border:1px solid color-mix(in oklab,var(--hot) 35%,var(--line));font-size:12.5px;color:var(--ink2);margin-top:12px}
 </style>
 <link rel="stylesheet" href="dashboard.css">
 </head>
@@ -27,7 +38,7 @@
     <div>
       <div class="kicker">Estrategias · Empresa</div>
       <h1><span class="title-icon">🏢</span> BELROGAM · plan del ciclo</h1>
-      <div class="meta"><span class="dot ok"></span>Cashflow de la empresa → cuánto comprar y cuándo · spot, hold 3 años</div>
+      <div class="meta"><span class="dot ok" id="statusDot"></span><span id="statusText">Cargando…</span></div>
     </div>
     <div class="controls">
       <a class="btn" href="index.html">← Panel</a>
@@ -36,32 +47,78 @@
     </div>
   </header>
 
-  <!-- OBJETIVOS + ESTRATEGIA -->
-  <div class="sec-head"><h2>🎯 Objetivos del ciclo</h2><div class="rule"></div><span class="mtxt">estrategia: Patrón temporal (la mejor en backtest)</span></div>
+  <!-- OBJETIVO DE ACUMULACIÓN -->
+  <div class="sec-head"><h2>🎯 Objetivo de acumulación</h2><div class="rule"></div><span class="mtxt" id="objFecha"></span></div>
   <div class="panel" style="padding:18px 20px">
-    <div class="obj"><span>💶 <b>Aportar 55.000€</b> a compras de BTC</span><span class="mtxt">de aquí a diciembre 2027</span><span class="g" id="objEurPct" style="margin-left:auto">0%</span></div>
-    <div class="pbar" style="margin-bottom:14px"><i id="objEurBar" style="width:0%"></i></div>
-    <div class="obj"><span>₿ <b>Acumular 1 BTC</b> (si es posible)</span><span class="mtxt">spot, hold ≥3 años</span><span class="g" id="objBtcPct" style="margin-left:auto">0%</span></div>
-    <div class="pbar"><i id="objBtcBar" style="width:0%;background:var(--hot)"></i></div>
-    <div class="note" style="margin-top:14px">📐 <b>Cómo:</b> órdenes de compra <b>de 60k para abajo</b> (como LMEC, tamaños crecientes cuanto más cae), concentrando el grueso en la <b>ventana de suelo del patrón (oct–nov 2026)</b>. Antes del suelo, solo compras puntuales si BTC pierde 60k. Mantener siempre el <b>colchón operativo de 60k</b> intacto. <span style="color:var(--hot)">Validar fiscalidad con Financial Group antes de la 1ª compra de BELROGAM SL.</span></div>
+    <div class="obj"><span>💶 Caja a deployar para el plan de ciclo</span><span class="g" id="objPct" style="margin-left:auto">0%</span></div>
+    <div class="pbar" style="height:11px"><i id="objBarD" style="background:var(--bull)"></i><b id="objBarM" style="width:0%;left:0%"></b></div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:12px" class="mtxt">
+      <span>🟢 desplegado <b id="lblDesplegado" style="color:var(--bull)">—</b></span>
+      <span>🔵 munición parkeada <b id="lblMunicion" style="color:var(--accent)">—</b></span>
+      <span style="margin-left:auto">objetivo <b id="lblObjetivo">—</b></span>
+    </div>
+    <div class="cards" style="margin-top:16px">
+      <div class="stat" style="--sc:var(--accent)"><div class="l">Ritmo necesario</div><div class="n" id="ritmoNec">—</div><div class="s" id="ritmoNecSub">para llegar a tiempo</div></div>
+      <div class="stat" style="--sc:var(--bull)"><div class="l">Lo que genera el negocio</div><div class="n" id="ritmoGen">—</div><div class="s">caja neta ex-CAPEX, 12m</div></div>
+      <div class="stat" style="--sc:var(--hot)"><div class="l">Al ritmo del negocio</div><div class="n" id="ritmoEta">—</div><div class="s">si mantienes el excedente</div></div>
+    </div>
+    <div id="factible" class="warnbox" style="margin-top:14px"></div>
+  </div>
+
+  <!-- EXCEDENTE DE CAJA INVERTIBLE -->
+  <div class="sec-head"><h2>💰 Excedente de caja invertible</h2><div class="rule"></div>
+    <span class="mtxt">calculado sobre el punto más bajo del flujo proyectado, no sobre el saldo de hoy</span>
+  </div>
+  <div class="panel" style="padding:20px 22px">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px">
+      <div class="modes" id="scenTabs">
+        <button class="mbtn on" data-sc="confirmado">Solo reservas confirmadas</button>
+        <button class="mbtn" data-sc="esperado">Esperado (como el año pasado)</button>
+      </div>
+      <span class="mtxt" id="scenNote" style="margin-left:4px"></span>
+    </div>
+    <div class="bigwrap">
+      <div>
+        <div class="mtxt">Disponible para invertir</div>
+        <div class="bignum" id="dispBig">—</div>
+      </div>
+      <div class="modes" id="marginTabs">
+        <button class="mbtn" data-m="0">Sin margen</button>
+        <button class="mbtn on" data-m="1">1 mes</button>
+        <button class="mbtn" data-m="2">2 meses</button>
+        <button class="mbtn" data-m="3">3 meses</button>
+      </div>
+    </div>
+    <div id="breakdown"></div>
+    <div class="warnbox" id="bacheWarn" style="display:none"></div>
+    <details style="margin-top:16px">
+      <summary style="cursor:pointer;font-size:12.5px;font-weight:650;color:var(--muted)">¿Por qué el suelo y no el saldo de hoy? ▾</summary>
+      <div class="note" style="margin-top:8px" id="comoUsar"></div>
+    </details>
   </div>
 
   <!-- ÓRDENES -->
   <div class="sec-head"><h2>📉 Órdenes de compra escalonadas</h2><div class="rule"></div><span class="mtxt" id="pxTag">BTC —</span></div>
   <div class="panel" style="padding:16px 18px">
     <div id="orders" style="display:flex;flex-wrap:wrap;gap:8px"></div>
-    <div class="note" style="margin-top:12px">Tamaño creciente cuanto más abajo (cada nivel es más improbable pero mejor precio). Se marca <b style="color:var(--hot)">CERCA</b> cuando el precio está a menos del 3%.</div>
+    <div class="note" style="margin-top:12px">Tamaño creciente cuanto más abajo. Repartidas sobre el <b>disponible para invertir</b> de arriba (escenario confirmado, margen elegido) — nunca sobre el saldo de hoy. Se marca <b style="color:var(--hot)">CERCA</b> cuando el precio está a menos del 3%.</div>
   </div>
 
-  <!-- CASHFLOW -->
-  <div class="sec-head"><h2>💰 Cashflow proyectado → pólvora disponible</h2><div class="rule"></div><span class="mtxt">leído de Supabase (solo lectura)</span></div>
-  <div class="panel" style="padding:18px 20px">
-    <div class="note" id="cfMsg">Cargando cashflow…</div>
-    <div id="cfBody" style="display:none"></div>
+  <!-- FLUJO SEMANAL -->
+  <div class="sec-head"><h2>📊 Flujo de caja semanal</h2><div class="rule"></div><span class="mtxt">de dónde sale el "bache" de principios de mes</span></div>
+  <div class="panel" style="padding:14px 16px">
+    <div id="weekChart" style="width:100%;min-height:280px"></div>
+    <div class="note" style="margin-top:8px" id="calNote"></div>
+  </div>
+
+  <!-- AVISOS -->
+  <div class="sec-head"><h2>⚠️ Avisos y límites del modelo</h2><div class="rule"></div></div>
+  <div class="panel" style="padding:14px 18px">
+    <ul id="avisos" style="margin:0;padding-left:20px;font-size:12.5px;color:var(--ink2);line-height:1.7"></ul>
   </div>
 
   <footer>
-    Une el <b>cashflow real de la empresa</b> (saldos, neto mensual, reservas confirmadas de Supabase) con el <b>plan de compra del ciclo</b>. La pólvora invertible = cash proyectado − colchón intocable (60k). Los tramos se concentran en la ventana de suelo. <b>Uso educativo — no es asesoramiento financiero. Validar fiscalidad antes de operar con la SL.</b>
+    Lee en vivo el "disponible para invertir" ya calculado y auditado por el dashboard de BELROGAM (<code>/api/cash</code>) — <b>no se recalcula aquí</b>: una sola fuente de verdad. Ver <code>sops/gestion_caja_inversion.md</code>. <b>Uso educativo — no es asesoramiento financiero. Validar fiscalidad antes de operar con la SL.</b>
   </footer>
 </div>
 
@@ -70,11 +127,12 @@
 const $=s=>document.querySelector(s);
 const fmtEUR=v=>v==null||isNaN(v)?"—":(v<0?"-€":"€")+Math.abs(Math.round(v)).toLocaleString("en-US");
 const fmtUSD=(v,d=0)=>v==null||isNaN(v)?"—":"$"+Number(v).toLocaleString("en-US",{maximumFractionDigits:d});
-const CUSHION=60000, OBJ_EUR=55000, OBJ_BTC=1;
-const ORDENES=[{precio:60000,pct:.13},{precio:55000,pct:.22},{precio:50000,pct:.30},{precio:45000,pct:.35}]; // % de la pólvora estimada
+const fmtD=iso=>{if(!iso)return"—";const d=new Date(iso+(iso.length===10?"T00:00:00Z":""));const MES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];return d.getUTCDate()+" "+MES[d.getUTCMonth()]+" "+d.getUTCFullYear();};
+const ORDENES=[{precio:60000,pct:.13},{precio:55000,pct:.22},{precio:50000,pct:.30},{precio:45000,pct:.35}];
 (function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
 $("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);});
-const addMonths=(ym,k)=>{const[y,m]=ym.split("-").map(Number);return new Date(Date.UTC(y,m-1+k,1)).toISOString().slice(0,7);};
+
+let J=null, SCEN="confirmado", MARGIN=1;
 
 async function btcPrice(){
   for(const h of["api.binance.com","api.binance.us"]){
@@ -86,53 +144,106 @@ function renderOrders(px,bolsa){
   $("#orders").innerHTML=ORDENES.map(o=>{
     const near=px&&px<=o.precio*1.03&&px>o.precio;
     const hit=px&&px<=o.precio;
-    const eur=bolsa?Math.round(bolsa*o.pct):null;
-    return `<span class="chip" style="padding:7px 12px;font-size:12.5px;${hit?"border-color:var(--bull);color:var(--bull);font-weight:700":near?"border-color:var(--hot);color:var(--hot);font-weight:700":""}">${o.precio/1000}k → <b>${eur?fmtEUR(eur):Math.round(o.pct*100)+"%"}</b>${hit?" ✅ ejecutar":near?" · CERCA":""}</span>`;
+    const eur=bolsa!=null&&bolsa>0?Math.round(bolsa*o.pct):null;
+    return `<span class="chip" style="padding:7px 12px;font-size:12.5px;${hit?"border-color:var(--bull);color:var(--bull);font-weight:700":near?"border-color:var(--hot);color:var(--hot);font-weight:700":""}">${o.precio/1000}k → <b>${eur!=null?fmtEUR(eur):Math.round(o.pct*100)+"%"}</b>${hit?" ✅ ejecutar":near?" · CERCA":""}</span>`;
   }).join("");
 }
+
+function renderObjetivo(o){
+  if(!o){$("#factible").innerHTML="Sin datos de objetivo todavía.";return;}
+  $("#objFecha").textContent=o.fecha_objetivo?("meta "+fmtD(o.fecha_objetivo)):"";
+  const pct=o.objetivo_eur?Math.min(100,o.retirado_del_negocio_eur/o.objetivo_eur*100):0;
+  const pctD=o.objetivo_eur?Math.min(100,o.desplegado_en_btc_eur/o.objetivo_eur*100):0;
+  const pctM=o.objetivo_eur?Math.min(100-pctD,o.municion_parkeada_eur/o.objetivo_eur*100):0;
+  $("#objPct").textContent=Math.round(pct)+"% completado";
+  $("#objBarD").style.width=pctD+"%";
+  $("#objBarM").style.width=pctM+"%";$("#objBarM").style.left=pctD+"%";
+  $("#lblDesplegado").textContent=fmtEUR(o.desplegado_en_btc_eur);
+  $("#lblMunicion").textContent=fmtEUR(o.municion_parkeada_eur);
+  $("#lblObjetivo").textContent=fmtEUR(o.retirado_del_negocio_eur)+" / "+fmtEUR(o.objetivo_eur);
+  $("#ritmoNec").textContent=fmtEUR(o.ritmo_necesario_mes)+"/mes";
+  $("#ritmoGen").textContent=fmtEUR(o.ritmo_que_genera_negocio_mes)+"/mes";
+  const eta=o.ritmo_necesario_mes>0?Math.ceil((o.objetivo_eur-o.retirado_del_negocio_eur)/Math.max(1,o.ritmo_que_genera_negocio_mes)):null;
+  $("#ritmoEta").textContent=eta!=null?eta+" meses":"—";
+  const ok=o.ritmo_que_genera_negocio_mes>=o.ritmo_necesario_mes;
+  $("#factible").style.background=ok?"color-mix(in oklab,var(--bull) 12%,transparent)":"color-mix(in oklab,var(--hot) 12%,transparent)";
+  $("#factible").style.borderColor=ok?"color-mix(in oklab,var(--bull) 35%,var(--line))":"color-mix(in oklab,var(--hot) 35%,var(--line))";
+  $("#factible").innerHTML=ok
+    ? `✅ <b>Factible con margen:</b> el negocio genera ${fmtEUR(o.ritmo_que_genera_negocio_mes-o.ritmo_necesario_mes)}/mes por encima del ritmo necesario. No hace falta apretar.`
+    : `⚠️ <b>Por debajo del ritmo:</b> faltan ${fmtEUR(o.ritmo_necesario_mes-o.ritmo_que_genera_negocio_mes)}/mes para llegar a tiempo a la meta. La restricción de caja manda sobre el objetivo — no se compensa metiendo más otro mes.`;
+}
+
+function renderExcedente(){
+  const esc=J.escenarios[SCEN];
+  const disp=esc.disponible["margen_"+MARGIN+"m"];
+  $("#dispBig").textContent=fmtEUR(disp);
+  $("#dispBig").style.color=disp>0?"var(--bull)":"var(--bear)";
+  $("#scenNote").textContent=SCEN==="confirmado"?"Para decidir HOY: solo dinero que ya está o ya está reservado.":"Para PLANIFICAR el ritmo, no para ejecutar — rellena meses sin reservar con el año pasado.";
+  const fijoMes=J.seguridad.coste_fijo_mes, impuestos=J.seguridad.impuestos_pendientes;
+  $("#breakdown").innerHTML=`
+    <div class="brk"><span class="k">Saldo hoy · ${fmtD(J.saldo_fecha)}</span><span class="v">${fmtEUR(J.saldo_hoy)}</span></div>
+    <div class="brk"><span class="k">Punto más bajo proyectado · ${fmtD(esc.fecha_del_suelo)}</span><span class="v">${fmtEUR(esc.suelo)}</span></div>
+    <div class="brk"><span class="k">Impuestos pendientes</span><span class="v" style="color:var(--bear)">− ${fmtEUR(impuestos)}</span></div>
+    <div class="brk"><span class="k">Margen extra · ${MARGIN} mes${MARGIN==1?"":"es"} de coste fijo</span><span class="v" style="color:var(--bear)">− ${fmtEUR(fijoMes*MARGIN)}</span></div>
+    <div class="brk"><span class="k">Disponible para invertir</span><span class="v" style="color:${disp>0?'var(--bull)':'var(--bear)'}">${fmtEUR(disp)}</span></div>`;
+  const bache=J.saldo_hoy-esc.suelo;
+  if(bache>1000){
+    $("#bacheWarn").style.display="block";
+    $("#bacheWarn").innerHTML=`⚠️ Entre hoy y ${fmtD(esc.fecha_del_suelo)} la caja baja ${fmtEUR(bache)}. Por eso el disponible se calcula sobre el <b>suelo</b>: mirando solo el saldo de hoy sobrarían ${fmtEUR(J.saldo_hoy-impuestos-fijoMes*MARGIN)} que en realidad no tienes.`;
+  }else $("#bacheWarn").style.display="none";
+  renderOrders(LASTPX,disp);
+}
+
+async function loadWeekChart(){
+  if(!window.Plotly){
+    for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){
+      try{await new Promise((res,rej)=>{const s=document.createElement("script");s.src=u;s.onload=res;s.onerror=rej;document.head.appendChild(s);});if(window.Plotly)break;}catch(e){}}
+  }
+  if(!window.Plotly||!J.flujo_semanal||!J.flujo_semanal.length)return;
+  const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const ink=css("--ink"),muted=css("--muted"),line=css("--line"),bull=css("--bull"),bear=css("--bear"),accent=css("--accent");
+  const S=J.flujo_semanal;
+  const traces=[
+    {x:S.map(s=>s.semana),y:S.map(s=>s.ingreso),type:"bar",name:"Cobros",marker:{color:accent}},
+    {x:S.map(s=>s.semana),y:S.map(s=>-Math.abs(s.gasto)),type:"bar",name:"Pagos",marker:{color:bear}},
+    {x:S.map(s=>s.semana),y:S.map(s=>s.saldo_minimo_confirmado),type:"scatter",mode:"lines+markers",name:"Saldo mínimo",yaxis:"y2",line:{color:bull,width:2}},
+  ];
+  const layout={margin:{l:56,r:56,t:8,b:60},height:280,barmode:"relative",paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
+    font:{color:ink,size:11},showlegend:true,legend:{orientation:"h",y:1.12,font:{size:11}},
+    xaxis:{gridcolor:line,tickangle:-40},yaxis:{gridcolor:line,tickprefix:"€",title:{text:"€/semana",font:{size:10}}},
+    yaxis2:{overlaying:"y",side:"right",gridcolor:"transparent",tickprefix:"€",title:{text:"saldo mínimo",font:{size:10}}},
+    hoverlabel:{bgcolor:css("--panel"),bordercolor:line,font:{size:11,color:ink}}};
+  window.Plotly.react("weekChart",traces,layout,{displayModeBar:false,responsive:true});
+}
+
+let LASTPX=null;
 async function load(){
-  const px=await btcPrice();
-  renderOrders(px,null);
+  LASTPX=await btcPrice();
+  renderOrders(LASTPX,null);
   let j=null,status=0;
   try{const r=await fetch("/api/cashflow",{cache:"no-store"});status=r.status;j=await r.json().catch(()=>null);}catch(e){}
-  const msg=$("#cfMsg"),body=$("#cfBody");
-  if(!j||status>=400){
-    msg.innerHTML=status===401?"La sesión ha caducado. Recarga la página para volver a entrar."
-      :(j&&(j.message||j.error))||("Cashflow no disponible · error "+(status||"red")+". Necesita SUPABASE_URL/SUPABASE_SERVICE_KEY en Vercel.");
+  if(!j||status>=400||j.error){
+    $("#statusDot").className="dot err";
+    $("#statusText").textContent=status===401?"La sesión ha caducado. Recarga la página para volver a entrar."
+      :(j&&(j.message||j.error))||("Cashflow no disponible · error "+(status||"red"));
     return;
   }
-  const done=(j.monthly||[]).filter(m=>m.completo).slice(-3);
-  const avg=done.length?done.reduce((s,m)=>s+m.neto,0)/done.length:0;
-  const prudente=avg*0.5;
-  const fut={};for(const f of (j.future||[]))fut[f.mes]=f.eur;
-  const rows=[];let base=j.saldoTotal,prud=j.saldoTotal;
-  for(let k=1;k<=18;k++){
-    const mes=addMonths(j.curMonth,k);if(mes>"2027-12")break;
-    base+=avg;prud+=prudente;
-    rows.push({mes,base,prud,conf:fut[mes]||0,invBase:Math.max(0,base-CUSHION),invPrud:Math.max(0,prud-CUSHION)});
-  }
-  const nov=rows.find(r=>r.mes==="2026-11")||rows[rows.length-1]||{invPrud:0,invBase:0};
-  const bolsa=nov.invPrud;
-  renderOrders(px,bolsa);
-  // progreso hacia objetivos (aún 0 compras reales — se rellenará cuando registremos btc_compras)
-  const aportado=0, btcAcum=0;
-  $("#objEurBar").style.width=Math.min(100,aportado/OBJ_EUR*100)+"%";
-  $("#objEurPct").textContent=fmtEUR(aportado)+" / "+fmtEUR(OBJ_EUR);
-  $("#objBtcBar").style.width=Math.min(100,btcAcum/OBJ_BTC*100)+"%";
-  $("#objBtcPct").textContent=btcAcum.toFixed(3)+" / ₿ "+OBJ_BTC;
-  msg.textContent="";body.style.display="";
-  body.innerHTML=`
-    <div class="cards">
-      <div class="stat" style="--sc:var(--accent)"><div class="l">Cash hoy (Caixa+Wise)</div><div class="n">${fmtEUR(j.saldoTotal)}</div><div class="s">saldo operativo</div></div>
-      <div class="stat" style="--sc:var(--bull)"><div class="l">Neto medio 3 meses</div><div class="n">${fmtEUR(avg)}</div><div class="s">meses completos</div></div>
-      <div class="stat" style="--sc:var(--hot)"><div class="l">Colchón intocable</div><div class="n">${fmtEUR(CUSHION)}</div><div class="s">no se invierte</div></div>
-      <div class="stat" style="--sc:var(--bull)"><div class="l">Pólvora en la ventana (nov-26)</div><div class="n">${fmtEUR(bolsa)}</div><div class="s">escenario prudente ×0,5</div></div>
-    </div>
-    <div style="overflow:auto;margin-top:16px"><table><thead><tr><th>Mes</th><th>Reservas confirmadas</th><th>Cash proyectado</th><th>Invertible (prud–base)</th></tr></thead><tbody>
-      ${rows.map(r=>`<tr${(r.mes>="2026-10"&&r.mes<="2026-11")?' style="background:color-mix(in oklab,var(--bull) 9%,transparent)"':''}><td class="mono">${r.mes}${(r.mes>="2026-10"&&r.mes<="2026-11")?' <span class="chip" style="color:var(--bull);border-color:var(--bull)">ventana suelo</span>':''}</td><td>${r.conf?fmtEUR(r.conf):"—"}</td><td>${fmtEUR(r.prud)} – ${fmtEUR(r.base)}</td><td style="color:var(--bull)">${fmtEUR(r.invPrud)} – ${fmtEUR(r.invBase)}</td></tr>`).join("")}
-    </tbody></table></div>
-    <div class="note" style="margin-top:14px"><b>Lectura:</b> en la ventana de suelo (oct–nov 2026) la pólvora invertible prudente es <b style="color:var(--bull)">${fmtEUR(bolsa)}</b>. Ahí se concentra el grueso de las órdenes (50k y 45k), dejando las de 60k/55k para compras puntuales antes. El resto del cashflow hasta dic-2027 sigue alimentando hacia el objetivo de 55k. Cuando registremos compras reales en <code>btc_compras.json</code>, las barras de arriba y el PnL se llenan solos.</div>`;
+  J=j;
+  $("#statusDot").className="dot ok";
+  $("#statusText").textContent="Actualizado "+fmtD(J.saldo_fecha)+" · en vivo desde BELROGAM";
+  renderObjetivo(J.objetivo);
+  renderExcedente();
+  loadWeekChart();
+  $("#calNote").innerHTML=Object.entries(J.calendario_pagos||{}).filter(([k])=>k.startsWith("dia_")).map(([k,v])=>`<b>${k.replace("dia_","día ")}</b> · ${v}`).join(" &nbsp;·&nbsp; ")+(J.calendario_pagos&&J.calendario_pagos.cobros?` &nbsp;·&nbsp; ${J.calendario_pagos.cobros}`:"");
+  $("#comoUsar").innerHTML=Object.values(J.como_usar||{}).map(t=>`<p style="margin:0 0 8px">${t}</p>`).join("");
+  $("#avisos").innerHTML=(J.avisos||[]).map(a=>`<li>${a}</li>`).join("")||"<li>Sin avisos.</li>";
 }
+document.querySelectorAll("#scenTabs .mbtn").forEach(b=>b.addEventListener("click",()=>{
+  SCEN=b.dataset.sc;document.querySelectorAll("#scenTabs .mbtn").forEach(x=>x.classList.toggle("on",x===b));renderExcedente();
+}));
+document.querySelectorAll("#marginTabs .mbtn").forEach(b=>b.addEventListener("click",()=>{
+  MARGIN=+b.dataset.m;document.querySelectorAll("#marginTabs .mbtn").forEach(x=>x.classList.toggle("on",x===b));renderExcedente();
+}));
 load();
 </script>
 </body>

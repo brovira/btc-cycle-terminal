@@ -1,38 +1,35 @@
-// api/cashflow.js — cashflow de BELROGAM para el "plan de guerra" BTC (con contraseña).
-// SOLO LECTURA sobre Supabase (misma BD que el dashboard de belrogam):
-//   · saldos_cuentas            → cash disponible hoy
-//   · transacciones_clean       → neto mensual real (últimos meses)
-//   · v_proyeccion_reservas     → ingresos futuros ya CONFIRMADOS por mes
+// api/cashflow.js — "disponible para invertir" de BELROGAM, leído del endpoint que ya lo
+// calcula (NO se recalcula aquí). Ver sops/gestion_caja_inversion.md para el porqué.
 //
-// CONFIGURACIÓN (Vercel → Environment Variables — copia los valores del proyecto belrogam):
-//   SUPABASE_URL         = https://<proyecto>.supabase.co
-//   SUPABASE_SERVICE_KEY = <service role key>   (queda solo en el backend)
-//   SITE_PASSWORD        = (la contraseña única de la web; DASH_PASSWORD sigue compatible)
+// El dashboard de BELROGAM expone GET /api/cash (bearer token propio, fuera de su login de
+// cookie) devolviendo: saldo, los dos escenarios (confirmado/esperado) con su "suelo" y el
+// disponible a 0/1/2/3 meses de margen, las capas de seguridad, el objetivo de acumulación
+// (retirado/desplegado/munición), el flujo semanal y avisos. Este endpoint es solo un proxy
+// con la contraseña del terminal por delante — una sola fuente de verdad, un solo cálculo.
+//
+// CONFIGURACIÓN (Vercel → Environment Variables):
+//   BELROGAM_DASHBOARD_URL = https://<tu-dashboard-belrogam>.vercel.app   (sin /api/cash)
+//   CASH_API_TOKEN         = el MISMO valor que CASH_API_TOKEN en el proyecto Vercel del
+//                            dashboard de BELROGAM (es el que autoriza /api/cash allí)
+//   SITE_PASSWORD          = (la contraseña única de la web; DASH_PASSWORD sigue compatible)
 
 const { authConfigured, requestAuthorized } = require("../lib/auth");
 const fs = require("fs");
 
+const clean = (v) => {
+  let s = v == null ? "" : String(v).trim();
+  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) s = s.slice(1, -1).trim();
+  return s;
+};
+
 module.exports = async (req, res) => {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   const url = new URL(req.url, "http://x");
-  // tolerante a variantes/typos del nombre (SUPABASE_URL, SUPBASE_URL, SUPABASE-URL…) y a
-  // espacios/saltos de línea accidentales al pegar el valor en Vercel (trim()).
-  const clean = (v) => {
-    let s = v == null ? "" : String(v).trim();
-    if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) s = s.slice(1, -1).trim();
-    return s;
-  };
-  const cleanKey = (v) => clean(v).replace(/^Bearer\s+/i, "").trim();
-  let SB = clean(process.env.SUPABASE_URL), KEY = clean(process.env.SUPABASE_SERVICE_KEY);
-  if (!SB || !KEY) {
-    for (const k of Object.keys(process.env)) {
-      if (!SB && /SUPABASE/i.test(k) && /URL/i.test(k)) SB = clean(process.env[k]);
-      if (!KEY && /SUPABASE/i.test(k) && /(SERVICE|ROLE|KEY|TOKEN|SECRET)/i.test(k)) KEY = cleanKey(process.env[k]);
-    }
-  }
-  KEY = cleanKey(KEY);
+
   if (!authConfigured(req)) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_password" })); }
   if (!requestAuthorized(req, url)) { await new Promise(r => setTimeout(r, 600)); res.statusCode = 401; return res.end(JSON.stringify({ error: "bad_password" })); }
+
+  // atajo para desarrollo local: sirve una respuesta con la MISMA forma que /api/cash
   if (process.env.LOCAL_CASHFLOW_FILE) {
     try {
       const cached = await fs.promises.readFile(process.env.LOCAL_CASHFLOW_FILE, "utf8");
@@ -43,68 +40,49 @@ module.exports = async (req, res) => {
       return res.end(JSON.stringify({ error: "local_cashflow", message: String((e && e.message) || e) }));
     }
   }
-  if (!SB || !KEY) {
-    // diagnóstico: nombres + LONGITUD de lo que hay (nunca el valor) — así se ve si está
-    // vacía, si tiene solo espacios, o si directamente no existe la variable.
-    const diag = Object.keys(process.env).filter(k => /SUP/i.test(k)).map(k => {
+
+  let BASE = clean(process.env.BELROGAM_DASHBOARD_URL);
+  let TOKEN = clean(process.env.CASH_API_TOKEN).replace(/^Bearer\s+/i, "").trim();
+  if (!BASE || !TOKEN) {
+    for (const k of Object.keys(process.env)) {
+      if (!BASE && /BELROGAM/i.test(k) && /(URL|HOST|DOMAIN)/i.test(k)) BASE = clean(process.env[k]);
+      if (!TOKEN && /CASH/i.test(k) && /(TOKEN|KEY|SECRET)/i.test(k)) TOKEN = clean(process.env[k]).replace(/^Bearer\s+/i, "").trim();
+    }
+  }
+  if (!BASE || !TOKEN) {
+    const diag = Object.keys(process.env).filter(k => /BELROGAM|CASH_API/i.test(k)).map(k => {
       const raw = process.env[k] || ""; const len = raw.length, trimmed = raw.trim().length;
       return `${k} (${len === 0 ? "vacía" : trimmed === 0 ? "solo espacios/saltos de línea" : `${len} caracteres, OK`})`;
     });
     res.statusCode = 503;
-    return res.end(JSON.stringify({ error: "no_supabase", message: "No encuentro SUPABASE_URL / SUPABASE_SERVICE_KEY con valor. Lo que veo con ese nombre: " + (diag.length ? diag.join(" · ") : "ninguna variable con 'SUP' en el nombre") + ". Si pone 'vacía', bórrala y vuelve a pegar el valor en Vercel (a veces el campo Value se queda en blanco). Tras corregir, Redeploy." }));
+    return res.end(JSON.stringify({
+      error: "no_config",
+      message: "Faltan BELROGAM_DASHBOARD_URL y/o CASH_API_TOKEN en Vercel. " +
+        "Lo que veo con esos nombres: " + (diag.length ? diag.join(" · ") : "ninguna variable") +
+        ". BELROGAM_DASHBOARD_URL = la URL de tu dashboard de BELROGAM en Vercel (sin /api/cash al final). " +
+        "CASH_API_TOKEN = el MISMO valor que tengas puesto como CASH_API_TOKEN en el proyecto Vercel de ese dashboard " +
+        "(si no existe ahí todavía, genera un token y ponlo en los dos proyectos). Tras corregir, Redeploy.",
+    }));
   }
-
-  if (!/^https:\/\/[^/]+\.supabase\.co\/?$/i.test(SB)) {
-    res.statusCode = 503;
-    return res.end(JSON.stringify({ error: "bad_supabase_url", message: "SUPABASE_URL debe ser algo como https://xxxxx.supabase.co (sin /rest/v1 al final)." }));
-  }
-
-  const H = { apikey: KEY, Authorization: `Bearer ${KEY}` };
-  const get = async (path) => {
-    const r = await fetch(`${SB.replace(/\/+$/, "")}/rest/v1/${path}`, { headers: H });
-    if (!r.ok) {
-      const txt = await r.text().catch(() => "");
-      throw new Error("supabase_" + r.status + " en " + path.split("?")[0] + (txt ? ": " + txt.slice(0, 220) : ""));
-    }
-    return r.json();
-  };
 
   try {
-    const today = new Date();
-    const iso = (d) => d.toISOString().slice(0, 10);
-    const monthsAgo = new Date(today); monthsAgo.setMonth(monthsAgo.getMonth() - 5); monthsAgo.setDate(1);
-
-    const [saldos, txns, futuras] = await Promise.all([
-      get("saldos_cuentas?select=cuenta,saldo,moneda,synced_at"),
-      get(`transacciones_clean?select=fecha,importe&fecha=gte.${iso(monthsAgo)}`),
-      get(`v_proyeccion_reservas?select=check_in,revenue_caja&cobrado=eq.false&check_in=gte.${iso(today)}`),
-    ]);
-
-    const saldoTotal = saldos.reduce((s, r) => s + (+r.saldo || 0), 0);
-
-    const byMonth = {};
-    for (const t of txns) {
-      const m = String(t.fecha).slice(0, 7);
-      const v = +t.importe || 0;
-      const o = byMonth[m] || (byMonth[m] = { mes: m, ingresos: 0, gastos: 0, neto: 0 });
-      if (v > 0) o.ingresos += v; else o.gastos += v;
-      o.neto += v;
+    const r = await fetch(`${BASE.replace(/\/+$/, "")}/api/cash`, {
+      headers: { Authorization: `Bearer ${TOKEN}` },
+      cache: "no-store",
+    });
+    const text = await r.text();
+    if (!r.ok) {
+      res.statusCode = r.status === 401 ? 502 : r.status;
+      let msg = text.slice(0, 300);
+      try { msg = JSON.parse(text).error || msg; } catch (e) {}
+      return res.end(JSON.stringify({ error: "belrogam_" + r.status, message: r.status === 401
+        ? "El dashboard de BELROGAM rechazó el token (401). Comprueba que CASH_API_TOKEN es idéntico en los dos proyectos de Vercel."
+        : msg }));
     }
-    const curMonth = iso(today).slice(0, 7);
-    const monthly = Object.values(byMonth).sort((a, b) => a.mes.localeCompare(b.mes))
-      .map(o => ({ ...o, ingresos: Math.round(o.ingresos), gastos: Math.round(o.gastos), neto: Math.round(o.neto), completo: o.mes < curMonth }));
-
-    const futMonth = {};
-    for (const f of futuras) {
-      const m = String(f.check_in).slice(0, 7);
-      futMonth[m] = (futMonth[m] || 0) + (+f.revenue_caja || 0);
-    }
-    const future = Object.entries(futMonth).sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([mes, eur]) => ({ mes, eur: Math.round(eur) }));
-
-    res.setHeader("Cache-Control", "private, max-age=600"); // 10 min
-    return res.end(JSON.stringify({ saldoTotal: Math.round(saldoTotal), saldos, monthly, future, curMonth }));
+    res.setHeader("Cache-Control", "private, max-age=120"); // 2 min — el dashboard ya calcula en vivo
+    return res.end(text);
   } catch (e) {
-    res.statusCode = 502; return res.end(JSON.stringify({ error: "fetch_error", message: String((e && e.message) || e) }));
+    res.statusCode = 502;
+    return res.end(JSON.stringify({ error: "fetch_error", message: String((e && e.message) || e) }));
   }
 };

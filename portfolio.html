@@ -149,12 +149,13 @@
       <div class="note" style="margin-top:6px">Cada protocolo por separado: qué tienes en la <b>wallet</b>, en <b>LPs</b>, en <b>lending</b> o en <b>staking</b>. Pincha para desplegar.</div>
     </div>
 
-    <!-- ============ BELROGAM (siempre visible) ============ -->
-    <div class="sec-head" id="belrogam" style="scroll-margin-top:16px"><h2>🏢 BELROGAM · 4-year cycle plan</h2><div class="rule"></div><span class="addr">cashflow privado</span></div>
-    <div class="panel" style="padding:16px 18px">
-      <div class="note" id="cfMsg">Cargando cashflow…</div>
-      <div id="cfBody" style="display:none;margin-top:12px"></div>
-    </div>
+    <!-- ============ BELROGAM: página dedicada, aquí solo el enlace ============ -->
+    <div class="sec-head" id="belrogam" style="scroll-margin-top:16px"><h2>🏢 BELROGAM · plan del ciclo</h2><div class="rule"></div></div>
+    <a class="panel" href="belrogam.html" style="display:flex;align-items:center;gap:12px;padding:16px 18px;text-decoration:none;color:inherit">
+      <span style="font-size:22px">💰</span>
+      <span><b>Excedente de caja invertible, objetivo de acumulación y órdenes de compra</b><br><span class="note">Cashflow real de la empresa (suelo, no saldo) → cuánto se puede sacar sin comprometer la operación.</span></span>
+      <span class="mtxt" style="margin-left:auto;white-space:nowrap">Abrir →</span>
+    </a>
   </div>
 
   <footer>
@@ -170,7 +171,6 @@ const fmtEUR=v=>v==null||isNaN(v)?"—":(v<0?"-€":"€")+Math.abs(Math.round(v
 const fmtAmt=v=>v==null?"—":Number(v).toLocaleString("en-US",{maximumFractionDigits:v>1000?0:(v>1?4:6)});
 const fmtPx=v=>v==null||!isFinite(v)||v<=0?"—":v>=1000?"$"+(v/1000).toFixed(2)+"K":"$"+Number(v).toLocaleString("en-US",{maximumFractionDigits:v<1?6:2});
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
-const BELROGAM_CUSHION=60000;
 (function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
 $("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);});
 
@@ -272,7 +272,6 @@ async function load(){
   $("#statusDot").className="dot ok";$("#statusText").textContent="Actualizado "+new Date().toISOString().slice(0,16).replace("T"," ")+" · caché 2 min";
   RAW={j,px,orca,manual};
   rebuild();
-  loadCashflow();
   if(location.hash==="#belrogam")requestAnimationFrame(()=>$("#belrogam").scrollIntoView({block:"start"}));
 }
 
@@ -520,48 +519,8 @@ document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
 }));
 $("#dustToggle").addEventListener("change",e=>{DUST_HIDE=e.target.checked;rebuild();});
 
-/* ---------------- BELROGAM: cashflow → pólvora BTC ---------------- */
-function addMonths(ym,k){const[y,m]=ym.split("-").map(Number);const d=new Date(Date.UTC(y,m-1+k,1));return d.toISOString().slice(0,7);}
-async function loadCashflow(){
-  const msg=$("#cfMsg"),body=$("#cfBody");
-  msg.textContent="Cargando cashflow…";body.style.display="none";body.innerHTML="";
-  let j=null;
-  try{
-    const r=await fetch("/api/cashflow",{cache:"no-store"});
-    j=await r.json().catch(()=>null);
-    if(r.status===401){msg.textContent="La sesión ha caducado. Recarga la página para volver a entrar.";return;}
-    if(!r.ok){msg.textContent=(j&&(j.message||j.error))||("Cashflow no disponible · error "+r.status);return;}
-  }catch(e){msg.textContent="Cashflow no disponible en esta preview local. Se prueba completo en Vercel.";return;}
-
-  const done=(j.monthly||[]).filter(m=>m.completo).slice(-3);
-  const avg=done.length?done.reduce((s,m)=>s+m.neto,0)/done.length:0;
-  const prudente=avg*0.5;
-  const fut={};for(const f of (j.future||[]))fut[f.mes]=f.eur;
-  const rows=[];let base=j.saldoTotal,prud=j.saldoTotal;
-  for(let k=1;k<=5;k++){
-    const mes=addMonths(j.curMonth,k);if(mes>"2026-12")break;
-    base+=avg;prud+=prudente;
-    rows.push({mes,base,prud,conf:fut[mes]||0,invBase:Math.max(0,base-BELROGAM_CUSHION),invPrud:Math.max(0,prud-BELROGAM_CUSHION)});
-  }
-  const nov=rows.find(r=>r.mes==="2026-11")||rows[rows.length-1]||{invPrud:0,invBase:0};
-  const bolsa=nov.invPrud;
-  const t1=Math.round(bolsa*0.25),t2=Math.round(bolsa*0.40),t3=Math.round(bolsa*0.35);
-  msg.textContent="";
-  body.style.display="";
-  body.innerHTML=`
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px">
-      <div class="panel" style="padding:12px 14px;border-left:3px solid var(--accent)"><div class="lbl">Cash hoy (Caixa+Wise)</div><div class="n mono" style="font-size:21px;font-weight:750">${fmtEUR(j.saldoTotal)}</div><div class="note">saldo leído de Supabase</div></div>
-      <div class="panel" style="padding:12px 14px;border-left:3px solid var(--bull)"><div class="lbl">Neto medio 3 meses</div><div class="n mono" style="font-size:21px;font-weight:750">${fmtEUR(avg)}</div><div class="note">meses completos</div></div>
-      <div class="panel" style="padding:12px 14px;border-left:3px solid var(--hot)"><div class="lbl">Colchón intocable</div><div class="n mono" style="font-size:21px;font-weight:750">${fmtEUR(BELROGAM_CUSHION)}</div><div class="note">no se invierte</div></div>
-      <div class="panel" style="padding:12px 14px;border-left:3px solid var(--bull)"><div class="lbl">Pólvora estimada en nov</div><div class="n mono" style="font-size:21px;font-weight:750">${fmtEUR(bolsa)}</div><div class="note">escenario prudente ×0,5</div></div>
-    </div>
-    <div style="overflow:auto;margin-top:12px"><table><thead><tr><th style="text-align:left">Mes</th><th>Reservas confirmadas</th><th>Cash base</th><th>Cash prudente</th><th>Invertible</th></tr></thead><tbody>
-      ${rows.map(r=>`<tr${(r.mes>="2026-09"&&r.mes<="2026-11")?' style="background:color-mix(in oklab,var(--bull) 7%,transparent)"':''}><td style="text-align:left" class="mono">${r.mes}</td><td>${r.conf?fmtEUR(r.conf):"—"}</td><td>${fmtEUR(r.base)}</td><td>${fmtEUR(r.prud)}</td><td style="color:var(--bull)">${fmtEUR(r.invPrud)} – ${fmtEUR(r.invBase)}</td></tr>`).join("")}
-    </tbody></table></div>
-    <div class="note" style="margin-top:10px"><b>Tramos BTC propuestos:</b>
-      sep ${fmtEUR(t1)} · oct ${fmtEUR(t2)} · nov ${fmtEUR(t3)}.
-      Antes del 31-ago: solo compra puntual si BTC &lt; $60k. Validar fiscalidad con Financial Group antes de la primera compra de BELROGAM SL.</div>`;
-}
+/* BELROGAM: excedente de caja invertible → página dedicada belrogam.html (lee /api/cash
+   del dashboard real, no se recalcula aquí — ver sops/gestion_caja_inversion.md) */
 
 localStorage.removeItem("lp-dash-pw");sessionStorage.removeItem("lp-dash-pw");
 load();
