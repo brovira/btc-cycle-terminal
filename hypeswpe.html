@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SWPE de Hyperliquid · Cripto</title>
+<link rel="stylesheet" href="dashboard.css">
+<style>
+  .wrap{max-width:1000px;margin:0 auto;padding:26px 18px 70px}
+  .hero{border:1px solid var(--line);border-left:5px solid var(--vc,var(--muted));border-radius:16px;background:var(--panel);padding:22px 24px;margin-top:16px}
+  .hero .lab{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .hero .swpe{font-family:var(--mono);font-size:clamp(46px,10vw,72px);font-weight:850;letter-spacing:-.03em;line-height:1;color:var(--vc,var(--ink));margin:6px 0 2px}
+  .hero .band{display:inline-block;font-size:13.5px;font-weight:750;padding:5px 12px;border-radius:999px;margin-top:6px}
+  .hero .sub{color:var(--ink2);font-size:13.5px;margin-top:10px;line-height:1.55;max-width:70ch}
+  .hero .sub b{color:var(--ink)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:16px}
+  .card{border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:14px 16px}
+  .card .k{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .card .v{font-family:var(--mono);font-size:22px;font-weight:800;margin-top:6px;letter-spacing:-.01em}
+  .card .d{font-size:11.5px;color:var(--ink2);margin-top:4px;line-height:1.4}
+  .chartcard{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:14px 16px 8px;margin-top:16px}
+  .chartcard h3{margin:0 0 2px;font-size:15px;font-weight:800;letter-spacing:-.01em}
+  .chartcard .csub{color:var(--ink2);font-size:12.5px;line-height:1.5;margin-bottom:8px}
+  #revchart{width:100%;height:300px}
+  .note{margin-top:18px;border:1px solid var(--line);border-radius:13px;background:var(--panel2);padding:15px 17px;font-size:13px;line-height:1.6;color:var(--ink2)}
+  .note h3{margin:0 0 8px;font-size:14.5px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
+  .note b{color:var(--ink)}
+  .note ul{margin:8px 0 0;padding-left:18px}
+  .note li{margin:4px 0}
+  .caveat{margin-top:14px;border:1px dashed var(--line);border-left:4px solid var(--hot);border-radius:12px;background:color-mix(in oklab,var(--hot) 7%,var(--panel2));padding:14px 16px;font-size:12.5px;line-height:1.55;color:var(--ink2)}
+  .caveat b{color:var(--ink)}
+  .warnbox{display:none;margin-top:14px;border:1px solid var(--bear);border-radius:12px;background:color-mix(in oklab,var(--bear) 10%,transparent);padding:13px 15px;font-size:12.5px;color:var(--ink);line-height:1.5}
+  .warnbox b{color:var(--ink)}
+  footer{margin-top:26px;color:var(--muted);font-size:12px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px}
+  footer b{color:var(--ink2)}
+</style>
+</head>
+<body class="dashboard-page page-hypeswpe">
+<div class="wrap">
+  <header class="top" style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div>
+      <div class="kicker" style="font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600">Cripto · Valoración por ingresos</div>
+      <h1 style="margin:5px 0 0;font-size:clamp(22px,3.4vw,30px);font-weight:800;letter-spacing:-.02em">🟢 SWPE de Hyperliquid</h1>
+      <div style="color:var(--ink2);font-size:13.5px;margin-top:5px" id="asof">Cargando datos…</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <a class="btn" href="index.html" style="text-decoration:none">← Panel</a>
+      <button class="btn" id="themeBtn">◐ Tema</button>
+    </div>
+  </header>
+
+  <div class="hero" id="hero">
+    <div class="lab">SWPE actual (float mcap ÷ ingresos anualizados)</div>
+    <div class="swpe" id="swpeVal">…</div>
+    <div id="bandWrap"></div>
+    <div class="sub" id="heroSub">Calculando cuántos años de ingresos harían falta para recomprar todo el float de HYPE a precio actual.</div>
+  </div>
+
+  <div class="warnbox" id="warnbox"></div>
+
+  <div class="cards" id="cards"></div>
+
+  <div class="chartcard">
+    <h3>Tendencia del revenue diario (últimos ~90 días)</h3>
+    <div class="csub">Ingresos diarios del protocolo (DefiLlama). Si <b>suben</b>, el revenue anualizado crece y el SWPE <b>baja</b> a igualdad de precio — la señal de "barato" que menciona skewga.</div>
+    <div id="revchart"></div>
+  </div>
+
+  <div class="note">
+    <h3>¿Qué es el SWPE?</h3>
+    <b>SWPE = market cap del float ÷ ingresos anualizados.</b> Es un P/E adaptado a Hyperliquid: mide <b>cuántos años de ingresos del protocolo harían falta para recomprar todo el float a precio actual</b>. Hyperliquid destina ~<b>97% de sus ingresos</b> a recomprar HYPE vía su <b>Assistance Fund (AF)</b>, así que el revenue es demanda estructural directa sobre el token.
+    <ul>
+      <li><b>SWPE bajo</b> → la demanda de recompra del AF es fuerte frente al float: zona <b>barata</b> (los ingresos "pagan" el float rápido).</li>
+      <li><b>SWPE alto</b> → el precio va por delante de los ingresos: <b>especulación / caro</b>.</li>
+    </ul>
+    <div style="margin-top:8px">Fórmula exacta implementada: <b>floatMcap = circulating × precio</b> · <b>revAnual = (revenue 30d ÷ 30) × 365</b> · <b>SWPE = floatMcap ÷ revAnual</b>. Las bandas de color (&lt;4 / 4–8 / &gt;8) son <b>heurísticas</b> propias para leer el nivel de un vistazo, no umbrales oficiales.</div>
+  </div>
+
+  <div class="caveat">
+    ⚠️ <b>Léelo:</b> nuestro "float" usa la <b>circulating_supply de CoinGecko</b>, que es un <b>PROXY</b> del RFS (Ready-for-Sale) exacto de skewga — el suyo <b>excluye</b> tokens locked, de la foundation, del equipo y las emisiones futuras. Por eso <b>nuestro SWPE puede diferir algo del de skewga</b>. El revenue viene de <b>DefiLlama</b> (revenue diario del protocolo). <b>Uso educativo, no es asesoramiento financiero.</b>
+  </div>
+
+  <footer>
+    <b>Fuentes (todas públicas, sin API key):</b> CoinGecko (precio, circulating/total supply, FDV) · DefiLlama (revenue y fees diarios del protocolo) · Binance (fallback de precio). Se actualiza cada hora.<br>
+    <span id="foot-warn" style="color:var(--muted);font-size:11.5px"></span>
+    <b>Uso educativo — no es asesoramiento financiero.</b>
+  </footer>
+</div>
+
+<script>
+"use strict";
+(function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
+document.getElementById("themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);if(window.__drawRev)window.__drawRev();});
+
+const $=s=>document.querySelector(s);
+const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim()||"#888";
+function fmtUsd(v,dec){
+  if(v==null)return "—";
+  const n=Number(v);
+  if(Math.abs(n)>=1e9)return "$"+(n/1e9).toLocaleString("es-ES",{maximumFractionDigits:2})+"B";
+  if(Math.abs(n)>=1e6)return "$"+(n/1e6).toLocaleString("es-ES",{maximumFractionDigits:2})+"M";
+  if(Math.abs(n)>=1e3)return "$"+(n/1e3).toLocaleString("es-ES",{maximumFractionDigits:1})+"K";
+  return "$"+n.toLocaleString("es-ES",{maximumFractionDigits:dec==null?2:dec});
+}
+function fmtNum(v){return v==null?"—":Number(v).toLocaleString("es-ES",{maximumFractionDigits:0});}
+
+// bandas heurísticas del SWPE
+function band(swpe){
+  if(swpe==null)return {vc:"var(--muted)",bg:"var(--muted)",txt:"sin dato",desc:"No hay SWPE calculable ahora mismo."};
+  if(swpe<4)return {vc:"var(--bull)",bg:"var(--bull)",txt:"< 4 · AF demand fuerte vs float · zona barata",
+    desc:"Los ingresos que el Assistance Fund recicla en recompras son grandes frente al float — históricamente la zona <b>infravalorada</b>."};
+  if(swpe<=8)return {vc:"var(--accent)",bg:"var(--accent)",txt:"4–8 · neutral",
+    desc:"Zona intermedia: precio e ingresos razonablemente alineados."};
+  return {vc:"var(--bear)",bg:"var(--bear)",txt:"> 8 · especulación por delante de ingresos · caro",
+    desc:"El precio corre por delante de los ingresos del protocolo — zona <b>sobreextendida</b>."};
+}
+
+let REV=[];
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("no se pudo cargar Plotly");}
+function drawRev(){
+  if(!window.Plotly||!REV||!REV.length)return;
+  const mut=cssv("--muted"),grid=cssv("--grid"),line=cssv("--line"),acc=cssv("--accent");
+  const trace={x:REV.map(p=>p[0]),y:REV.map(p=>p[1]),mode:"lines",fill:"tozeroy",
+    line:{color:acc,width:2},fillcolor:"color-mix(in oklab,"+acc+" 16%,transparent)",
+    hovertemplate:"%{x}<br>$%{y:,.0f}<extra></extra>"};
+  const layout={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
+    margin:{l:56,r:14,t:8,b:34},height:300,font:{color:mut,size:11,family:"inherit"},hovermode:"x",
+    xaxis:{gridcolor:grid,linecolor:line,color:mut,type:"date"},
+    yaxis:{gridcolor:grid,linecolor:line,color:mut,tickprefix:"$",title:{text:"Revenue diario (USD)",font:{size:11}},rangemode:"tozero"}};
+  window.Plotly.react("revchart",trace?[trace]:[],layout,{responsive:true,displaylogo:false,scrollZoom:false,modeBarButtonsToRemove:["select2d","lasso2d"]});
+}
+window.__drawRev=drawRev;
+
+(async function(){
+  let j=null;
+  try{
+    const [,rr]=await Promise.all([loadPlotly().catch(()=>null),fetch("/api/hypeswpe",{cache:"no-store"})]);
+    j=await rr.json();
+  }catch(e){
+    $("#swpeVal").textContent="—";
+    $("#asof").textContent="";
+    $("#heroSub").textContent="No se pudo cargar /api/hypeswpe. Reintenta en un momento.";
+    return;
+  }
+  if(!j){$("#swpeVal").textContent="—";$("#asof").textContent="";$("#heroSub").textContent="Respuesta vacía de /api/hypeswpe.";return;}
+
+  const asof=j.asOf?new Date(j.asOf):null;
+  $("#asof").textContent=(asof?"datos a "+asof.toISOString().slice(0,16).replace("T"," ")+" UTC · ":"")+"se actualiza cada hora";
+
+  // Titular SWPE + banda
+  const b=band(j.swpe);
+  const hero=$("#hero");
+  hero.style.setProperty("--vc",b.vc);
+  $("#swpeVal").textContent=j.swpe==null?"—":Number(j.swpe).toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2});
+  $("#bandWrap").innerHTML=`<span class="band" style="color:${b.bg};background:color-mix(in oklab,${b.bg} 15%,transparent)">${b.txt}</span>`;
+  $("#heroSub").innerHTML=(j.swpe==null
+    ?"No hay SWPE calculable: falta algún dato de mercado o de revenue (mira los avisos). "
+    :`Harían falta <b>~${Number(j.swpe).toLocaleString("es-ES",{maximumFractionDigits:2})} años</b> de ingresos actuales para recomprar todo el float a precio de hoy. `)+b.desc;
+
+  // Tarjetas
+  const rev=j.revenue||{},fees=j.fees||{};
+  const revDiaMedio=(rev.d30d!=null)?rev.d30d/30:null;
+  const cards=[
+    {k:"Precio HYPE",v:fmtUsd(j.price,j.price!=null&&j.price<10?4:2),d:"CoinGecko (fallback Binance)"},
+    {k:"Circulating supply",v:fmtNum(j.circulatingSupply)+" HYPE",d:"proxy del float (RFS)"},
+    {k:"Float market cap",v:fmtUsd(j.floatMcapUsd),d:"circulating × precio"},
+    {k:"Revenue 30d (diario medio)",v:fmtUsd(revDiaMedio),d:"media 30d · DefiLlama"},
+    {k:"Revenue anualizado",v:fmtUsd(rev.annualized),d:"(30d ÷ 30) × 365"},
+    {k:"Fees 30d (brutos)",v:fmtUsd(fees.d30d),d:"contexto · DefiLlama"},
+    {k:"FDV (dil. total)",v:fmtUsd(j.fdvUsd),d:"total supply × precio"},
+    {k:"SWPE sobre FDV",v:j.swpeFdv==null?"—":Number(j.swpeFdv).toLocaleString("es-ES",{maximumFractionDigits:2}),d:"contexto · siempre mayor"},
+  ];
+  $("#cards").innerHTML=cards.map(c=>`<div class="card"><div class="k">${c.k}</div><div class="v">${c.v}</div><div class="d">${c.d}</div></div>`).join("");
+
+  // Mini-gráfico revenue
+  REV=Array.isArray(j.revChart)?j.revChart:[];
+  drawRev();
+
+  // Avisos
+  const w=Array.isArray(j.warnings)?j.warnings:[];
+  if(w.length){
+    const box=$("#warnbox");
+    box.style.display="block";
+    box.innerHTML="<b>Avisos:</b> "+w.map(x=>String(x).replace(/</g,"&lt;")).join(" · ");
+    const f=$("#foot-warn");if(f)f.innerHTML="Avisos: "+w.map(x=>String(x).replace(/</g,"&lt;")).join(" · ")+"<br>";
+  }
+})();
+</script>
+</body>
+</html>
