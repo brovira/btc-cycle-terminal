@@ -47,7 +47,7 @@
   .mtxt{font-family:var(--mono);font-size:13px;color:var(--muted)}
   .mtxt b{color:var(--ink);font-size:15px}
   /* signals grid */
-  .sec-head{display:flex;align-items:center;gap:10px;margin:26px 2px 12px}
+  .sec-head{display:flex;align-items:center;gap:10px;margin:40px 2px 16px;flex-wrap:wrap}
   .sec-head h2{margin:0;font-size:15px;font-weight:750}
   .sec-head .rule{flex:1;height:1px;background:var(--line)}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
@@ -76,7 +76,8 @@
   .htbl td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
   .how{display:flex;gap:20px;flex-wrap:wrap;margin-top:6px}
   .how>div{flex:1;min-width:230px;line-height:1.7}
-  .agrid{display:flex;flex-direction:column;gap:16px}
+  .agrid{display:flex;flex-direction:column;gap:20px}
+  .acard{padding:18px 19px}
   .bkt{border:1px solid var(--line);border-radius:12px;background:var(--panel2);padding:13px 15px;margin-bottom:12px}
   .bkt-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;margin-bottom:2px}
   .bkt .obj{font-size:12.5px;color:var(--ink2);margin-top:6px}
@@ -120,12 +121,11 @@
     <div class="kicker" id="regime">—</div>
     <div class="act" id="action">Calculando…</div>
     <div class="sub" id="actionSub"></div>
-    <div class="meter">
-      <div class="beads" id="beads"></div>
-      <div class="mtxt"><b id="litN">—</b> <span id="litTot"></span> señales de compra encendidas</div>
-    </div>
-    <div id="planPhase" style="margin-top:12px;padding:10px 13px;border-radius:11px;background:color-mix(in oklab,#9b8cff 10%,transparent);border:1px solid color-mix(in oklab,#9b8cff 30%,var(--line));font-size:13px;line-height:1.5"></div>
-    <div class="levels" id="levels" style="margin-top:12px"></div>
+    <div class="albl" style="font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:18px 0 7px">Nuestras 3 señales — las que seguimos aquí</div>
+    <div class="meter" id="ourSigs" style="gap:9px"></div>
+    <div id="planPhase" style="margin-top:18px;padding:13px 15px;border-radius:12px;background:color-mix(in oklab,#9b8cff 10%,transparent);border:1px solid color-mix(in oklab,#9b8cff 30%,var(--line));font-size:13px;line-height:1.55"></div>
+    <div class="levels" id="levels" style="margin-top:18px"></div>
+    <div class="mtxt" style="margin-top:9px;font-size:11.5px">↑ El resto de métricas son <b>contexto</b>, no señales de nuestro plan.</div>
   </div>
   <div class="banner" id="banner"></div>
 
@@ -331,7 +331,8 @@ function evaluate(D){
 }
 
 /* en qué fase de NUESTRO plan estamos (según el patrón temporal) + qué hacemos + proyección */
-const PLAN_TOP=Date.parse("2025-10-06");   // techo del ciclo = inicio del bear/acumulación
+const PLAN_TOP=Date.parse("2025-10-06");   // techo del ciclo (referencia para "meses de bear")
+const PLAN_DCA_ON=Date.parse("2026-06-22"); // inicio de la barra = cuando se encendió el DCA de Cowen (risk<0,3, tras el mínimo de junio)
 const PLAN_MAXBUY=Date.parse("2027-06-30"); // fin de la ventana de compra MÁS LARGA (Cowen pre-halving ≈ LMEC sem 165)
 const HALV4=Date.parse("2024-04-19");
 const fShort=ms=>new Date(ms).toLocaleDateString("es-ES",{month:"short",year:"2-digit",timeZone:"UTC"}).replace(".","");
@@ -347,13 +348,26 @@ function miniBar(s,e){
     <div style="position:absolute;top:15px;left:${b}%;transform:translateX(-100%);font-size:9.5px;color:var(--muted);font-family:var(--mono)">${fShort(e)}</div>
   </div>`;
 }
+/* las 3 señales que seguimos AQUÍ (Cowen DCA · LMEC niveles · Patrón suelo) — el resto es contexto */
+function renderOurSignals(R,dcaOn){
+  const cs=cycleStats(),now=Date.now();
+  const lmecOn=R.price!=null&&R.price<=60000;
+  const patronOn=now>=cs.projLoMs&&now<=cs.projHiMs;
+  const sigs=[
+    {nm:"Cowen · DCA",on:dcaOn,st:dcaOn?"ACTIVO":"esperando",ds:"risk metric < 0,3 → DCA en marcha"+(R.riskNow!=null?" (risk "+R.riskNow.toFixed(2)+")":"")},
+    {nm:"LMEC · niveles 60k↓",on:lmecOn,st:lmecOn?"ACTIVO":"esperando",ds:"órdenes límite de 60k para abajo / 2ª ruptura de la BMSB"},
+    {nm:"Patrón · ventana de suelo",on:patronOn,st:patronOn?"ACTIVO":"esperando",ds:"suelo proyectado oct-nov 2026"},
+  ];
+  const nOn=sigs.filter(s=>s.on).length;
+  $("#ourSigs").innerHTML=sigs.map(s=>`<span class="chip" style="padding:6px 12px;font-size:13px;${s.on?"border-color:var(--bull);color:var(--bull);font-weight:700;background:color-mix(in oklab,var(--bull) 12%,transparent)":"opacity:.72"}" title="${esc(s.ds)}">${s.on?"🟢":"⚪"} ${esc(s.nm)} · ${s.st}</span>`).join("")+`<span class="mtxt" style="align-self:center">${nOn}/3 encendidas</span>`;
+}
 function renderPlanPhase(R){
   const cs=cycleStats();
   const fMY=ms=>new Date(ms).toLocaleDateString("es-ES",{month:"short",year:"2-digit",timeZone:"UTC"}).replace(".","");
   const now=Date.now();
   const monthsTop=(now-PLAN_TOP)/(30.4368*864e5);
   const toLo=(cs.projLoMs-now)/(30.4368*864e5),toHi=(cs.projHiMs-now)/(30.4368*864e5);
-  const pct=ms=>Math.max(0,Math.min(100,(ms-PLAN_TOP)/(PLAN_MAXBUY-PLAN_TOP)*100));
+  const pct=ms=>Math.max(0,Math.min(100,(ms-PLAN_DCA_ON)/(PLAN_MAXBUY-PLAN_DCA_ON)*100)); // barra: desde que se encendió el DCA de Cowen
   const nowP=pct(now),flL=pct(cs.projLoMs),flR=pct(cs.projHiMs);
   let fase,accion,head;
   if(now<cs.projLoMs){
@@ -373,7 +387,7 @@ function renderPlanPhase(R){
       <div class="cfloor" style="left:${flL}%;width:${Math.max(1.5,flR-flL)}%"></div>
       <div class="cfill" style="width:${nowP}%"></div>
       <div class="cnow" style="left:${nowP}%"></div>
-      <div class="clab" style="left:0">Techo · ${fMY(PLAN_TOP)}</div>
+      <div class="clab" style="left:0">🟢 DCA on · ${fMY(PLAN_DCA_ON)}</div>
       <div class="clab" style="left:${(flL+flR)/2}%;transform:translateX(-50%);color:var(--bull)">🟢 suelo ${fMY(cs.projLoMs)}</div>
       <div class="clab" style="right:0">fin compra · ${fMY(PLAN_MAXBUY)}</div>
     </div>
@@ -382,10 +396,12 @@ function renderPlanPhase(R){
 function render(R){
   const V=$("#verdict");V.style.setProperty("--vc",R.vc);
   $("#regime").textContent=R.regime;
-  $("#action").textContent=R.action;
+  // DCA en grande cuando la señal de Cowen (risk<0,3) está encendida
+  const dcaOn=R.riskNow!=null&&R.riskNow<0.3;
+  let act=R.action;if(dcaOn&&!/DCA/i.test(act))act="DCA + "+act;
+  $("#action").textContent=act;
   $("#actionSub").textContent=R.sub;
-  $("#litN").textContent=R.lit+"/"+R.tot;$("#litTot").textContent="";
-  $("#beads").innerHTML=Array.from({length:R.tot},(_,i)=>`<span class="bead ${i<R.lit?"on":""}"></span>`).join("");
+  renderOurSignals(R,dcaOn);
   renderPlanPhase(R);
   // (la sección "Señales" se fusionó en las tarjetas de agente: cada señal vive como chip
   //  en la tarjeta de quien la usa, con su tooltip; las citas están en el KB y el framework)
@@ -550,7 +566,8 @@ function renderAgents(R){
     <div class="albl">Qué dice AHORA</div>
     <div class="arow">Llevamos <b>${monthsTop.toFixed(1)} meses</b> desde el techo (6-oct-2025). En los <b>3 ciclos completos</b> el suelo llegó siempre <b>12-13 meses</b> tras el techo → ventana de suelo proyectada <b style="color:var(--hot);text-transform:capitalize">${fMY(cs.projLoMs)} – ${fMY(cs.projHiMs)}</b>.</div>
     <div class="advice">💬 <b>Acción:</b> acumular por niveles y <b>guardar la artillería gorda para la ventana proyectada</b>. Es <b>la mejor estrategia del backtest</b> → nuestra base. Pero NO all-in: DCA progresivo por si el suelo llega antes… o no llega.</div>
-    <div class="levels" style="margin-top:6px">
+    <div class="albl" style="margin-top:8px">Su ventana de compra (temporal)</div>${miniBar(cs.projLoMs,cs.projHiMs)}<div class="mtxt" style="line-height:1.5">Ventana de suelo = 52-58 semanas tras el techo. Es la señal que <b>aún esperamos</b> — cuando "hoy" entre en la banda verde, desplegamos.</div>
+    <div class="levels" style="margin-top:8px">
       <div class="lv"><div class="l">Suelo estimado</div><div class="n" style="font-size:13px;text-transform:capitalize">${fMY(cs.projLoMs)}–${fMY(cs.projHiMs)}</div></div>
       <div class="lv"><div class="l">Media histórica</div><div class="n" style="font-size:13px">${cs.avg.toFixed(1)} meses</div></div>
       <div class="lv"><div class="l">Rango (3 ciclos)</div><div class="n" style="font-size:13px">${cs.lo.toFixed(1)}–${cs.hi.toFixed(1)}m</div></div>
