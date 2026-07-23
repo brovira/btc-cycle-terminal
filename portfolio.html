@@ -228,7 +228,12 @@ async function loadOrca(btc){
     for(const p of arr){
       if(!(p&&p.status==="open"&&p.isConfirmedPosition))continue;
       const parts=v3Parts(p.liquidityState,btc);if(!parts)continue;
-      const usd=parts.reduce((s,x)=>s+x.usd,0);total+=usd;
+      let usd=parts.reduce((s,x)=>s+x.usd,0);
+      // VALOR ACTUAL (lo que retirarías hoy), no lo aportado: ancla al valor que calcula el
+      // pipeline (performance.currentValueUsd) y reparte por token; si no está, usa el cálculo vivo.
+      const cur=p.performance&&p.performance.currentValueUsd;
+      if(cur!=null&&isFinite(cur)&&cur>0&&usd>0){const k=cur/usd;for(const x of parts){x.usd*=k;x.amount*=k;}usd=cur;}
+      total+=usd;
       positions.push({pair:parts.map(x=>x.sym).join(" / "),usd,inRange:parts.inRange,parts,fee:orcaFee(p.liquidityState)});
     }
     positions.sort((a,b)=>b.usd-a.usd);

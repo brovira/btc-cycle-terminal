@@ -782,7 +782,8 @@ const PLAN_CICLO={
   loop:{icon:"🔄",nombre:"Loop — BTC apalancado en Aave",color:"#9b8cff",
     estrategia:"Patrón temporal — ejecutar solo en la ventana de suelo proyectada",
     estado:"⏳ En espera. Se monta SOLO si BTC toca mínimos en oct-nov 2026.",
-    objetivo:"1 BTC de colateral → pedir prestado para ~0,5 BTC más (apalancamiento ~1,5×)"}
+    objetivo:"1 BTC de colateral → pedir prestado para ~0,5 BTC más (apalancamiento ~1,5×)",
+    objetivo_colateral_btc:1, colateral_btc:0, objetivo_prestado_btc:0.5, prestado_btc:0}
 };
 async function loadBuys(R){
   const el=$("#buysBox");
@@ -811,8 +812,11 @@ async function loadBuys(R){
   const progress=(c)=>{
     const rows=(c.compras||[]).map(norm);const eur=rows.reduce((s,x)=>s+(+x.eur||0),0),btc=rows.reduce((s,x)=>s+x.btc,0);
     const bits=[];
-    if(c.objetivo_eur)bits.push(`<div style="flex:1;min-width:180px"><div class="mtxt">Aportado ${fmtEUR(eur)} / ${fmtEUR(c.objetivo_eur)}</div><div class="pbar"><i style="width:${Math.min(100,eur/c.objetivo_eur*100).toFixed(1)}%"></i></div></div>`);
-    if(c.objetivo_btc)bits.push(`<div style="flex:1;min-width:180px"><div class="mtxt">${fmtBTC(btc)} / ₿ ${c.objetivo_btc}</div><div class="pbar"><i style="width:${Math.min(100,btc/c.objetivo_btc*100).toFixed(1)}%;background:var(--hot)"></i></div></div>`);
+    const barBit=(txt,val,goal,color)=>`<div style="flex:1;min-width:180px"><div class="mtxt">${txt}</div><div class="pbar"><i style="width:${Math.min(100,goal>0?val/goal*100:0).toFixed(1)}%${color?";background:"+color:""}"></i></div></div>`;
+    if(c.objetivo_eur)bits.push(barBit(`Aportado ${fmtEUR(eur)} / ${fmtEUR(c.objetivo_eur)}`,eur,c.objetivo_eur));
+    if(c.objetivo_btc)bits.push(barBit(`${fmtBTC(btc)} / ₿ ${c.objetivo_btc}`,btc,c.objetivo_btc,"var(--hot)"));
+    if(c.objetivo_colateral_btc)bits.push(barBit(`Colateral ${fmtBTC(+c.colateral_btc||0)} / ₿ ${c.objetivo_colateral_btc}`,+c.colateral_btc||0,c.objetivo_colateral_btc,"var(--accent)"));
+    if(c.objetivo_prestado_btc)bits.push(barBit(`Prestado ${fmtBTC(+c.prestado_btc||0)} / ₿ ${c.objetivo_prestado_btc} objetivo`,+c.prestado_btc||0,c.objetivo_prestado_btc,"#9b8cff"));
     return bits.length?`<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">${bits.join("")}</div>`:"";
   };
   const bucket=(c,chips)=>`<div class="bkt" style="border-left:3px solid ${c.color||"var(--line)"}">
