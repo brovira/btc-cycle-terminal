@@ -123,6 +123,10 @@
   <div class="sec-head"><h2>₿ Mis compras BTC de este ciclo</h2><div class="rule"></div><span class="mtxt" style="font-size:12px">privado · round-up Revolut + órdenes BELROGAM</span></div>
   <div class="note" id="buysBox" style="border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:14px 16px">Cargando compras…</div>
 
+  <div class="sec-head"><h2>⏱️ Patrón temporal del ciclo</h2><div class="rule"></div><span class="mtxt" style="font-size:12px">calculado, no atribuido a ningún agente</span></div>
+  <div class="panel" style="padding:14px 16px;overflow:auto" id="cycleTimeline"></div>
+  <div class="note" style="margin-top:6px">Fechas de techo/suelo/halving reales (no citas). El intervalo <b>techo→suelo</b> es el más estable de los tres: ~12-13 meses en los 3 ciclos completos — coincide con la señal ya citada de Cowen ("bear markets take about 50 to 60 weeks", 11.5-13.8 meses) y con su ventana Q4-2026, como doble confirmación independiente.</div>
+
   <div class="sec-head"><h2>Ventanas de compra/venta sobre el precio</h2><div class="rule"></div>
     <div style="display:flex;gap:6px" id="phTabs">
       <button class="btn" data-ph="lmec" style="font-size:12px;padding:5px 10px">🎯 LMEC</button>
@@ -485,6 +489,29 @@ function renderAgents(R){
    Verde = comprar · naranja = vender. En "Ambos", el solape (color más denso) = los dos coinciden. */
 const PH_HALVINGS=["2012-11-28","2016-07-09","2020-05-11","2024-04-19","2028-04-20"].map(d=>Date.parse(d));
 const PH_WKMS=7*864e5;
+/* ---------- patrón temporal del ciclo: meses entre techo→suelo→halving (cálculo directo,
+   fechas históricas reales — no es una cita de ningún agente, es matemática sobre precios) ---------- */
+function renderCycleTimeline(){
+  const EV=[["H1","28-nov-2012","2012-11-28"],["T1","4-dic-2013","2013-12-04"],["B1","14-ene-2015","2015-01-14"],
+    ["H2","9-jul-2016","2016-07-09"],["T2","17-dic-2017","2017-12-17"],["B2","15-dic-2018","2018-12-15"],
+    ["H3","11-may-2020","2020-05-11"],["T3","10-nov-2021","2021-11-10"],["B3","21-nov-2022","2022-11-21"],
+    ["H4","20-abr-2024","2024-04-20"],["T4","6-oct-2025","2025-10-06"]];
+  const months=(a,b)=>(Date.parse(b)-Date.parse(a))/864e5/30.4368;
+  const rows=[];for(let i=0;i<EV.length-1;i++)rows.push({k:EV[i][0]+"→"+EV[i+1][0],a:EV[i][1],b:EV[i+1][1],m:months(EV[i][2],EV[i+1][2])});
+  const tb=rows.filter(r=>/^T\d→B\d/.test(r.k));
+  const avg=tb.reduce((s,r)=>s+r.m,0)/tb.length,lo=Math.min(...tb.map(r=>r.m)),hi=Math.max(...tb.map(r=>r.m));
+  const t4=Date.parse("2025-10-06");
+  const projLo=new Date(t4+lo*30.4368*864e5).toISOString().slice(0,7),projHi=new Date(t4+hi*30.4368*864e5).toISOString().slice(0,7);
+  const projAvg=new Date(t4+avg*30.4368*864e5).toISOString().slice(0,7);
+  let h=`<table><thead><tr><th style="text-align:left">Tramo</th><th style="text-align:left">Desde</th><th style="text-align:left">Hasta</th><th>Meses</th></tr></thead><tbody>`;
+  for(const r of rows){
+    const isTB=/^T\d→B\d/.test(r.k);
+    h+=`<tr${isTB?' style="background:color-mix(in oklab,var(--bull) 6%,transparent)"':''}><td style="text-align:left">${r.k}${isTB?' <span class="chip" style="color:var(--bull);border-color:var(--bull)">techo→suelo</span>':''}</td><td style="text-align:left" class="mono">${r.a}</td><td style="text-align:left" class="mono">${r.b}</td><td class="mono">${r.m.toFixed(1)}</td></tr>`;
+  }
+  h+=`<tr style="font-weight:750;background:color-mix(in oklab,var(--hot) 8%,transparent)"><td style="text-align:left">T4→B4</td><td style="text-align:left" class="mono">6-oct-2025</td><td style="text-align:left" class="mono">proyección</td><td class="mono" style="color:var(--hot)">${lo.toFixed(1)}–${hi.toFixed(1)} (media ${avg.toFixed(1)})</td></tr>`;
+  h+=`</tbody></table><div class="note" style="margin-top:8px">Media histórica techo→suelo (${avg.toFixed(1)} meses) aplicada al techo de este ciclo (6-oct-2025) → <b style="color:var(--hot)">ventana de suelo ${projLo} – ${projHi}, centrada en ${projAvg}</b>.</div>`;
+  $("#cycleTimeline").innerHTML=h;
+}
 let PH_MODE="both",PH_LASTD=null;
 function phRect(x0,x1,color){return{type:"rect",xref:"x",yref:"paper",x0,x1,y0:0,y1:1,fillcolor:color,line:{width:0},layer:"below"};}
 const phIso=ms=>new Date(ms).toISOString().slice(0,10);
@@ -748,6 +775,7 @@ async function refreshAll(){
     $("#action").textContent="Sin datos";$("#actionSub").textContent="Reintenta en un momento.";
   }
 }
+renderCycleTimeline(); // estático (fechas históricas fijas) — no depende de la carga de datos en vivo
 refreshAll();
 setInterval(refreshAll,30*60*1000); // precio, señales y consejos de los agentes cada 30 min
 </script>
