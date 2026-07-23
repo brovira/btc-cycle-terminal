@@ -73,6 +73,7 @@
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 <link rel="stylesheet" href="dashboard.css">
+<script src="risk.js"></script>
 </head>
 <body class="dashboard-page page-index">
 <div class="wrap">
@@ -117,8 +118,8 @@
       </a>
       <a class="dash" href="belrogam.html" style="--c:var(--cycles)">
         <div class="dt"><h3>🏢 BELROGAM · plan del ciclo</h3><span class="status on">activo</span></div>
-        <p>Investigación propia: cashflow y proyecciones de la empresa → <b>cuánto comprar y cuándo</b> (spot, hold 3 años, objetivo 55k + 1 BTC). Órdenes de 60k↓ atadas a la pólvora proyectada. 🔒</p>
-        <div class="tags"><span class="tag">cashflow</span><span class="tag">55k</span><span class="tag">1 BTC</span><span class="tag">órdenes</span></div>
+        <p>Investigación propia: cashflow y proyecciones de la empresa → <b>cuánto comprar y cuándo</b> (spot, hold ~3 años). Órdenes escalonadas atadas a la pólvora proyectada. 🔒</p>
+        <div class="tags"><span class="tag">cashflow</span><span class="tag">spot</span><span class="tag">hold 3 años</span><span class="tag">órdenes</span></div>
       </a>
     </div>
   </section>
@@ -198,14 +199,7 @@ document.getElementById("themeBtn").addEventListener("click",()=>{const r=docume
    reciente) · Patrón (ventana de suelo, techo→suelo real de los 3 ciclos). Nada de la rejilla vieja. ---------- */
 (async function(){
   async function weekly(){for(const h of["api.binance.com","api.binance.us"]){try{const r=await fetch(`https://${h}/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=1000`,{cache:"no-store"});if(r.ok){const j=await r.json();return{t:j.map(k=>k[0]),c:j.map(k=>+k[4])};}}catch(e){}}return null;}
-  function riskNow(D){ // idéntico a cowenRiskNow() de decision.html
-    const t0=Date.parse("2009-01-03");let n=0,sx=0,sy=0,sxx=0,sxy=0;const pts=[];
-    for(let i=0;i<D.t.length;i++){const w=(D.t[i]-t0)/(7*864e5),c=D.c[i];if(!(w>0)||!(c>0))continue;const x=Math.log(w),y=Math.log(c);n++;sx+=x;sy+=y;sxx+=x*x;sxy+=x*y;pts.push([x,y]);}
-    if(n<52)return null;const den=n*sxx-sx*sx;if(!(den>0))return null;
-    const b=(n*sxy-sx*sy)/den,a=(sy-b*sx)/n;let dmin=Infinity,dmax=-Infinity,last=null;
-    for(const[x,y]of pts){const dv=y-(a+b*x);if(dv<dmin)dmin=dv;if(dv>dmax)dmax=dv;last=dv;}
-    if(!(dmax>dmin))return null;return(last-dmin)/(dmax-dmin);
-  }
+  const riskNow=D=>(typeof BTCRisk!=="undefined")?BTCRisk.riskNow(D):null; // fuente única: risk.js (misma que decision.html)
   // patrón temporal: mismo cálculo que cycleStats() de decision.html (techo→suelo real, 3 ciclos)
   const CYCLE_EV=["2012-11-28","2013-12-04","2015-01-14","2016-07-09","2017-12-17","2018-12-15","2020-05-11","2021-11-10","2022-11-21","2024-04-19","2025-10-06"].map(d=>Date.parse(d));
   const months=(a,b)=>(b-a)/864e5/30.4368;

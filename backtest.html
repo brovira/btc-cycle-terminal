@@ -127,7 +127,7 @@
           <option value="__new__">＋ Crear nueva (elige indicadores)</option>
           <optgroup label="⏱️ Estrategias temporales · 4-year cycle">
             <option value="patron_temporal">Patrón · Techo→Suelo→Techo (compra 52-58 sem tras techo / vende 150-153 sem tras suelo)</option>
-            <option value="lmec_cycle">LMEC · Semanas desde el halving (compra sem 120-180 / vende sem 70-110)</option>
+            <option value="lmec_cycle">LMEC · Techo→suelo (compra ~53 sem tras el techo / vende cerca del techo)</option>
             <option value="cowen_seasonal">Cowen · Año electoral (compra 2ª mitad midterm / vende Q4 post-halving)</option>
           </optgroup>
           <optgroup label="🔄 Señales de agentes">
@@ -540,27 +540,27 @@ function paintChart(){
 /* ---------- presets (reglas basadas en citas reales de los transcripts) ---------- */
 const PRESETS={
   /* === Ciclos · agentes === */
-  lmec_cycle:{name:"LMEC · Ciclo del halving",
-    desc:`<h4>LMEC · Ciclo del halving (temporal)</h4>Acumula en la ventana de suelo del ciclo y toma beneficio cerca del techo, guiándose por las semanas desde el halving (techo ≈ sem 74-80, suelo ≈ sem 125-135).
-    <div class="how"><div><b>Compra</b>: sem 120-180 (tras el suelo del bear).</div><div><b>Vende</b>: sem 70-110 (cerca del techo).</div></div>
-    <div class="q">"cuanto más caen, más aumenta el porcentaje de la compra... siempre mantener mucha liquidez disponible"<span class="src">[lmec/04-plan-completo-2027]</span></div>
+  lmec_cycle:{name:"LMEC · Techo→suelo del ciclo",
+    desc:`<h4>LMEC · Techo→suelo (temporal)</h4>Acumula hacia el suelo del ciclo y toma beneficio cerca del techo, en SU eje real: <b>semanas desde el TECHO</b> (no del halving). Su vídeo más reciente sitúa el suelo a ~53 semanas del techo (oct/nov 2026).
+    <div class="how"><div><b>Compra</b>: 48-60 sem tras el techo (zona del suelo, ~53).</div><div><b>Vende</b>: cerca del techo siguiente (~150 sem tras el suelo).</div></div>
+    <div class="q">"desde el máximo histórico hasta el suelo tenemos 53 semanas... nos pondría el suelo hacia octubre o noviembre de 2026"<span class="src">[lmec/04-plan-completo-2027]</span></div>
     <span class="warn">Las semanas exactas son una aproximación de la estructura del ciclo; él compra por niveles de precio, no por semana fija. Prueba el Modo DCA.</span>`,
     e:{logic:"all",conds:[
-    {left:{ind:"halvw",params:{}},op:"gt",right:{ind:"value",params:{v:120}}},
-    {left:{ind:"halvw",params:{}},op:"lt",right:{ind:"value",params:{v:180}}}]},
+    {left:{ind:"topw",params:{}},op:"gt",right:{ind:"value",params:{v:48}}},
+    {left:{ind:"topw",params:{}},op:"lt",right:{ind:"value",params:{v:60}}}]},
     x:{logic:"all",conds:[
-    {left:{ind:"halvw",params:{}},op:"gt",right:{ind:"value",params:{v:70}}},
-    {left:{ind:"halvw",params:{}},op:"lt",right:{ind:"value",params:{v:110}}}]}},
+    {left:{ind:"botw",params:{}},op:"gt",right:{ind:"value",params:{v:145}}},
+    {left:{ind:"botw",params:{}},op:"lt",right:{ind:"value",params:{v:160}}}]}},
   lmec_bmsb:{name:"LMEC · 2ª ruptura de la BMSB",
     desc:`<h4>LMEC · 2ª ruptura de la BMSB</h4>Su señal de compra núcleo: la <b>segunda</b> recuperación al alza de la Bull Market Support Band (la 1ª es una trampa). Vende en la euforia del ciclo, NO al perder la banda.
     <div class="q">"Cada vez que Bitcoin ha roto por segunda vez la Bull Market Support Band, ese momento siempre ha coincidido con el inicio de un nuevo tramo alcista. Importante la segunda vez, que no la primera."<span class="src">[lmec/01-punto-exacto-bmsb]</span></div>
-    <div class="how"><div><b>Compra</b>: 2ª ruptura ▲ de la BMSB.</div><div><b>Vende</b>: euforia del ciclo (sem 70-110 tras el halving).</div></div>
-    <span class="warn">Corrección: "perder la BMSB = vender" NO es su regla (no lo dice en ningún transcript). Su venta es tomar beneficio en la euforia; por eso la salida es temporal, no "perder la banda".</span>`,
+    <div class="how"><div><b>Compra</b>: 2ª ruptura ▲ de la BMSB.</div><div><b>Vende</b>: euforia cerca del techo (~150 sem tras el suelo).</div></div>
+    <span class="warn">Corrección: "perder la BMSB = vender" NO es su regla (no lo dice en ningún transcript). Su venta es tomar beneficio en la euforia; por eso la salida es temporal (cerca del techo), no "perder la banda".</span>`,
     e:{logic:"all",conds:[
     {left:{ind:"bmsb2",params:{}},op:"gt",right:{ind:"value",params:{v:0.5}}}]},
     x:{logic:"all",conds:[
-    {left:{ind:"halvw",params:{}},op:"gt",right:{ind:"value",params:{v:70}}},
-    {left:{ind:"halvw",params:{}},op:"lt",right:{ind:"value",params:{v:110}}}]}},
+    {left:{ind:"botw",params:{}},op:"gt",right:{ind:"value",params:{v:145}}},
+    {left:{ind:"botw",params:{}},op:"lt",right:{ind:"value",params:{v:160}}}]}},
   cowen_seasonal:{name:"Cowen · Estacional midterm",
     desc:`<h4>Cowen · Estacional midterm</h4>Compra en la 2ª mitad del año midterm (tras el mínimo de junio) y distribuye a final del año post-halving.
     <div class="q">"after the June low is when I bought and I just DCA... You then start to deploy that... the second half of the midterm year"<span class="src">[cowen/20260614-bitcoin-dynamic-dca]</span></div>
@@ -669,7 +669,10 @@ function run(){if(!DATA)return;const b=$("#errBanner");b.style.display="none";
 async function boot(){
   $("#statusDot").className="dot warn";$("#statusText").textContent="Cargando datos…";$("#errBanner").style.display="none";
   sload();renderSaved();
-  if(!ENTRY.conds.length)loadPreset("gc");else renderBuilder();
+  // deep-link: ?strat=<clave> abre el backtest con esa estrategia ya cargada (desde las fichas de decisión)
+  const _urlStrat=new URLSearchParams(location.search).get("strat");
+  if(_urlStrat&&PRESETS[_urlStrat]){$("#c_preset").value=_urlStrat;loadPreset(_urlStrat);}
+  else if(!ENTRY.conds.length)loadPreset("gc");else renderBuilder();
   try{await Promise.all([loadPlotly(),loadData()]);await Promise.all([loadOnchain(),loadFNG()]);
     $("#statusDot").className="dot";$("#statusText").textContent=DATA.t.length+" semanas · "+SRC;$("#srcTag").textContent=SRC;run();}
   catch(err){$("#statusDot").className="dot err";$("#statusText").textContent="Error";const b=$("#errBanner");b.style.display="block";b.innerHTML="<b>No se pudo cargar.</b> "+((err&&err.message)||err)+". Tu red puede bloquear Binance/Coin Metrics — prueba otra red y pulsa ↻.";}

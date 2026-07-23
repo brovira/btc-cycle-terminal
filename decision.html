@@ -100,6 +100,7 @@
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 <link rel="stylesheet" href="dashboard.css">
+<script src="risk.js"></script>
 </head>
 <body class="dashboard-page page-decision">
 <div class="wrap">
@@ -111,8 +112,6 @@
     </div>
     <div class="controls">
       <a class="btn" href="index.html">← Panel</a>
-      <a class="btn" href="lmec.html">🎯 LMEC</a>
-      <a class="btn" href="cowen.html">📊 Cowen</a>
       <button class="btn" id="themeBtn">◐ Tema</button>
     </div>
   </header>
@@ -226,21 +225,9 @@ const MESES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","
 function fmtDate(ms){const d=new Date(ms);return d.getUTCDate()+" "+MESES[d.getUTCMonth()]+" "+d.getUTCFullYear();}
 function weekToMs(lastH,w){return lastH+w*7*864e5;}
 
-/* Risk 0-1 (APROXIMACIÓN abierta al estilo Cowen — su métrica exacta es propietaria).
-   Desviación de log(precio) sobre una regresión log-log (precio ~ tiempo desde génesis),
-   normalizada 0-1 con min/max de toda la serie. Mismo método que el backtester. */
-function cowenRiskNow(D){
-  const t0=Date.parse("2009-01-03");let n=0,sx=0,sy=0,sxx=0,sxy=0;const pts=[];
-  for(let i=0;i<D.t.length;i++){const w=(D.t[i]-t0)/(7*864e5),c=D.c[i];if(!(w>0)||!(c>0))continue;
-    const x=Math.log(w),y=Math.log(c);n++;sx+=x;sy+=y;sxx+=x*x;sxy+=x*y;pts.push([x,y]);}
-  if(n<52)return null;
-  const den=n*sxx-sx*sx;if(!(den>0))return null;
-  const b=(n*sxy-sx*sy)/den,a=(sy-b*sx)/n;
-  let dmin=Infinity,dmax=-Infinity,last=null;
-  for(const[x,y]of pts){const dv=y-(a+b*x);if(dv<dmin)dmin=dv;if(dv>dmax)dmax=dv;last=dv;}
-  if(!(dmax>dmin))return null;
-  return(last-dmin)/(dmax-dmin);
-}
+/* Risk 0-1 (APROXIMACIÓN abierta al estilo Cowen). La implementación vive en risk.js
+   (fuente única, compartida con index.html). Aquí solo se delega. */
+function cowenRiskNow(D){return (typeof BTCRisk!=="undefined")?BTCRisk.riskNow(D):null;}
 
 /* ---------- evaluación ---------- */
 function evaluate(D){
@@ -357,7 +344,7 @@ function renderOurSignals(R,dcaOn){
   const patronOn=now>=cs.projLoMs&&now<=cs.projHiMs;
   const sigs=[
     {nm:"Cowen · DCA",on:dcaOn,st:dcaOn?"ACTIVO":"esperando",ds:"risk metric < 0,3 → DCA en marcha"+(R.riskNow!=null?" (risk "+R.riskNow.toFixed(2)+")":"")},
-    {nm:"LMEC · suelo",on:lmecOn,st:lmecOn?"ACTIVO":"esperando (sem "+Math.max(0,Math.round(wkTop))+"/"+LMEC_FLOOR_WK+" del techo)",ds:"su suelo proyectado: 53 semanas desde el techo → oct/nov 2026 (vídeo más reciente). DCA por niveles 60k↓ hasta entonces"},
+    {nm:"LMEC · suelo",on:lmecOn,st:lmecOn?"ACTIVO":"esperando (sem "+Math.max(0,Math.round(wkTop))+"/"+LMEC_FLOOR_WK+" del techo)",ds:"su suelo proyectado: 53 semanas desde el techo → oct/nov 2026 (vídeo más reciente). DCA por niveles hasta entonces"},
     {nm:"Patrón · ventana de suelo",on:patronOn,st:patronOn?"ACTIVO":"esperando",ds:"suelo proyectado oct-nov 2026"},
   ];
   const nOn=sigs.filter(s=>s.on).length;
@@ -373,8 +360,8 @@ function renderPlanPhase(R){
   const nowP=pct(now),flL=pct(cs.projLoMs),flR=pct(cs.projHiMs),lmP=pct(PLAN_LMEC);
   let fase,accion,head;
   if(now<cs.projLoMs){
-    fase="🟢 ACUMULACIÓN"; head="DCA + órdenes límite (60k↓)";
-    accion=`Hacemos <b>DCA pequeño ya</b> (Cowen) y tenemos <b>órdenes límite de 60k para abajo</b> (LMEC). La <b>artillería gorda + el loop</b> quedan guardados para la ventana de suelo — faltan <b>~${Math.max(0,toLo).toFixed(0)}–${Math.max(0,toHi).toFixed(0)} meses</b>.`;
+    fase="🟢 ACUMULACIÓN"; head="DCA + órdenes límite por niveles";
+    accion=`Hacemos <b>DCA pequeño ya</b> (Cowen) y tenemos <b>órdenes límite escalonadas por niveles</b> (LMEC). La <b>artillería gorda + el loop</b> quedan guardados para la ventana de suelo — faltan <b>~${Math.max(0,toLo).toFixed(0)}–${Math.max(0,toHi).toFixed(0)} meses</b>.`;
   }else if(now<=cs.projHiMs){
     fase="🔥 VENTANA DE SUELO"; head="Desplegar artillería";
     accion=`Estamos en la ventana proyectada: <b>desplegar la artillería</b> y, si BTC toca mínimos, montar el loop en Aave (1,5×).`;
@@ -477,8 +464,8 @@ async function loadKB(){
 function renderAgents(R){
   const px=R.price;
   const A=[
-    {name:"🎯 LMEC",color:"var(--accent)",state:"Esperando con órdenes límite",kb:"lmec",fw:"lmec.html",clock:lmecClock(R),
-     win:[PLAN_TOP+50*7*864e5,PLAN_TOP+58*7*864e5],winNote:`Su suelo proyectado: <b>53 semanas desde el techo</b> (vídeo más reciente) → <b>oct/nov 2026</b>. DCA por niveles durante todo el bear (<b>órdenes límite de 60k para abajo</b>: 60/55/50/45k); la munición gorda se despliega al confirmarse el suelo (2ª ruptura de la BMSB + MACD + RSI 40-50 + MVRV saliendo de verde).`,
+    {name:"🎯 LMEC",color:"var(--accent)",state:"Esperando con órdenes límite",kb:"lmec",fw:"lmec.html",bt:"lmec_bmsb",clock:lmecClock(R),
+     win:[PLAN_TOP+50*7*864e5,PLAN_TOP+58*7*864e5],winNote:`Su suelo proyectado: <b>53 semanas desde el techo</b> (vídeo más reciente) → <b>oct/nov 2026</b>. DCA por niveles durante todo el bear (<b>órdenes límite escalonadas por niveles</b> hacia el suelo); la munición gorda se despliega al confirmarse el suelo (2ª ruptura de la BMSB + MACD + RSI 40-50 + MVRV saliendo de verde).`,
      now:`Compra <b>por niveles</b> con órdenes límite ya puestas: ejecutó BTC en <b>70k, 65k y 60k</b> (feb→jun 2026); las siguientes esperan en <b>~55.300</b> y <b>~50.400</b>. Mantiene un corto de BTC como cobertura (TP 48k) y operativa mínima ("no voy a hacer nada o casi nada").`,
      since:`Comprando desde <b>dic-2025</b> (HYPE ~$24) y BTC desde el crash del <b>5-feb-2026</b> — no por señal, sino por ejecución mecánica del plan fijado en máximos: "si el mercado volvía a tocar determinadas zonas críticas, había que comprar sin excepciones".`,
      next:`Espera <b>rebote-trampa a 67-69k</b> (test de la BMSB) en jul/ago → más caídas después; suelo hacia <b>oct/nov-2026</b> (~45k su escenario central) y bull real en <b>mar/abr-2027</b> (280 días tras la 2ª ruptura).`,
@@ -489,7 +476,7 @@ function renderAgents(R){
        if(m.price<=55500)return`El precio ha llegado a su <b>nivel de compra ~55.3k</b> → ejecuta la orden (30% del tramo).`;
        if(m.bmsbHi&&m.price>=m.bmsbHi*0.97)return`Precio pegado a la BMSB (${fmtUSD(m.bmsbHi)}) = su <b>rebote-trampa</b>: NO comprar aquí; él abriría cortos en alts. Órdenes abajo (55.3k) y paciencia.`;
        return`<b>No comprar a mercado.</b> Deja órdenes límite (siguiente: ~55.3k) y espera. La compra fuerte es la ruptura confirmada de la BMSB (~mar-2027).`;}},
-    {name:"📊 Cowen",color:"var(--hot)",state:"Dynamic DCA activo (risk <0,3)",kb:"cowen",fw:"cowen.html",clock:cowenClock(),
+    {name:"📊 Cowen",color:"var(--hot)",state:"Dynamic DCA activo (risk <0,3)",kb:"cowen",fw:"cowen.html",bt:"cowen_risk",clock:cowenClock(),
      win:[Date.parse("2026-07-01"),Date.parse("2027-06-30")],winNote:`2ª mitad del midterm ("right after the June low") + inicio del pre-halving year. Es la <b>ventana de compra más larga</b> de las tres.`,
      now:`<b>Ya está comprando</b>: dynamic DCA solo cuando su risk metric está <b>bajo 0,3</b> (citó 0,296). Empezó tras el <b>mínimo de junio-2026</b> (~57k), calcando 2018 y 2022. Despliegue deliberadamente lento.`,
      since:`"I started accumulating Bitcoin after the June low… I just DCA" — evitó el mínimo de febrero a propósito ("far too early in the midterm year").`,
@@ -545,6 +532,7 @@ function renderAgents(R){
     </details>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
       <a class="btn" style="font-size:12px;padding:6px 10px" href="${a.fw}">📖 Su framework completo →</a>
+      ${a.bt?`<a class="btn" style="font-size:12px;padding:6px 10px" href="backtest.html?strat=${a.bt}">📈 Ver en el backtest →</a>`:""}
       ${nSig?`<span class="chip" style="align-self:center">📚 ${nSig} señales en su KB${nCambios?` · ${nCambios} cambios de opinión`:""}</span>`:`<span class="chip" style="align-self:center">📚 KB de señales: generándose</span>`}
     </div>
   </div>`;}).join("");
@@ -564,7 +552,7 @@ function renderAgents(R){
       <div class="lv"><div class="l">Rango (3 ciclos)</div><div class="n" style="font-size:13px">${cs.lo.toFixed(1)}–${cs.hi.toFixed(1)}m</div></div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
-      <a class="btn" style="font-size:12px;padding:6px 10px" href="backtest.html">📈 Verlo en el backtest →</a>
+      <a class="btn" style="font-size:12px;padding:6px 10px" href="backtest.html?strat=patron_temporal">📈 Verlo en el backtest →</a>
       <span class="chip" style="align-self:center">cálculo propio · no es cita de nadie</span>
     </div>
   </div>`;
@@ -612,7 +600,11 @@ const CYCLE_BOTS_MS=CYCLE_EV.filter(e=>/^B/.test(e[0])).map(e=>Date.parse(e[2]))
 const PATRON_EXTRA_TOPS_MS=[Date.parse("2011-06-08")];
 function patronBuyBase(){return CYCLE_TOPS_MS.map(T=>({t0:T+52*PH_WKMS,t1:T+58*PH_WKMS}));}
 function patronBuy(){return[...PATRON_EXTRA_TOPS_MS.map(T=>({t0:T+52*PH_WKMS,t1:T+58*PH_WKMS})),...patronBuyBase()];}
-function patronSell(){return CYCLE_BOTS_MS.map(B=>({t0:B+150*PH_WKMS,t1:B+153*PH_WKMS}));}
+/* venta del patrón = 150-153 sem tras cada suelo (cae sobre el techo siguiente). Los DOS primeros
+   techos (2011 y T1 dic-2013) no tienen suelo previo en el rango → se les añade su banda anclada al
+   techo real, simétrico con la banda de compra del mini-ciclo de 2011. Así cada techo tiene su venta. */
+const PATRON_EXTRA_SELL_TOPS_MS=[Date.parse("2011-06-08"),Date.parse("2013-12-04")];
+function patronSell(){return[...PATRON_EXTRA_SELL_TOPS_MS.map(T=>({t0:T-2*PH_WKMS,t1:T+2*PH_WKMS})),...CYCLE_BOTS_MS.map(B=>({t0:B+150*PH_WKMS,t1:B+153*PH_WKMS}))];}
 function patronIntervals(){return patronBuyBase();} // confluencia 3-vías: solo ciclos con halving (desde el techo de 2013), sin el mini-ciclo 2011
 /* (la proyección del patrón vive ahora en su tarjeta de estrategia, arriba) */
 let PH_MODE="todos",PH_LASTD=null;
@@ -818,27 +810,25 @@ async function loadHistory(D,R){
 /* ---------- mis compras BTC del ciclo (datos en el repo PRIVADO: data/btc_compras.json) ---------- */
 const fmtEUR=v=>v==null||isNaN(v)?"—":(v<0?"-€":"€")+Math.abs(Math.round(v)).toLocaleString("en-US");
 const fmtBTC=v=>v==null||isNaN(v)?"—":"₿ "+Number(v).toFixed(v<0.01?6:4);
-/* Plan por defecto — se ve SIEMPRE (aunque no exista el JSON privado): son los objetivos
-   y el estado que me diste. Las compras reales (importes) viven en el JSON del repo privado
-   y, si existen, se fusionan encima. Nada personal se guarda en el repo público. */
+/* Plan por defecto — se ve SIEMPRE la ESTRUCTURA (los 3 libros, la estrategia y el estado). Los
+   NÚMEROS personales (objetivos en €/BTC, órdenes, escalera, importes de compra) NO se guardan en
+   este repo público: viven en el JSON del repo privado (/api/private?file=btc_compras) y, si existe,
+   se fusionan encima (objetivo_eur, objetivo_btc, ordenes, escalera, objetivo_prestado_btc…). Así el
+   código público solo muestra el marco; las cifras solo aparecen en la web con sesión. */
 const PLAN_CICLO={
   personal:{icon:"👤",nombre:"Persona física — Revolut",color:"var(--accent)",
     estrategia:"Cowen (empezar DCA ya) + LMEC (escalar en las caídas)",
-    estado:"✅ DCA iniciado con el round-up de Revolut (céntimos). Se sube el tamaño según baja el precio.",
-    objetivo:"Juntar ~5.000€ para octubre 2026 (≈1.000€/mes del sueldo + ahorros)",
-    escalera:[{bajo:65000,mult:1},{bajo:60000,mult:2},{bajo:55000,mult:5},{bajo:50000,mult:10}],
+    estado:"DCA en marcha con el round-up (céntimos). Se sube el tamaño según baja el precio.",
+    objetivo:"Acumular con DCA hacia la ventana de suelo del ciclo",
     advisory:true},
   belrogam:{icon:"🏢",nombre:"BELROGAM — spot, hold 3 años",color:"var(--bull)",
     estrategia:"Patrón temporal (la mejor en backtest) — comprar por niveles hacia el suelo proyectado",
-    estado:"✅ Órdenes de compra puestas de 60k para abajo. Guardando artillería para oct-nov.",
-    objetivo:"Aportar 55.000€ hasta dic-2027 · si es posible, acumular 1 BTC",
-    objetivo_eur:55000, objetivo_btc:1,
-    ordenes:[{precio:60000},{precio:55000},{precio:50000},{precio:45000}]},
+    estado:"Órdenes escalonadas hacia el suelo. Artillería guardada para la ventana proyectada.",
+    objetivo:"Aportar caja del negocio al ciclo (spot, hold ~3 años)"},
   loop:{icon:"🔄",nombre:"Loop — BTC apalancado en Aave",color:"#9b8cff",
     estrategia:"Patrón temporal — ejecutar solo en la ventana de suelo proyectada",
-    estado:"⏳ En espera. Se monta SOLO si BTC toca mínimos en oct-nov 2026.",
-    objetivo:"1 BTC de colateral → pedir prestado para ~0,5 BTC más (apalancamiento ~1,5×)",
-    objetivo_colateral_btc:1, colateral_btc:0, objetivo_prestado_btc:0.5, prestado_btc:0}
+    estado:"En espera. Se monta SOLO si BTC toca mínimos en la ventana de suelo (oct-nov 2026).",
+    objetivo:"Colateral BTC → pedir prestado para apalancar (~1,5×)"}
 };
 async function loadBuys(R){
   const el=$("#buysBox");
