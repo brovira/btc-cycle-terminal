@@ -147,6 +147,15 @@ Cada señal con **cita verbatim + archivo fuente**. Regla de oro: nunca añadir 
 4. **data/btc_compras.json** (DeFi-Tracker): crear cuando haya compras reales; ahí van los
    números del plan (objetivo_eur, objetivo_btc, ordenes, escalera) que se genericizaron del repo público.
 
+## Contenido / Twitter (regla del usuario)
+- **Cada vez que se enciende una señal nueva, el usuario debe publicar un tweet** sobre esa
+  señal y las decisiones que toma al respecto (usa una cuenta para crecer followers). Al
+  detectar una señal nueva (o un cambio de postura en decision.html / en la Routine semanal
+  de KB), **recordárselo y ofrecerle el borrador del tweet + la imagen** (mismo estilo que
+  `scratchpad/plan_en.html`: dark, curva del ciclo, chips; render a PNG 1600×900 con Chromium
+  headless). Sin revelar el "secret sauce" (nombres de analistas, umbrales exactos, reglas de
+  las señales) — solo la tesis pública y las decisiones.
+
 ## Automatizaciones
 - `.github/workflows/ingest-transcripts.yml` — diaria, baja subtítulos nuevos de los 3 canales.
 - `.github/workflows/decision-snapshot.yml` — snapshot de la decisión del día (histórico + scorecard).
