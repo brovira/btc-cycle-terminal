@@ -81,7 +81,7 @@
       <li><b>SWPE bajo</b> → la demanda de recompra del AF es fuerte frente al float: zona <b>barata</b> (los ingresos "pagan" el float rápido).</li>
       <li><b>SWPE alto</b> → el precio va por delante de los ingresos: <b>especulación / caro</b>.</li>
     </ul>
-    <div style="margin-top:8px">Fórmula exacta implementada: <b>floatMcap = circulating × precio</b> · <b>revAnual = (revenue 30d ÷ 30) × 365</b> · <b>SWPE = floatMcap ÷ revAnual</b>. Las bandas de color (&lt;4 / 4–8 / &gt;8) son <b>heurísticas</b> propias para leer el nivel de un vistazo, no umbrales oficiales.</div>
+    <div style="margin-top:8px">Fórmula exacta implementada: <b>floatMcap = circulating × precio</b> · <b>revAnual = (revenue 30d ÷ 30) × 365</b> · <b>SWPE = floatMcap ÷ revAnual</b>. Las bandas de color (&lt;3,5 / 3,5–7 / &gt;7) son <b>heurísticas</b> calibradas con el histórico de skewga (el desplome 7→3,9 fue su señal de compra), no umbrales oficiales.</div>
   </div>
 
   <div class="caveat">
@@ -112,14 +112,16 @@ function fmtUsd(v,dec){
 }
 function fmtNum(v){return v==null?"—":Number(v).toLocaleString("es-ES",{maximumFractionDigits:0});}
 
-// bandas heurísticas del SWPE
+// Umbrales del SWPE (calibrados con el histórico de skewga: 7→3,9 fue "buy signal",
+// ~3 = barato, buena entrada por debajo de ~2,5–3,5). Heurísticos.
+const ENTRY_SWPE=3.5, EXP_SWPE=7;
 function band(swpe){
   if(swpe==null)return {vc:"var(--muted)",bg:"var(--muted)",txt:"sin dato",desc:"No hay SWPE calculable ahora mismo."};
-  if(swpe<4)return {vc:"var(--bull)",bg:"var(--bull)",txt:"< 4 · AF demand fuerte vs float · zona barata",
-    desc:"Los ingresos que el Assistance Fund recicla en recompras son grandes frente al float — históricamente la zona <b>infravalorada</b>."};
-  if(swpe<=8)return {vc:"var(--accent)",bg:"var(--accent)",txt:"4–8 · neutral",
+  if(swpe<ENTRY_SWPE)return {vc:"var(--bull)",bg:"var(--bull)",txt:"< 3,5 · AF demand fuerte vs float · zona de entrada",
+    desc:"Los ingresos que el Assistance Fund recicla en recompras son grandes frente al float — históricamente la <b>zona barata / de entrada</b> (skewga: el desplome 7→3,9 fue señal de compra)."};
+  if(swpe<=EXP_SWPE)return {vc:"var(--accent)",bg:"var(--accent)",txt:"3,5–7 · neutral",
     desc:"Zona intermedia: precio e ingresos razonablemente alineados."};
-  return {vc:"var(--bear)",bg:"var(--bear)",txt:"> 8 · especulación por delante de ingresos · caro",
+  return {vc:"var(--bear)",bg:"var(--bear)",txt:"> 7 · especulación por delante de ingresos · caro",
     desc:"El precio corre por delante de los ingresos del protocolo — zona <b>sobreextendida</b>."};
 }
 
@@ -146,20 +148,33 @@ function drawSwpe(){
   const chart=$("#swpechart"),empty=$("#swpeEmpty");
   if(!SWPES||!SWPES.length){ if(chart)chart.style.display="none"; if(empty)empty.style.display="block"; return; }
   if(chart)chart.style.display=""; if(empty)empty.style.display="none";
-  const mut=cssv("--muted"),grid=cssv("--grid"),line=cssv("--line"),acc=cssv("--accent"),hot=cssv("--hot");
+  const mut=cssv("--muted"),grid=cssv("--grid"),line=cssv("--line"),acc=cssv("--accent"),hot=cssv("--hot"),bull=cssv("--bull"),bear=cssv("--bear");
   const traces=[{x:SWPES.map(p=>p[0]),y:SWPES.map(p=>p[1]),name:"SWPE",mode:"lines",yaxis:"y",
     line:{color:acc,width:2.2},hovertemplate:"%{x}<br>SWPE %{y:.2f}<extra></extra>"}];
-  if(BTCS&&BTCS.length)traces.push({x:BTCS.map(p=>p[0]),y:BTCS.map(p=>p[1]),name:"BTC",mode:"lines",yaxis:"y2",
+  if(BTCS&&BTCS.length)traces.push({x:BTCS.map(p=>p[0]),y:BTCS.map(p=>p[1]),name:"BTC (precio)",mode:"lines",yaxis:"y2",
     line:{color:mut,width:1.4},hovertemplate:"%{x}<br>BTC $%{y:,.0f}<extra></extra>"});
-  const shapes=(UNLOCKS||[]).map(u=>({type:"line",x0:u[0],x1:u[0],yref:"paper",y0:0,y1:1,line:{color:hot,width:1,dash:"dot"}}));
-  const anns=(UNLOCKS||[]).map(u=>({x:u[0],yref:"paper",y:1,text:"🔓",showarrow:false,font:{size:11},yanchor:"bottom"}));
+  // Eje Y robusto: el SWPE de los primeros meses (poco revenue, mcap alto) es enorme y aplasta
+  // el rango útil → recortamos a ~p90 para que la banda 2,5–8 se lea; el pico inicial se clipa.
+  const ys=SWPES.map(p=>p[1]).filter(v=>v!=null).sort((a,b)=>a-b);
+  const p90=ys.length?ys[Math.floor(0.90*(ys.length-1))]:12;
+  const ymax=Math.max(EXP_SWPE+2, Math.min(p90*1.3, 15));
+  // referencias: zona de entrada (<3,5, verde) y cara (>7, roja)
+  const refLines=[
+    {type:"line",xref:"paper",x0:0,x1:1,y0:ENTRY_SWPE,y1:ENTRY_SWPE,line:{color:bull,width:1,dash:"dash"}},
+    {type:"line",xref:"paper",x0:0,x1:1,y0:EXP_SWPE,y1:EXP_SWPE,line:{color:bear,width:1,dash:"dash"}},
+  ];
+  const unlockLines=(UNLOCKS||[]).map(u=>({type:"line",x0:u[0],x1:u[0],yref:"paper",y0:0,y1:1,line:{color:hot,width:1,dash:"dot"}}));
+  const anns=[
+    {xref:"paper",x:0.01,y:ENTRY_SWPE,yanchor:"bottom",text:"entrada &lt; "+String(ENTRY_SWPE).replace(".",","),showarrow:false,font:{size:10,color:bull}},
+    {xref:"paper",x:0.01,y:EXP_SWPE,yanchor:"bottom",text:"caro &gt; "+EXP_SWPE,showarrow:false,font:{size:10,color:bear}},
+  ].concat((UNLOCKS||[]).map(u=>({x:u[0],yref:"paper",y:1,text:"🔓",showarrow:false,font:{size:11},yanchor:"bottom"})));
   const layout={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
     margin:{l:52,r:62,t:12,b:34},height:340,font:{color:mut,size:11,family:"inherit"},hovermode:"x unified",
     legend:{orientation:"h",y:1.12,x:0,font:{size:11}},
     xaxis:{gridcolor:grid,linecolor:line,color:mut,type:"date"},
-    yaxis:{gridcolor:grid,linecolor:line,color:acc,title:{text:"SWPE",font:{size:11,color:acc}}},
+    yaxis:{gridcolor:grid,linecolor:line,color:acc,title:{text:"SWPE",font:{size:11,color:acc}},range:[0,ymax]},
     yaxis2:{color:mut,title:{text:"BTC (USD)",font:{size:11}},overlaying:"y",side:"right",showgrid:false,tickprefix:"$"},
-    shapes:shapes,annotations:anns};
+    shapes:refLines.concat(unlockLines),annotations:anns};
   window.Plotly.react("swpechart",traces,layout,{responsive:true,displaylogo:false,scrollZoom:false,modeBarButtonsToRemove:["select2d","lasso2d"]});
 }
 window.__drawSwpe=drawSwpe;
