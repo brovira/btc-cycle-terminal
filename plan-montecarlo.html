@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BTC · Monte Carlo del plan</title>
+<style>
+  :root{
+    --bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;
+    --ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#9b8cff;
+    --bull:#2fc39b;--bear:#f2606d;--accum:#3fa9f5;--hot:#f2a33f;
+    --grid:rgba(255,255,255,.06);--shadow:0 1px 0 rgba(255,255,255,.03),0 12px 32px -18px rgba(0,0,0,.7);
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Menlo","Consolas",monospace;--radius:14px;
+  }
+  @media (prefers-color-scheme: light){:root{
+    --bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;
+    --ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--accent:#6a4bd6;
+    --bull:#0e846a;--bear:#c93a48;--accum:#1f74c0;--hot:#b9791a;
+    --grid:rgba(16,24,34,.08);--shadow:0 1px 0 rgba(255,255,255,.6),0 14px 34px -20px rgba(20,40,70,.35);
+  }}
+  :root[data-theme="dark"]{--bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;--ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#9b8cff;--bull:#2fc39b;--bear:#f2606d;--accum:#3fa9f5;--hot:#f2a33f;--grid:rgba(255,255,255,.06)}
+  :root[data-theme="light"]{--bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;--ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--accent:#6a4bd6;--bull:#0e846a;--bear:#c93a48;--accum:#1f74c0;--hot:#b9791a;--grid:rgba(16,24,34,.08)}
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:radial-gradient(1200px 600px at 80% -10%,color-mix(in oklab,var(--accent) 9%,transparent),transparent 60%),linear-gradient(var(--bg),var(--bg2));color:var(--ink);font-family:var(--font);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+  .wrap{max-width:1240px;margin:0 auto;padding:26px 20px 70px}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:18px}
+  .kicker{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  h1{margin:4px 0 0;font-size:clamp(22px,3vw,30px);font-weight:750;letter-spacing:-.02em} h1 b{color:var(--accent)}
+  .meta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;color:var(--muted);font-size:12.5px;margin-top:6px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--bull)} .dot.warn{background:var(--accent)} .dot.err{background:var(--bear)}
+  .btn{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:8px 13px;border-radius:10px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;transition:.15s;text-decoration:none}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  .btn.pri{background:var(--accent);color:#111;border-color:var(--accent)} .btn.pri:hover{filter:brightness(1.05);color:#111}
+  .controls{display:flex;gap:9px;flex-wrap:wrap}
+  .err-banner{display:none;margin:12px 0;border:1px solid color-mix(in oklab,var(--bear) 40%,transparent);background:color-mix(in oklab,var(--bear) 10%,transparent);padding:13px 15px;border-radius:12px;font-size:13.5px}
+  .section{margin-top:26px}
+  .sec-head{display:flex;align-items:center;gap:12px;margin:0 2px 14px}
+  .sec-head h2{margin:0;font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
+  .sec-head .rule{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+  .sec-head .tag{font-size:11px;font-weight:600;color:var(--muted);font-family:var(--mono)}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+  .cfg{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px}
+  .fld{display:flex;flex-direction:column;gap:5px}
+  .fld label{font-size:12px;color:var(--muted);font-weight:600}
+  .fld input,.fld select{font:inherit;font-size:14px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+  .fld .hint{font-size:11px;color:var(--muted)}
+  .subhd{font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--accent);margin:2px 0 2px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--sc,var(--muted));border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
+  .stat .l{font-size:11.5px;color:var(--muted);font-weight:600}
+  .stat .n{font-family:var(--mono);font-size:20px;font-weight:750;margin-top:4px}
+  .stat .s{font-size:11.5px;color:var(--muted);margin-top:2px}
+  #fan,#histBtc,#histCost,#cmp{width:100%;height:420px}
+  #histBtc,#histCost{height:340px}
+  .up{color:var(--bull)} .down{color:var(--bear)}
+  .note{color:var(--muted);font-size:12px;line-height:1.6}
+  .ord-row{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;margin-bottom:10px}
+  .ord-row .rm{font:inherit;font-size:13px;color:var(--bear);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:9px 12px;cursor:pointer}
+  .ord-row .rm:hover{border-color:var(--bear)}
+  table.cmp{width:100%;border-collapse:collapse;font-size:13px}
+  table.cmp th,table.cmp td{padding:9px 11px;text-align:right;border-bottom:1px solid var(--line)}
+  table.cmp th:first-child,table.cmp td:first-child{text-align:left}
+  table.cmp th{color:var(--muted);font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:700}
+  table.cmp td.mono{font-family:var(--mono)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:820px){.grid2{grid-template-columns:1fr}}
+  footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--line)}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+<link rel="stylesheet" href="dashboard.css">
+</head>
+<body class="dashboard-page page-plan-montecarlo">
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="kicker">Herramientas · Simulación del plan</div>
+      <h1><span class="title-icon">🎯</span> Monte Carlo del <b>plan</b></h1>
+      <div class="meta"><span class="dot" id="statusDot"></span><span id="statusText">Cargando datos…</span></div>
+    </div>
+    <div class="controls">
+      <a class="btn" href="index.html">← Panel</a>
+      <a class="btn" href="montecarlo.html">🎲 MC de precio</a>
+      <a class="btn" href="belrogam.html">🏢 Plan del ciclo</a>
+      <button class="btn" id="themeBtn">◐ Tema</button>
+      <button class="btn" id="refreshBtn">↻ Datos</button>
+    </div>
+  </header>
+
+  <div class="panel note" style="margin-bottom:4px">
+    <b>Qué hace.</b> No simula solo el precio: simula <b>tu PLAN completo</b> (DCA + órdenes escalonadas + artillería en la ventana de suelo + hold) sobre miles de trayectorias de precio, y devuelve la <b>distribución</b> de resultados — BTC acumulado, coste medio, valor final — y si el plan <b>bate</b> a comprar todo de golpe o a un DCA mensual puro. Todos los números son <b>editables</b>; los que ves son placeholders genéricos, no cifras reales.
+  </div>
+
+  <div class="err-banner" id="errBanner"></div>
+
+  <!-- PARÁMETROS: MOTOR DE PRECIO -->
+  <div class="section">
+    <div class="sec-head"><h2>Motor de precio</h2><div class="rule"></div><span class="tag" id="srcTag">—</span></div>
+    <div class="panel">
+      <div class="cfg">
+        <div class="fld"><label>Modelo</label><select id="p_model">
+          <option value="boot">Bootstrap histórico (remuestreo)</option>
+          <option value="gbm">GBM (lognormal μ/σ)</option>
+          <option value="block">Bootstrap por bloques (8 sem)</option>
+        </select><span class="hint">boot = usa retornos reales; GBM = paramétrico</span></div>
+        <div class="fld"><label>Horizonte (semanas)</label><input type="number" id="p_h" value="182" step="1"><span class="hint">182 = ~3,5 años (hasta fin del hold)</span></div>
+        <div class="fld"><label>Nº de trayectorias</label><input type="number" id="p_paths" value="2000" step="100"><span class="hint">más = más preciso, más lento</span></div>
+        <div class="fld"><label>Precio de partida</label><input type="number" id="p_start" value="" step="any"><span class="hint">vacío = último cierre</span></div>
+        <div class="fld"><label>Ajuste de deriva (μ)</label><input type="number" id="p_drift" value="35" step="5"><span class="hint">% de la μ histórica (crypto exagera; 100=sin ajuste)</span></div>
+        <div class="fld"><label>Ventana histórica</label><select id="p_look">
+          <option value="0">Todo el histórico</option>
+          <option value="208" selected>Últimas 208 sem (~4 años)</option>
+          <option value="104">Últimas 104 sem (~2 años)</option>
+        </select><span class="hint">de dónde salen μ/σ y los retornos</span></div>
+        <div class="fld"><label>Semilla</label><input type="number" id="p_seed" value="42" step="1"><span class="hint">reproducible (mulberry32)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PARÁMETROS: MI PLAN -->
+  <div class="section">
+    <div class="sec-head"><h2>Mi plan (todo editable)</h2><div class="rule"></div><span class="tag">placeholders genéricos</span></div>
+    <div class="panel">
+      <div class="cfg">
+        <div class="fld"><label>Moneda</label><select id="p_cur">
+          <option value="€" selected>€ (euros)</option>
+          <option value="$">$ (dólares)</option>
+        </select><span class="hint">solo etiqueta · el precio viene de BTC/USDT (~paridad)</span></div>
+        <div class="fld"><label>Presupuesto total (tope)</label><input type="number" id="b_budget" value="100000" step="any"><span class="hint">capital máximo desplegable en todo el plan</span></div>
+        <div class="fld"><label>DCA mensual</label><input type="number" id="b_dca" value="1000" step="any"><span class="hint">compra fija cada mes</span></div>
+        <div class="fld"><label>Meses de DCA</label><input type="number" id="b_dcam" value="18" step="1"><span class="hint">duración de la fase de acumulación</span></div>
+        <div class="fld"><label>Artillería (lump ventana de suelo)</label><input type="number" id="b_lump" value="30000" step="any"><span class="hint">golpe gordo reservado para el suelo</span></div>
+        <div class="fld"><label>Ventana de suelo · inicio</label><input type="date" id="b_floorStart" value="2026-10-01"><span class="hint">cuándo se abre la ventana</span></div>
+        <div class="fld"><label>Ventana de suelo · fin</label><input type="date" id="b_floorEnd" value="2026-11-30"><span class="hint">al cerrarse, se despliega lo que quede del lump</span></div>
+        <div class="fld"><label>Gatillo de caída del lump</label><input type="number" id="b_dip" value="20" step="1"><span class="hint">% bajo el máximo previo para soltar el lump dentro de la ventana</span></div>
+        <div class="fld"><label>Objetivo de BTC</label><input type="number" id="b_objbtc" value="1" step="any"><span class="hint">prob. de acumularlo</span></div>
+        <div class="fld"><label>Coste medio objetivo</label><input type="number" id="b_costtgt" value="60000" step="any"><span class="hint">prob. de comprar por debajo</span></div>
+      </div>
+
+      <div class="subhd" style="margin-top:18px">Órdenes límite escalonadas</div>
+      <div class="note" style="margin-bottom:10px">Se ejecutan cuando el precio cruza a la baja el nivel (definido como <b>% de caída</b> desde el precio de partida). Más tamaño cuanto más abajo. Salen del presupuesto total; si no se llenan, ese dinero queda como munición sin usar.</div>
+      <div id="ordersBox"></div>
+      <button class="btn" id="addOrderBtn" style="margin-top:4px">＋ Añadir nivel</button>
+
+      <div style="margin-top:18px"><button class="btn pri" id="runBtn">🎯 Simular el plan</button>
+        <span class="note" id="calNote" style="margin-left:10px"></span></div>
+    </div>
+  </div>
+
+  <!-- RESULTADOS DEL PLAN -->
+  <div class="section">
+    <div class="sec-head"><h2>Resultado del plan a horizonte</h2><div class="rule"></div><span class="tag" id="hzTag">—</span></div>
+    <div class="cards" id="stats"></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Valor de la cartera · abanico de escenarios</h2><div class="rule"></div><span class="tag">percentiles (BTC + munición sin usar)</span></div>
+    <div class="panel" style="padding:12px 10px 6px"><div id="fan"></div></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Distribución final del plan</h2><div class="rule"></div><span class="tag">BTC acumulado · coste medio</span></div>
+    <div class="grid2">
+      <div class="panel" style="padding:12px 10px 6px"><div id="histBtc"></div></div>
+      <div class="panel" style="padding:12px 10px 6px"><div id="histCost"></div></div>
+    </div>
+  </div>
+
+  <!-- COMPARATIVA DE ESTRATEGIAS -->
+  <div class="section">
+    <div class="sec-head"><h2>El plan vs. las alternativas</h2><div class="rule"></div><span class="tag">mismas trayectorias · comparación pareada</span></div>
+    <div class="panel" style="padding:12px 10px 6px"><div id="cmp"></div></div>
+    <div class="panel" style="margin-top:14px">
+      <div id="cmpProb" class="cards" style="margin-bottom:14px"></div>
+      <div style="overflow-x:auto"><table class="cmp" id="cmpTable"></table></div>
+      <div class="note" style="margin-top:12px">Las tres estrategias corren sobre <b>las mismas</b> trayectorias de precio y con el <b>mismo presupuesto total</b>, así que la comparación es justa. <b>Lump-sum</b> = todo de golpe hoy. <b>DCA puro</b> = el presupuesto repartido a partes iguales cada mes durante todo el horizonte. <b>Valor</b> = BTC a precio final + munición sin desplegar. La probabilidad es <b>pareada</b> (cuántas trayectorias, una a una, el plan gana).</div>
+    </div>
+  </div>
+
+  <!-- SUPUESTOS Y LÍMITES -->
+  <div class="section">
+    <div class="sec-head"><h2>Supuestos y límites</h2><div class="rule"></div></div>
+    <div class="panel"><div class="note">
+      <b>Cómo leerlo.</b> Cada trayectoria proyecta el precio semana a semana; sobre cada una se ejecuta tu plan (DCA mensual, órdenes al cruzar niveles, lump en la ventana de suelo, y hold — <b>nunca se vende</b>). El <b>abanico</b> muestra los percentiles del valor de la cartera (p5–p95 = 90% de los escenarios; la línea es la mediana). <b>Bootstrap</b> remuestrea retornos semanales reales (respeta las colas gordas de BTC); <b>GBM</b> asume lognormal con μ/σ constantes (más suave, <b>subestima los cracks</b>). El <b>ajuste de deriva</b> recorta la μ histórica porque la rentabilidad pasada de BTC es enorme y extrapolarla al 100% no es realista.
+      <br><br>
+      <b>Límites (importante).</b> Crypto es <b>fat-tailed y no estacionario</b>: el pasado no acota el futuro. Esto es <b>probabilidad, no predicción</b> — dibuja un rango de incertidumbre bajo unos supuestos que tú eliges. El GBM y hasta el bootstrap <b>subestiman</b> los desplomes extremos y no modelan cambios de régimen, iliquidez ni riesgo de contraparte. Que el plan "bata" a las alternativas en la mediana <b>no garantiza</b> nada en tu única realización real. La ventana de suelo y el gatillo de caída son supuestos tuyos, no una señal del modelo. <b>Uso educativo — no es asesoramiento financiero.</b>
+    </div></div>
+  </div>
+
+  <footer>
+    <div class="note" style="max-width:900px">
+      Datos de precio: <b id="srcNote">—</b> (velas semanales). μ/σ y los retornos remuestreados salen de la ventana histórica elegida. Simulación 100% en tu navegador, con semilla reproducible. <b>Ninguna cifra personal está en el código</b>: los parámetros del plan son inputs con placeholders genéricos.
+    </div>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+let CUR="€";
+const fmtM=(v,d=0)=>v==null||isNaN(v)?"—":(v<0?"-":"")+CUR+Number(Math.abs(v)).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtBTC=v=>v==null||isNaN(v)?"—":Number(v).toLocaleString("en-US",{minimumFractionDigits:3,maximumFractionDigits:3})+" ₿";
+const fmtPct=v=>v==null||isNaN(v)?"—":(v>=0?"+":"")+v.toFixed(0)+"%";
+const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+/* ---------- datos (mismo motor que montecarlo.html) ---------- */
+let DATA=null,SRC="";
+async function fetchBinance(host){const r=await fetch(`https://${host}/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=1000`,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();return{t:j.map(k=>k[0]),c:j.map(k=>+k[4])};}
+async function fetchCM(){const q="assets=btc&metrics=PriceUSD&frequency=1d&page_size=10000&start_time=2010-07-18";
+  let j=null;
+  for(const u of ["/api/coinmetrics?"+q,"https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?"+q]){
+    try{const r=await fetch(u,{cache:"no-store"});if(r.ok){j=await r.json();break;}}catch(e){}}
+  if(!j)throw new Error("on-chain no disponible");const rows=j.data||[];
+  const dt=[],px=[];for(const x of rows){const t=Date.parse(x.time.slice(0,10));if(isNaN(t)||x.PriceUSD==null)continue;dt.push(t);px.push(+x.PriceUSD);}
+  const t=[],c=[];const WK=7*864e5;let bs=null,bc,bt;for(let i=0;i<dt.length;i++){const ms=dt[i],p=px[i];if(bs==null){bs=ms;bc=p;bt=ms;continue;}if(ms-bs>=WK){t.push(bt);c.push(bc);bs=ms;bc=p;bt=ms;}else{bc=p;bt=ms;}}if(bs!=null){t.push(bt);c.push(bc);}return{t,c};}
+async function loadData(){
+  let bin=null,cm=null;
+  try{bin=await fetchBinance("api.binance.com");}catch(e){try{bin=await fetchBinance("api.binance.us");}catch(e2){}}
+  try{cm=await fetchCM();}catch(e){}
+  if(bin&&cm){const b0=bin.t[0];const pt=[],pc=[];for(let i=0;i<cm.t.length;i++){if(cm.t[i]<b0-3*864e5&&cm.t[i]>Date.parse("2010-01-01")){pt.push(cm.t[i]);pc.push(cm.c[i]);}}
+    DATA={t:[...pt,...bin.t],c:[...pc,...bin.c]};SRC="Coin Metrics + Binance";return;}
+  if(bin){DATA={t:bin.t,c:bin.c};SRC="Binance";return;}
+  if(cm){DATA={t:cm.t,c:cm.c};SRC="Coin Metrics";return;}
+  throw new Error("sin fuentes de precio");
+}
+
+/* ---------- RNG con semilla (mulberry32) + normal (Box-Muller) ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+let RND=Math.random;
+function randn(){let u=0,v=0;while(u===0)u=RND();while(v===0)v=RND();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+
+/* ---------- retornos log semanales de la ventana ---------- */
+function logReturns(look){const c=DATA.c;let i0=1;if(look>0)i0=Math.max(1,c.length-look);const r=[];for(let i=i0;i<c.length;i++){if(c[i]>0&&c[i-1]>0)r.push(Math.log(c[i]/c[i-1]));}return r;}
+function meanStd(a){const m=a.reduce((x,y)=>x+y,0)/a.length;const s=Math.sqrt(a.reduce((x,y)=>x+(y-m)**2,0)/a.length);return{m,s};}
+function quantile(sorted,q){const n=sorted.length;if(!n)return null;const idx=(n-1)*q;const lo=Math.floor(idx),hi=Math.ceil(idx);if(lo===hi)return sorted[lo];return sorted[lo]+(sorted[hi]-sorted[lo])*(idx-lo);}
+function count(arr,fn){let c=0;for(let i=0;i<arr.length;i++)if(fn(arr[i]))c++;return c;}
+
+/* ---------- órdenes escalonadas (UI editable) ---------- */
+const DEF_ORDERS=[{caida:15,size:5000},{caida:25,size:8000},{caida:35,size:10000},{caida:45,size:12000}];
+function orderRow(o){
+  const d=document.createElement("div");d.className="ord-row";
+  d.innerHTML=`
+    <div class="fld"><label>Caída desde partida (%)</label><input type="number" class="o-caida" value="${o.caida}" step="1"></div>
+    <div class="fld"><label>Tamaño (${CUR})</label><input type="number" class="o-size" value="${o.size}" step="any"></div>
+    <button class="rm" title="Quitar">✕</button>`;
+  d.querySelector(".rm").addEventListener("click",()=>d.remove());
+  return d;
+}
+function buildOrders(list){const box=$("#ordersBox");box.innerHTML="";(list||DEF_ORDERS).forEach(o=>box.appendChild(orderRow(o)));}
+function readOrders(){
+  return [...document.querySelectorAll("#ordersBox .ord-row")].map(r=>({
+    caida:parseFloat(r.querySelector(".o-caida").value)||0,
+    size:parseFloat(r.querySelector(".o-size").value)||0
+  })).filter(o=>o.size>0).sort((a,b)=>a.caida-b.caida); // menos caída primero (se cruzan antes)
+}
+
+/* ---------- generación de una trayectoria de precio ---------- */
+function genPath(H,model,S0,rets,m,s,muW){
+  const p=new Float64Array(H+1);p[0]=S0;
+  const bl=8;let bi=0,bpos=bl;
+  for(let k=1;k<=H;k++){
+    let r;
+    if(model==="gbm"){r=muW-0.5*s*s+s*randn();}
+    else if(model==="block"){if(bpos>=bl){bi=Math.floor(RND()*rets.length);bpos=0;}r=rets[(bi+bpos)%rets.length];bpos++;r=r-m+muW;}
+    else{r=rets[Math.floor(RND()*rets.length)];r=r-m+muW;}
+    p[k]=p[k-1]*Math.exp(r);
+  }
+  return p;
+}
+
+/* ---------- ejecución del PLAN sobre una trayectoria ---------- */
+// Devuelve serie de valor de cartera (BTC*precio + munición sin usar) + métricas finales.
+function runPlan(path,H,plan,wantSeries){
+  let cash=plan.budget, btc=0, spent=0;
+  const S0=path[0];
+  const hit=new Array(plan.orders.length).fill(false);
+  let lumpDone=plan.lump<=0, ref=S0, lastMonth=-1;
+  const series=wantSeries?new Float64Array(H+1):null;
+  const buy=(amt,px)=>{amt=Math.min(amt,cash);if(amt<=0)return;btc+=amt/px;cash-=amt;spent+=amt;};
+  for(let k=0;k<=H;k++){
+    const px=path[k];if(px>ref)ref=px;
+    // DCA mensual
+    const mo=Math.floor(k*12/52);
+    if(mo>lastMonth){lastMonth=mo;if(mo<plan.dcaMonths)buy(plan.dca,px);}
+    // órdenes límite (cruce a la baja del nivel = partida*(1-caida%))
+    for(let o=0;o<plan.orders.length;o++){
+      if(hit[o])continue;const lvl=S0*(1-plan.orders[o].caida/100);
+      if(px<=lvl){buy(plan.orders[o].size,px);hit[o]=true;}
+    }
+    // lump en la ventana de suelo
+    if(!lumpDone&&k>=plan.floorStart&&k<=plan.floorEnd){
+      if(px<=ref*(1-plan.dip)){buy(plan.lump,px);lumpDone=true;}
+      else if(k===plan.floorEnd){buy(plan.lump,px);lumpDone=true;} // se cierra la ventana: desplegar lo que quede
+    }
+    if(wantSeries)series[k]=btc*px+cash;
+  }
+  const finalPx=path[H];
+  return {btc,spent,cash,value:btc*finalPx+cash,avgCost:btc>0?spent/btc:null,finalPx,series};
+}
+// Lump-sum: todo el presupuesto de golpe en k=0.
+function runLump(path,H){const S0=path[0];const btc=/*budget*/BUD/S0;return{btc,spent:BUD,cash:0,value:btc*path[H],avgCost:S0,finalPx:path[H]};}
+// DCA puro: presupuesto repartido a partes iguales cada mes durante todo el horizonte.
+function runDCApure(path,H){
+  const nMon=Math.floor(H*12/52)+1;const per=BUD/nMon;
+  let cash=BUD,btc=0,spent=0,lastMonth=-1;
+  for(let k=0;k<=H;k++){const px=path[k];const mo=Math.floor(k*12/52);
+    if(mo>lastMonth){lastMonth=mo;const amt=Math.min(per,cash);if(amt>0){btc+=amt/px;cash-=amt;spent+=amt;}}}
+  return{btc,spent,cash,value:btc*path[H]+cash,avgCost:btc>0?spent/btc:null,finalPx:path[H]};
+}
+let BUD=0;
+
+/* ---------- simulación completa ---------- */
+let SIM=null;
+function simulate(){
+  const model=$("#p_model").value;const H=Math.max(4,parseInt($("#p_h").value)||182);
+  const N=Math.max(100,Math.min(20000,parseInt($("#p_paths").value)||2000));
+  const look=parseInt($("#p_look").value)||0;const driftAdj=(parseFloat($("#p_drift").value)||0)/100;
+  const seed=parseInt($("#p_seed").value);RND=isNaN(seed)?Math.random:mulberry32(seed>>>0);
+  const S0=parseFloat($("#p_start").value)||DATA.c[DATA.c.length-1];
+  const rets=logReturns(look);if(rets.length<10)throw new Error("pocos datos para simular");
+  const {m,s}=meanStd(rets);const muW=m*driftAdj;
+  const muA=(Math.exp(muW*52)-1)*100, volA=s*Math.sqrt(52)*100;
+
+  // ventana de suelo → índices de semana relativos al último dato
+  const lastMs=DATA.t[DATA.t.length-1];const WK=7*864e5;
+  const toW=iso=>{const t=Date.parse(iso);if(isNaN(t))return null;return Math.round((t-lastMs)/WK);};
+  let fS=toW($("#b_floorStart").value),fE=toW($("#b_floorEnd").value);
+  if(fS==null)fS=0;if(fE==null)fE=H;fS=Math.max(0,Math.min(H,fS));fE=Math.max(fS,Math.min(H,fE));
+
+  BUD=Math.max(0,parseFloat($("#b_budget").value)||0);
+  const plan={
+    budget:BUD,
+    dca:Math.max(0,parseFloat($("#b_dca").value)||0),
+    dcaMonths:Math.max(0,parseInt($("#b_dcam").value)||0),
+    lump:Math.max(0,parseFloat($("#b_lump").value)||0),
+    dip:Math.max(0,(parseFloat($("#b_dip").value)||0)/100),
+    floorStart:fS,floorEnd:fE,
+    orders:readOrders()
+  };
+  const objBtc=parseFloat($("#b_objbtc").value),costTgt=parseFloat($("#b_costtgt").value);
+
+  // acumuladores
+  const P=[5,25,50,75,95];const bands={};P.forEach(q=>bands[q]=new Array(H+1));
+  const valSteps=[];for(let k=0;k<=H;k++)valSteps.push(new Float64Array(N));
+  const SAMPLE=Math.min(40,N);const samplePaths=[];
+  const planVal=new Float64Array(N),planBtc=new Float64Array(N),planCost=new Float64Array(N),planSpent=new Float64Array(N),planInProfit=new Float64Array(N);
+  const lumpVal=new Float64Array(N),dcaVal=new Float64Array(N);
+  const lumpBtc=new Float64Array(N),dcaBtc=new Float64Array(N),lumpCost=new Float64Array(N),dcaCost=new Float64Array(N);
+  let winLump=0,winDca=0;
+
+  for(let i=0;i<N;i++){
+    const path=genPath(H,model,S0,rets,m,s,muW);
+    const keep=i<SAMPLE;
+    const rp=runPlan(path,H,plan,true);
+    const rl=runLump(path,H);
+    const rd=runDCApure(path,H);
+    for(let k=0;k<=H;k++)valSteps[k][i]=rp.series[k];
+    if(keep)samplePaths.push(Array.from(rp.series));
+    planVal[i]=rp.value;planBtc[i]=rp.btc;planCost[i]=rp.avgCost==null?NaN:rp.avgCost;planSpent[i]=rp.spent;
+    planInProfit[i]=(rp.avgCost!=null&&rp.finalPx>rp.avgCost)?1:0;
+    lumpVal[i]=rl.value;dcaVal[i]=rd.value;lumpBtc[i]=rl.btc;dcaBtc[i]=rd.btc;lumpCost[i]=rl.avgCost;dcaCost[i]=rd.avgCost==null?NaN:rd.avgCost;
+    if(rp.value>rl.value)winLump++;if(rp.value>rd.value)winDca++;
+  }
+  for(let k=0;k<=H;k++){const a=Array.from(valSteps[k]).sort((x,y)=>x-y);P.forEach(q=>bands[q][k]=quantile(a,q/100));}
+
+  const sortF=a=>Array.from(a).sort((x,y)=>x-y);
+  const pv=sortF(planVal),pb=sortF(planBtc),pc2=sortF(planCost.filter(v=>!isNaN(v))),lv=sortF(lumpVal),dv=sortF(dcaVal);
+  const pcAll=Array.from(planCost).filter(v=>!isNaN(v)).sort((x,y)=>x-y);
+
+  const stat5=a=>({p5:quantile(a,.05),p50:quantile(a,.5),p95:quantile(a,.95),p25:quantile(a,.25),p75:quantile(a,.75)});
+  SIM={H,N,S0,model,muA,volA,driftAdj,bands,samplePaths,
+    plan:{...stat5(pv),btc:stat5(pb),cost:stat5(pcAll.length?pcAll:[NaN]),spent:quantile(sortF(planSpent),.5)},
+    planBtcArr:pb,planCostArr:pcAll,
+    lump:stat5(lv),dca:stat5(dv),lumpBtc:stat5(sortF(lumpBtc)),dcaBtc:stat5(sortF(dcaBtc)),lumpCost:stat5(sortF(lumpCost)),dcaCost:stat5(sortF(Array.from(dcaCost).filter(v=>!isNaN(v)))),
+    pObjBtc:isNaN(objBtc)?null:100*count(planBtc,v=>v>=objBtc)/N,
+    pProfit:100*planInProfit.reduce((a,b)=>a+b,0)/N,
+    pCost:isNaN(costTgt)?null:(pcAll.length?100*count(pcAll,v=>v<costTgt)/pcAll.length:null),
+    objBtc,costTgt,
+    pWinLump:100*winLump/N,pWinDca:100*winDca/N,budget:BUD,
+    valArr:pv,lumpArr:lv,dcaArr:dv};
+  return SIM;
+}
+
+/* ---------- fechas futuras ---------- */
+function futureDates(H){const last=DATA.t[DATA.t.length-1];const out=[];for(let k=0;k<=H;k++)out.push(new Date(last+k*7*864e5).toISOString().slice(0,10));return out;}
+
+/* ---------- render ---------- */
+function paint(){
+  const S=SIM;
+  $("#hzTag").textContent=`${S.H} sem · ${S.N.toLocaleString()} sims`;
+  $("#calNote").textContent=`μ anual ≈ ${S.muA.toFixed(0)}% (×${S.driftAdj}) · vol anual ≈ ${S.volA.toFixed(0)}% · partida ${fmtM(S.S0)}`;
+  const roi=v=>S.budget>0?(v/S.budget-1)*100:null;
+  $("#stats").innerHTML=[
+    {l:"Valor cartera · mediana",n:fmtM(S.plan.p50),s:roi(S.plan.p50)!=null?fmtPct(roi(S.plan.p50))+" sobre presupuesto":"",c:"var(--accent)"},
+    {l:"Pesimista (p5)",n:fmtM(S.plan.p5),s:fmtPct(roi(S.plan.p5)),c:"var(--bear)"},
+    {l:"Optimista (p95)",n:fmtM(S.plan.p95),s:fmtPct(roi(S.plan.p95)),c:"var(--bull)"},
+    {l:"BTC acumulado · mediana",n:fmtBTC(S.plan.btc.p50),s:`p5 ${fmtBTC(S.plan.btc.p5)} · p95 ${fmtBTC(S.plan.btc.p95)}`,c:"var(--hot)"},
+    {l:"Coste medio · mediana",n:fmtM(S.plan.cost.p50),s:`p5 ${fmtM(S.plan.cost.p5)} · p95 ${fmtM(S.plan.cost.p95)}`,c:"var(--accum)"},
+    {l:S.objBtc!=null&&!isNaN(S.objBtc)?`P(≥ ${fmtBTC(S.objBtc)})`:"P(objetivo BTC)",n:S.pObjBtc!=null?S.pObjBtc.toFixed(0)+"%":"—",s:"alcanzar el objetivo",c:"var(--bull)"},
+    {l:"P(en beneficio)",n:S.pProfit.toFixed(0)+"%",s:"precio final > coste medio",c:"var(--bull)"},
+    {l:S.costTgt!=null&&!isNaN(S.costTgt)?`P(coste < ${fmtM(S.costTgt)})`:"P(coste medio bajo)",n:S.pCost!=null?S.pCost.toFixed(0)+"%":"—",s:"comprar barato de media",c:"var(--accum)"},
+  ].map(x=>`<div class="stat" style="--sc:${x.c}"><div class="l">${x.l}</div><div class="n">${x.n}</div><div class="s">${x.s}</div></div>`).join("");
+
+  const cGrid=cssv("--grid"),cMut=cssv("--muted"),cInk=cssv("--ink"),cPanel=cssv("--panel"),cAcc=cssv("--accent"),cBull=cssv("--bull"),cBear=cssv("--bear"),cHot=cssv("--hot"),cAccum=cssv("--accum");
+  const fx=futureDates(S.H);
+
+  /* --- abanico de valor de cartera --- */
+  const tr=[];
+  S.samplePaths.forEach(p=>tr.push({type:"scatter",x:fx,y:p,mode:"lines",line:{color:cAcc,width:.5},opacity:.10,showlegend:false,hoverinfo:"skip"}));
+  tr.push({type:"scatter",x:fx,y:S.bands[95],line:{width:0},showlegend:false,hoverinfo:"skip",name:"p95"});
+  tr.push({type:"scatter",x:fx,y:S.bands[5],line:{width:0},fill:"tonexty",fillcolor:"rgba(155,140,255,.13)",showlegend:true,name:"p5–p95 (90%)",hoverinfo:"skip"});
+  tr.push({type:"scatter",x:fx,y:S.bands[75],line:{width:0},showlegend:false,hoverinfo:"skip"});
+  tr.push({type:"scatter",x:fx,y:S.bands[25],line:{width:0},fill:"tonexty",fillcolor:"rgba(155,140,255,.22)",showlegend:true,name:"p25–p75 (50%)",hoverinfo:"skip"});
+  tr.push({type:"scatter",x:fx,y:S.bands[50],name:"mediana",line:{color:cAcc,width:2.2}});
+  const shapes=[{type:"line",xref:"paper",x0:0,x1:1,yref:"y",y0:S.budget,y1:S.budget,line:{color:cMut,width:1,dash:"dot"}}];
+  // sombrear la ventana de suelo
+  const winA=fx[Math.min(S.H,Math.max(0,readFloorW().s))],winB=fx[Math.min(S.H,Math.max(0,readFloorW().e))];
+  if(winA&&winB)shapes.push({type:"rect",xref:"x",yref:"paper",x0:winA,x1:winB,y0:0,y1:1,fillcolor:"rgba(242,163,63,.10)",line:{width:0}});
+  const layout={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:cInk,family:cssv("--font")},
+    margin:{l:66,r:14,t:10,b:28},hovermode:"x unified",shapes,
+    hoverlabel:{bgcolor:cPanel,bordercolor:cAcc,font:{color:cInk,size:11}},
+    legend:{orientation:"h",y:1.04,x:0,font:{size:11},bgcolor:"rgba(0,0,0,0)"},
+    annotations:[{x:0,xref:"paper",y:S.budget,yref:"y",xanchor:"left",yanchor:"bottom",text:"presupuesto "+fmtM(S.budget),showarrow:false,font:{size:10,color:cMut}}],
+    xaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,type:"date"},
+    yaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,type:"log",title:{text:"Valor cartera ("+CUR+", log)",font:{size:11}}}};
+  Plotly.react("fan",tr,layout,{responsive:true,displaylogo:false,scrollZoom:false,modeBarButtonsToRemove:["select2d","lasso2d"]});
+
+  /* --- histograma BTC acumulado --- */
+  histLinear("histBtc",S.planBtcArr,cHot,"BTC acumulado","₿",S.objBtc,cBull,3);
+  /* --- histograma coste medio (log) --- */
+  histLog("histCost",S.planCostArr,cAccum,"Coste medio ("+CUR+", log)",S.costTgt,cBull);
+
+  /* --- comparativa de estrategias (barras p5/p50/p95) --- */
+  const cats=["El plan","Lump-sum hoy","DCA puro"];
+  const p50=[S.plan.p50,S.lump.p50,S.dca.p50],p5=[S.plan.p5,S.lump.p5,S.dca.p5],p95=[S.plan.p95,S.lump.p95,S.dca.p95];
+  const ctr=[
+    {type:"bar",x:cats,y:p50,name:"mediana (p50)",marker:{color:[cAcc,cMut,cAccum]},
+      error_y:{type:"data",symmetric:false,array:p95.map((v,i)=>v-p50[i]),arrayminus:p50.map((v,i)=>v-p5[i]),color:cMut,thickness:1.3,width:6},
+      text:p50.map(v=>fmtM(v)),textposition:"outside",cliponaxis:false,hovertemplate:"%{x}<br>p50 %{y:,.0f}<extra></extra>"}
+  ];
+  const clay={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:cInk,family:cssv("--font")},
+    margin:{l:66,r:14,t:24,b:34},showlegend:false,
+    yaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,title:{text:"Valor final ("+CUR+")",font:{size:11}},rangemode:"tozero"},
+    xaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut},
+    annotations:[{x:0.5,xref:"paper",y:1.06,yref:"paper",showarrow:false,text:"barra = mediana · bigote = p5–p95",font:{size:10,color:cMut}}]};
+  Plotly.react("cmp",ctr,clay,{responsive:true,displaylogo:false,scrollZoom:false,displayModeBar:false});
+
+  /* --- probabilidades pareadas + tabla --- */
+  $("#cmpProb").innerHTML=[
+    {l:"P(plan bate lump-sum)",n:S.pWinLump.toFixed(0)+"%",s:"trayectoria a trayectoria",c:S.pWinLump>=50?"var(--bull)":"var(--bear)"},
+    {l:"P(plan bate DCA puro)",n:S.pWinDca.toFixed(0)+"%",s:"trayectoria a trayectoria",c:S.pWinDca>=50?"var(--bull)":"var(--bear)"},
+  ].map(x=>`<div class="stat" style="--sc:${x.c}"><div class="l">${x.l}</div><div class="n">${x.n}</div><div class="s">${x.s}</div></div>`).join("");
+  const rowsT=[
+    ["Estrategia","Valor p5","Valor p50","Valor p95","BTC p50","Coste medio p50","ROI p50"],
+  ];
+  const roiC=v=>S.budget>0?fmtPct((v/S.budget-1)*100):"—";
+  const R=(name,st,btc,cost)=>`<tr><td><b>${name}</b></td><td class="mono">${fmtM(st.p5)}</td><td class="mono">${fmtM(st.p50)}</td><td class="mono">${fmtM(st.p95)}</td><td class="mono">${fmtBTC(btc.p50)}</td><td class="mono">${fmtM(cost.p50)}</td><td class="mono">${roiC(st.p50)}</td></tr>`;
+  $("#cmpTable").innerHTML=
+    `<thead><tr>${rowsT[0].map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>`+
+    R("El plan",S.plan,S.plan.btc,S.plan.cost)+
+    R("Lump-sum hoy",S.lump,S.lumpBtc,S.lumpCost)+
+    R("DCA puro",S.dca,S.dcaBtc,S.dcaCost)+
+    `</tbody>`;
+}
+function readFloorW(){
+  const lastMs=DATA.t[DATA.t.length-1];const WK=7*864e5;const H=SIM?SIM.H:parseInt($("#p_h").value)||182;
+  const toW=iso=>{const t=Date.parse(iso);if(isNaN(t))return null;return Math.round((t-lastMs)/WK);};
+  let s=toW($("#b_floorStart").value),e=toW($("#b_floorEnd").value);if(s==null)s=0;if(e==null)e=H;
+  return {s:Math.max(0,Math.min(H,s)),e:Math.max(0,Math.min(H,e))};
+}
+function histLinear(id,arr,color,title,unit,tgt,tgtColor,dec){
+  const cGrid=cssv("--grid"),cMut=cssv("--muted"),cInk=cssv("--ink");
+  if(!arr.length){Plotly.purge(id);return;}
+  const lo=arr[0],hi=arr[arr.length-1];const NB=36;const cnt=new Array(NB).fill(0),mids=[];
+  const span=(hi-lo)||1;for(const v of arr){let b=Math.floor((v-lo)/span*NB);if(b<0)b=0;if(b>=NB)b=NB-1;cnt[b]++;}
+  for(let i=0;i<NB;i++)mids.push(lo+span*(i+0.5)/NB);
+  const med=quantile(arr,.5);
+  const tr=[{type:"bar",x:mids,y:cnt.map(v=>100*v/arr.length),marker:{color,opacity:.78},hovertemplate:"%{x:.3f} · %{y:.1f}%<extra></extra>"}];
+  const shapes=[{type:"line",yref:"paper",y0:0,y1:1,xref:"x",x0:med,x1:med,line:{color:cInk,width:1.5,dash:"dash"}}];
+  const anns=[{x:med,y:1,yref:"paper",xref:"x",yanchor:"bottom",text:"mediana "+med.toFixed(dec)+" "+unit,showarrow:false,font:{size:10,color:cInk}}];
+  if(tgt!=null&&!isNaN(tgt)){shapes.push({type:"line",yref:"paper",y0:0,y1:1,xref:"x",x0:tgt,x1:tgt,line:{color:tgtColor,width:1,dash:"dot"}});}
+  const lay={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:cInk,family:cssv("--font")},
+    margin:{l:48,r:14,t:24,b:36},bargap:.03,shapes,annotations:anns,
+    xaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,title:{text:title,font:{size:11}}},
+    yaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,title:{text:"% de escenarios",font:{size:11}}}};
+  Plotly.react(id,tr,lay,{responsive:true,displaylogo:false,scrollZoom:false,displayModeBar:false});
+}
+function histLog(id,arr,color,title,tgt,tgtColor){
+  const cGrid=cssv("--grid"),cMut=cssv("--muted"),cInk=cssv("--ink");
+  const a=arr.filter(v=>v>0);if(!a.length){Plotly.purge(id);return;}
+  const lo=Math.log10(a[0]),hi=Math.log10(a[a.length-1]);const NB=36;const edges=[],mids=[],cnt=new Array(NB).fill(0);
+  const span=(hi-lo)||1;for(let i=0;i<=NB;i++)edges.push(Math.pow(10,lo+span*i/NB));
+  for(const v of a){let b=Math.floor((Math.log10(v)-lo)/span*NB);if(b<0)b=0;if(b>=NB)b=NB-1;cnt[b]++;}
+  for(let i=0;i<NB;i++)mids.push(Math.sqrt(edges[i]*edges[i+1]));
+  const med=quantile(a,.5);
+  const tr=[{type:"bar",x:mids,y:cnt.map(v=>100*v/a.length),marker:{color,opacity:.78},hovertemplate:"%{x:,.0f} · %{y:.1f}%<extra></extra>"}];
+  const shapes=[{type:"line",yref:"paper",y0:0,y1:1,xref:"x",x0:med,x1:med,line:{color:cInk,width:1.5,dash:"dash"}}];
+  const anns=[{x:med,y:1,yref:"paper",xref:"x",yanchor:"bottom",text:"mediana "+fmtM(med),showarrow:false,font:{size:10,color:cInk}}];
+  if(tgt!=null&&!isNaN(tgt)&&tgt>0)shapes.push({type:"line",yref:"paper",y0:0,y1:1,xref:"x",x0:tgt,x1:tgt,line:{color:tgtColor,width:1,dash:"dot"}});
+  const lay={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:cInk,family:cssv("--font")},
+    margin:{l:48,r:14,t:24,b:36},bargap:.03,shapes,annotations:anns,
+    xaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,type:"log",title:{text:title,font:{size:11}}},
+    yaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,title:{text:"% de escenarios",font:{size:11}}}};
+  Plotly.react(id,tr,lay,{responsive:true,displaylogo:false,scrollZoom:false,displayModeBar:false});
+}
+
+/* ---------- plotly loader ---------- */
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("no se pudo cargar Plotly");}
+
+function run(){try{$("#errBanner").style.display="none";simulate();paint();}catch(e){const b=$("#errBanner");b.style.display="block";b.textContent=(e&&e.message)||e;}}
+async function boot(){
+  $("#statusDot").className="dot warn";$("#statusText").textContent="Cargando datos…";$("#errBanner").style.display="none";
+  try{await Promise.all([loadPlotly(),loadData()]);
+    $("#statusDot").className="dot";$("#statusText").textContent=DATA.t.length+" semanas · "+SRC;$("#srcTag").textContent=SRC;$("#srcNote").textContent=SRC;
+    if(!$("#p_start").value)$("#p_start").placeholder=fmtM(DATA.c[DATA.c.length-1]);
+    run();}
+  catch(err){$("#statusDot").className="dot err";$("#statusText").textContent="Error";
+    const b=$("#errBanner");b.style.display="block";b.innerHTML="<b>No se pudo cargar.</b> "+((err&&err.message)||err)+". Tu red puede bloquear Binance/Coin Metrics — prueba otra red y pulsa ↻.";}
+}
+/* eventos */
+CUR=$("#p_cur").value;buildOrders();
+$("#p_cur").addEventListener("change",()=>{CUR=$("#p_cur").value;buildOrders(readOrders());if(SIM)paint();});
+$("#addOrderBtn").addEventListener("click",()=>$("#ordersBox").appendChild(orderRow({caida:50,size:5000})));
+$("#runBtn").addEventListener("click",run);
+$("#refreshBtn").addEventListener("click",boot);
+$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);if(SIM)paint();});
+(function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
+boot();
+</script>
+</body>
+</html>
