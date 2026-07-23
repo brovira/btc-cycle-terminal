@@ -261,7 +261,7 @@ function genPath(H,model,S0,rets,m,s,muW){
   const bl=8;let bi=0,bpos=bl;
   for(let k=1;k<=H;k++){
     let r;
-    if(model==="gbm"){r=muW-0.5*s*s+s*randn();}
+    if(model==="gbm"){r=muW+s*randn();} // muW ya ES la media LOG (de los retornos históricos ×driftAdj); sin −½σ² para que GBM comparta deriva con bootstrap/bloques
     else if(model==="block"){if(bpos>=bl){bi=Math.floor(RND()*rets.length);bpos=0;}r=rets[(bi+bpos)%rets.length];bpos++;r=r-m+muW;}
     else{r=rets[Math.floor(RND()*rets.length)];r=r-m+muW;}
     p[k]=p[k-1]*Math.exp(r);
