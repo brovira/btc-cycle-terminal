@@ -487,31 +487,55 @@ const PH_HALVINGS=["2012-11-28","2016-07-09","2020-05-11","2024-04-19","2028-04-
 const PH_WKMS=7*864e5;
 let PH_MODE="both",PH_LASTD=null;
 function phRect(x0,x1,color){return{type:"rect",xref:"x",yref:"paper",x0,x1,y0:0,y1:1,fillcolor:color,line:{width:0},layer:"below"};}
-function lmecBands(alpha){
-  const s=[];const iso=ms=>new Date(ms).toISOString().slice(0,10);
+const phIso=ms=>new Date(ms).toISOString().slice(0,10);
+function rectsFromIv(ivs,color){return ivs.map(iv=>phRect(phIso(iv.t0),phIso(iv.t1),color));}
+/* intervalos en ms — LMEC anclado a semanas post-halving, Cowen anclado a años calendario.
+   Ninguno de los dos aplica ANTES del primer halving (nov-2012): no hay "ciclo" que medir. */
+function lmecIntervals(){
+  const buy=[],sell=[];
   for(const H of PH_HALVINGS){
-    s.push(phRect(iso(H+40*PH_WKMS),iso(H+80*PH_WKMS),`rgba(242,163,63,${alpha})`));   // venta sem 40-80
-    s.push(phRect(iso(H+125*PH_WKMS),iso(H+165*PH_WKMS),`rgba(47,195,155,${alpha})`)); // DCA sem 125-165
+    sell.push({t0:H+40*PH_WKMS,t1:H+80*PH_WKMS});    // venta: sem 40-80 post-halving
+    buy.push({t0:H+125*PH_WKMS,t1:H+165*PH_WKMS});   // DCA/compra: sem 125-165 post-halving
   }
-  return s;
+  return{buy,sell};
 }
-function cowenBands(alpha){
-  const s=[];
-  for(let y=2013;y<=2028;y++){
-    const m=y%4;
-    if(m===2){ // midterm (2014/18/22/26): compra activa desde el June low → fin de año
-      s.push(phRect(`${y}-07-01`,`${y}-12-31`,`rgba(47,195,155,${alpha})`));
-      // pre-halving year: sigue acumulando pero ya no es LA ventana — azul, igual convención que LMEC (DCA pre-halving)
-      s.push(phRect(`${y+1}-01-01`,`${y+1}-12-31`,`rgba(63,169,245,${alpha})`));
-    }
-    if(m===1)s.push(phRect(`${y}-10-01`,`${y}-12-31`,`rgba(242,163,63,${alpha})`)); // post-halving (2013/17/21/25): venta Q4
+function cowenIntervals(){
+  const buyStrong=[],buySoft=[],sell=[];
+  for(const H of PH_HALVINGS){
+    const Y0=new Date(H).getUTCFullYear();
+    sell.push({t0:Date.parse(`${Y0+1}-10-01`),t1:Date.parse(`${Y0+1}-12-31`)});              // Q4 post-halving year: vender
+    buyStrong.push({t0:Date.parse(`${Y0+2}-07-01`),t1:Date.parse(`${Y0+2}-12-31`)});          // H2 midterm year: compra activa
+    buySoft.push({t0:Date.parse(`${Y0+3}-01-01`),t1:Date.parse(`${Y0+3}-06-30`)});            // inicio pre-halving year: sigue acumulando
   }
-  return s;
+  return{buyStrong,buySoft,sell};
+}
+/* operaciones de intervalos — la confluencia se CALCULA, no se aproxima apilando transparencias
+   (eso es lo que hacía que un ciclo saliera más oscuro que otro sin motivo real) */
+function ivMerge(list){const s=list.slice().sort((a,b)=>a.t0-b.t0);const out=[];for(const iv of s){if(out.length&&iv.t0<=out[out.length-1].t1)out[out.length-1].t1=Math.max(out[out.length-1].t1,iv.t1);else out.push({...iv});}return out;}
+function ivIntersect(a,b){const out=[];let i=0,j=0;while(i<a.length&&j<b.length){const lo=Math.max(a[i].t0,b[j].t0),hi=Math.min(a[i].t1,b[j].t1);if(lo<hi)out.push({t0:lo,t1:hi});if(a[i].t1<b[j].t1)i++;else j++;}return out;}
+function ivSubtract(a,removeList){const rem=ivMerge(removeList);let out=a.slice();for(const r of rem){const next=[];for(const iv of out){if(r.t1<=iv.t0||r.t0>=iv.t1){next.push(iv);continue;}if(r.t0>iv.t0)next.push({t0:iv.t0,t1:Math.min(r.t0,iv.t1)});if(r.t1<iv.t1)next.push({t0:Math.max(r.t1,iv.t0),t1:iv.t1});}out=next;}return out;}
+function bandShapes(mode){
+  const L=lmecIntervals(),C=cowenIntervals();
+  if(mode==="lmec")return[...rectsFromIv(L.buy,`rgba(47,195,155,0.16)`),...rectsFromIv(L.sell,`rgba(242,163,63,0.16)`)];
+  if(mode==="cowen")return[...rectsFromIv(C.buyStrong,`rgba(47,195,155,0.16)`),...rectsFromIv(C.buySoft,`rgba(63,169,245,0.16)`),...rectsFromIv(C.sell,`rgba(242,163,63,0.16)`)];
+  // both: overlap CALCULADO explícitamente → siempre el mismo color sólido, nunca depende del orden de dibujo
+  const lmecBuy=ivMerge(L.buy),lmecSell=ivMerge(L.sell),cowenSell=ivMerge(C.sell);
+  const cowenBuyAll=ivMerge([...C.buyStrong,...C.buySoft]);
+  const buyOverlap=ivIntersect(lmecBuy,cowenBuyAll), sellOverlap=ivIntersect(lmecSell,cowenSell);
+  return[
+    ...rectsFromIv(ivSubtract(lmecBuy,buyOverlap),`rgba(47,195,155,0.11)`),
+    ...rectsFromIv(ivSubtract(ivMerge(C.buyStrong),buyOverlap),`rgba(47,195,155,0.11)`),
+    ...rectsFromIv(ivSubtract(ivMerge(C.buySoft),buyOverlap),`rgba(63,169,245,0.11)`),
+    ...rectsFromIv(ivSubtract(lmecSell,sellOverlap),`rgba(242,163,63,0.11)`),
+    ...rectsFromIv(ivSubtract(cowenSell,sellOverlap),`rgba(242,163,63,0.11)`),
+    ...rectsFromIv(buyOverlap,`rgba(34,211,153,0.34)`),   // confluencia compra: verde sólido, SIEMPRE igual
+    ...rectsFromIv(sellOverlap,`rgba(248,113,113,0.34)`), // confluencia venta: rojo sólido, SIEMPRE igual
+  ];
 }
 const PH_NOTES={
   lmec:`🎯 <b>Bandas LMEC</b> (su Halving Cycle Profit, idénticas a su panel): <span style="color:var(--hot)">■ venta</span> sem 40-80 post-halving · <span style="color:var(--bull)">■ DCA/compra</span> sem 125-165. Líneas: BMSB y 200W MA.`,
-  cowen:`📊 <b>Bandas Cowen</b> (calendario, citado): <span style="color:var(--bull)">■ compra activa</span> = 2ª mitad del midterm year <i>("right after that June low")</i> · <span style="color:var(--accum)">■ sigue acumulando</span> = pre-halving year (ya no es LA ventana, pero él seguía comprando) · <span style="color:var(--hot)">■ venta</span> = Q4 del post-halving year <i>("I'm going to sell Bitcoin in Q4 of the post-halving years")</i>.`,
-  both:`<b>Ambos marcos superpuestos</b> — donde el color se hace más denso, LMEC y Cowen COINCIDEN: <span style="color:var(--bull)">■■ verde denso</span> = ambos en modo compra activa a la vez · <span style="color:var(--hot)">■■ naranja denso</span> = ambos venderían a la vez (Q4 post-halving ≈ sem 40-80). Azul = solo uno sigue acumulando (menos convicción). Verde = comprar · naranja = vender.`
+  cowen:`📊 <b>Bandas Cowen</b> (calendario, citado): <span style="color:var(--bull)">■ compra activa</span> = 2ª mitad del midterm year, arranca justo tras el mínimo de junio <i>("right after that June low… accumulation through the end of the midterm year")</i> · <span style="color:var(--accum)">■ sigue acumulando</span> = inicio del pre-halving year, no todo el año <i>("DCA durante 1-2 años: fin de midterm year + inicio de pre-halving year")</i> · <span style="color:var(--hot)">■ venta</span> = Q4 del post-halving year <i>("I'm going to sell Bitcoin in Q4 of the post-halving years")</i>. Ago-sep del midterm suelen ser rojos (−15/18% las 3 veces) — no le impide empezar a comprar en julio, solo avisa de que puede doler antes del suelo.`,
+  both:`<b>Confluencia CALCULADA</b> (intersección real de fechas, no transparencia apilada): <span style="color:#22d399">■ verde sólido</span> = LMEC y Cowen comprarían YA MISMO los dos a la vez · <span style="color:#f87171">■ rojo sólido</span> = ambos venderían YA MISMO · verde/azul/naranja tenues = solo uno de los dos. Nunca antes de nov-2012 (1er halving): ninguno de los dos frameworks mide "ciclo" sin halving previo.`
 };
 /* histórico completo: Coin Metrics (precio diario desde 2010-07-18, primeros mercados con
    precio real — antes de eso Bitcoin no cotizaba) colapsado a semanal + empalmado con el
@@ -542,7 +566,7 @@ async function renderPhaseChart(D){
   const xs=[],ys=[];for(let i=0;i<D.t.length;i++){xs.push(new Date(D.t[i]).toISOString().slice(0,10));ys.push(D.c[i]);}
   const s20=sma(D.c,20),e21=ema(D.c,21),s200=sma(D.c,200);
   const bm=[],m2=[];for(let i=0;i<D.t.length;i++){bm.push((s20[i]!=null&&e21[i]!=null)?Math.max(s20[i],e21[i]):null);m2.push(s200[i]);}
-  const shapes=PH_MODE==="lmec"?lmecBands(0.16):PH_MODE==="cowen"?cowenBands(0.16):[...lmecBands(0.11),...cowenBands(0.11)];
+  const shapes=bandShapes(PH_MODE);
   $("#phaseNote").innerHTML=PH_NOTES[PH_MODE]+` <span class="mtxt">· histórico desde ${xs[0]?xs[0].slice(0,4):"—"} (Coin Metrics + Binance)</span>`;
   const traces=[
     {x:xs,y:ys,type:"scatter",mode:"lines",name:"BTC",line:{color:ink,width:1.5},hovertemplate:"%{x}<br>$%{y:,.0f}<extra></extra>"},
