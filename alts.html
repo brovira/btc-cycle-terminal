@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rotación de alts · Cripto</title>
+<link rel="stylesheet" href="dashboard.css">
+<style>
+  .wrap{max-width:1000px;margin:0 auto;padding:26px 18px 70px}
+  .verdict{border:1px solid var(--line);border-left:4px solid var(--vc,var(--muted));border-radius:14px;background:var(--panel);padding:18px 20px;margin-top:14px}
+  .verdict .big{font-size:clamp(20px,3vw,26px);font-weight:850;letter-spacing:-.02em;color:var(--vc,var(--ink))}
+  .verdict .sub{color:var(--ink2);font-size:14px;margin-top:6px;line-height:1.5}
+  .gates{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:16px}
+  .gate{border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:14px 16px}
+  .gate .gh{display:flex;align-items:center;gap:9px;font-weight:750;font-size:14.5px}
+  .gate .gv{font-family:var(--mono);font-size:19px;font-weight:700;margin:8px 0 2px}
+  .gate .gd{font-size:12.5px;color:var(--ink2);line-height:1.45}
+  .gate .gq{font-size:11.5px;color:var(--muted);font-style:italic;margin-top:6px;line-height:1.4}
+  .pill{margin-left:auto;font-family:var(--mono);font-size:10.5px;font-weight:800;letter-spacing:.04em;padding:2px 8px;border-radius:999px;text-transform:uppercase}
+  .note{margin-top:18px;border:1px solid var(--line);border-radius:13px;background:var(--panel2);padding:14px 16px;font-size:13px;line-height:1.55;color:var(--ink2)}
+  .note b{color:var(--ink)}
+  footer{margin-top:26px;color:var(--muted);font-size:12px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px}
+</style>
+</head>
+<body class="dashboard-page page-alts">
+<div class="wrap">
+  <header class="top" style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div>
+      <div class="kicker" style="font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600">Ciclos · Rotación de alts</div>
+      <h1 style="margin:5px 0 0;font-size:clamp(22px,3.4vw,30px);font-weight:800;letter-spacing:-.02em">🔀 ¿Rotar a alts?</h1>
+      <div style="color:var(--ink2);font-size:13.5px;margin-top:5px" id="asof">Cargando datos…</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <a class="btn" href="index.html" style="text-decoration:none">← Panel</a>
+      <button class="btn" id="themeBtn">◐ Tema</button>
+    </div>
+  </header>
+
+  <div class="verdict" id="verdict"><div class="big">Calculando…</div></div>
+  <div class="gates" id="gates"></div>
+
+  <div class="note">
+    <b>Marco de Cowen (su método de rotación).</b> Es <b>escéptico con las alts este ciclo</b>: "todo sangra hacia BTC", altseason quizá 2027-2029 con política más laxa. Su señal de giro es <b>macro, no de precio</b>: solo pesar alts cuando el <b>Fed funds caiga duraderamente por debajo del 2-year yield</b>. Orden de rotación cuando toque: <b>BTC → ETH → resto</b>. <b>TON y HYPE están fuera de su marco</b> (para él, especulación) → en spot y tamaño mínimo. <span style="color:var(--muted)">M2 lo rechaza; el "social/retail" no tiene fuente pública fiable (juicio).</span>
+  </div>
+
+  <footer>Datos: CoinGecko (dominancia/precio) + FRED (tipos). Los gates de <b>juicio</b> (rotura de dominancia, reclaim de la 20M MA en ETH/BTC, social) se muestran como contexto, no como semáforo automático. <b>Uso educativo — no es asesoramiento financiero.</b></footer>
+</div>
+
+<script>
+"use strict";
+(function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
+document.getElementById("themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);});
+const $=s=>document.querySelector(s);
+const pill=(on)=>on===true?`<span class="pill" style="color:var(--bull);background:color-mix(in oklab,var(--bull) 16%,transparent)">encendido</span>`
+  :on===false?`<span class="pill" style="color:var(--muted);background:color-mix(in oklab,var(--muted) 16%,transparent)">apagado</span>`
+  :`<span class="pill" style="color:var(--accent);background:color-mix(in oklab,var(--accent) 16%,transparent)">contexto</span>`;
+const dot=(on)=>on===true?"🟢":on===false?"⚪":"🔵";
+const num=(v,d)=>v==null?"—":(+v).toFixed(d==null?2:d);
+
+(async function(){
+  let j=null;
+  try{const r=await fetch("/api/altrotation",{cache:"no-store"});j=await r.json();}catch(e){}
+  if(!j){ $("#verdict").innerHTML=`<div class="big">Sin datos</div><div class="sub">No se pudo cargar /api/altrotation. Reintenta en un momento.</div>`; $("#asof").textContent=""; return; }
+  $("#asof").textContent = (j.asOf?("tipos a "+j.asOf+" · "):"")+"se actualiza cada 30 min";
+
+  const g=j.gates||{};
+  // GATE 1 — tipos (el decisivo, automático)
+  const ratesOn=g.rates===true;
+  const gates=[
+    {nm:"Tipos: Fed funds < 2y", on:g.rates, val:(j.fedFunds!=null&&j.twoYear!=null)?`${num(j.fedFunds,2)}% vs ${num(j.twoYear,2)}%`:"—",
+     ds:"El gate MACRO decisivo. Solo pesar alts cuando el Fed funds caiga <b>duraderamente</b> por debajo del tipo neutral (proxy: 2-year yield).",
+     q:"the alt season of 2016/2017 occurred while the Fed funds rate was below the 2-year yield… we're not really below the neutral rate."},
+    {nm:"«All Bitcoin pairs» (TOTAL3−USDT)/BTC", on:g.allBtcPairs, val:num(j.allBtcPairs,2)+" (aprox)",
+     ds:"No hay altseason antes de que esta métrica llegue a ~0,25 sostenido. <b>Cálculo aproximado</b> desde dominancias — contrasta con su gráfico de TradingView.",
+     q:"no alt season has ever occurred before all Bitcoin pairs go to 0.25."},
+    {nm:"BTC.D excl. stables", on:null, val:j.btcDominanceExStables!=null?num(j.btcDominanceExStables,1)+"%":"—",
+     ds:"Mientras suba (techo previo ~70% jun-2025), sesgo pro-BTC. Rotación solo si <b>rompe a la baja de forma duradera</b> (necesita histórico → juicio).",
+     q:"dominance excluding stables… all the way back up to almost 68%."},
+    {nm:"ETH/BTC", on:null, val:j.ethBtc!=null?num(j.ethBtc,4):"—",
+     ds:"ETH es su alt de referencia y la primera rotación. Gate real: <b>reclaim duradero de la 20-month MA</b> (hoy rechazado ahí y en la BMSB) → juicio, no automático.",
+     q:"Look at where Ethereum's getting rejected against Bitcoin. Right at that 20-month moving average."},
+  ];
+  $("#gates").innerHTML=gates.map(x=>`<div class="gate">
+    <div class="gh">${dot(x.on)} ${x.nm} ${pill(x.on)}</div>
+    <div class="gv">${x.val}</div>
+    <div class="gd">${x.ds}</div>
+    <div class="gq">"${x.q}"</div>
+  </div>`).join("");
+
+  // VEREDICTO: hoy manda el gate de tipos + el sesgo bajista de Cowen
+  const V=$("#verdict");
+  if(ratesOn){
+    V.style.setProperty("--vc","var(--bull)");
+    V.innerHTML=`<div class="big">⚠️ El gate macro se ha encendido</div><div class="sub">Fed funds ha caído por debajo del 2y. Es el primer requisito de Cowen para rotar. <b>Revisa el resto de gates</b> (all-BTC-pairs, dominancia rompiendo, ETH/BTC reclaim 20M) antes de mover — y empieza por <b>ETH</b>.</div>`;
+  }else{
+    V.style.setProperty("--vc","var(--hot)");
+    V.innerHTML=`<div class="big">🔴 Hoy: NO rotar — seguir en BTC</div><div class="sub">El gate decisivo (tipos) está apagado y Cowen no espera altseason este ciclo. Las alts sangran hacia BTC hasta que la política monetaria se afloje. <b>Blue chips = satélite en espera</b>; HYPE/TON solo por convicción propia y tamaño mínimo.</div>`;
+  }
+})();
+</script>
+</body>
+</html>
