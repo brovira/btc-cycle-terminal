@@ -30,7 +30,7 @@ const ASSETS = [
   { key: "BNB", symbol: "BNBUSDT", name: "BNB", catalyst: "Timing propio: ligado a Binance/BSC más que a BTC." },
   { key: "SOL", symbol: "SOLUSDT", name: "Solana", catalyst: "Timing propio: colapso de FTX (nov-2022) fue su suelo; corrió su ciclo casi solo." },
   { key: "HYPE", symbol: "HYPEUSDT", name: "Hyperliquid", catalyst: "Fuera del marco de Cowen. Listado nov-2024 → sin ciclo previo." },
-  { key: "TON", symbol: "TONUSDT", name: "Toncoin", catalyst: "Fuera del marco de Cowen. Catalizador propio (Telegram); histórico Binance corto." },
+  { key: "TON", symbol: "TONUSDT", name: "Toncoin", catalyst: "Fuera del marco de Cowen. Techó jun-2024 (ATH ~$8,2) por Telegram/ecosistema — ciclo PROPIO, desacoplado de BTC (techó 16 meses antes); en bear desde entonces." },
 ];
 
 async function fetchKlines(symbol, warnings) {
