@@ -157,6 +157,23 @@ Cada señal con **cita verbatim + archivo fuente**. Regla de oro: nunca añadir 
   las señales) — solo la tesis pública y las decisiones.
 
 ## Plan de ALTS (jul-2026, en construcción)
+
+> **🟢 DECISIÓN (jul-2026) — PLAN SIMPLIFICADO, SIN ROTACIÓN.** Tras construir el "Reloj de alts"
+> (suelos de ciclo curados vs BTC), el usuario concluyó: los **suelos de las alts coinciden ~con
+> BTC** (SOL ~5 sem después, ETH/BNB casi a la vez) → **no hay ventana de timing que explotar**, y
+> los **múltiplos son modestos** (ETH ~5x, BNB ~7x; el 25-36x de SOL fue idiosincrático = FTX). Coincide
+> con la tesis de Cowen ("todo sangra a BTC"). **Plan nuevo: BTC primero (1 BTC BELROGAM); luego
+> compras marginales de ~1.000€ por alt, sin timing ni rotación, con cash flow suficiente.**
+> - Panel de Rotación (`alts.html`) reescrito: **lidera con la regla simple + los niveles de compra
+>   de LMEC** (de sus transcripts, agente `lmec`): ETH ($2.000/1.500/1.000, luego cada $200; log
+>   $1.850/$1.500, próx $1.200), BNB ($500/o $600; bajo $350 cada $50; log $575, próx $500), HYPE
+>   ($25/20/15, luego cada $3-4, bajo $30; log ~$24, próx <$50 y $40). **SOL: LMEC no da niveles**
+>   (no-core, "el casino"). Los gates de Cowen y el Reloj quedan como **CONTEXTO/evidencia**, no como acción.
+> - `alt_plan.json` (privado) migrado: fuera `target 10k / monthly 1k / rotation`; ahora `perAlt 1000`,
+>   `gate`, `lmecLevels{}`. Barra de progreso 10k/1k eliminada.
+> - Lo de abajo (marco de rotación de Cowen, 5 gates) se conserva como **referencia por si el marco
+>   cambia**, pero NO es el plan operativo.
+
 El usuario quiere un plan de alts **basado en datos y decidido de antemano** (como el de BTC),
 para no improvisar. Analista de referencia: **Cowen** (experto en rotación). Investigación de su
 KB hecha (agente); claves:

@@ -69,7 +69,7 @@
   <header class="top" style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
     <div>
       <div class="kicker" style="font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600">Ciclos · Rotación de alts</div>
-      <h1 style="margin:5px 0 0;font-size:clamp(22px,3.4vw,30px);font-weight:800;letter-spacing:-.02em">🔀 ¿Rotar a alts?</h1>
+      <h1 style="margin:5px 0 0;font-size:clamp(22px,3.4vw,30px);font-weight:800;letter-spacing:-.02em">🔀 Alts · plan simple</h1>
       <div style="color:var(--ink2);font-size:13.5px;margin-top:5px" id="asof">Cargando datos…</div>
     </div>
     <div style="display:flex;gap:8px">
@@ -80,7 +80,8 @@
   </header>
 
   <div class="verdict" id="verdict"><div class="big">Calculando…</div></div>
-  <div class="gates" id="gates"></div>
+  <div style="margin-top:20px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700">Contexto · gates de rotación de Cowen <span style="text-transform:none;font-weight:400">(por si el marco cambia — hoy no rotamos)</span></div>
+  <div class="gates" id="gates" style="margin-top:10px"></div>
 
   <div class="note">
     <b>Marco de Cowen (su método de rotación).</b> Es <b>escéptico con las alts este ciclo</b>: "todo sangra hacia BTC", altseason quizá 2027-2029 con política más laxa. Su señal de giro es <b>macro, no de precio</b>: solo pesar alts cuando el <b>Fed funds caiga duraderamente por debajo del 2-year yield</b>. Orden de rotación cuando toque: <b>BTC → ETH → resto</b>. <b>TON y HYPE están fuera de su marco</b> (para él, especulación) → en spot y tamaño mínimo. <span style="color:var(--muted)">M2 lo rechaza; el "social/retail" no tiene fuente pública fiable (juicio).</span>
@@ -164,49 +165,30 @@ const num=(v,d)=>v==null?"—":(+v).toFixed(d==null?2:d);
     <div class="gq">"${x.q}"</div>
   </div>`).join("");
 
-  // VEREDICTO ACCIONABLE. Solo el gate de tipos es automático/fiable; el resto (all-pairs proxy,
-  // dominancia rompiendo, ETH/BTC reclaim 20M) son de JUICIO → el panel dice qué PREPARAR, no da
-  // luz verde a comprar en fuerza.
-  const ethOn=g.ethBtc20m===true;
+  // PLAN SIMPLE (sin rotación): los suelos de alts coinciden con BTC y los múltiplos son modestos
+  // → el timing no compensa. Los gates de Cowen quedan como CONTEXTO (renderizados arriba de #gates).
   const V=$("#verdict");
-  let head,sub,vc,prep,buy;
-  if(!ratesOn){
-    vc="var(--hot)";head="🔴 Hoy: SOLO BTC — alts en espera";
-    sub="El gate decisivo (tipos) está apagado: política restrictiva → todo sangra hacia BTC. Cowen no espera altseason hasta que se afloje. Nada que preparar aún.";
-    prep="No — todavía no";buy="No";
-  }else if(!ethOn){
-    vc="var(--accent)";head="🟠 Hoy: PREPARAR — cash listo, vigilar ETH";
-    sub=`El <b>macro empieza a aflojar</b> (Fed funds &lt; 2y). Pero <b>ETH/BTC sigue por debajo de su media de 20 meses</b> — el gatillo de rotación de Cowen <b>aún NO se ha dado</b>. Ten la munición lista y vigila ETH; <b>no compres alts en fuerza todavía</b>. <span style="color:var(--muted)">(Y ojo a la durabilidad del gate de tipos.)</span>`;
-    prep="Sí — cash listo";buy="Aún no · esperar el reclaim de ETH/BTC sobre su 20M MA";
-  }else{
-    vc="var(--bull)";head="🟢 Hoy: EMPEZAR A ROTAR — primero ETH";
-    sub=`Doble confirmación: <b>tipos &lt; 2y</b> y <b>ETH/BTC ha recuperado su media de 20 meses</b> (el gatillo de Cowen). Empieza a rotar <b>por ETH</b>, escalonado con tu ritmo mensual. <span style="color:var(--muted)">Sigue vigilando la dominancia ex-stables (juicio) para abrir el resto de alts.</span>`;
-    prep="Desplegándose";buy="Sí — empezar por ETH, escalonado";
+  V.style.setProperty("--vc","var(--cycles)");
+  const curr=(ap&&ap.currency)||"€";
+  const fmtE=n=>(Number(n)||0).toLocaleString("es-ES");
+  const per=ap&&ap.perAlt?+ap.perAlt:1000;
+  const gate=ap&&ap.gate?ap.gate:"Tras cumplir el objetivo de BTC y con cash flow suficiente.";
+  const ALTC={ETH:"#8a7dff",BNB:"#f3bd4f",SOL:"#35d5a2",HYPE:"#61aef7"};
+  let levelsHtml="";
+  if(ap&&ap.lmecLevels){
+    const rows2=["ETH","BNB","SOL","HYPE"].filter(k=>ap.lmecLevels[k]).map(k=>
+      `<div style="font-size:12.5px;padding:6px 0;line-height:1.5;border-top:1px solid var(--line)"><b style="color:${ALTC[k]||"var(--ink)"}">${k}</b> — ${ap.lmecLevels[k]}</div>`).join("");
+    levelsHtml=`<div class="note" style="margin-top:12px;background:var(--panel2)">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700">📉 Niveles de compra de LMEC (órdenes límite escalonadas)</div>
+      ${rows2}
+      <div style="margin-top:8px;font-size:11.5px;color:var(--muted)">Niveles tomados de los transcripts de LMEC — no es asesoramiento. LMEC no cubre SOL (no-core).</div>
+    </div>`;
   }
-  V.style.setProperty("--vc",vc);
-  const row=(k,v)=>`<div style="display:flex;gap:12px;font-size:13.5px;padding:2px 0"><span style="flex:0 0 132px;color:var(--muted)">${k}</span><b>${v}</b></div>`;
-  const curr=(ap&&ap.currency)||"€";const fmtE=n=>(Number(n)||0).toLocaleString("es-ES");
-  let objBar="";
-  if(ap){
-    const tgt=+ap.target||0,dep=+ap.deployed||0,prk=+ap.parked||0;
-    const depPct=tgt?Math.min(100,dep/tgt*100):0,prkPct=tgt?Math.min(Math.max(0,100-depPct),prk/tgt*100):0;
-    const cov=tgt?Math.round((dep+prk)/tgt*100):0;
-    objBar=tgt?`<div style="margin-top:9px">
-      <div style="height:10px;border-radius:5px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden;display:flex">
-        <i style="width:${depPct}%;background:var(--bull)"></i><i style="width:${prkPct}%;background:color-mix(in oklab,var(--accent) 55%,transparent)"></i>
-      </div>
-      <div style="margin-top:5px;font-size:12px;color:var(--ink2)"><span style="color:var(--bull)">■</span> desplegado <b>${fmtE(dep)}${curr}</b> · <span style="color:var(--accent)">■</span> listo en CEX <b>${fmtE(prk)}${curr}</b> · objetivo <b>${fmtE(tgt)}${curr}</b> · <b>${cov}%</b> cubierto</div>
-    </div>`:"";
-  }
-  const obj=ap?`<div class="note" style="margin-top:12px;background:var(--panel2)"><b>🎯 Objetivo de rotación (persona física, spot):</b> meter <b>${fmtE(ap.target)}${curr}</b> en alts a <b>${fmtE(ap.monthly)}${curr}/mes</b>, empezando por <b>${ap.first||"ETH"}</b>.${ap.fundingRule?" "+ap.fundingRule:""}${objBar} <span style="color:var(--muted)">BELROGAM va aparte (acumular 1 BTC); loop (Aave) y farming (LPs) son cubos distintos del spot.</span></div>`
-    :`<div class="note" style="margin-top:12px;background:var(--panel2)">Las alts las compras como <b>persona física</b>, en <b>spot</b>. <span style="color:var(--muted)">(Inicia sesión para ver tu objetivo de rotación.)</span></div>`;
-  V.innerHTML=`<div class="big">${head}</div><div class="sub">${sub}</div>
-    <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px">
-      ${row("Preparar cash",prep)}
-      ${row("Comprar alts",buy)}
-      ${row("Vender","N/A — casi no tienes bolsas alt que vender")}
-      ${row("Orden de rotación","BTC → ETH → resto · nunca todo de golpe")}
-    </div>${obj}`;
+  const obj=ap?`<div class="note" style="margin-top:12px;background:var(--panel2)"><b>🎯 Regla:</b> ~<b>${fmtE(per)}${curr} por alt</b>, compra marginal, sin timing. <b>Cuándo:</b> ${gate} <span style="color:var(--muted)">BELROGAM va aparte (acumular 1 BTC); loop (Aave) y farming (LPs) son cubos distintos del spot.</span></div>`
+    :`<div class="note" style="margin-top:12px;background:var(--panel2)">Plan: <b>BTC primero; luego ~€1.000 por alt</b>, marginal, sin rotación. <span style="color:var(--muted)">(Inicia sesión para ver tus niveles de LMEC.)</span></div>`;
+  V.innerHTML=`<div class="big">🔀 Alts: plan simple, sin rotación</div>
+    <div class="sub">Los suelos de las alts caen <b>~a la vez que BTC</b> y los múltiplos son modestos (ETH ~5x, BNB ~7x) → el <b>timing de rotación no compensa</b> la complejidad. Plan: <b>BTC primero (1 BTC); luego compras marginales de ~${fmtE(per)}${curr} por alt</b>, con cash flow suficiente.</div>
+    ${obj}${levelsHtml}`;
 })();
 </script>
 
