@@ -121,8 +121,9 @@ async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.
 function drawRev(){
   if(!window.Plotly||!REV||!REV.length)return;
   const mut=cssv("--muted"),grid=cssv("--grid"),line=cssv("--line"),acc=cssv("--accent");
+  const fillc=(acc&&acc[0]==="#"&&acc.length===7)?acc+"26":acc; // hex+alpha (~15%); Plotly no entiende color-mix()
   const trace={x:REV.map(p=>p[0]),y:REV.map(p=>p[1]),mode:"lines",fill:"tozeroy",
-    line:{color:acc,width:2},fillcolor:"color-mix(in oklab,"+acc+" 16%,transparent)",
+    line:{color:acc,width:2},fillcolor:fillc,
     hovertemplate:"%{x}<br>$%{y:,.0f}<extra></extra>"};
   const layout={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
     margin:{l:56,r:14,t:8,b:34},height:300,font:{color:mut,size:11,family:"inherit"},hovermode:"x",
