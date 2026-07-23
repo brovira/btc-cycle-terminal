@@ -509,15 +509,17 @@ function cycleStats(){
 /* ventana de suelo proyectada por el patrón temporal — un único intervalo (este ciclo, aún abierto) */
 function patronIntervals(){const s=cycleStats();return[{t0:s.projLoMs,t1:s.projHiMs}];}
 function renderCycleTimeline(){
-  const{rows,avg,lo,hi,projLoMs,projHiMs,projAvgMs}=cycleStats();
-  const projLo=new Date(projLoMs).toISOString().slice(0,7),projHi=new Date(projHiMs).toISOString().slice(0,7),projAvg=new Date(projAvgMs).toISOString().slice(0,7);
-  let h=`<table><thead><tr><th style="text-align:left">Tramo</th><th style="text-align:left">Desde</th><th style="text-align:left">Hasta</th><th>Meses</th></tr></thead><tbody>`;
-  for(const r of rows){
-    const isTB=/^T\d→B\d/.test(r.k);
-    h+=`<tr${isTB?' style="background:color-mix(in oklab,var(--bull) 6%,transparent)"':''}><td style="text-align:left">${r.k}${isTB?' <span class="chip" style="color:var(--bull);border-color:var(--bull)">techo→suelo</span>':''}</td><td style="text-align:left" class="mono">${r.a}</td><td style="text-align:left" class="mono">${r.b}</td><td class="mono">${r.m.toFixed(1)}</td></tr>`;
-  }
-  h+=`<tr style="font-weight:750;background:color-mix(in oklab,var(--hot) 8%,transparent)"><td style="text-align:left">T4→B4</td><td style="text-align:left" class="mono">6-oct-2025</td><td style="text-align:left" class="mono">proyección</td><td class="mono" style="color:var(--hot)">${lo.toFixed(1)}–${hi.toFixed(1)} (media ${avg.toFixed(1)})</td></tr>`;
-  h+=`</tbody></table><div class="note" style="margin-top:8px">Media histórica techo→suelo (${avg.toFixed(1)} meses) aplicada al techo de este ciclo (6-oct-2025) → <b style="color:var(--hot)">ventana de suelo ${projLo} – ${projHi}, centrada en ${projAvg}</b>. Marcada como banda ⏱️ <b>Patrón</b> en el gráfico de abajo — pincha "Todos" para ver dónde coincide con LMEC y Cowen.</div>`;
+  const{avg,lo,hi,projLoMs,projHiMs,projAvgMs}=cycleStats();
+  const fLong=ms=>new Date(ms).toLocaleDateString("es-ES",{month:"long",year:"numeric",timeZone:"UTC"});
+  const projLo=fLong(projLoMs),projHi=fLong(projHiMs),projAvgM=new Date(projAvgMs).toLocaleDateString("es-ES",{month:"long",timeZone:"UTC"});
+  const h=`
+    <div class="levels" style="margin:0">
+      <div class="lv"><div class="l">Suelo estimado</div><div class="n" style="color:var(--hot);font-size:16px;text-transform:capitalize">${projLo} – ${projHi}</div></div>
+      <div class="lv"><div class="l">Más probable</div><div class="n" style="text-transform:capitalize">${projAvgM} 2026</div></div>
+      <div class="lv"><div class="l">Techo→Suelo (media histórica)</div><div class="n">${avg.toFixed(1)} meses</div></div>
+      <div class="lv"><div class="l">Rango observado (3 ciclos)</div><div class="n">${lo.toFixed(1)}–${hi.toFixed(1)} meses</div></div>
+    </div>
+    <div class="note" style="margin-top:10px">En los 3 ciclos completos, el suelo llegó siempre <b>12-13 meses</b> tras el techo (dic-2013→ene-2015: 13,3m · dic-2017→dic-2018: 11,9m · nov-2021→nov-2022: 12,4m). Aplicado al techo de este ciclo (6-oct-2025). Marcado como banda ⏱️ <b>Patrón</b> en el gráfico de abajo — pincha "Todos" para ver dónde coincide con LMEC y Cowen.</div>`;
   $("#cycleTimeline").innerHTML=h;
 }
 let PH_MODE="todos",PH_LASTD=null;

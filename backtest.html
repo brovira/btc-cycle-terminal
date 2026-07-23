@@ -132,6 +132,7 @@
             <option value="cowen_risk">Cowen · Risk metric (DCA &lt;0,3 / salir &gt;0,6)</option>
             <option value="cowen_mvrv">Cowen · Reset MVRV Z (&lt;0 dentro / &gt;3 fuera)</option>
             <option value="onchainmind_fng">F&amp;G Cadence 90d (batió al DCA 10× desde 2019)</option>
+            <option value="patron_temporal">⏱️ Patrón temporal · Techo→Suelo→Techo (cálculo propio)</option>
           </optgroup>
           <optgroup label="📐 Indicadores clásicos">
             <option value="gc">Golden/Death Cross 50/200</option>
@@ -234,6 +235,13 @@ function macdParts(c,f,s,sig){const ef=ema(c,f),es=ema(c,s);const line=c.map((_,
 /* ---------- ciclo del halving (para señales temporales) ---------- */
 const HALVINGS=["2012-11-28","2016-07-09","2020-05-11","2024-04-19","2028-04-20"].map(d=>Date.parse(d));
 function halvSeries(){const WK=7*864e5;return DATA.t.map(ms=>{let H=HALVINGS[0];for(const h of HALVINGS)if(h<=ms)H=h;return (ms-H)/WK;});}
+/* patrón temporal — techos/suelos reales del ciclo (fechas fijas, histórico, no detectadas por
+   precio). Mismo patrón que halvSeries(): semanas desde el último evento pasado de ese tipo. */
+const CYCLE_TOPS=["2013-12-04","2017-12-17","2021-11-10","2025-10-06"].map(d=>Date.parse(d));
+const CYCLE_BOTS=["2015-01-14","2018-12-15","2022-11-21"].map(d=>Date.parse(d));
+function sinceSeries(marks){const WK=7*864e5;return DATA.t.map(ms=>{let M=marks[0];for(const m of marks)if(m<=ms)M=m;return (ms-M)/WK;});}
+function topwSeries(){return sinceSeries(CYCLE_TOPS);}
+function botwSeries(){return sinceSeries(CYCLE_BOTS);}
 /* Risk 0-1 (APROXIMACIÓN abierta al estilo Cowen — su métrica es propietaria).
    Desviación de log(precio) sobre una regresión log-log (precio ~ tiempo desde génesis),
    normalizada 0-1 con min/max expansivos. Walk-forward: en cada semana solo usa datos
@@ -297,6 +305,8 @@ const INDS={
   fng:{lbl:"Fear & Greed",params:[],calc:()=>FNG?FNG.slice():DATA.c.map(()=>null)},
   fngcad:{lbl:"F&G cadencia 90d",params:[],calc:()=>fngCadence()},
   halvw:{lbl:"Sem. desde halving",params:[],calc:()=>halvSeries()},
+  topw:{lbl:"Sem. desde techo del ciclo",params:[],calc:()=>topwSeries()},
+  botw:{lbl:"Sem. desde suelo del ciclo",params:[],calc:()=>botwSeries()},
   month:{lbl:"Mes (1-12)",params:[],calc:()=>DATA.t.map(ms=>new Date(ms).getUTCMonth()+1)},
   ymod4:{lbl:"Año del ciclo (%4)",params:[],calc:()=>DATA.t.map(ms=>new Date(ms).getUTCFullYear()%4)},
   value:{lbl:"Valor fijo",params:[["v",0]],isConst:true},
@@ -579,6 +589,16 @@ const PRESETS={
     {left:{ind:"mvrvz",params:{}},op:"lt",right:{ind:"value",params:{v:0}}}]},
     x:{logic:"all",conds:[
     {left:{ind:"mvrvz",params:{}},op:"gt",right:{ind:"value",params:{v:3}}}]}},
+  patron_temporal:{name:"Patrón temporal · Techo→Suelo→Techo",
+    desc:`<h4>Patrón temporal del ciclo</h4>Cálculo propio, no es una cita de ningún agente: en los 3 ciclos completos, el suelo llegó SIEMPRE 52-58 semanas después del techo, y el siguiente techo SIEMPRE 150-153 semanas después del suelo — ambos intervalos muy estables (techo→suelo: 58.0/51.9/53.7 sem · suelo→techo: 152.6/151.6/150.0 sem).
+    <div class="how"><div><b>Compra</b>: 52-58 semanas después del último techo del ciclo.</div><div><b>Vende</b>: 150-153 semanas después del último suelo del ciclo.</div></div>
+    <span class="warn">Fechas de techo/suelo fijadas a mano (histórico real: dic-2013, ene-2015, dic-2017, dic-2018, nov-2021, nov-2022, oct-2025), no detectadas por precio — es puramente temporal, no depende del nivel al que cotice BTC.</span>`,
+    e:{logic:"all",conds:[
+    {left:{ind:"topw",params:{}},op:"gt",right:{ind:"value",params:{v:52}}},
+    {left:{ind:"topw",params:{}},op:"lt",right:{ind:"value",params:{v:58}}}]},
+    x:{logic:"all",conds:[
+    {left:{ind:"botw",params:{}},op:"gt",right:{ind:"value",params:{v:150}}},
+    {left:{ind:"botw",params:{}},op:"lt",right:{ind:"value",params:{v:153}}}]}},
   onchainmind_fng:{name:"F&G Cadence 90d",
     desc:`<h4>Fear & Greed Cadence (90d)</h4>Compra cuando la <b>cadencia</b> del Fear & Greed (F&G de hoy − F&G de hace 90 días) cruza de negativo a positivo, con precio &gt; MA200 y F&G &gt; 20. Vende <b>en cuanto</b> la cadencia vuelve a cruzar por debajo de 0.
     <div class="q">"When the Cadence moves from negative to positive, that becomes your buy signal."<span class="src">[ocm/20260325]</span></div>
