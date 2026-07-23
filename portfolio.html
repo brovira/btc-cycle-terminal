@@ -332,6 +332,11 @@ function rebuild(){
 }
 
 /* ---------------- OVERVIEW: net worth + risk profile ---------------- */
+/* objetivo de asignación (editable, persistido) — % por categoría para el fin de la acumulación */
+const TARGET_KEY="btc-term-alloc-target-v1";
+const TARGET_DEFAULT={btc:70,blue:20,stable:8,otros:2};
+function getTarget(){try{const t=JSON.parse(localStorage.getItem(TARGET_KEY));if(t&&typeof t==="object")return {...TARGET_DEFAULT,...t};}catch(e){}return {...TARGET_DEFAULT};}
+function setTarget(k,v){const t=getTarget();t[k]=Math.max(0,Math.min(100,Math.round(+v||0)));localStorage.setItem(TARGET_KEY,JSON.stringify(t));return t;}
 function renderNetWorth(){
   const{px}=RAW;
   const total=TOTAL_USD;
@@ -340,6 +345,21 @@ function renderNetWorth(){
   for(const a of ASSETS_FULL){tier[capTier(a.sym)]+=(a.usd||0);}
   const seg=TIERS.map(([k,,c])=>total?`<i style="width:${(tier[k]/total*100).toFixed(2)}%;background:${c}"></i>`:"").join("");
   const leg=TIERS.filter(([k])=>tier[k]>0).map(([k,name,c])=>`<span><span class="rdot" style="background:${c}"></span>${name} <b>${(tier[k]/total*100).toFixed(total&&tier[k]/total<0.001?2:1)}%</b></span>`).join("");
+  const T=getTarget(),tsum=TIERS.reduce((s,[k])=>s+(+T[k]||0),0),thr=Math.max(50,total*0.005);
+  const objRows=TIERS.map(([k,name,c])=>{
+    const cur=tier[k]||0,curPct=total?cur/total*100:0,tgtPct=+T[k]||0,gap=total*tgtPct/100-cur;
+    const near=Math.abs(gap)<thr,gc=near?"var(--muted)":(gap>0?"var(--bull)":"var(--hot)");
+    const gtxt=near?"en objetivo ✓":(gap>0?"faltan "+fmtUSD(gap):"sobran "+fmtUSD(-gap));
+    return `<div style="display:flex;align-items:center;gap:8px;padding:3px 0;font-size:13px">
+      <span style="flex:0 0 92px;display:flex;align-items:center;gap:6px"><span class="rdot" style="background:${c}"></span>${name}</span>
+      <span class="mono" style="flex:0 0 40px;color:var(--ink2);text-align:right">${curPct.toFixed(0)}%</span>
+      <span style="color:var(--muted)">→</span>
+      <input class="objinp mono" data-tier="${k}" type="number" min="0" max="100" value="${tgtPct}" style="width:52px;font:inherit;font-size:13px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:3px 6px;text-align:right">
+      <span style="color:var(--muted)">%</span>
+      <span class="mono" style="margin-left:auto;color:${gc};font-size:12.5px">${gtxt}</span>
+    </div>`;
+  }).join("");
+  const warn=tsum!==100?`<div class="mtxt" style="color:var(--hot);margin-top:4px">Los objetivos suman ${tsum}% (deberían sumar 100%).</div>`:"";
   $("#nwCard").innerHTML=`
     <div>
       <div class="lbl">Net worth</div>
@@ -355,7 +375,12 @@ function renderNetWorth(){
       <div class="lbl">Perfil de riesgo</div>
       <div class="seg">${seg}</div>
       <div class="leg">${leg}</div>
+      <div class="lbl" style="margin-top:16px">🎯 Objetivo de asignación <span class="mtxt" style="font-weight:400">· fin de acumulación · editable</span></div>
+      <div style="margin-top:6px">${objRows}</div>
+      ${warn}
+      <div class="mtxt" style="margin-top:8px;line-height:1.5">Núcleo <b>BTC</b>. <b>Blue chips</b> = satélite: solo se despliega cuando enciendan los <b>gates de rotación de alts</b> (panel aparte). HYPE/TON en spot; ETH/BNB/SOL admiten <b>LP entre sí</b> (alta correlación → poco IL). El LP/yield es un cubo aparte del spot.</div>
     </div>`;
+  $("#nwCard").querySelectorAll(".objinp").forEach(inp=>inp.addEventListener("change",e=>{setTarget(e.target.dataset.tier,e.target.value);renderNetWorth();}));
 }
 function bar(pct,color){return `<div class="shcell"><span class="mono" style="font-size:12px;color:var(--muted)">${pct<0.1?"<0.1":pct.toFixed(1)}%</span><div class="shbar"><i style="width:${Math.min(100,pct)}%${color?";background:"+color:""}"></i></div></div>`;}
 function whereLabel(a){

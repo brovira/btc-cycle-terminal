@@ -156,6 +156,41 @@ Cada señal con **cita verbatim + archivo fuente**. Regla de oro: nunca añadir 
   headless). Sin revelar el "secret sauce" (nombres de analistas, umbrales exactos, reglas de
   las señales) — solo la tesis pública y las decisiones.
 
+## Plan de ALTS (jul-2026, en construcción)
+El usuario quiere un plan de alts **basado en datos y decidido de antemano** (como el de BTC),
+para no improvisar. Analista de referencia: **Cowen** (experto en rotación). Investigación de su
+KB hecha (agente); claves:
+- **Cowen es escéptico/bajista con alts este ciclo.** NO espera altseason en 2026 (quizá 2027-2029
+  con política laxa). Tesis: "todo sangra hacia BTC"; alts = "penny stocks de esta generación".
+- **Su señal de rotación es MACRO, no precio.** GATES para pesar alts (ninguno encendido hoy):
+  1. **Fed funds < 2-year yield** duradero (tipo neutral). Hoy ~3,75 vs 3,77 → igualados.
+  2. **(TOTAL3−USDT)/BTC ("all Bitcoin pairs") ≥ ~0,25** sostenido. Oct-2025 = 0,29.
+  3. **BTC.D EXCLUYENDO stables** rompe a la baja (desde ~67-68%; techo previo ~70% jun-2025).
+  4. **Social/retail** haciendo higher highs (hoy ~0,25 = nivel 2018).
+  5. **ETH/BTC** reclaim duradero de la **20-month MA** (rechazado en BMSB y 20M MA).
+  - Orden de rotación cuando enciendan: BTC → **ETH** (su referencia) → resto.
+  - **M2 lo RECHAZA** explícitamente (no ingerir). **TON y HYPE: fuera de su marco** (0 menciones).
+- **Backtest:** los gates de PRECIO (dominance, 0,25, ETH/BTC vs 20M) son backtesteables; el gate
+  MACRO (tipos/social) no lo es con solo precio → documentar como contexto.
+- **DOS CUBOS** (decisión del usuario): **spot** (núcleo BTC + satélite alt *gated*, holdear) vs
+  **LP/yield aparte** (liquidez distinta del spot).
+- **Emparejamiento de LP por CORRELACIÓN** (matriz que dio el usuario, jul-2026): emparejar
+  volátiles MUY correlacionadas minimiza el IL. **Spot** (baja corr): HYPE (0,48-0,59), GRAM/TON
+  (0,36-0,56). **LP** (alta corr 0,77-0,89): ETH-SOL 0,89, BTC-ETH 0,88, BTC-SOL 0,84, BNB-ETH/SOL
+  ~0,78, BTC-BNB 0,77. JLP (cesta SOL-heavy + fees) = candidato del cubo LP/yield.
+- **Filosofía de LP del usuario:** "set it wide and let it ride" (rangos anchos, pasivo), pero
+  vigilar el precio y **tomar algo de profit si se desvía mucho de su media móvil** — asume
+  **regression to the mean**, con "compass" = **200W MA** (largo plazo/ciclos) o **STH-SOPR** (más
+  tendencia actual).
+- **Hecho:** objetivo de asignación editable en `portfolio.html` (renderNetWorth): % target por
+  categoría (BTC/Estables/Blue chips/Otros) + desviación en $ ("faltan/sobran"), persistido en
+  localStorage (`btc-term-alloc-target-v1`), con nota de estrategia (núcleo BTC, alts gated, HYPE/
+  TON spot, LP entre correlacionadas, cubo LP aparte).
+- **Pendiente (autorizado por el usuario):** ingerir **BTC.D (+ex-stables), (TOTAL3−USDT)/BTC,
+  ETH/BTC, Fed funds vs 2y (FRED)** como API(s) nuevas (corren server-side, hay red) + construir un
+  **panel "Rotación de alts"** con los 5 gates en semáforo (como el cockpit de BTC) + backtest de
+  los gates de precio + correlación móvil JLP↔BTC/SOL.
+
 ## Automatizaciones
 - `.github/workflows/ingest-transcripts.yml` — diaria, baja subtítulos nuevos de los 3 canales.
 - `.github/workflows/decision-snapshot.yml` — snapshot de la decisión del día (histórico + scorecard).
