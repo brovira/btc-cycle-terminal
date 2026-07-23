@@ -131,7 +131,8 @@
     <div style="display:flex;gap:6px" id="phTabs">
       <button class="btn" data-ph="lmec" style="font-size:12px;padding:5px 10px">🎯 LMEC</button>
       <button class="btn" data-ph="cowen" style="font-size:12px;padding:5px 10px">📊 Cowen</button>
-      <button class="btn on" data-ph="both" style="font-size:12px;padding:5px 10px">Ambos (overlap)</button>
+      <button class="btn" data-ph="patron" style="font-size:12px;padding:5px 10px">⏱️ Patrón</button>
+      <button class="btn on" data-ph="todos" style="font-size:12px;padding:5px 10px">Todos (overlap)</button>
     </div>
   </div>
   <div style="border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:8px 6px 2px"><div id="phaseChart" style="width:100%;min-height:380px"></div></div>
@@ -491,28 +492,35 @@ const PH_HALVINGS=["2012-11-28","2016-07-09","2020-05-11","2024-04-19","2028-04-
 const PH_WKMS=7*864e5;
 /* ---------- patrón temporal del ciclo: meses entre techo→suelo→halving (cálculo directo,
    fechas históricas reales — no es una cita de ningún agente, es matemática sobre precios) ---------- */
-function renderCycleTimeline(){
-  const EV=[["H1","28-nov-2012","2012-11-28"],["T1","4-dic-2013","2013-12-04"],["B1","14-ene-2015","2015-01-14"],
-    ["H2","9-jul-2016","2016-07-09"],["T2","17-dic-2017","2017-12-17"],["B2","15-dic-2018","2018-12-15"],
-    ["H3","11-may-2020","2020-05-11"],["T3","10-nov-2021","2021-11-10"],["B3","21-nov-2022","2022-11-21"],
-    ["H4","20-abr-2024","2024-04-20"],["T4","6-oct-2025","2025-10-06"]];
+/* fuente única de verdad (fechas reales) — la usan tanto la tabla como la banda del gráfico */
+const CYCLE_EV=[["H1","28-nov-2012","2012-11-28"],["T1","4-dic-2013","2013-12-04"],["B1","14-ene-2015","2015-01-14"],
+  ["H2","9-jul-2016","2016-07-09"],["T2","17-dic-2017","2017-12-17"],["B2","15-dic-2018","2018-12-15"],
+  ["H3","11-may-2020","2020-05-11"],["T3","10-nov-2021","2021-11-10"],["B3","21-nov-2022","2022-11-21"],
+  ["H4","20-abr-2024","2024-04-20"],["T4","6-oct-2025","2025-10-06"]];
+function cycleStats(){
   const months=(a,b)=>(Date.parse(b)-Date.parse(a))/864e5/30.4368;
-  const rows=[];for(let i=0;i<EV.length-1;i++)rows.push({k:EV[i][0]+"→"+EV[i+1][0],a:EV[i][1],b:EV[i+1][1],m:months(EV[i][2],EV[i+1][2])});
+  const rows=[];for(let i=0;i<CYCLE_EV.length-1;i++)rows.push({k:CYCLE_EV[i][0]+"→"+CYCLE_EV[i+1][0],a:CYCLE_EV[i][1],b:CYCLE_EV[i+1][1],m:months(CYCLE_EV[i][2],CYCLE_EV[i+1][2])});
   const tb=rows.filter(r=>/^T\d→B\d/.test(r.k));
   const avg=tb.reduce((s,r)=>s+r.m,0)/tb.length,lo=Math.min(...tb.map(r=>r.m)),hi=Math.max(...tb.map(r=>r.m));
   const t4=Date.parse("2025-10-06");
-  const projLo=new Date(t4+lo*30.4368*864e5).toISOString().slice(0,7),projHi=new Date(t4+hi*30.4368*864e5).toISOString().slice(0,7);
-  const projAvg=new Date(t4+avg*30.4368*864e5).toISOString().slice(0,7);
+  const projLoMs=t4+lo*30.4368*864e5,projHiMs=t4+hi*30.4368*864e5,projAvgMs=t4+avg*30.4368*864e5;
+  return{rows,avg,lo,hi,projLoMs,projHiMs,projAvgMs};
+}
+/* ventana de suelo proyectada por el patrón temporal — un único intervalo (este ciclo, aún abierto) */
+function patronIntervals(){const s=cycleStats();return[{t0:s.projLoMs,t1:s.projHiMs}];}
+function renderCycleTimeline(){
+  const{rows,avg,lo,hi,projLoMs,projHiMs,projAvgMs}=cycleStats();
+  const projLo=new Date(projLoMs).toISOString().slice(0,7),projHi=new Date(projHiMs).toISOString().slice(0,7),projAvg=new Date(projAvgMs).toISOString().slice(0,7);
   let h=`<table><thead><tr><th style="text-align:left">Tramo</th><th style="text-align:left">Desde</th><th style="text-align:left">Hasta</th><th>Meses</th></tr></thead><tbody>`;
   for(const r of rows){
     const isTB=/^T\d→B\d/.test(r.k);
     h+=`<tr${isTB?' style="background:color-mix(in oklab,var(--bull) 6%,transparent)"':''}><td style="text-align:left">${r.k}${isTB?' <span class="chip" style="color:var(--bull);border-color:var(--bull)">techo→suelo</span>':''}</td><td style="text-align:left" class="mono">${r.a}</td><td style="text-align:left" class="mono">${r.b}</td><td class="mono">${r.m.toFixed(1)}</td></tr>`;
   }
   h+=`<tr style="font-weight:750;background:color-mix(in oklab,var(--hot) 8%,transparent)"><td style="text-align:left">T4→B4</td><td style="text-align:left" class="mono">6-oct-2025</td><td style="text-align:left" class="mono">proyección</td><td class="mono" style="color:var(--hot)">${lo.toFixed(1)}–${hi.toFixed(1)} (media ${avg.toFixed(1)})</td></tr>`;
-  h+=`</tbody></table><div class="note" style="margin-top:8px">Media histórica techo→suelo (${avg.toFixed(1)} meses) aplicada al techo de este ciclo (6-oct-2025) → <b style="color:var(--hot)">ventana de suelo ${projLo} – ${projHi}, centrada en ${projAvg}</b>.</div>`;
+  h+=`</tbody></table><div class="note" style="margin-top:8px">Media histórica techo→suelo (${avg.toFixed(1)} meses) aplicada al techo de este ciclo (6-oct-2025) → <b style="color:var(--hot)">ventana de suelo ${projLo} – ${projHi}, centrada en ${projAvg}</b>. Marcada como banda ⏱️ <b>Patrón</b> en el gráfico de abajo — pincha "Todos" para ver dónde coincide con LMEC y Cowen.</div>`;
   $("#cycleTimeline").innerHTML=h;
 }
-let PH_MODE="both",PH_LASTD=null;
+let PH_MODE="todos",PH_LASTD=null;
 function phRect(x0,x1,color){return{type:"rect",xref:"x",yref:"paper",x0,x1,y0:0,y1:1,fillcolor:color,line:{width:0},layer:"below"};}
 const phIso=ms=>new Date(ms).toISOString().slice(0,10);
 function rectsFromIv(ivs,color){return ivs.map(iv=>phRect(phIso(iv.t0),phIso(iv.t1),color));}
@@ -541,28 +549,46 @@ function cowenIntervals(){
 function ivMerge(list){const s=list.slice().sort((a,b)=>a.t0-b.t0);const out=[];for(const iv of s){if(out.length&&iv.t0<=out[out.length-1].t1)out[out.length-1].t1=Math.max(out[out.length-1].t1,iv.t1);else out.push({...iv});}return out;}
 function ivIntersect(a,b){const out=[];let i=0,j=0;while(i<a.length&&j<b.length){const lo=Math.max(a[i].t0,b[j].t0),hi=Math.min(a[i].t1,b[j].t1);if(lo<hi)out.push({t0:lo,t1:hi});if(a[i].t1<b[j].t1)i++;else j++;}return out;}
 function ivSubtract(a,removeList){const rem=ivMerge(removeList);let out=a.slice();for(const r of rem){const next=[];for(const iv of out){if(r.t1<=iv.t0||r.t0>=iv.t1){next.push(iv);continue;}if(r.t0>iv.t0)next.push({t0:iv.t0,t1:Math.min(r.t0,iv.t1)});if(r.t1<iv.t1)next.push({t0:Math.max(r.t1,iv.t0),t1:iv.t1});}out=next;}return out;}
+/* clasificación por inclusión-exclusión de 3 conjuntos (A,B,C) → exactamente-3 / exactamente-2 / solo-uno.
+   Determinista: el color de "coinciden 3" o "coinciden 2" nunca depende del orden en que se dibuje. */
+function classify3(A,B,C){
+  const ab=ivIntersect(A,B),ac=ivIntersect(A,C),bc=ivIntersect(B,C);
+  const abc=ivIntersect(ab,C);
+  const twoOnly=ivSubtract(ivMerge([...ab,...ac,...bc]),abc);
+  const aOnly=ivSubtract(A,ivMerge([...ab,...ac]));
+  const bOnly=ivSubtract(B,ivMerge([...ab,...bc]));
+  const cOnly=ivSubtract(C,ivMerge([...ac,...bc]));
+  return{abc,twoOnly,aOnly,bOnly,cOnly};
+}
 function bandShapes(mode){
-  const L=lmecIntervals(),C=cowenIntervals();
+  const L=lmecIntervals(),C=cowenIntervals(),P=patronIntervals();
   if(mode==="lmec")return[...rectsFromIv(L.buy,`rgba(47,195,155,0.16)`),...rectsFromIv(L.sell,`rgba(242,163,63,0.16)`)];
   if(mode==="cowen")return[...rectsFromIv(C.buyStrong,`rgba(47,195,155,0.16)`),...rectsFromIv(C.buySoft,`rgba(63,169,245,0.16)`),...rectsFromIv(C.sell,`rgba(242,163,63,0.16)`)];
-  // both: overlap CALCULADO explícitamente → siempre el mismo color sólido, nunca depende del orden de dibujo
-  const lmecBuy=ivMerge(L.buy),lmecSell=ivMerge(L.sell),cowenSell=ivMerge(C.sell);
+  if(mode==="patron")return rectsFromIv(P,`rgba(155,140,255,0.22)`);
+  // todos: clasificación de 3 vías (LMEC / Cowen / Patrón) por inclusión-exclusión — nunca por transparencia apilada
+  const lmecBuy=ivMerge(L.buy),lmecSell=ivMerge(L.sell),cowenSell=ivMerge(C.sell),patron=ivMerge(P);
   const cowenBuyAll=ivMerge([...C.buyStrong,...C.buySoft]);
-  const buyOverlap=ivIntersect(lmecBuy,cowenBuyAll), sellOverlap=ivIntersect(lmecSell,cowenSell);
+  const buy=classify3(lmecBuy,cowenBuyAll,patron);
+  const sellOverlap=ivIntersect(lmecSell,cowenSell); // patrón no aporta señal de venta (solo predice suelo)
+  // dentro de "solo Cowen" seguimos distinguiendo compra activa (verde) de sigue-acumulando (azul)
+  const bOnlyStrong=ivIntersect(buy.bOnly,ivMerge(C.buyStrong)), bOnlySoft=ivSubtract(buy.bOnly,bOnlyStrong);
   return[
-    ...rectsFromIv(ivSubtract(lmecBuy,buyOverlap),`rgba(47,195,155,0.11)`),
-    ...rectsFromIv(ivSubtract(ivMerge(C.buyStrong),buyOverlap),`rgba(47,195,155,0.11)`),
-    ...rectsFromIv(ivSubtract(ivMerge(C.buySoft),buyOverlap),`rgba(63,169,245,0.11)`),
+    ...rectsFromIv(buy.aOnly,`rgba(47,195,155,0.10)`),
+    ...rectsFromIv(bOnlyStrong,`rgba(47,195,155,0.10)`),
+    ...rectsFromIv(bOnlySoft,`rgba(63,169,245,0.10)`),
+    ...rectsFromIv(buy.cOnly,`rgba(155,140,255,0.16)`),
     ...rectsFromIv(ivSubtract(lmecSell,sellOverlap),`rgba(242,163,63,0.11)`),
     ...rectsFromIv(ivSubtract(cowenSell,sellOverlap),`rgba(242,163,63,0.11)`),
-    ...rectsFromIv(buyOverlap,`rgba(34,211,153,0.34)`),   // confluencia compra: verde sólido, SIEMPRE igual
-    ...rectsFromIv(sellOverlap,`rgba(248,113,113,0.34)`), // confluencia venta: rojo sólido, SIEMPRE igual
+    ...rectsFromIv(buy.twoOnly,`rgba(34,211,153,0.32)`),   // 2 de 3 coinciden en comprar
+    ...rectsFromIv(buy.abc,`rgba(250,204,21,0.45)`),       // LMEC + Cowen + Patrón: los 3 coinciden — máxima confluencia
+    ...rectsFromIv(sellOverlap,`rgba(248,113,113,0.34)`),  // LMEC + Cowen coinciden en vender
   ];
 }
 const PH_NOTES={
   lmec:`🎯 <b>Bandas LMEC</b> (su Halving Cycle Profit, idénticas a su panel): <span style="color:var(--hot)">■ venta</span> sem 40-80 post-halving · <span style="color:var(--bull)">■ DCA/compra</span> sem 125-165. Líneas: BMSB y 200W MA.`,
   cowen:`📊 <b>Bandas Cowen</b> (calendario, citado): <span style="color:var(--bull)">■ compra activa</span> = 2ª mitad del midterm year, arranca justo tras el mínimo de junio <i>("right after that June low… accumulation through the end of the midterm year")</i> · <span style="color:var(--accum)">■ sigue acumulando</span> = inicio del pre-halving year, no todo el año <i>("DCA durante 1-2 años: fin de midterm year + inicio de pre-halving year")</i> · <span style="color:var(--hot)">■ venta</span> = Q4 del post-halving year <i>("I'm going to sell Bitcoin in Q4 of the post-halving years")</i>. Ago-sep del midterm suelen ser rojos (−15/18% las 3 veces) — no le impide empezar a comprar en julio, solo avisa de que puede doler antes del suelo.`,
-  both:`<b>Confluencia CALCULADA</b> (intersección real de fechas, no transparencia apilada): <span style="color:#22d399">■ verde sólido</span> = LMEC y Cowen comprarían YA MISMO los dos a la vez · <span style="color:#f87171">■ rojo sólido</span> = ambos venderían YA MISMO · verde/azul/naranja tenues = solo uno de los dos. Nunca antes de nov-2012 (1er halving): ninguno de los dos frameworks mide "ciclo" sin halving previo.`
+  patron:`⏱️ <b>Patrón temporal</b> (cálculo propio, no cita de nadie): ventana de suelo proyectada aplicando la media histórica techo→suelo (12,5 meses) al techo de este ciclo (6-oct-2025). A diferencia de LMEC/Cowen, esto NO se repite cada ciclo por regla fija — es una proyección puntual para el ciclo aún abierto. Ver tabla arriba.`,
+  todos:`<b>Confluencia de 3 vías, CALCULADA</b> (inclusión-exclusión sobre fechas reales, nunca por transparencia apilada): <span style="color:#facc15">■ dorado</span> = LMEC + Cowen + Patrón coinciden los 3 en comprar (máxima confluencia) · <span style="color:#22d399">■ verde sólido</span> = exactamente 2 de los 3 coinciden en comprar · <span style="color:#f87171">■ rojo sólido</span> = LMEC + Cowen coinciden en vender · tenues = solo una fuente. Nunca antes de nov-2012: ningún framework mide "ciclo" sin halving previo.`
 };
 /* histórico completo: Coin Metrics (precio diario desde 2010-07-18, primeros mercados con
    precio real — antes de eso Bitcoin no cotizaba) colapsado a semanal + empalmado con el
