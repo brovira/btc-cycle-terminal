@@ -131,8 +131,11 @@ async function fetchEvmChain(base, chain, addr) {
         // tiene pero el precio existe y la cantidad es razonable (spam suele mandar
         // cantidades absurdas, billones/trillones de unidades, para inflar un precio falso).
         const hasMcap = tok.circulating_market_cap != null && +tok.circulating_market_cap > 0;
-        let rate = tok.exchange_rate != null ? +tok.exchange_rate : null;
-        if (rate == null) { const p = await currentMarketUsd(tok.symbol); if (p != null) rate = p; } // fallback Binance (WETH/WBTC/cbBTC/BNB/stables)
+        const rate = tok.exchange_rate != null ? +tok.exchange_rate : null;
+        // anti-impersonación: un token que se LLAMA como un stablecoin mayor pero SIN market cap
+        // real en Blockscout es spam que spoofea el nombre (p. ej. "USDT" falso en Polygon) → fuera.
+        const symNorm = (tok.symbol || "").replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+        if (/^(USDT|USDC|DAI|BUSD|TUSD|USDE|FDUSD)$/.test(symNorm) && !hasMcap) { out.hidden++; continue; }
         const plausible = rate != null && (hasMcap || amt < 1e9);
         const usd = plausible ? amt * rate : null;
         if (usd == null) { out.hidden++; continue; } // sin precio fiable → fuera (spam/ilíquido)
