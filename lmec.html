@@ -174,7 +174,7 @@
   <div class="section">
     <div class="sec-head"><h2>Gráfico</h2><div class="rule"></div><span class="tag" id="srcTag">—</span></div>
     <div class="panel">
-      <div class="phint">Velas semanales desde ene-2015 · escala log · BMSB (SMA20+EMA21) · SMA200 · Realized price · niveles de compra LMEC (discontinuas) · rupturas BMSB (blanco=1ª/trampa, amarillo=2ª/COMPRA) · bandas Halving (verde=Profit, azul=DCA) · línea = suelo proyectado ~nov-2026 · Subpaneles: RSI (34 / zona 40-50), MACD, MVRV Z (franja verde = zona de compra) — arrastra=zoom · doble clic=reset · arrastra los tiradores ⇕ entre subpaneles para redimensionar · clic en una posición → su nota</div>
+      <div class="phint">Velas semanales desde ene-2015 · escala log · BMSB (SMA20+EMA21) · SMA200 · Realized price · niveles de compra LMEC (discontinuas) · rupturas BMSB (blanco=1ª/trampa, amarillo=2ª/COMPRA) · bandas del ciclo (verde=Profit en el techo, azul=DCA/suelo ~53 sem después) · línea = suelo proyectado ~nov-2026 · Subpaneles: RSI (34 / zona 40-50), MACD, MVRV Z (franja verde = zona de compra) — arrastra=zoom · doble clic=reset · arrastra los tiradores ⇕ entre subpaneles para redimensionar · clic en una posición → su nota</div>
       <div id="chart"></div>
     </div>
   </div>
@@ -409,11 +409,11 @@ function renderRules(){
       row("Precio bajo realized (~$44k)", OC?st(R.belowReal):"na", OC?(R.belowReal?"perforado ✓":"aún encima"):"—"),
       row("MVRV Z en franja verde", OC?st(R.zGreen):"na", R.z!=null?R.z.toFixed(2):"—"),
     ]},
-    {h:"Ciclo de Halving",cap:"su indicador pilar (verde=profit, azul=DCA)",rows:[
-      row("Último halving", "na", isoD(cp.H)),
-      row("Semanas desde halving", "na", cp.w.toFixed(0)+"s"),
-      row("Fase del ciclo", cp.ph==="DCA / Acumulación"?"on":cp.ph==="Toma de beneficio"?"off":"na", cp.ph),
-      row("Suelo proyectado", "na", "~nov 2026"),
+    {h:"Ciclo · techo → suelo",cap:"su eje real: semanas desde el TECHO (suelo ≈53 sem)",rows:[
+      row("Techo del ciclo", "na", isoD(cp.T)),
+      row("Semanas desde el techo", "na", cp.w.toFixed(0)+"s"),
+      row("Fase del ciclo", cp.ph==="DCA / Suelo"?"on":cp.ph==="Toma de beneficio"?"off":"na", cp.ph),
+      row("Suelo proyectado", "na", "~oct/nov 2026 (53 sem)"),
     ]},
   ];
   $("#ruleGroups").innerHTML=g.map(x=>`<div class="rulecard"><div class="rh"><h3>${x.h}</h3><span class="src">LMEC</span></div><div class="cap">${x.cap}</div>${x.rows.join("")}</div>`).join("");
@@ -507,16 +507,19 @@ function importJournal(file){const rd=new FileReader();rd.onload=()=>{try{const 
   if(Array.isArray(arr)){JOURNAL=arr;jsave();jrender();renderChart();}}catch(e){alert("Archivo no válido");}};rd.readAsText(file);}
 
 /* ---------- chart ---------- */
-const HALVINGS=["2012-11-28","2016-07-09","2020-05-11","2024-04-19","2028-04-20"].map(d=>Date.parse(d));
+// LMEC razona en semanas desde el TECHO (no del halving); su suelo = ~53 sem tras el techo → oct/nov 2026.
+const CYCLE_TOPS=["2013-12-04","2017-12-17","2021-11-10","2025-10-06"].map(d=>Date.parse(d));
 const WKMS=7*864e5;
 const isoD=ms=>new Date(ms).toISOString().slice(0,10);
-function cycleBands(){const s=[];for(const H of HALVINGS){
-  s.push({type:"rect",xref:"x",yref:"paper",x0:isoD(H+40*WKMS),x1:isoD(H+80*WKMS),y0:DOMAINS.y[0],y1:1,fillcolor:"rgba(47,195,155,.08)",line:{width:0},layer:"below"});
-  s.push({type:"rect",xref:"x",yref:"paper",x0:isoD(H+125*WKMS),x1:isoD(H+165*WKMS),y0:DOMAINS.y[0],y1:1,fillcolor:"rgba(63,169,245,.10)",line:{width:0},layer:"below"});}
+function cycleBands(){const s=[];for(const T of CYCLE_TOPS){
+  // distribución / toma de beneficio: zona del techo (su indicador "clava el techo")
+  s.push({type:"rect",xref:"x",yref:"paper",x0:isoD(T-8*WKMS),x1:isoD(T+2*WKMS),y0:DOMAINS.y[0],y1:1,fillcolor:"rgba(47,195,155,.08)",line:{width:0},layer:"below"});
+  // DCA / suelo: ~53 sem tras el techo (su vídeo más reciente → oct/nov 2026)
+  s.push({type:"rect",xref:"x",yref:"paper",x0:isoD(T+50*WKMS),x1:isoD(T+58*WKMS),y0:DOMAINS.y[0],y1:1,fillcolor:"rgba(63,169,245,.10)",line:{width:0},layer:"below"});}
   return s;}
-function cyclePhase(nowMs){let H=HALVINGS[0];for(const h of HALVINGS)if(h<=nowMs)H=h;const w=(nowMs-H)/WKMS;
-  let ph;if(w>=40&&w<=80)ph="Toma de beneficio";else if(w>=125&&w<=165)ph="DCA / Acumulación";else if(w<40)ph="Post-halving";else if(w<125)ph="Bajando a suelo";else ph="Pre-halving";
-  return{H,w,ph};}
+function cyclePhase(nowMs){let T=CYCLE_TOPS[0];for(const t of CYCLE_TOPS)if(t<=nowMs)T=t;const w=(nowMs-T)/WKMS;
+  let ph;if(w<0)ph="Pre-techo";else if(w<=4)ph="Toma de beneficio";else if(w<50)ph="Bajando a suelo";else if(w<=58)ph="DCA / Suelo";else ph="Post-suelo";
+  return{T,w,ph};}
 
 let chartBound=false;
 function renderChart(){
@@ -580,8 +583,8 @@ function renderChart(){
     annotations:[
       ...lvlAnn,
       {x:"2026-11-01",xref:"x",y:1,yref:"paper",yanchor:"bottom",xanchor:"right",text:"Suelo proyectado ~nov-2026 (53 sem. del techo)",showarrow:false,font:{size:10,color:cAccum},bgcolor:cPanel,bordercolor:cAccum,borderpad:2},
-      {x:isoD(HALVINGS[3]+145*WKMS),xref:"x",y:0.57,yref:"paper",yanchor:"bottom",text:"DCA",showarrow:false,font:{size:10,color:cAccum}},
-      {x:isoD(HALVINGS[3]+60*WKMS),xref:"x",y:0.57,yref:"paper",yanchor:"bottom",text:"Profit",showarrow:false,font:{size:10,color:cBull}},
+      {x:isoD(CYCLE_TOPS[3]+54*WKMS),xref:"x",y:0.57,yref:"paper",yanchor:"bottom",text:"DCA/suelo",showarrow:false,font:{size:10,color:cAccum}},
+      {x:isoD(CYCLE_TOPS[3]-3*WKMS),xref:"x",y:0.57,yref:"paper",yanchor:"bottom",text:"Profit",showarrow:false,font:{size:10,color:cBull}},
     ]};
   Plotly.react("chart",tr,layout,{responsive:true,scrollZoom:false,displaylogo:false,doubleClick:"reset",modeBarButtonsToRemove:["select2d","lasso2d","autoScale2d"]}).then(()=>{try{initHandles();positionHandles();}catch(e){}});
   if(!chartBound){chartBound=true;$("#chart").on("plotly_click",ev=>{const p=ev.points&&ev.points[0];

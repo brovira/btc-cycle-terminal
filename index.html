@@ -194,11 +194,9 @@ document.getElementById("themeBtn").addEventListener("click",()=>{const r=docume
 })();
 
 /* ---------- resumen "¿Qué hago hoy?" — MISMAS 3 señales que decision.html: Cowen DCA (risk<0,3,
-   log-log sobre el precio) · LMEC temporal (sem≥125 del halving) · Patrón (ventana de suelo,
-   techo→suelo real de los 3 ciclos completos). Nada de la rejilla vieja de 6 métricas. ---------- */
+   log-log sobre el precio) · LMEC temporal (suelo a 53 sem del techo → oct/nov 2026, su vídeo más
+   reciente) · Patrón (ventana de suelo, techo→suelo real de los 3 ciclos). Nada de la rejilla vieja. ---------- */
 (async function(){
-  const HALV=["2012-11-28","2016-07-09","2020-05-11","2024-04-19","2028-04-20"].map(d=>Date.parse(d));
-  const hW=ms=>{let H=HALV[0];for(const h of HALV)if(h<=ms)H=h;return(ms-H)/(7*864e5);};
   async function weekly(){for(const h of["api.binance.com","api.binance.us"]){try{const r=await fetch(`https://${h}/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=1000`,{cache:"no-store"});if(r.ok){const j=await r.json();return{t:j.map(k=>k[0]),c:j.map(k=>+k[4])};}}catch(e){}}return null;}
   function riskNow(D){ // idéntico a cowenRiskNow() de decision.html
     const t0=Date.parse("2009-01-03");let n=0,sx=0,sy=0,sxx=0,sxy=0;const pts=[];
@@ -218,9 +216,10 @@ document.getElementById("themeBtn").addEventListener("click",()=>{const r=docume
   const fMY=ms=>{const d=new Date(ms);return MES[d.getUTCMonth()]+" "+String(d.getUTCFullYear()).slice(2);};
   try{
     const D=await weekly();if(!D){document.getElementById("hN").textContent="";return;}
-    const now=D.t[D.t.length-1],hw=hW(now),risk=riskNow(D);
-    const dcaOn=risk!=null&&risk<0.3, lmecOn=hw>=125, patronOn=now>=projLo&&now<=projHi;
-    const sigs=[["Cowen · DCA",dcaOn],["LMEC · niveles",lmecOn],["Patrón · suelo",patronOn]];
+    const now=D.t[D.t.length-1],risk=riskNow(D);
+    const wkTop=(now-CYCLE_EV[10])/(7*864e5); // semanas desde el techo (eje real de LMEC; su suelo = 53 sem → oct/nov 2026)
+    const dcaOn=risk!=null&&risk<0.3, lmecOn=wkTop>=53, patronOn=now>=projLo&&now<=projHi;
+    const sigs=[["Cowen · DCA",dcaOn],["LMEC · suelo",lmecOn],["Patrón · suelo",patronOn]];
     const nOn=sigs.filter(s=>s[1]).length;
     let fase,hc;
     if(now<projLo){fase="🟢 Acumulación — DCA en marcha";hc="var(--cycles)";}

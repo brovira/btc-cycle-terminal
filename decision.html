@@ -252,10 +252,12 @@ function evaluate(D){
   const now=D.t[n-1];const hInfo=halvInfo(now);const hw=hInfo.week,lastH=hInfo.lastH,nextH=hInfo.nextH;const d=new Date(now);const ymod4=d.getUTCFullYear()%4,month=d.getUTCMonth()+1;
   const z=D.z, fng=D.fng, realized=D.realized;
 
-  // ventana de ciclo favorable a compra: acumulación LMEC (sem 120-180) o estacional Cowen (año midterm, 2ª mitad)
-  const accumWindow = hw>=120&&hw<=180;
+  // ventana de ciclo favorable a compra. LMEC en su eje REAL = semanas desde el TECHO (no del halving):
+  // acumula desde el techo hasta el suelo (~53 sem → oct/nov 2026). Cowen: estacional (año midterm, 2ª mitad).
+  const wkTop=(now-PLAN_TOP)/(7*864e5);       // semanas desde el techo del ciclo (2025-10-06)
+  const accumWindow = wkTop>=0&&wkTop<=58;    // LMEC: acumulación techo→suelo (0 a ~53-58 sem)
   const cowenSeason = ymod4===2&&month>=7;
-  const distWindow = hw>=70&&hw<=110; // techo del ciclo → distribución, NO compra
+  const distWindow = wkTop<0&&wkTop>=-8;      // zona de techo → distribución, NO compra (ya pasó en oct-2025)
   const cycleBuy = accumWindow||cowenSeason;
 
   // === Señales: cada una es una regla REAL de un agente, con su cita. Nada inventado. ===
@@ -266,7 +268,7 @@ function evaluate(D){
   const zGreen    = z!=null? z<0 : null;                           // LMEC: "franja verde = infravaloración" (verde ≈ Z<0)
   const belowReal = (realized!=null)? price<=realized : null;      // LMEC: el suelo perfora el realized price
   const fngFear   = fng!=null? fng<45 : null;                      // OCM: comprar más "in fear or extreme fear" (índice: <45 = miedo)
-  const accumStart=fmtDate(weekToMs(lastH,120)), accumEnd=fmtDate(weekToMs(lastH,180)), yr=d.getUTCFullYear();
+  const accumStart=fmtDate(PLAN_TOP), accumEnd=fmtDate(PLAN_TOP+58*7*864e5), yr=d.getUTCFullYear();
 
   const SIG=[
     {key:"ma200",nm:"Precio ≤ 200W MA",who:"LMEC",on:touch200,val:ma200!=null?fmtUSD(ma200):"—",
@@ -284,8 +286,8 @@ function evaluate(D){
     {key:"fng",nm:"Fear & Greed en miedo",who:"Sentimiento",on:fngFear,nd:fng==null,val:fng!=null?String(fng):"n/d",
      ds:fng==null?"F&G no disponible.":(fngFear?"F&G en miedo (<45): OCM aumenta compras en miedo/miedo extremo.":"F&G sin miedo (≥45): OCM reduce compras."),
      q:"selectively increasing your purchases when the market is in fear or extreme fear.",src:"fear-greed (KB onchainmind)"},
-    {key:"cycle",nm:"Ventana de ciclo",who:"LMEC + Cowen",on:cycleBuy,val:"sem "+Math.round(hw),
-     ds:accumWindow?`Ventana de acumulación del halving (sem 120-180 ≈ ${accumStart} → ${accumEnd}).`:(cowenSeason?`2ª mitad del año midterm: Cowen acumula tras el mínimo de junio (jul–dic ${yr} y principios de ${yr+1}).`:(distWindow?"Sem 70-110 = zona de techo/distribución del ciclo.":`Fuera de ventana. Acumulación del halving: sem 120-180 (≈ ${accumStart} → ${accumEnd}).`)),
+    {key:"cycle",nm:"Ventana de ciclo",who:"LMEC + Cowen",on:cycleBuy,val:"sem "+Math.round(wkTop)+" del techo",
+     ds:accumWindow?`Acumulación de LMEC: del techo al suelo (${accumStart} → ${accumEnd}, ~53 sem).`:(cowenSeason?`2ª mitad del año midterm: Cowen acumula tras el mínimo de junio (jul–dic ${yr} y principios de ${yr+1}).`:(distWindow?"Zona de techo/distribución del ciclo (alrededor del máximo).":`Fuera de ventana. Acumulación de LMEC: del techo al suelo (${accumStart} → ${accumEnd}).`)),
      q:"after the June low is when I bought and I just DCA… the second half of the midterm year.",src:"Cowen · dynamic-dca"},
   ];
 
@@ -308,7 +310,7 @@ function evaluate(D){
   const expensive = belowBMSB===false; // por encima de la BMSB
   if(distWindow && (expensive || (z!=null&&z>2))){
     action="Tomar beneficio";vc="var(--hot)";regime="Ciclo · zona de techo/distribución";
-    sub="Estás en la ventana de techo del ciclo (sem 70-110 tras el halving) y el precio no está barato. Es zona de reducir, no de comprar. Retira liquidez/toma beneficio por tramos.";
+    sub="Estás en la zona de techo del ciclo (alrededor del máximo) y el precio no está barato. Es zona de reducir, no de comprar. Retira liquidez/toma beneficio por tramos.";
   }else if(lit>=Math.ceil(tot*0.66) && belowBMSB){
     action="Comprar por niveles";vc="var(--bull)";regime="Ciclo · acumulación (señales alineadas)";
     sub="Mayoría de señales de compra encendidas y precio bajo la BMSB. DCA + añadir en tramos hacia los niveles de soporte (BMSB y 200W MA). Es donde LMEC acumula.";
@@ -332,8 +334,8 @@ function evaluate(D){
 const PLAN_TOP=Date.parse("2025-10-06");   // techo del ciclo (referencia para "meses de bear")
 const PLAN_DCA_ON=Date.parse("2026-06-22"); // inicio de la barra = cuando se encendió el DCA de Cowen (risk<0,3, tras el mínimo de junio)
 const PLAN_MAXBUY=Date.parse("2027-06-30"); // fin de la ventana de compra MÁS LARGA (Cowen pre-halving ≈ LMEC sem 165)
-const PLAN_LMEC=Date.parse("2024-04-19")+125*7*864e5; // sem 125 del halving = ventana de +DCA de LMEC (~sep 2026)
-const HALV4=Date.parse("2024-04-19");
+const LMEC_FLOOR_WK=53;                          // LMEC (vídeo más reciente, plan-completo-2027): techo→suelo = 53 semanas → oct/nov 2026
+const PLAN_LMEC=PLAN_TOP+LMEC_FLOOR_WK*7*864e5;  // suelo proyectado por LMEC, en SU eje (semanas desde el techo)
 const fShort=ms=>new Date(ms).toLocaleDateString("es-ES",{month:"short",year:"2-digit",timeZone:"UTC"}).replace(".","");
 /* mini-barra temporal para una tarjeta: su ventana de compra sobre la misma línea techo→fin-compra */
 function miniBar(s,e){
@@ -350,11 +352,12 @@ function miniBar(s,e){
 /* las 3 señales que seguimos AQUÍ (Cowen DCA · LMEC niveles · Patrón suelo) — el resto es contexto */
 function renderOurSignals(R,dcaOn){
   const cs=cycleStats(),now=Date.now();
-  const lmecOn=R.hw!=null&&R.hw>=125;                 // ventana temporal de +DCA de LMEC (sem 125-165)
+  const wkTop=(now-PLAN_TOP)/(7*864e5);               // semanas desde el techo (eje real de LMEC)
+  const lmecOn=wkTop>=LMEC_FLOOR_WK;                  // señal de LMEC: llegamos a su suelo proyectado (53 sem del techo → oct/nov 2026)
   const patronOn=now>=cs.projLoMs&&now<=cs.projHiMs;
   const sigs=[
     {nm:"Cowen · DCA",on:dcaOn,st:dcaOn?"ACTIVO":"esperando",ds:"risk metric < 0,3 → DCA en marcha"+(R.riskNow!=null?" (risk "+R.riskNow.toFixed(2)+")":"")},
-    {nm:"LMEC · subir DCA",on:lmecOn,st:lmecOn?"ACTIVO":"esperando"+(R.hw!=null?" (sem "+Math.round(R.hw)+"/125)":""),ds:"su ventana de +DCA por semanas del halving (sem 125-165) + órdenes límite 60k↓"},
+    {nm:"LMEC · suelo",on:lmecOn,st:lmecOn?"ACTIVO":"esperando (sem "+Math.max(0,Math.round(wkTop))+"/"+LMEC_FLOOR_WK+" del techo)",ds:"su suelo proyectado: 53 semanas desde el techo → oct/nov 2026 (vídeo más reciente). DCA por niveles 60k↓ hasta entonces"},
     {nm:"Patrón · ventana de suelo",on:patronOn,st:patronOn?"ACTIVO":"esperando",ds:"suelo proyectado oct-nov 2026"},
   ];
   const nOn=sigs.filter(s=>s.on).length;
@@ -386,7 +389,7 @@ function renderPlanPhase(R){
       <div class="cfloor" style="left:${flL}%;width:${Math.max(1.5,flR-flL)}%"></div>
       <div class="cfill" style="width:${nowP}%"></div>
       <div style="position:absolute;top:14px;left:${lmP}%;width:2px;height:21px;background:var(--accent);border-radius:2px"></div>
-      <div style="position:absolute;top:-1px;left:${lmP}%;transform:translateX(-50%);font-size:9.5px;color:var(--accent);font-family:var(--mono);white-space:nowrap">🎯 LMEC +DCA</div>
+      <div style="position:absolute;top:-1px;left:${lmP}%;transform:translateX(-50%);font-size:9.5px;color:var(--accent);font-family:var(--mono);white-space:nowrap">🎯 LMEC suelo</div>
       <div class="cnow" style="left:${nowP}%"></div>
       <div class="clab" style="left:0">🟢 DCA on · ${fMY(PLAN_DCA_ON)}</div>
       <div class="clab" style="left:${(flL+flR)/2}%;transform:translateX(-50%);color:var(--bull)">🟢 suelo ${fMY(cs.projLoMs)}</div>
@@ -413,9 +416,9 @@ function render(R){
         · <b>MVRV Z franja verde</b> (LMEC): verde = infravaloración (el límite Z&lt;0 es la convención de la franja; LMEC no da número).<br>
         · <b>Precio ≤ realized price</b> (LMEC): el suelo perfora el precio medio de los holders (~capitulación).<br>
         · <b>F&amp;G en miedo</b> (sentimiento): comprar más en miedo/miedo extremo (índice: &lt;45 = miedo).<br>
-        · <b>Ventana de ciclo</b> (LMEC halving + Cowen): acumulación del ciclo o 2ª mitad del año midterm.</div>
+        · <b>Ventana de ciclo</b> (LMEC techo→suelo + Cowen): acumulación del ciclo (del techo al suelo) o 2ª mitad del año midterm.</div>
       <div><b>Acción resultante:</b><br>
-        · <b>Tomar beneficio</b>: ventana de techo (sem 70-110) si el precio no está barato.<br>
+        · <b>Tomar beneficio</b>: zona de techo del ciclo si el precio no está barato.<br>
         · <b>Comprar por niveles</b>: mayoría de señales encendidas y precio &lt; BMSB.<br>
         · <b>Esperar dip</b>: la ventana acompaña pero el precio está caro (&gt; BMSB).<br>
         · <b>Esperar seasonality</b>: año midterm con pocas señales aún.<br>
@@ -427,19 +430,19 @@ function render(R){
 }
 
 /* ---------- relojes de ciclo (datos): viven DENTRO de la tarjeta de cada agente ---------- */
-function halvClock(R){
-  const wk=R.hw, lastH=R.lastH, cyc=Math.round(wk);
-  const buyA=120,buyB=180,sellA=70,sellB=110;
-  const buyStartMs=weekToMs(lastH,buyA),buyEndMs=weekToMs(lastH,buyB);
+function lmecClock(R){
+  const now=Date.now();
+  const wkTop=(now-PLAN_TOP)/(7*864e5);                 // semanas desde el techo (eje real de LMEC)
+  const floorLo=50,floorHi=58;                          // suelo ~53 sem del techo → oct/nov 2026 (rango de su cifra)
+  const floorLoMs=PLAN_TOP+floorLo*7*864e5,floorHiMs=PLAN_TOP+floorHi*7*864e5;
   let phase,sub,pc;
-  if(wk<sellA){phase="Post-halving temprano";pc="var(--muted)";sub="Fase inicial del ciclo. Aún lejos de la ventana de acumulación.";}
-  else if(wk<=sellB){phase="Euforia / distribución";pc="var(--hot)";sub=`Zona de techo del ciclo (sem ${sellA}-${sellB}): tramo de tomar beneficio.`;}
-  else if(wk<buyA){const falta=Math.ceil(buyA-wk);phase="Pre-acumulación";pc="var(--accum)";
-    sub=`Faltan <b>~${falta} sem</b> para su ventana temporal de compra: sem ${buyA}-${buyB} (≈ <b>${fmtDate(buyStartMs)}</b> → ${fmtDate(buyEndMs)}).`;}
-  else if(wk<=buyB){const quedan=Math.ceil(buyB-wk);phase="🟢 Acumulación (ventana de compra)";pc="var(--bull)";
-    sub=`<b>Dentro</b> de la ventana temporal (sem ${buyA}-${buyB}). Quedan ~${quedan} sem.`;}
-  else{phase="Pre-halving tardío";pc="var(--ink2)";sub="Ventana de acumulación cerrada.";}
-  return{phase,pc,sub,cards:[["Semana del ciclo",cyc+" / 208"],["Ventana compra","sem "+buyA+"–"+buyB],["Empieza ≈",fmtDate(buyStartMs)]]};
+  if(wkTop<0){phase="Pre-techo";pc="var(--muted)";sub="El ciclo aún no ha hecho techo.";}
+  else if(wkTop<floorLo){const falta=Math.ceil(floorLo-wkTop);phase="Acumulación · esperando suelo";pc="var(--accum)";
+    sub=`LMEC proyecta el suelo a <b>~53 semanas del techo</b> (≈ <b>${fmtDate(floorLoMs)}</b> → ${fmtDate(floorHiMs)}). Faltan <b>~${falta} sem</b>. Hasta entonces: DCA por niveles, munición gorda guardada.`;}
+  else if(wkTop<=floorHi){const quedan=Math.ceil(floorHi-wkTop);phase="🟢 Ventana de suelo (oct/nov 2026)";pc="var(--bull)";
+    sub=`<b>Dentro</b> de su ventana de suelo (~53 sem del techo). Aquí confirma con la 2ª ruptura de la BMSB + MACD verde + RSI 40-50 + MVRV saliendo de verde. Quedan ~${quedan} sem.`;}
+  else{phase="Post-suelo · hacia el bull";pc="var(--ink2)";sub="Suelo superado. LMEC sitúa el inicio del bull ~280 días tras la 2ª ruptura de la BMSB (≈ mar-2027).";}
+  return{phase,pc,sub,cards:[["Semanas desde el techo",Math.max(0,Math.round(wkTop))],["Suelo proyectado","~53 sem · oct/nov 26"],["Bull real ≈","mar-2027"]]};
 }
 function cowenClock(){
   const now=new Date();const y=now.getUTCFullYear(),ym=y%4,mo=now.getUTCMonth()+1;
@@ -474,8 +477,8 @@ async function loadKB(){
 function renderAgents(R){
   const px=R.price;
   const A=[
-    {name:"🎯 LMEC",color:"var(--accent)",state:"Esperando con órdenes límite",kb:"lmec",fw:"lmec.html",clock:halvClock(R),
-     win:[HALV4+125*7*864e5,HALV4+165*7*864e5],winNote:`Ventana de DCA por semanas del halving. <b>Órdenes límite: en nuestro caso, de 60k para abajo</b> (60/55/50/45k). Compra fuerte = 2ª ruptura confirmada de la BMSB.`,
+    {name:"🎯 LMEC",color:"var(--accent)",state:"Esperando con órdenes límite",kb:"lmec",fw:"lmec.html",clock:lmecClock(R),
+     win:[PLAN_TOP+50*7*864e5,PLAN_TOP+58*7*864e5],winNote:`Su suelo proyectado: <b>53 semanas desde el techo</b> (vídeo más reciente) → <b>oct/nov 2026</b>. DCA por niveles durante todo el bear (<b>órdenes límite de 60k para abajo</b>: 60/55/50/45k); la munición gorda se despliega al confirmarse el suelo (2ª ruptura de la BMSB + MACD + RSI 40-50 + MVRV saliendo de verde).`,
      now:`Compra <b>por niveles</b> con órdenes límite ya puestas: ejecutó BTC en <b>70k, 65k y 60k</b> (feb→jun 2026); las siguientes esperan en <b>~55.300</b> y <b>~50.400</b>. Mantiene un corto de BTC como cobertura (TP 48k) y operativa mínima ("no voy a hacer nada o casi nada").`,
      since:`Comprando desde <b>dic-2025</b> (HYPE ~$24) y BTC desde el crash del <b>5-feb-2026</b> — no por señal, sino por ejecución mecánica del plan fijado en máximos: "si el mercado volvía a tocar determinadas zonas críticas, había que comprar sin excepciones".`,
      next:`Espera <b>rebote-trampa a 67-69k</b> (test de la BMSB) en jul/ago → más caídas después; suelo hacia <b>oct/nov-2026</b> (~45k su escenario central) y bull real en <b>mar/abr-2027</b> (280 días tras la 2ª ruptura).`,
@@ -616,13 +619,13 @@ let PH_MODE="todos",PH_LASTD=null;
 function phRect(x0,x1,color){return{type:"rect",xref:"x",yref:"paper",x0,x1,y0:0,y1:1,fillcolor:color,line:{width:0},layer:"below"};}
 const phIso=ms=>new Date(ms).toISOString().slice(0,10);
 function rectsFromIv(ivs,color){return ivs.map(iv=>phRect(phIso(iv.t0),phIso(iv.t1),color));}
-/* intervalos en ms — LMEC anclado a semanas post-halving, Cowen anclado a años calendario.
-   Ninguno de los dos aplica ANTES del primer halving (nov-2012): no hay "ciclo" que medir. */
+/* intervalos en ms — LMEC en su eje REAL: semanas desde el TECHO (nunca razona en semanas del halving).
+   Cowen anclado a años calendario. Se anclan a techos reales; no hay "ciclo" que medir antes del primero. */
 function lmecIntervals(){
   const buy=[],sell=[];
-  for(const H of PH_HALVINGS){
-    sell.push({t0:H+40*PH_WKMS,t1:H+80*PH_WKMS});    // venta: sem 40-80 post-halving
-    buy.push({t0:H+125*PH_WKMS,t1:H+165*PH_WKMS});   // DCA/compra: sem 125-165 post-halving
+  for(const T of CYCLE_TOPS_MS){
+    sell.push({t0:T-8*PH_WKMS,t1:T+2*PH_WKMS});      // distribución: zona del techo (su indicador "clava el techo")
+    buy.push({t0:T+50*PH_WKMS,t1:T+58*PH_WKMS});     // suelo/compra: ~53 sem tras el techo (vídeo más reciente → oct/nov 2026)
   }
   return{buy,sell};
 }
@@ -677,7 +680,7 @@ function bandShapes(mode){
   ];
 }
 const PH_NOTES={
-  lmec:`🎯 <b>Bandas LMEC</b> (su Halving Cycle Profit, idénticas a su panel): <span style="color:var(--hot)">■ venta</span> sem 40-80 post-halving · <span style="color:var(--bull)">■ DCA/compra</span> sem 125-165. Líneas: BMSB y 200W MA.`,
+  lmec:`🎯 <b>Bandas LMEC</b> (su método, en su eje real = <b>semanas desde el TECHO</b>, no del halving): <span style="color:var(--hot)">■ distribución</span> en la zona del techo · <span style="color:var(--bull)">■ suelo/compra</span> ≈ <b>53 sem tras el techo</b> (su vídeo más reciente → oct/nov 2026). Su compra fuerte la confirma la 2ª ruptura de la BMSB, no el calendario. Líneas: BMSB y 200W MA.`,
   cowen:`📊 <b>Bandas Cowen</b> (calendario, citado): <span style="color:var(--bull)">■ compra activa</span> = 2ª mitad del midterm year, arranca justo tras el mínimo de junio <i>("right after that June low… accumulation through the end of the midterm year")</i> · <span style="color:var(--accum)">■ sigue acumulando</span> = inicio del pre-halving year, no todo el año <i>("DCA durante 1-2 años: fin de midterm year + inicio de pre-halving year")</i> · <span style="color:var(--hot)">■ venta</span> = Q4 del post-halving year <i>("I'm going to sell Bitcoin in Q4 of the post-halving years")</i>. Ago-sep del midterm suelen ser rojos (−15/18% las 3 veces) — no le impide empezar a comprar en julio, solo avisa de que puede doler antes del suelo.`,
   patron:`⏱️ <b>Patrón temporal</b> (cálculo propio, no cita de nadie): <span style="color:var(--bull)">■ compra</span> = 52-58 semanas tras cada techo (cerca del suelo) · <span style="color:var(--hot)">■ venta</span> = 150-153 semanas tras cada suelo (cerca del techo). Fíjate: la banda de venta de este ciclo (desde el suelo de nov-2022) cayó justo sobre el techo real de <b>oct-2025</b>, y la de compra proyecta el suelo en <b>oct-nov 2026</b>. Los intervalos son estables en los 3 ciclos con halving; el mini-ciclo de 2011 (también dibujado) fue más rápido, así que su banda queda algo por delante del suelo real — por eso el patrón se calibra solo con esos 3. <span class="mtxt">Ojo: n=3, medido sobre los mismos ciclos que luego valida.</span>`,
   todos:`<b>Confluencia de 3 vías, CALCULADA</b> (inclusión-exclusión sobre fechas reales, nunca por transparencia apilada): <span style="color:#facc15">■ dorado</span> = LMEC + Cowen + Patrón coinciden los 3 en comprar (máxima confluencia) · <span style="color:#22d399">■ verde sólido</span> = exactamente 2 de los 3 coinciden en comprar · <span style="color:#f87171">■ rojo sólido</span> = LMEC + Cowen coinciden en vender · tenues = solo una fuente. Nunca antes de nov-2012: ningún framework mide "ciclo" sin halving previo.`
