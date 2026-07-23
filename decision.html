@@ -68,7 +68,13 @@
   .htbl td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
   .how{display:flex;gap:20px;flex-wrap:wrap;margin-top:6px}
   .how>div{flex:1;min-width:230px;line-height:1.7}
-  .agrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+  .agrid{display:flex;flex-direction:column;gap:16px}
+  .bkt{border:1px solid var(--line);border-radius:12px;background:var(--panel2);padding:13px 15px;margin-bottom:12px}
+  .bkt-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;margin-bottom:2px}
+  .bkt .obj{font-size:12.5px;color:var(--ink2);margin-top:6px}
+  .bkt .obj b{color:var(--ink)}
+  .pbar{height:7px;background:var(--panel);border-radius:5px;overflow:hidden;margin-top:6px;border:1px solid var(--line)}
+  .pbar i{display:block;height:100%;background:var(--bull)}
   .acard{border:1px solid var(--line);border-top:3px solid var(--ac,var(--accent));border-radius:14px;background:var(--panel);padding:16px 17px;display:flex;flex-direction:column;gap:8px}
   .acard h3{margin:0;font-size:16px;display:flex;align-items:center;gap:8px}
   .acard .astate{font-size:11px;font-weight:800;font-family:var(--mono);padding:3px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.03em;background:color-mix(in oklab,var(--ac) 15%,transparent);color:var(--ac)}
@@ -117,18 +123,11 @@
   <!-- qué ha cambiado desde el último registro semanal (se rellena solo si hay histórico) -->
   <div class="note" id="delta" style="display:none;border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:12px 16px;margin-top:10px"></div>
 
-  <div class="sec-head"><h2>LMEC · Cowen — qué hacen AHORA</h2><div class="rule"></div><span class="mtxt" style="font-size:12px">de sus transcripts, citado · señales en vivo</span></div>
+  <div class="sec-head"><h2>Las 3 estrategias — qué dicen AHORA</h2><div class="rule"></div><span class="mtxt" style="font-size:12px">LMEC · Cowen (citados) + Patrón (calculado)</span></div>
   <div class="agrid" id="agentCards"></div>
 
-  <div class="sec-head"><h2>₿ Mis compras BTC de este ciclo</h2><div class="rule"></div><span class="mtxt" style="font-size:12px">privado · round-up Revolut + órdenes BELROGAM</span></div>
-  <div class="note" id="buysBox" style="border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:14px 16px">Cargando compras…</div>
-
-  <div class="sec-head"><h2>⏱️ Patrón temporal del ciclo</h2><div class="rule"></div><span class="mtxt" style="font-size:12px">calculado, no atribuido a ningún agente</span></div>
-  <div class="panel" style="padding:14px 16px;overflow:auto" id="cycleTimeline"></div>
-  <div class="note" style="margin-top:6px">Fechas de techo/suelo/halving reales (no citas). El intervalo <b>techo→suelo</b> es el más estable de los tres: ~12-13 meses en los 3 ciclos completos — coincide con la señal ya citada de Cowen ("bear markets take about 50 to 60 weeks", 11.5-13.8 meses) y con su ventana Q4-2026, como doble confirmación independiente.</div>
-
   <div class="sec-head"><h2>Ventanas de compra/venta sobre el precio</h2><div class="rule"></div>
-    <div style="display:flex;gap:6px" id="phTabs">
+    <div style="display:flex;gap:6px;flex-wrap:wrap" id="phTabs">
       <button class="btn" data-ph="lmec" style="font-size:12px;padding:5px 10px">🎯 LMEC</button>
       <button class="btn" data-ph="cowen" style="font-size:12px;padding:5px 10px">📊 Cowen</button>
       <button class="btn" data-ph="patron" style="font-size:12px;padding:5px 10px">⏱️ Patrón</button>
@@ -137,6 +136,9 @@
   </div>
   <div style="border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:8px 6px 2px"><div id="phaseChart" style="width:100%;min-height:380px"></div></div>
   <div class="note" style="margin-top:8px" id="phaseNote"></div>
+
+  <div class="sec-head"><h2>₿ Mi plan del ciclo — compras y objetivos</h2><div class="rule"></div><span class="mtxt" style="font-size:12px">persona física · BELROGAM · loop Aave</span></div>
+  <div class="note" id="buysBox" style="border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:14px 16px">Cargando plan…</div>
 
   <div class="sec-head" id="chartSec" style="display:none"><h2>Gráfica del histórico</h2><div class="rule"></div></div>
   <div id="histChartWrap" style="display:none">
@@ -436,7 +438,7 @@ function renderAgents(R){
   // real, ni siquiera en el techo de $111k — "not a time to be defensive yet". Solo sirve
   // para timing de COMPRA, no de decisión completa). Su panel y KB siguen disponibles en
   // onchainmind.html si quieres consultar sus métricas on-chain.
-  $("#agentCards").innerHTML=A.map(a=>{
+  const cardsHtml=A.map(a=>{
     const kb=KB[a.kb];const reg=kb&&kb.regimen_actual;
     const nSig=kb&&Array.isArray(kb.senales)?kb.senales.length:0;
     const nCambios=kb&&Array.isArray(kb.cambios_opinion)?kb.cambios_opinion.length:0;
@@ -477,6 +479,26 @@ function renderAgents(R){
       ${nSig?`<span class="chip" style="align-self:center">📚 ${nSig} señales en su KB${nCambios?` · ${nCambios} cambios de opinión`:""}</span>`:`<span class="chip" style="align-self:center">📚 KB de señales: generándose</span>`}
     </div>
   </div>`;}).join("");
+  // 3ª estrategia: el Patrón temporal (la mejor en backtest, la base de nuestro plan)
+  const cs=cycleStats();
+  const fMY=ms=>new Date(ms).toLocaleDateString("es-ES",{month:"long",year:"numeric",timeZone:"UTC"});
+  const monthsTop=(Date.now()-Date.parse("2025-10-06"))/(30.4368*864e5);
+  const patronCard=`<div class="acard" style="--ac:#9b8cff">
+    <h3>⏱️ Patrón temporal <span class="astate">la base de nuestro plan</span></h3>
+    <div class="albl">Qué dice AHORA</div>
+    <div class="arow">Llevamos <b>${monthsTop.toFixed(1)} meses</b> desde el techo (6-oct-2025). En los <b>3 ciclos completos</b> el suelo llegó siempre <b>12-13 meses</b> tras el techo → ventana de suelo proyectada <b style="color:var(--hot);text-transform:capitalize">${fMY(cs.projLoMs)} – ${fMY(cs.projHiMs)}</b>.</div>
+    <div class="advice">💬 <b>Acción:</b> acumular por niveles y <b>guardar la artillería gorda para la ventana proyectada</b>. Es <b>la mejor estrategia del backtest</b> → nuestra base. Pero NO all-in: DCA progresivo por si el suelo llega antes… o no llega.</div>
+    <div class="levels" style="margin-top:6px">
+      <div class="lv"><div class="l">Suelo estimado</div><div class="n" style="font-size:13px;text-transform:capitalize">${fMY(cs.projLoMs)}–${fMY(cs.projHiMs)}</div></div>
+      <div class="lv"><div class="l">Media histórica</div><div class="n" style="font-size:13px">${cs.avg.toFixed(1)} meses</div></div>
+      <div class="lv"><div class="l">Rango (3 ciclos)</div><div class="n" style="font-size:13px">${cs.lo.toFixed(1)}–${cs.hi.toFixed(1)}m</div></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+      <a class="btn" style="font-size:12px;padding:6px 10px" href="backtest.html">📈 Verlo en el backtest →</a>
+      <span class="chip" style="align-self:center">cálculo propio · no es cita de nadie</span>
+    </div>
+  </div>`;
+  $("#agentCards").innerHTML=cardsHtml+patronCard;
 }
 
 /* ---------- ventanas de compra/venta: bandas REALES de cada agente (citadas) ----------
@@ -508,20 +530,7 @@ function cycleStats(){
 }
 /* ventana de suelo proyectada por el patrón temporal — un único intervalo (este ciclo, aún abierto) */
 function patronIntervals(){const s=cycleStats();return[{t0:s.projLoMs,t1:s.projHiMs}];}
-function renderCycleTimeline(){
-  const{avg,lo,hi,projLoMs,projHiMs,projAvgMs}=cycleStats();
-  const fLong=ms=>new Date(ms).toLocaleDateString("es-ES",{month:"long",year:"numeric",timeZone:"UTC"});
-  const projLo=fLong(projLoMs),projHi=fLong(projHiMs),projAvgM=new Date(projAvgMs).toLocaleDateString("es-ES",{month:"long",timeZone:"UTC"});
-  const h=`
-    <div class="levels" style="margin:0">
-      <div class="lv"><div class="l">Suelo estimado</div><div class="n" style="color:var(--hot);font-size:16px;text-transform:capitalize">${projLo} – ${projHi}</div></div>
-      <div class="lv"><div class="l">Más probable</div><div class="n" style="text-transform:capitalize">${projAvgM} 2026</div></div>
-      <div class="lv"><div class="l">Techo→Suelo (media histórica)</div><div class="n">${avg.toFixed(1)} meses</div></div>
-      <div class="lv"><div class="l">Rango observado (3 ciclos)</div><div class="n">${lo.toFixed(1)}–${hi.toFixed(1)} meses</div></div>
-    </div>
-    <div class="note" style="margin-top:10px">En los 3 ciclos completos, el suelo llegó siempre <b>12-13 meses</b> tras el techo (dic-2013→ene-2015: 13,3m · dic-2017→dic-2018: 11,9m · nov-2021→nov-2022: 12,4m). Aplicado al techo de este ciclo (6-oct-2025). Marcado como banda ⏱️ <b>Patrón</b> en el gráfico de abajo — pincha "Todos" para ver dónde coincide con LMEC y Cowen.</div>`;
-  $("#cycleTimeline").innerHTML=h;
-}
+/* (la proyección del patrón vive ahora en su tarjeta de estrategia, arriba) */
 let PH_MODE="todos",PH_LASTD=null;
 function phRect(x0,x1,color){return{type:"rect",xref:"x",yref:"paper",x0,x1,y0:0,y1:1,fillcolor:color,line:{width:0},layer:"below"};}
 const phIso=ms=>new Date(ms).toISOString().slice(0,10);
@@ -628,9 +637,12 @@ async function renderPhaseChart(D){
     {x:xs,y:bm,type:"scatter",mode:"lines",name:"BMSB",line:{color:accent,width:1,dash:"dot"}},
     {x:xs,y:m2,type:"scatter",mode:"lines",name:"200W MA",line:{color:accum,width:1,dash:"dash"}},
   ];
+  // extiende el eje al futuro para que se vean las bandas proyectadas (Patrón oct-nov 2026,
+  // ventana de compra LMEC hasta mediados de 2027) — si no, quedan fuera del borde derecho.
+  const xEnd=new Date(Math.max(D.t[D.t.length-1],Date.parse("2027-07-01"))).toISOString().slice(0,10);
   const layout={margin:{l:56,r:12,t:8,b:32},height:380,paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
     font:{color:ink,size:11},showlegend:true,legend:{orientation:"h",y:1.12,font:{size:11}},shapes,
-    xaxis:{gridcolor:line,type:"date",range:[xs[0],xs[xs.length-1]]},yaxis:{gridcolor:line,type:"log",tickprefix:"$",title:{text:"BTC (log)",font:{size:11}}},hovermode:"x unified",
+    xaxis:{gridcolor:line,type:"date",range:[xs[0],xEnd]},yaxis:{gridcolor:line,type:"log",tickprefix:"$",title:{text:"BTC (log)",font:{size:11}}},hovermode:"x unified",
     hoverlabel:{bgcolor:panel,bordercolor:line,font:{size:11,color:ink}}};
   window.Plotly.react("phaseChart",traces,layout,{displayModeBar:false,responsive:true});
 }
@@ -722,66 +734,81 @@ async function loadHistory(D,R){
 /* ---------- mis compras BTC del ciclo (datos en el repo PRIVADO: data/btc_compras.json) ---------- */
 const fmtEUR=v=>v==null||isNaN(v)?"—":(v<0?"-€":"€")+Math.abs(Math.round(v)).toLocaleString("en-US");
 const fmtBTC=v=>v==null||isNaN(v)?"—":"₿ "+Number(v).toFixed(v<0.01?6:4);
+/* Plan por defecto — se ve SIEMPRE (aunque no exista el JSON privado): son los objetivos
+   y el estado que me diste. Las compras reales (importes) viven en el JSON del repo privado
+   y, si existen, se fusionan encima. Nada personal se guarda en el repo público. */
+const PLAN_CICLO={
+  personal:{icon:"👤",nombre:"Persona física — Revolut",color:"var(--accent)",
+    estrategia:"Cowen (empezar DCA ya) + LMEC (escalar en las caídas)",
+    estado:"✅ DCA iniciado con el round-up de Revolut (céntimos). Se sube el tamaño según baja el precio.",
+    objetivo:"Juntar ~5.000€ para octubre 2026 (≈1.000€/mes del sueldo + ahorros)",
+    escalera:[{bajo:65000,mult:1},{bajo:60000,mult:2},{bajo:55000,mult:5},{bajo:50000,mult:10}],
+    advisory:true},
+  belrogam:{icon:"🏢",nombre:"BELROGAM — spot, hold 3 años",color:"var(--bull)",
+    estrategia:"Patrón temporal (la mejor en backtest) — comprar por niveles hacia el suelo proyectado",
+    estado:"✅ Órdenes de compra puestas de 60k para abajo. Guardando artillería para oct-nov.",
+    objetivo:"Aportar 55.000€ hasta dic-2027 · si es posible, acumular 1 BTC",
+    objetivo_eur:55000, objetivo_btc:1,
+    ordenes:[{precio:60000},{precio:55000},{precio:50000},{precio:45000}]},
+  loop:{icon:"🔄",nombre:"Loop — BTC apalancado en Aave",color:"#9b8cff",
+    estrategia:"Patrón temporal — ejecutar solo en la ventana de suelo proyectada",
+    estado:"⏳ En espera. Se monta SOLO si BTC toca mínimos en oct-nov 2026.",
+    objetivo:"1 BTC de colateral → pedir prestado para ~0,5 BTC más (apalancamiento ~1,5×)"}
+};
 async function loadBuys(R){
   const el=$("#buysBox");
   let j=null,status=0;
   try{const r=await fetch("/api/private?file=btc_compras",{cache:"no-store"});status=r.status;if(r.ok)j=await r.json();}catch(e){}
-  if(!j){
-    el.innerHTML=status===404
-      ?`<b>Tu libro de compras del ciclo, vacío y esperando.</b> 3 libros: 👤 Personal (round-up Revolut) · 🏢 BELROGAM (órdenes) · 🔄 Loop (Aave, futuro).
-        Crea <code>data/btc_compras.json</code> en el repo privado <b>DeFi-Tracker</b> (pídeme el formato en el chat y te lo doy relleno con tu plan) — o simplemente dime "compré X€ a Y" y lo apunto yo.`
-      :`No se pudo cargar (${status||"red"}). ¿Sesión caducada? Recarga la página.`;
-    return;
-  }
   const px=R.price;                       // BTC en USD (vivo)
-  const usd2eur=j.eurusd?1/j.eurusd:0.86; // € por $ (si no hay tipo en el JSON, 0.86)
-  const norm=c=>{                         // cada compra: {fecha,eur,precio,btc?} → btc calculado si falta
-    const btc=+c.btc||((+c.eur||0)/usd2eur)/(+c.precio||px);
-    const val=btc*px*usd2eur, pct=c.eur>0?(val/c.eur-1)*100:null;
-    return{...c,btc,val,pct};
-  };
+  const usd2eur=(j&&j.eurusd)?1/j.eurusd:0.86;
+  const P=Object.assign({},PLAN_CICLO.personal,(j&&j.personal)||{});
+  const B=Object.assign({},PLAN_CICLO.belrogam,(j&&j.belrogam)||{});
+  const L=Object.assign({},PLAN_CICLO.loop,(j&&j.loop)||{});
+  const norm=c=>{const btc=+c.btc||((+c.eur||0)/usd2eur)/(+c.precio||px);const val=btc*px*usd2eur,pct=c.eur>0?(val/c.eur-1)*100:null;return{...c,btc,val,pct};};
   const table=(compras)=>{
-    if(!compras||!compras.length)return`<div class="mtxt" style="margin:6px 0 2px">— sin compras aún · <i>la primera fila siempre es la que más cuesta escribir</i></div>`;
+    if(!compras||!compras.length)return"";
     const rows=compras.map(norm).sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha)));
     const tb=rows.reduce((s,c)=>s+c.btc,0),te=rows.reduce((s,c)=>s+(+c.eur||0),0);
     const tval=tb*px*usd2eur,tpct=te>0?(tval/te-1)*100:null,avg=tb>0?te/tb:null;
-    return`<div style="overflow:auto;margin-top:6px"><table style="font-size:12.5px">
+    return`<div style="overflow:auto;margin-top:8px"><table style="font-size:12.5px">
       <thead><tr><th style="text-align:left">Fecha</th><th>Comprado</th><th>Precio BTC</th><th>BTC</th><th>Valor hoy</th><th>%</th></tr></thead><tbody>
       ${rows.map(c=>`<tr><td style="text-align:left" class="mono">${esc(c.fecha||"—")}</td><td class="mono">${fmtEUR(c.eur)}</td><td class="mono">${c.precio?fmtUSD(c.precio):"—"}</td><td class="mono">${fmtBTC(c.btc)}</td><td class="mono">${fmtEUR(c.val)}</td><td class="mono" style="color:${c.pct>=0?'var(--bull)':'var(--bear)'}">${c.pct!=null?(c.pct>=0?"+":"")+c.pct.toFixed(1)+"%":"—"}</td></tr>`).join("")}
       <tr style="font-weight:750;background:color-mix(in oklab,var(--accent) 5%,transparent)"><td style="text-align:left">TOTAL</td><td class="mono">${fmtEUR(te)}</td><td class="mono">${avg?fmtEUR(avg)+"/₿":"—"}</td><td class="mono">${fmtBTC(tb)}</td><td class="mono">${fmtEUR(tval)}</td><td class="mono" style="color:${tpct>=0?'var(--bull)':'var(--bear)'}">${tpct!=null?(tpct>=0?"+":"")+tpct.toFixed(1)+"%":"—"}</td></tr>
       </tbody></table></div>`;
   };
-  const p=j.personal||{},b=j.belrogam||{},lp=j.loop||{};
-  const ladder=(p.escalera||[]).map(s=>{
-    const active=px<s.bajo&&(!s.hasta||px>=s.hasta);
-    return `<span class="chip" style="padding:4px 9px;${active?"border-color:var(--bull);color:var(--bull);font-weight:700":""}">&lt;${(s.bajo/1000)}k → ×${s.mult}${active?" · ACTIVO":""}</span>`;
-  }).join(" ");
-  const orders=(b.ordenes||[]).map(o=>{
-    const filled=(b.compras||[]).some(c=>c.orden===o.precio);
-    const near=!filled&&px<=o.precio*1.03;
-    return `<span class="chip" style="padding:4px 9px;${filled?"text-decoration:line-through;opacity:.6":near?"border-color:var(--hot);color:var(--hot);font-weight:700":""}">${(o.precio/1000)}k · ${fmtEUR(o.eur)}${filled?" ✓":near?" · CERCA":""}</span>`;
-  }).join(" ");
-  // resumen global de los 3 libros
-  const all=[...(p.compras||[]),...(b.compras||[]),...(lp.compras||[])].map(norm);
+  const ladder=(c)=>(c.escalera||[]).map(s=>{const active=px<s.bajo&&(!s.hasta||px>=s.hasta);return `<span class="chip" style="padding:4px 9px;${active?"border-color:var(--bull);color:var(--bull);font-weight:700":""}">&lt;${(s.bajo/1000)}k → ×${s.mult}${active?" · ACTIVO":""}</span>`;}).join(" ");
+  const orders=(c)=>(c.ordenes||[]).map(o=>{const filled=(c.compras||[]).some(x=>x.orden===o.precio);const near=!filled&&px<=o.precio*1.03;return `<span class="chip" style="padding:4px 9px;${filled?"text-decoration:line-through;opacity:.6":near?"border-color:var(--hot);color:var(--hot);font-weight:700":""}">${(o.precio/1000)}k${o.eur?" · "+fmtEUR(o.eur):""}${filled?" ✓":near?" · CERCA":""}</span>`;}).join(" ");
+  // barra de progreso hacia el objetivo (€ y/o BTC)
+  const progress=(c)=>{
+    const rows=(c.compras||[]).map(norm);const eur=rows.reduce((s,x)=>s+(+x.eur||0),0),btc=rows.reduce((s,x)=>s+x.btc,0);
+    const bits=[];
+    if(c.objetivo_eur)bits.push(`<div style="flex:1;min-width:180px"><div class="mtxt">Aportado ${fmtEUR(eur)} / ${fmtEUR(c.objetivo_eur)}</div><div class="pbar"><i style="width:${Math.min(100,eur/c.objetivo_eur*100).toFixed(1)}%"></i></div></div>`);
+    if(c.objetivo_btc)bits.push(`<div style="flex:1;min-width:180px"><div class="mtxt">${fmtBTC(btc)} / ₿ ${c.objetivo_btc}</div><div class="pbar"><i style="width:${Math.min(100,btc/c.objetivo_btc*100).toFixed(1)}%;background:var(--hot)"></i></div></div>`);
+    return bits.length?`<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">${bits.join("")}</div>`:"";
+  };
+  const bucket=(c,chips)=>`<div class="bkt" style="border-left:3px solid ${c.color||"var(--line)"}">
+    <div class="bkt-h"><b>${c.icon} ${esc(c.nombre)}</b> <span class="chip" title="estrategia que sigue">${esc(c.estrategia||"")}</span></div>
+    <div class="mtxt">${c.estado||""}</div>
+    ${c.objetivo?`<div class="obj">🎯 <b>Objetivo:</b> ${esc(c.objetivo)}</div>`:""}
+    ${chips?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:7px">${chips}</div>`:""}
+    ${progress(c)}
+    ${table(c.compras)}
+    ${c.advisory&&!(c.compras&&c.compras.length)?`<div class="mtxt" style="margin-top:6px"><i>Solo seguimiento del plan — el round-up son céntimos, no se registra fila a fila. Consejo hoy: ${esc((R.action||"").toLowerCase().includes("comprar")?"la señal ya pide comprar por niveles":"DCA pequeño y guardar pólvora para la ventana de suelo")}.</i></div>`:""}
+  </div>`;
+  // resumen global (solo si hay compras reales registradas)
+  const all=[...(P.compras||[]),...(B.compras||[]),...(L.compras||[])].map(norm);
   const gB=all.reduce((s,c)=>s+c.btc,0),gE=all.reduce((s,c)=>s+(+c.eur||0),0);
   const gVal=gB*px*usd2eur,gPnl=gVal-gE,gPct=gE>0?(gVal/gE-1)*100:null;
-  const head=gB>0?`<div style="display:flex;gap:26px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:color-mix(in oklab,var(--accent) 5%,transparent);margin-bottom:14px" class="mono">
-      <span>₿ TOTAL CICLO <b style="font-size:15px">${fmtBTC(gB)}</b></span>
-      <span>Invertido <b>${fmtEUR(gE)}</b></span>
-      <span>Valor hoy <b>${fmtEUR(gVal)}</b></span>
-      <span style="color:${gPnl>=0?'var(--bull)':'var(--bear)'}">PnL <b>${gPnl>=0?"+":""}${fmtEUR(gPnl)} (${gPct!=null?(gPct>=0?"+":"")+gPct.toFixed(1)+"%":"—"})</b></span>
-      <span class="mtxt">BTC ${fmtUSD(px)}</span>
-    </div>`:"";
-  el.innerHTML=head+
-    `<div style="margin-bottom:16px"><b>👤 Personal — Revolut round-up</b>
-      ${ladder?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${ladder}</div>`:""}
-      ${table(p.compras)}</div>`+
-    `<div style="margin-bottom:16px"><b>🏢 BELROGAM — órdenes escalonadas</b>
-      ${orders?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${orders}</div>${b.presupuesto_eur?`<div class="mtxt" style="margin-top:3px">presupuesto ${fmtEUR(b.presupuesto_eur)}${b.nota?" · "+esc(b.nota):""}</div>`:""}`:""}
-      ${table(b.compras)}</div>`+
-    `<div style="margin-bottom:10px"><b>🔄 Loop — BTC apalancado en Aave</b>${lp.nota?` <span class="mtxt">· ${esc(lp.nota)}</span>`:""}
-      ${table(lp.compras)}</div>`+
-    `<div class="mtxt">➕ ¿Compraste? Dímelo en el chat ("personal: 25€ a 64.2k el 22-jul") o súbeme el informe de Revolut y actualizo el libro.</div>`;
+  const head=gB>0?`<div style="display:flex;gap:26px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:color-mix(in oklab,var(--accent) 6%,transparent);margin-bottom:14px" class="mono">
+      <span>₿ TOTAL CICLO <b style="font-size:15px">${fmtBTC(gB)}</b></span><span>Invertido <b>${fmtEUR(gE)}</b></span>
+      <span>Valor hoy <b>${fmtEUR(gVal)}</b></span><span style="color:${gPnl>=0?'var(--bull)':'var(--bear)'}">PnL <b>${gPnl>=0?"+":""}${fmtEUR(gPnl)} (${gPct!=null?(gPct>=0?"+":"")+gPct.toFixed(1)+"%":"—"})</b></span></div>`:"";
+  el.innerHTML=
+    `<div class="obj" style="margin-bottom:14px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:color-mix(in oklab,#9b8cff 8%,transparent)"><b>🎯 Cómo lo jugamos:</b> seguimos una señal <b>solo tras verla ganar en el backtest</b> (el Patrón es la mejor) — y <b>no vamos all-in</b>: DCA progresivo + compra por niveles, con artillería guardada por si el suelo llega antes… o no llega. Aquí medimos cada compra contra el precio de hoy.</div>`+
+    head+
+    bucket(P,ladder(P))+
+    bucket(B,orders(B))+
+    bucket(L,"")+
+    `<div class="mtxt" style="margin-top:4px">➕ ¿Compraste? Dímelo en el chat ("BELROGAM: 2.000€ a 60k el 3-oct") y lo apunto en el libro privado. ${status===404?'<i>· aún no existe <code>data/btc_compras.json</code> — se ve el plan por defecto.</i>':""}</div>`;
 }
 async function refreshAll(){
   try{
@@ -803,7 +830,6 @@ async function refreshAll(){
     $("#action").textContent="Sin datos";$("#actionSub").textContent="Reintenta en un momento.";
   }
 }
-renderCycleTimeline(); // estático (fechas históricas fijas) — no depende de la carga de datos en vivo
 refreshAll();
 setInterval(refreshAll,30*60*1000); // precio, señales y consejos de los agentes cada 30 min
 </script>
