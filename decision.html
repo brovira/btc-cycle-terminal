@@ -36,6 +36,14 @@
   .beads{display:flex;gap:6px}
   .bead{width:16px;height:16px;border-radius:50%;background:var(--panel2);box-shadow:inset 0 0 0 1px var(--line)}
   .bead.on{background:var(--vc,var(--accent));box-shadow:none}
+  /* barra de progreso del bear market (techo → suelo → fin de compra) */
+  .cbar{position:relative;height:52px;margin:14px 2px 8px}
+  .cbar .ctrack{position:absolute;top:22px;left:0;right:0;height:9px;background:var(--panel2);border-radius:6px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
+  .cbar .cfill{position:absolute;top:22px;left:0;height:9px;border-radius:6px;background:linear-gradient(90deg,var(--accum),var(--bull))}
+  .cbar .cfloor{position:absolute;top:18px;height:17px;background:color-mix(in oklab,var(--bull) 32%,transparent);border:1px solid color-mix(in oklab,var(--bull) 55%,transparent);border-radius:4px}
+  .cbar .cnow{position:absolute;top:10px;width:2px;height:33px;background:var(--ink);border-radius:2px}
+  .cbar .cnow::after{content:"hoy";position:absolute;top:-13px;left:50%;transform:translateX(-50%);font-size:9.5px;font-weight:700;color:var(--ink)}
+  .cbar .clab{position:absolute;top:36px;font-size:10px;color:var(--muted);white-space:nowrap;font-family:var(--mono)}
   .mtxt{font-family:var(--mono);font-size:13px;color:var(--muted)}
   .mtxt b{color:var(--ink);font-size:15px}
   /* signals grid */
@@ -323,24 +331,53 @@ function evaluate(D){
 }
 
 /* en qué fase de NUESTRO plan estamos (según el patrón temporal) + qué hacemos + proyección */
+const PLAN_TOP=Date.parse("2025-10-06");   // techo del ciclo = inicio del bear/acumulación
+const PLAN_MAXBUY=Date.parse("2027-06-30"); // fin de la ventana de compra MÁS LARGA (Cowen pre-halving ≈ LMEC sem 165)
+const HALV4=Date.parse("2024-04-19");
+const fShort=ms=>new Date(ms).toLocaleDateString("es-ES",{month:"short",year:"2-digit",timeZone:"UTC"}).replace(".","");
+/* mini-barra temporal para una tarjeta: su ventana de compra sobre la misma línea techo→fin-compra */
+function miniBar(s,e){
+  const pct=ms=>Math.max(0,Math.min(100,(ms-PLAN_TOP)/(PLAN_MAXBUY-PLAN_TOP)*100));
+  const a=pct(s),b=pct(e),n=pct(Date.now());
+  return `<div style="position:relative;height:26px;margin:3px 0 2px">
+    <div style="position:absolute;top:9px;left:0;right:0;height:7px;background:var(--panel2);border-radius:4px;box-shadow:inset 0 0 0 1px var(--line)"></div>
+    <div style="position:absolute;top:8px;left:${a}%;width:${Math.max(1.5,b-a)}%;height:9px;background:color-mix(in oklab,var(--bull) 42%,transparent);border:1px solid color-mix(in oklab,var(--bull) 60%,transparent);border-radius:3px"></div>
+    <div style="position:absolute;top:5px;left:${n}%;width:2px;height:15px;background:var(--ink);border-radius:2px" title="hoy"></div>
+    <div style="position:absolute;top:15px;left:${a}%;font-size:9.5px;color:var(--muted);font-family:var(--mono)">${fShort(s)}</div>
+    <div style="position:absolute;top:15px;left:${b}%;transform:translateX(-100%);font-size:9.5px;color:var(--muted);font-family:var(--mono)">${fShort(e)}</div>
+  </div>`;
+}
 function renderPlanPhase(R){
   const cs=cycleStats();
-  const fMY=ms=>new Date(ms).toLocaleDateString("es-ES",{month:"long",year:"numeric",timeZone:"UTC"});
+  const fMY=ms=>new Date(ms).toLocaleDateString("es-ES",{month:"short",year:"2-digit",timeZone:"UTC"}).replace(".","");
   const now=Date.now();
-  const monthsTop=(now-Date.parse("2025-10-06"))/(30.4368*864e5);
+  const monthsTop=(now-PLAN_TOP)/(30.4368*864e5);
   const toLo=(cs.projLoMs-now)/(30.4368*864e5),toHi=(cs.projHiMs-now)/(30.4368*864e5);
-  let fase,accion;
+  const pct=ms=>Math.max(0,Math.min(100,(ms-PLAN_TOP)/(PLAN_MAXBUY-PLAN_TOP)*100));
+  const nowP=pct(now),flL=pct(cs.projLoMs),flR=pct(cs.projHiMs);
+  let fase,accion,head;
   if(now<cs.projLoMs){
-    fase="🟢 ACUMULACIÓN — DCA en marcha";
-    accion=`DCA pequeño ya (Cowen) + comprar por niveles según cae (LMEC). <b>Artillería gorda guardada</b> para la ventana de suelo — faltan ~${Math.max(0,toLo).toFixed(0)}–${Math.max(0,toHi).toFixed(0)} meses.`;
+    fase="🟢 ACUMULACIÓN"; head="DCA + órdenes límite (60k↓)";
+    accion=`Hacemos <b>DCA pequeño ya</b> (Cowen) y tenemos <b>órdenes límite de 60k para abajo</b> (LMEC). La <b>artillería gorda + el loop</b> quedan guardados para la ventana de suelo — faltan <b>~${Math.max(0,toLo).toFixed(0)}–${Math.max(0,toHi).toFixed(0)} meses</b>.`;
   }else if(now<=cs.projHiMs){
-    fase="🔥 VENTANA DE SUELO — desplegar";
+    fase="🔥 VENTANA DE SUELO"; head="Desplegar artillería";
     accion=`Estamos en la ventana proyectada: <b>desplegar la artillería</b> y, si BTC toca mínimos, montar el loop en Aave (1,5×).`;
   }else{
-    fase="🔵 HOLD — dejar correr";
-    accion=`Ventana de suelo superada: mantener; el patrón proyecta el próximo techo ~150 semanas tras el suelo.`;
+    fase="🔵 HOLD"; head="Dejar correr";
+    accion=`Ventana de suelo superada: mantener. El patrón proyecta el próximo techo ~150 semanas tras el suelo.`;
   }
-  $("#planPhase").innerHTML=`📍 <b>Nuestro plan:</b> ${fase} · llevamos <b>${monthsTop.toFixed(1)} meses</b> desde el techo (oct-2025), suelo proyectado <b style="text-transform:capitalize">${fMY(cs.projLoMs)}–${fMY(cs.projHiMs)}</b>. ${accion}`;
+  $("#planPhase").innerHTML=`
+    <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><b style="font-size:15px">📍 Nuestro plan · ${fase}</b><span style="color:var(--ink)">${head}</span><span class="mtxt" style="margin-left:auto">llevamos ${monthsTop.toFixed(1)} meses de bear</span></div>
+    <div class="cbar">
+      <div class="ctrack"></div>
+      <div class="cfloor" style="left:${flL}%;width:${Math.max(1.5,flR-flL)}%"></div>
+      <div class="cfill" style="width:${nowP}%"></div>
+      <div class="cnow" style="left:${nowP}%"></div>
+      <div class="clab" style="left:0">Techo · ${fMY(PLAN_TOP)}</div>
+      <div class="clab" style="left:${(flL+flR)/2}%;transform:translateX(-50%);color:var(--bull)">🟢 suelo ${fMY(cs.projLoMs)}</div>
+      <div class="clab" style="right:0">fin compra · ${fMY(PLAN_MAXBUY)}</div>
+    </div>
+    <div style="font-size:12.7px;line-height:1.5;color:var(--ink2);margin-top:2px">${accion}</div>`;
 }
 function render(R){
   const V=$("#verdict");V.style.setProperty("--vc",R.vc);
@@ -434,6 +471,7 @@ function renderAgents(R){
   const px=R.price;
   const A=[
     {name:"🎯 LMEC",color:"var(--accent)",state:"Esperando con órdenes límite",kb:"lmec",fw:"lmec.html",clock:halvClock(R),
+     win:[HALV4+125*7*864e5,HALV4+165*7*864e5],winNote:`Ventana de DCA por semanas del halving. <b>Órdenes límite: en nuestro caso, de 60k para abajo</b> (60/55/50/45k). Compra fuerte = 2ª ruptura confirmada de la BMSB.`,
      now:`Compra <b>por niveles</b> con órdenes límite ya puestas: ejecutó BTC en <b>70k, 65k y 60k</b> (feb→jun 2026); las siguientes esperan en <b>~55.300</b> y <b>~50.400</b>. Mantiene un corto de BTC como cobertura (TP 48k) y operativa mínima ("no voy a hacer nada o casi nada").`,
      since:`Comprando desde <b>dic-2025</b> (HYPE ~$24) y BTC desde el crash del <b>5-feb-2026</b> — no por señal, sino por ejecución mecánica del plan fijado en máximos: "si el mercado volvía a tocar determinadas zonas críticas, había que comprar sin excepciones".`,
      next:`Espera <b>rebote-trampa a 67-69k</b> (test de la BMSB) en jul/ago → más caídas después; suelo hacia <b>oct/nov-2026</b> (~45k su escenario central) y bull real en <b>mar/abr-2027</b> (280 días tras la 2ª ruptura).`,
@@ -445,6 +483,7 @@ function renderAgents(R){
        if(m.bmsbHi&&m.price>=m.bmsbHi*0.97)return`Precio pegado a la BMSB (${fmtUSD(m.bmsbHi)}) = su <b>rebote-trampa</b>: NO comprar aquí; él abriría cortos en alts. Órdenes abajo (55.3k) y paciencia.`;
        return`<b>No comprar a mercado.</b> Deja órdenes límite (siguiente: ~55.3k) y espera. La compra fuerte es la ruptura confirmada de la BMSB (~mar-2027).`;}},
     {name:"📊 Cowen",color:"var(--hot)",state:"Dynamic DCA activo (risk <0,3)",kb:"cowen",fw:"cowen.html",clock:cowenClock(),
+     win:[Date.parse("2026-07-01"),Date.parse("2027-06-30")],winNote:`2ª mitad del midterm ("right after the June low") + inicio del pre-halving year. Es la <b>ventana de compra más larga</b> de las tres.`,
      now:`<b>Ya está comprando</b>: dynamic DCA solo cuando su risk metric está <b>bajo 0,3</b> (citó 0,296). Empezó tras el <b>mínimo de junio-2026</b> (~57k), calcando 2018 y 2022. Despliegue deliberadamente lento.`,
      since:`"I started accumulating Bitcoin after the June low… I just DCA" — evitó el mínimo de febrero a propósito ("far too early in the midterm year").`,
      next:`El rebote de verano muere en el <b>200d MA (~70k)</b> fin jul-ago; <b>ago-sep han sido negativos en LOS TRES midterms</b> (−18/−15/−15%); mínimo de ciclo en <b>Q4 (octubre)</b>, test del realized (~53k); balanced 38k = "greedy". Invalidación: recuperar la 50W (~86,5k).`,
@@ -477,6 +516,7 @@ function renderAgents(R){
     <h3>${a.name} <span class="astate">${a.state}</span></h3>
     <div class="albl">Qué está haciendo AHORA</div><div class="arow">${a.now}</div>
     <div class="advice">💬 <b>Con las métricas de hoy</b> (BTC ${fmtUSD(px)}): ${a.advice(R)}</div>
+    ${a.win?`<div class="albl" style="margin-top:8px">Su ventana de compra (temporal)</div>${miniBar(a.win[0],a.win[1])}${a.winNote?`<div class="mtxt" style="line-height:1.5">${a.winNote}</div>`:""}`:""}
     ${chkHtml}
     <details style="margin-top:10px">
       <summary style="cursor:pointer;font-size:12.5px;font-weight:650;color:var(--muted);padding:2px 0">Evidencia: fase del ciclo, citas, pólvora y auditoría ▾</summary>
@@ -488,13 +528,13 @@ function renderAgents(R){
       <div class="albl">Siguiente movimiento que espera</div><div class="arow">${a.next}</div>
       <div class="albl">Pólvora</div><div class="arow">${a.powder}</div>
       <div class="aq">${a.q}<span class="src">[${a.src}]</span></div>
-      ${nCambios?`<div class="albl" style="margin-top:8px">🧠 Cambios de opinión (${nCambios}) — pivotar a tiempo es señal de aprendizaje, no de debilidad</div>
+      ${nCambios?`<details style="margin-top:8px"><summary style="cursor:pointer;font-size:12px;font-weight:650;color:var(--muted);padding:2px 0">🧠 Cambios de opinión (${nCambios}) — pivotar a tiempo es aprender, no fallar ▾</summary>
       ${kb.cambios_opinion.slice().reverse().map(c=>`<div class="arow" style="font-size:12px;border-left:2px solid var(--line);padding-left:9px;margin:7px 0">
         <span class="mono" style="color:var(--muted)">${esc(c.fecha||"")}</span> · <span style="color:var(--muted)">antes:</span> ${esc(c.antes||"")}<br>
         <span style="color:var(--muted)">ahora:</span> <b>${esc(c.ahora||"")}</b>
         ${c.quote?`<div class="aq" style="margin-top:4px">"${esc(c.quote)}"<span class="src">[${esc(c.src||"")}]</span></div>`:""}
-      </div>`).join("")}`:""}
-      ${a.audit?`<div class="arow" style="color:var(--hot);font-size:12px;margin-top:6px">${a.audit}</div>`:""}
+      </div>`).join("")}</details>`:""}
+      ${a.audit?`<details style="margin-top:6px"><summary style="cursor:pointer;font-size:12px;font-weight:650;color:var(--hot);padding:2px 0">⚠️ Auditoría del historial ▾</summary><div class="arow" style="color:var(--hot);font-size:12px;margin-top:4px">${a.audit}</div></details>`:""}
     </details>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
       <a class="btn" style="font-size:12px;padding:6px 10px" href="${a.fw}">📖 Su framework completo →</a>
