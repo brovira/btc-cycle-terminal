@@ -98,9 +98,11 @@
     <div style="margin-top:8px">
       <b>ETH sigue el macro de BTC</b> (aquí aplica el gate de Cowen). <b>SOL, BNB y TON corren con catalizadores propios</b> — el gráfico lo hace visible: SOL hizo su suelo con el colapso de <b>FTX</b> (nov-2022) y su 10x casi solo; BNB con Binance/BSC; TON con Telegram. La constante: <b>la mejor entrada de casi todas fue la capitulación profunda del bear</b> ("comprar el suelo").
     </div>
-    <div style="margin-top:8px">El chip <b style="color:var(--accent)">📍 BTC hoy</b> de cada tarjeta marca <b>dónde está BTC en su ciclo ahora</b> (semanas desde el techo de oct-2025 + drawdown). Compáralo con el <b>BTC entonces</b> de cada suelo: si BTC hoy está mucho antes / menos caído que cuando esa alt tocó fondo, tu entrada llega <b>pronto</b> respecto al patrón histórico.</div>
+    <div style="margin-top:8px">El banner <b style="color:var(--accent)">📍 BTC hoy</b> (arriba) marca <b>dónde está BTC en su ciclo ahora</b> (semanas desde el techo de oct-2025 + drawdown) — es el mismo para todas. Compáralo con el <b>BTC entonces</b> de cada suelo: si BTC hoy está mucho antes / menos caído que cuando esa alt tocó fondo, tu entrada llega <b>pronto</b> respecto al patrón histórico.</div>
     <div class="warn">⚠️ <b>"Mejor entrada/salida" es RETROSPECTIVO</b> (hindsight): son el mínimo y el máximo ya conocidos, no una señal en vivo. <b>HYPE y TON</b> se listaron en 2024 → sin ciclo previo que muestrear: sin plantilla, tamaño mínimo.</div>
   </div>
+
+  <div class="btctoday" id="btcHoyBanner" style="display:none;margin-top:14px"></div>
 
   <div class="reloj-err" id="reloj-err"></div>
 
@@ -300,7 +302,12 @@ const num=(v,d)=>v==null?"—":(+v).toFixed(d==null?2:d);
       let top=null; for(const tp of tops){ if(tp<=nowMs)top=tp; }
       if(top!=null)btcToday={weeks:Math.round((nowMs-top)/(7*864e5)),drawdown:btc.drawdownNow,topDate:new Date(top).toISOString().slice(0,10)};
     }
-    const btcHoyChip=btcToday?`<div class="btctoday">📍 <b>BTC hoy:</b> <b>${btcToday.weeks} sem</b> desde su techo (${btcToday.topDate}) · drawdown <b>${pctv(btcToday.drawdown)}</b> — <span class="tuaqui">tu momento de entrada</span></div>`:"";
+    // "BTC hoy" UNA sola vez (mismo valor para todas las alts): banner de referencia arriba.
+    const bn=qs("#btcHoyBanner");
+    if(bn){
+      if(btcToday){bn.style.display="";bn.innerHTML=`📍 <b>BTC hoy:</b> <b>${btcToday.weeks} sem</b> desde su techo (${btcToday.topDate}) · drawdown <b>${pctv(btcToday.drawdown)}</b> — <span class="tuaqui">tu momento de entrada</span>. Compáralo con el <b>BTC entonces</b> de cada suelo ↓`;}
+      else bn.style.display="none";
+    }
     const curTop=(DATA.btcTops||[]).slice(-1)[0]||null;
     cards.innerHTML=order.map(k=>{
       const a=byKey[k]; if(!a)return "";
@@ -309,11 +316,11 @@ const num=(v,d)=>v==null?"—":(+v).toFixed(d==null?2:d);
         <div class="now"><div class="lab">Drawdown hoy</div><div class="v" style="color:var(--bear)">${a.unavailable?"—":pctv(a.drawdownNow)}</div></div></div>`;
       const cat=a.catalyst?`<div class="catalyst">${a.catalyst}</div>`:"";
       if(a.unavailable){
-        return `<div class="card short">${head}${cat}${btcHoyChip}<div class="shortmsg">Par no disponible en Binance ahora mismo — sin datos que mostrar.</div></div>`;
+        return `<div class="card short">${head}${cat}<div class="shortmsg">Par no disponible en Binance ahora mismo — sin datos que mostrar.</div></div>`;
       }
       if(a.shortHistory||!a.bottoms||!a.bottoms.length){
         const wk=a.weeks?`${a.weeks} semanas de histórico (desde ${a.firstDate}).`:"";
-        return `<div class="card short">${head}${cat}${btcHoyChip}
+        return `<div class="card short">${head}${cat}
           <div class="kv"><span class="k">Precio</span><span class="v mono">$${fmtP(a.price)}</span></div>
           <div class="kv"><span class="k">ATH</span><span class="v"><span class="mono">$${fmtP(a.ath)}</span> · ${a.athDate||"—"}</span></div>
           <div class="shortmsg"><b>Sin ciclo previo / histórico corto.</b> ${wk} No hay bear anterior que muestrear → <b>no hay plantilla de suelo</b>. Tamaño mínimo, tratar como especulación.</div></div>`;
@@ -324,7 +331,7 @@ const num=(v,d)=>v==null?"—":(+v).toFixed(d==null?2:d);
       const est=entryEstimate(a.bottoms,a,btcToday,curTop);
       const priceRow=`<div class="kv"><span class="k">Precio · ATH</span><span class="v"><span class="mono">$${fmtP(a.price)}</span> · ATH <span class="mono">$${fmtP(a.ath)}</span> (${a.athDate})</span></div>`;
       const bs=a.bottoms.slice().reverse().map(bottomBlock).join("");
-      return `<div class="card">${head}${cat}${btcHoyChip}${priceRow}${bestRow}${est}${bs}</div>`;
+      return `<div class="card">${head}${cat}${priceRow}${bestRow}${est}${bs}</div>`;
     }).join("");
   }
 
