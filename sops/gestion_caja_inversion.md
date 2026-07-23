@@ -1,21 +1,14 @@
 # SOP — Gestión de caja e inversión (BELROGAM → BTC)
 
-**Última actualización:** 23 julio 2026
 **Para qué:** decidir cuánto efectivo puede salir del negocio sin comprometer la operación, y cómo usar la sección **Inversión** del dashboard. La estrategia de compra (precio, timing, cuánto BTC) NO está aquí: vive en el terminal/journal de Bel.
+
+> **Nota de privacidad:** este archivo vive en un repo PÚBLICO, así que contiene **solo el método** — la fórmula, las reglas y el calendario. **Las cifras reales (saldos, suelo, disponible, revenue, márgenes) NO se publican aquí**: son datos privados del negocio y se leen en vivo desde la sección **Inversión** del dashboard de BELROGAM (endpoint `/api/cash`, con token). Si necesitas un número concreto, pídelo al dashboard, no lo escribas aquí.
 
 > ## ⚠️ SI ESTÁS LEYENDO ESTO PARA PLANIFICAR — lee primero esto
 >
-> **Distingue lo estructural de la foto.** En este documento hay dos tipos de contenido:
+> **Distingue lo estructural de la foto.** Lo que importa de este documento es estable (fórmula, reglas, calendario). Cualquier cifra concreta (saldo, suelo, disponible, ritmo) **caduca en días** y por eso NO está aquí.
 >
-> | Estructural (estable) | Foto del 23-jul-2026 (caduca) |
-> |---|---|
-> | La fórmula del disponible | Saldos, suelo, disponible |
-> | El calendario de pagos (día 1, 3, 7, 8, 9, 15, 20) | Importes concretos de cada partida |
-> | El desfase de cobro (Airbnb +1d, Booking +7d) | Ritmo necesario vs generado |
-> | Las 5 reglas invariantes | Los dos escenarios y sus cifras |
-> | Los dos escenarios como concepto | El % de llenado de cada mes |
->
-> **No planifiques con las cifras de este documento si ha pasado más de un mes.** El suelo se mueve cada día: sube cuando entran reservas, baja cuando se paga. Pide a Bel el número actual de la sección **Inversión** del dashboard antes de proponer nada.
+> **No planifiques con cifras de memoria.** El suelo se mueve cada día: sube cuando entran reservas, baja cuando se paga. Pide el número actual de la sección **Inversión** del dashboard antes de proponer nada.
 >
 > **Y no recalcules el disponible por tu cuenta.** Ya está resuelto y auditado; duplicar el cálculo con datos viejos o supuestos propios es la forma más fácil de equivocarse. Trátalo como una restricción dada.
 
@@ -32,9 +25,9 @@ disponible = MIN(saldo proyectado día a día)  ←  el "suelo"
 **El colchón YA está restado.** El disponible es lo que sobra *por encima* de la línea de seguridad. Sacarlo no toca la protección: los impuestos y el margen se quedan en el banco.
 
 ### Por qué el suelo y no el saldo de hoy
-El **53% del gasto mensual sale entre los días 1 y 5** (renta el 1, Strmngnt el 3), mientras los cobros entran repartidos por todo el mes. Medido sobre 12 meses: el tramo días 1-5 tiene un neto de **−150.814 €** (≈ −12.568 €/mes).
+El **grueso del gasto mensual sale entre los días 1 y 5** (renta el 1, Strmngnt el 3), mientras los cobros entran repartidos por todo el mes. Medido sobre 12 meses, ese tramo días 1-5 tiene un neto **fuertemente negativo** → arrastra el saldo hacia abajo justo a principio de mes.
 
-Consecuencia: mirar el saldo de hoy engaña. El 22-jul había 61.896 € y el suelo proyectado era **39.769 €** (9 de octubre). Un bache de **22.127 €** invisible en el saldo.
+Consecuencia: mirar el saldo de hoy engaña. El saldo de un día cualquiera puede ser muy superior al **suelo** proyectado unas semanas después — un "bache" de varios miles de euros que es invisible en el saldo de hoy. (El número concreto, en la sección Inversión del dashboard.)
 
 ---
 
@@ -64,29 +57,29 @@ Es un **límite sobre el stock**, no un presupuesto que se renueva:
 
 ## 4. Las dos capas de seguridad (qué protege cada una)
 
-| Capa | Importe hoy | Protege de |
+| Capa | Qué es | Protege de |
 |---|---|---|
-| **Impuestos pendientes** | 3.482 € | El Sociedades del Modelo 200. El IVA/IRPF **no** van aquí: el flujo ya los descuenta en su fecha real (día 20 de ene/abr/jul/oct). Meterlos también sería contarlos dos veces. |
-| **Margen extra** | 12.169 €/mes | Que el modelo se quede corto: un mes malo, una cancelación, un gasto imprevisto. Configurable 0-3 meses. |
+| **Impuestos pendientes** | Reserva para el Sociedades (Modelo 200). El IVA/IRPF **no** van aquí: el flujo ya los descuenta en su fecha real (día 20 de ene/abr/jul/oct). Meterlos también sería contarlos dos veces. | Quedarte sin caja para Hacienda |
+| **Margen extra** | N meses de coste fijo (configurable 0-3 meses). | Que el modelo se quede corto: un mes malo, una cancelación, un gasto imprevisto |
 
-Referencia: el peor mes de flujo neto de los últimos 12 fue **−10.167 €**. Un mes malo existe y hay que poder pagarlo sin vender nada.
+Referencia: el peor mes de flujo neto de los últimos 12 fue claramente negativo. Un mes malo existe y hay que poder pagarlo sin vender nada. (Importe concreto, en el dashboard.)
 
 ---
 
 ## 5. Los dos escenarios
 
-| | Qué cuenta | Suelo hoy | Disponible (margen 1m) |
-|---|---|---|---|
-| **Confirmado** | Solo reservas ya hechas | 39.769 € (9-oct) | **24.119 €** |
-| **Esperado** | + meses sin reservar rellenos al nivel del año pasado | 51.884 € (9-ago) | **36.233 €** |
+| | Qué cuenta | Para qué |
+|---|---|---|
+| **Confirmado** | Solo reservas ya hechas | Decidir lo que sacas HOY. Es dinero que ya está o ya está reservado. |
+| **Esperado** | + meses sin reservar rellenos al nivel del año pasado | PLANIFICAR el ritmo, no ejecutar. Es una previsión. |
 
 **Regla de uso:**
-- **Confirmado** → para decidir lo que sacas HOY. Es dinero que ya está o ya está reservado.
-- **Esperado** → para PLANIFICAR el ritmo, no para ejecutar. Es una previsión.
+- **Confirmado** → para ejecutar.
+- **Esperado** → para planificar.
 
 El panel arranca siempre en confirmado a propósito.
 
-Por qué el esperado es creíble: agosto ya va al **137%** del año pasado, septiembre 61%, octubre 20%, nov/dic 0% — pero el año pasado nov hizo 27.156 € y dic 29.772 €. Los ceros son falta de datos, no falta de negocio.
+Por qué el esperado es creíble: los meses cercanos suelen ir llenándose hasta el nivel del año anterior; los ceros de meses lejanos son **falta de datos, no falta de negocio** (el año pasado esos meses sí facturaron). Las cifras de llenado, en el dashboard.
 
 ---
 
@@ -133,22 +126,18 @@ Los euros parkeados son un colchón *extra* más allá del margen diseñado. No 
 
 ## 9. Objetivo de acumulación (parte de caja)
 
-Parámetros en `parametros_financieros` (editables):
+Parámetros en `parametros_financieros` (editables — los valores concretos viven en la BD, no aquí):
 
-| Clave | Valor | Qué es |
-|---|---|---|
-| `btc_objetivo_eur` | 55.000 | Caja total a deployar |
-| `btc_fecha_inicio` | 20260901 | Inicio de la ventana |
-| `btc_meses` | 18 | Horizonte (→ marzo 2028) |
-| `btc_invertido_eur` | 0 | Lo ya deployado |
+| Clave | Qué es |
+|---|---|
+| `btc_objetivo_eur` | Caja total a deployar en el ciclo |
+| `btc_fecha_inicio` | Inicio de la ventana |
+| `btc_meses` | Horizonte en meses |
+| `btc_invertido_eur` | Lo ya deployado |
 
-- Ritmo necesario: **3.056 €/mes**
-- Lo que genera el negocio: **4.009 €/mes** (caja neta ex-CAPEX, 12m)
-- Margen: **+950 €/mes** → factible sin apretar
+El dashboard compara dos ritmos: el **ritmo necesario** (objetivo ÷ meses) contra el **ritmo que genera el negocio** (caja neta ex-CAPEX, media 12m). Si el segundo supera al primero, el objetivo es factible sin apretar. Ambos números, en la vista `v_objetivo_btc`.
 
-Respaldo: caja neta 12m = 33.269 €, pero incluye 19.360 € de CAPEX que no se repite (puesta en marcha de pisos). El revenue crece +43% (últimos 6m 246.198 € vs 172.292 € anteriores).
-
-**Este objetivo mide solo EUROS DEPLOYADOS.** Cuánto BTC salga de esos 55.000 € depende del precio medio, que no controla ni el negocio ni este sistema.
+**Este objetivo mide solo EUROS DEPLOYADOS.** Cuánto BTC salga de esa caja depende del precio medio, que no controla ni el negocio ni este sistema.
 
 ---
 
@@ -165,11 +154,11 @@ Respaldo: caja neta 12m = 33.269 €, pero incluye 19.360 € de CAPEX que no se
 
 ## 11. Limitaciones conocidas del modelo
 
-- **La comisión de Strmngnt se proyecta al 27,5%** (medido sobre facturas reales), pero su factura declara 23% sobre una base que no se puede reconstruir con nuestros datos (~2.000 €/mes de diferencia). **Pendiente de aclarar con Strmngnt.**
+- **La comisión de Strmngnt** se proyecta a un porcentaje medido sobre facturas reales, algo por encima del que declara su factura (sobre una base que no se puede reconstruir con nuestros datos). **Pendiente de aclarar con Strmngnt.**
 - **La reserva fiscal es estimación propia**, no dato de la gestoría.
-- **"Otros recurrentes" (1.903 €/mes)** es una media de 12 meses: CAPEX, mobiliario, tarjeta, mantenimiento sin piso. Si hay una compra grande puntual, el modelo no la ve venir.
+- **"Otros recurrentes"** es una media de 12 meses (CAPEX, mobiliario, tarjeta, mantenimiento sin piso). Si hay una compra grande puntual, el modelo no la ve venir.
 - **Los meses sin reservas** (más allá del horizonte fiable) no sirven para decidir: el ingreso cae a cero pero el coste no.
-- **Mérida**: agosto proyecta ocupación muy baja en los locales (L2 al 0%). Si se mantiene, el suelo bajará.
+- **Mérida**: algún mes proyecta ocupación muy baja en los locales. Si se mantiene, el suelo bajará.
 
 ---
 
