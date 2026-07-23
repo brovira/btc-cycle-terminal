@@ -1,24 +1,28 @@
-// api/altcycles.js — "Reloj de alts": ciclos de cada alt vs el ciclo de BTC.
+// api/altcycles.js — "Reloj de alts": suelos de ciclo (CURADOS) de cada alt vs el ciclo de BTC.
 // Datos PÚBLICOS de mercado (velas semanales de Binance, sin API key, sin auth) → sin secretos.
 // Corre SERVER-SIDE (Vercel tiene red), así que funciona aunque no se pueda probar desde el sandbox.
 //
-// Qué calcula, por activo (BTC + ETH BNB SOL HYPE TON):
-//  - precio actual, ATH (máx de cierres) y drawdown actual (precio/ATH − 1)
-//  - serie SEMANAL de drawdown desde el ATH acumulado (peak running)
-//  - suelos de ciclo = mínimos MAYORES de esa serie (dd < −60% y mínimo local separado ≥26 sem)
-//  - por cada suelo: el techo (ATH) previo a ese desplome = "mejor salida", y el siguiente máximo
-//    tras el suelo = "mejor entrada → múltiplo"
-//  - REFERENCIA BTC: en la fecha del suelo de cada alt, drawdown de BTC desde SU ATH y semanas desde
-//    el último techo de BTC (posición de BTC en su propio ciclo), + offset vs el suelo de BTC más cercano
-// HYPE y TON tienen histórico corto en Binance (listados 2024) → shortHistory:true y NO se inventan
-// suelos de ciclo (no hay bear previo que muestrear).
+// POR QUÉ CURADO (no auto-detección): detectar suelos por "−60% + mínimo local" fragmentaba el
+// mismo bear en varios "suelos" y partía el múltiplo en trozos pequeños (ETH salía ×2/×2.6/×3 en
+// vez del ×5 real 2022→2025). Ahora usamos las fechas conocidas de capitulación de cada alt (un
+// suelo por ciclo) y calculamos el múltiplo REAL desde ese suelo hasta el SIGUIENTE ATH, con datos
+// vivos. HYPE y TON no tienen ciclo previo en Binance → shortHistory (no se inventan suelos).
 
 const WEEK_MS = 7 * 24 * 3600 * 1000;
 
-// Techos/suelos de BTC ANCLADOS (coherentes con el resto del terminal). Se usan para "semanas desde
-// el techo de BTC" y para el offset del suelo. El VALOR del drawdown de BTC sí sale de la serie viva.
+// Techos de BTC ANCLADOS (coherentes con el resto del terminal). Se usan para "semanas desde el
+// techo de BTC" en cada suelo de alt. El VALOR del drawdown de BTC sí sale de la serie viva.
 const BTC_TOPS = ["2017-12-17", "2021-11-08", "2025-10-06"].map((d) => Date.parse(d));
-const BTC_BOTTOMS = ["2018-12-16", "2022-11-21"].map((d) => Date.parse(d));
+
+// Suelos de ciclo CURADOS por alt (capitulaciones conocidas; fecha aprox., se refina al mínimo real
+// de cierre semanal en ±8 semanas). Un suelo por ciclo → múltiplo real al siguiente ATH.
+const CURATED_BOTTOMS = {
+  ETH: ["2018-12-16", "2022-06-19"],  // fin bear 2018 (~$85) · bear 2022 (~$900)
+  BNB: ["2018-12-16", "2022-06-19"],  // ~$5 · ~$180
+  SOL: ["2022-12-26"],                // colapso FTX (~$10). SOL se listó 2020 (medio ciclo) → solo un ciclo previo.
+  HYPE: [],                           // listado nov-2024 → sin ciclo previo
+  TON: [],                            // histórico corto en Binance → sin ciclo previo fiable
+};
 
 const ASSETS = [
   { key: "BTC", symbol: "BTCUSDT", name: "Bitcoin", isRef: true },
@@ -58,32 +62,9 @@ function buildSeries(rows) {
     if (c[i] > peak) peak = c[i];
     dd[i] = peak > 0 ? c[i] / peak - 1 : 0;
   }
-  // ATH global (máx de cierres) + su índice
   let athIdx = 0;
   for (let i = 1; i < n; i++) if (c[i] > c[athIdx]) athIdx = i;
   return { t, c, dd, n, athIdx };
-}
-
-// suelos de ciclo = mínimos locales de la serie de drawdown que caen por debajo de un umbral,
-// deduplicados dentro de una ventana de separación (se queda con el más profundo).
-function findBottoms(s, { threshold = -0.6, sep = 26 } = {}) {
-  const { dd, n } = s;
-  const cands = [];
-  for (let i = 0; i < n; i++) {
-    if (dd[i] >= threshold) continue;
-    let isMin = true;
-    const lo = Math.max(0, i - sep), hi = Math.min(n - 1, i + sep);
-    for (let j = lo; j <= hi; j++) { if (dd[j] < dd[i]) { isMin = false; break; } }
-    if (isMin) cands.push(i);
-  }
-  cands.sort((a, b) => a - b);
-  const out = [];
-  for (const i of cands) {
-    const last = out[out.length - 1];
-    if (last != null && i - last < sep) { if (dd[i] < dd[last]) out[out.length - 1] = i; }
-    else out.push(i);
-  }
-  return out; // índices
 }
 
 // BTC drawdown vivo en un instante t0: última vela BTC con tiempo <= t0
@@ -92,7 +73,7 @@ function btcDrawdownAt(btc, t0) {
   let idx = -1;
   for (let i = 0; i < btc.n; i++) { if (btc.t[i] <= t0) idx = i; else break; }
   if (idx < 0) return null;
-  return { drawdown: btc.dd[idx], date: new Date(btc.t[idx]).toISOString().slice(0, 10) };
+  return { drawdown: btc.dd[idx] };
 }
 
 // último techo BTC (anclado) antes de t0 → semanas desde ese techo
@@ -103,18 +84,10 @@ function weeksSinceBtcTop(t0) {
   return { topDate: new Date(top).toISOString().slice(0, 10), weeks: Math.round((t0 - top) / WEEK_MS) };
 }
 
-// suelo BTC (anclado) más cercano a t0 → offset en semanas (negativo = la alt tocó fondo ANTES que BTC)
-function offsetVsBtcBottom(t0) {
-  let best = null, bestD = Infinity;
-  for (const b of BTC_BOTTOMS) { const d = Math.abs(b - t0); if (d < bestD) { bestD = d; best = b; } }
-  if (best == null) return null;
-  return { btcBottomDate: new Date(best).toISOString().slice(0, 10), offsetWeeks: Math.round((t0 - best) / WEEK_MS) };
-}
-
 function iso(ms) { return new Date(ms).toISOString().slice(0, 10); }
 function round(v, d) { const m = Math.pow(10, d == null ? 2 : d); return v == null ? null : Math.round(v * m) / m; }
 
-// procesa un activo: drawdown actual, suelos y, por cada suelo, techo previo + siguiente máximo + contexto BTC
+// procesa un activo: drawdown actual + suelos CURADOS con múltiplo real al siguiente ATH + contexto BTC
 function processAsset(meta, rows, btc, warnings) {
   const s = buildSeries(rows);
   const price = s.c[s.n - 1];
@@ -126,52 +99,53 @@ function processAsset(meta, rows, btc, warnings) {
     ath: round(athPrice, athPrice < 10 ? 4 : 2), athDate: iso(s.t[s.athIdx]),
     drawdownNow: round(s.dd[s.n - 1], 4),
     shortHistory: false, bottoms: [],
-    // serie de drawdown adelgazada para el gráfico (fecha + dd)
     ddSeries: s.t.map((tt, i) => [iso(tt), round(s.dd[i], 4)]),
   };
+  if (meta.isRef) return out; // BTC = referencia del gráfico; sin suelos propios
 
-  // Histórico corto (listados 2024): < 104 semanas ⇒ no muestrear ciclos, no inventar suelos.
-  if (s.n < 104) {
+  const curated = CURATED_BOTTOMS[meta.key] || [];
+  if (s.n < 104 || !curated.length) {
     out.shortHistory = true;
-    warnings.push(`${meta.key}: histórico corto (${s.n} sem) → sin suelos de ciclo`);
+    warnings.push(`${meta.key}: sin ciclo previo (histórico ${s.n} sem / sin suelos curados)`);
     return out;
   }
 
-  const bottomIdx = findBottoms(s);
-  for (let bi = 0; bi < bottomIdx.length; bi++) {
-    const i = bottomIdx[bi];
-    const prevB = bi > 0 ? bottomIdx[bi - 1] : 0;
-    // TECHO previo al desplome = ATH entre el suelo anterior y este suelo ("mejor salida")
-    let topI = prevB;
-    for (let j = prevB; j <= i; j++) if (s.c[j] > s.c[topI]) topI = j;
-    // SIGUIENTE MÁXIMO tras el suelo (hasta el próximo suelo o el final) → múltiplo
-    const nextB = bi + 1 < bottomIdx.length ? bottomIdx[bi + 1] : s.n - 1;
+  // refinar cada suelo curado al mínimo de cierre semanal real en ±8 semanas
+  const idxs = [];
+  for (const bd of curated) {
+    const bms = Date.parse(bd);
+    if (isNaN(bms) || bms < s.t[0] || bms > s.t[s.n - 1]) continue;
+    const lo = bms - 8 * WEEK_MS, hi = bms + 8 * WEEK_MS;
+    let bi = -1;
+    for (let i = 0; i < s.n; i++) { if (s.t[i] >= lo && s.t[i] <= hi) { if (bi < 0 || s.c[i] < s.c[bi]) bi = i; } }
+    if (bi >= 0) idxs.push(bi);
+  }
+  idxs.sort((a, b) => a - b);
+
+  for (let k = 0; k < idxs.length; k++) {
+    const i = idxs[k];
+    const bound = k + 1 < idxs.length ? idxs[k + 1] : s.n - 1; // siguiente suelo, o el final
     let maxI = i;
-    for (let j = i; j <= nextB; j++) if (s.c[j] > s.c[maxI]) maxI = j;
+    for (let j = i; j <= bound; j++) if (s.c[j] > s.c[maxI]) maxI = j;
     const mult = s.c[i] > 0 ? s.c[maxI] / s.c[i] : null;
-
-    const bt = meta.isRef ? null : btcDrawdownAt(btc, s.t[i]);
-    const wt = meta.isRef ? null : weeksSinceBtcTop(s.t[i]);
-    const off = meta.isRef ? null : offsetVsBtcBottom(s.t[i]);
-
+    const bt = btcDrawdownAt(btc, s.t[i]);
+    const wt = weeksSinceBtcTop(s.t[i]);
     out.bottoms.push({
       date: iso(s.t[i]),
       price: round(s.c[i], s.c[i] < 10 ? 4 : 2),
       drawdown: round(s.dd[i], 4),
-      bestExit: { date: iso(s.t[topI]), price: round(s.c[topI], s.c[topI] < 10 ? 4 : 2) }, // ATH previo
       nextMax: { date: iso(s.t[maxI]), price: round(s.c[maxI], s.c[maxI] < 10 ? 4 : 2), multiple: round(mult, 1) },
-      btc: bt ? { drawdown: round(bt.drawdown, 4), asOf: bt.date, weeksSinceTop: wt ? wt.weeks : null, topDate: wt ? wt.topDate : null } : null,
-      offset: off ? { weeks: off.offsetWeeks, btcBottomDate: off.btcBottomDate } : null,
+      btc: bt ? { drawdown: round(bt.drawdown, 4), weeksSinceTop: wt ? wt.weeks : null, topDate: wt ? wt.topDate : null } : null,
     });
   }
-  if (!out.bottoms.length) warnings.push(`${meta.key}: sin suelo < −60% en la serie`);
+  if (!out.bottoms.length) { out.shortHistory = true; warnings.push(`${meta.key}: suelos curados fuera del rango de datos`); }
   return out;
 }
 
 module.exports = async (req, res) => {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.setHeader("Cache-Control", "public, max-age=3600, s-maxage=3600, stale-while-revalidate=7200"); // 1h
-  const out = { asOf: new Date().toISOString(), warnings: [], btcTops: BTC_TOPS.map(iso), btcBottoms: BTC_BOTTOMS.map(iso), assets: [] };
+  const out = { asOf: new Date().toISOString(), warnings: [], btcTops: BTC_TOPS.map(iso), assets: [] };
 
   try {
     // 1) BTC primero (referencia de ciclo para las alts)
@@ -179,7 +153,7 @@ module.exports = async (req, res) => {
     const btc = btcRows ? buildSeries(btcRows) : null;
     if (btcRows) out.assets.push(processAsset(ASSETS[0], btcRows, null, out.warnings));
 
-    // 2) el resto (secuencial: son 5 peticiones, evita rate-limit de Binance)
+    // 2) el resto (secuencial: evita rate-limit de Binance)
     for (let a = 1; a < ASSETS.length; a++) {
       const meta = ASSETS[a];
       try {

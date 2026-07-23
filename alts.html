@@ -255,26 +255,13 @@ const num=(v,d)=>v==null?"—":(+v).toFixed(d==null?2:d);
   }
   window.__drawReloj=drawChart;
 
-  function btc0(b){return b.btc?b.btc.drawdown:null;}
-  function offsetTxt(o){
-    if(o.offsetWeeks==null)return "";
-    const w=o.offsetWeeks;
-    if(w===0)return `a la vez que el suelo de BTC (${o.btcBottomDate})`;
-    const ab=w<0?"ANTES":"DESPUÉS";
-    return `${Math.abs(w)} sem ${ab} que el suelo de BTC (${o.btcBottomDate})`;
-  }
   function bottomBlock(b){
-    const btc=b.btc?`<div class="btcpos">📍 <b>BTC entonces:</b> drawdown <b>${pctv(btc0(b))}</b> desde su ATH · <b>${b.btc.weeksSinceTop!=null?b.btc.weeksSinceTop+" sem":"—"}</b> desde su techo (${b.btc.topDate||"—"}).</div>`:"";
-    const off=b.offset?`<span class="offset">${offsetTxt(b.offset)}</span>`:"";
-    const partial=b.ongoing;
-    const multTxt=b.nextMax.multiple!=null?(partial?`×${b.nextMax.multiple} y subiendo`:`×${b.nextMax.multiple}`):"—";
+    const btc=b.btc?`<div class="btcpos">📍 <b>BTC entonces:</b> drawdown <b>${pctv(b.btc.drawdown)}</b> · <b>${b.btc.weeksSinceTop!=null?b.btc.weeksSinceTop+" sem":"—"}</b> desde su techo (${b.btc.topDate||"—"}).</div>`:"";
+    const mult=(b.nextMax&&b.nextMax.multiple!=null)?`×${b.nextMax.multiple}`:"—";
     return `<div class="bottom">
-      <div class="btitle">Suelo de ciclo · ${b.date}${partial?' · <span style="color:var(--accent)">en curso</span>':''}</div>
-      <div class="kv"><span class="k">Mejor entrada</span><span class="v"><span class="mono">$${fmtP(b.price)}</span> · <span class="dd">${pctv(b.drawdown)}</span> ${b.date}</span></div>
-      <div class="kv"><span class="k">Mejor salida (ATH prev.)</span><span class="v"><span class="mono">$${fmtP(b.bestExit.price)}</span> · ${b.bestExit.date}</span></div>
-      <div class="kv"><span class="k">Suelo → ${partial?'máx. actual':'sig. máximo'}</span><span class="v"><span class="mult"${partial?' style="opacity:.65"':''}>${multTxt}</span> → <span class="mono">$${fmtP(b.nextMax.price)}</span> (${b.nextMax.date})</span></div>
-      ${partial?`<div style="font-size:11px;color:var(--muted);margin-top:2px">Ciclo aún en marcha → múltiplo <b>parcial</b> (mínimo; puede crecer).</div>`:""}
-      ${off?`<div>${off}</div>`:""}
+      <div class="btitle">Suelo de ciclo · ${b.date}</div>
+      <div class="kv"><span class="k">Mejor entrada</span><span class="v"><span class="mono">$${fmtP(b.price)}</span> · <span class="dd">${pctv(b.drawdown)}</span></span></div>
+      <div class="kv"><span class="k">→ siguiente ATH</span><span class="v"><span class="mult">${mult}</span> → <span class="mono">$${fmtP(b.nextMax.price)}</span> (${b.nextMax.date})</span></div>
       ${btc}
     </div>`;
   }
@@ -331,19 +318,12 @@ const num=(v,d)=>v==null?"—":(+v).toFixed(d==null?2:d);
           <div class="kv"><span class="k">ATH</span><span class="v"><span class="mono">$${fmtP(a.ath)}</span> · ${a.athDate||"—"}</span></div>
           <div class="shortmsg"><b>Sin ciclo previo / histórico corto.</b> ${wk} No hay bear anterior que muestrear → <b>no hay plantilla de suelo</b>. Tamaño mínimo, tratar como especulación.</div></div>`;
       }
-      // marcar suelos "en curso" (el pico es casi la última vela → múltiplo parcial)
-      const lastMs=a.lastDate?Date.parse(a.lastDate):null;
-      const rich=a.bottoms.map(b=>{
-        const nmMs=(b.nextMax&&b.nextMax.date)?Date.parse(b.nextMax.date):null;
-        const ongoing=(lastMs!=null&&nmMs!=null)?(lastMs-nmMs)<(5*7*864e5):false;
-        return Object.assign({},b,{ongoing});
-      });
-      const completed=rich.filter(b=>!b.ongoing&&b.nextMax&&b.nextMax.multiple!=null);
-      const best=completed.reduce((m,b)=>(m==null||b.nextMax.multiple>m.nextMax.multiple)?b:m,null);
-      const bestRow=best?`<div class="kv"><span class="k">Mejor x del ciclo</span><span class="v"><span class="mult" style="font-size:15px">×${best.nextMax.multiple}</span> · suelo ${best.date} → ${best.nextMax.date}</span></div>`:"";
-      const est=entryEstimate(rich,a,btcToday,curTop);
+      // suelos CURADOS (todos completados): titular = mayor múltiplo al siguiente ATH
+      const best=a.bottoms.reduce((m,b)=>(b.nextMax&&b.nextMax.multiple!=null&&(m==null||b.nextMax.multiple>m.nextMax.multiple))?b:m,null);
+      const bestRow=best?`<div class="kv"><span class="k">Mejor x del ciclo</span><span class="v"><span class="mult" style="font-size:15px">×${best.nextMax.multiple}</span> · suelo ${best.date} → ATH ${best.nextMax.date}</span></div>`:"";
+      const est=entryEstimate(a.bottoms,a,btcToday,curTop);
       const priceRow=`<div class="kv"><span class="k">Precio · ATH</span><span class="v"><span class="mono">$${fmtP(a.price)}</span> · ATH <span class="mono">$${fmtP(a.ath)}</span> (${a.athDate})</span></div>`;
-      const bs=rich.slice().reverse().map(bottomBlock).join("");
+      const bs=a.bottoms.slice().reverse().map(bottomBlock).join("");
       return `<div class="card">${head}${cat}${btcHoyChip}${priceRow}${bestRow}${est}${bs}</div>`;
     }).join("");
   }
