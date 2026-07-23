@@ -124,8 +124,6 @@
     <div class="albl" style="font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:18px 0 7px">Nuestras 3 señales — las que seguimos aquí</div>
     <div class="meter" id="ourSigs" style="gap:9px"></div>
     <div id="planPhase" style="margin-top:18px;padding:13px 15px;border-radius:12px;background:color-mix(in oklab,#9b8cff 10%,transparent);border:1px solid color-mix(in oklab,#9b8cff 30%,var(--line));font-size:13px;line-height:1.55"></div>
-    <div class="levels" id="levels" style="margin-top:18px"></div>
-    <div class="mtxt" style="margin-top:9px;font-size:11.5px">↑ El resto de métricas son <b>contexto</b>, no señales de nuestro plan.</div>
   </div>
   <div class="banner" id="banner"></div>
 
@@ -334,6 +332,7 @@ function evaluate(D){
 const PLAN_TOP=Date.parse("2025-10-06");   // techo del ciclo (referencia para "meses de bear")
 const PLAN_DCA_ON=Date.parse("2026-06-22"); // inicio de la barra = cuando se encendió el DCA de Cowen (risk<0,3, tras el mínimo de junio)
 const PLAN_MAXBUY=Date.parse("2027-06-30"); // fin de la ventana de compra MÁS LARGA (Cowen pre-halving ≈ LMEC sem 165)
+const PLAN_LMEC=Date.parse("2024-04-19")+125*7*864e5; // sem 125 del halving = ventana de +DCA de LMEC (~sep 2026)
 const HALV4=Date.parse("2024-04-19");
 const fShort=ms=>new Date(ms).toLocaleDateString("es-ES",{month:"short",year:"2-digit",timeZone:"UTC"}).replace(".","");
 /* mini-barra temporal para una tarjeta: su ventana de compra sobre la misma línea techo→fin-compra */
@@ -351,11 +350,11 @@ function miniBar(s,e){
 /* las 3 señales que seguimos AQUÍ (Cowen DCA · LMEC niveles · Patrón suelo) — el resto es contexto */
 function renderOurSignals(R,dcaOn){
   const cs=cycleStats(),now=Date.now();
-  const lmecOn=R.price!=null&&R.price<=60000;
+  const lmecOn=R.hw!=null&&R.hw>=125;                 // ventana temporal de +DCA de LMEC (sem 125-165)
   const patronOn=now>=cs.projLoMs&&now<=cs.projHiMs;
   const sigs=[
     {nm:"Cowen · DCA",on:dcaOn,st:dcaOn?"ACTIVO":"esperando",ds:"risk metric < 0,3 → DCA en marcha"+(R.riskNow!=null?" (risk "+R.riskNow.toFixed(2)+")":"")},
-    {nm:"LMEC · niveles 60k↓",on:lmecOn,st:lmecOn?"ACTIVO":"esperando",ds:"órdenes límite de 60k para abajo / 2ª ruptura de la BMSB"},
+    {nm:"LMEC · subir DCA",on:lmecOn,st:lmecOn?"ACTIVO":"esperando"+(R.hw!=null?" (sem "+Math.round(R.hw)+"/125)":""),ds:"su ventana de +DCA por semanas del halving (sem 125-165) + órdenes límite 60k↓"},
     {nm:"Patrón · ventana de suelo",on:patronOn,st:patronOn?"ACTIVO":"esperando",ds:"suelo proyectado oct-nov 2026"},
   ];
   const nOn=sigs.filter(s=>s.on).length;
@@ -368,7 +367,7 @@ function renderPlanPhase(R){
   const monthsTop=(now-PLAN_TOP)/(30.4368*864e5);
   const toLo=(cs.projLoMs-now)/(30.4368*864e5),toHi=(cs.projHiMs-now)/(30.4368*864e5);
   const pct=ms=>Math.max(0,Math.min(100,(ms-PLAN_DCA_ON)/(PLAN_MAXBUY-PLAN_DCA_ON)*100)); // barra: desde que se encendió el DCA de Cowen
-  const nowP=pct(now),flL=pct(cs.projLoMs),flR=pct(cs.projHiMs);
+  const nowP=pct(now),flL=pct(cs.projLoMs),flR=pct(cs.projHiMs),lmP=pct(PLAN_LMEC);
   let fase,accion,head;
   if(now<cs.projLoMs){
     fase="🟢 ACUMULACIÓN"; head="DCA + órdenes límite (60k↓)";
@@ -386,6 +385,8 @@ function renderPlanPhase(R){
       <div class="ctrack"></div>
       <div class="cfloor" style="left:${flL}%;width:${Math.max(1.5,flR-flL)}%"></div>
       <div class="cfill" style="width:${nowP}%"></div>
+      <div style="position:absolute;top:14px;left:${lmP}%;width:2px;height:21px;background:var(--accent);border-radius:2px"></div>
+      <div style="position:absolute;top:-1px;left:${lmP}%;transform:translateX(-50%);font-size:9.5px;color:var(--accent);font-family:var(--mono);white-space:nowrap">🎯 LMEC +DCA</div>
       <div class="cnow" style="left:${nowP}%"></div>
       <div class="clab" style="left:0">🟢 DCA on · ${fMY(PLAN_DCA_ON)}</div>
       <div class="clab" style="left:${(flL+flR)/2}%;transform:translateX(-50%);color:var(--bull)">🟢 suelo ${fMY(cs.projLoMs)}</div>
@@ -403,20 +404,7 @@ function render(R){
   $("#actionSub").textContent=R.sub;
   renderOurSignals(R,dcaOn);
   renderPlanPhase(R);
-  // (la sección "Señales" se fusionó en las tarjetas de agente: cada señal vive como chip
-  //  en la tarjeta de quien la usa, con su tooltip; las citas están en el KB y el framework)
-  const lv=[
-    ["Precio BTC",fmtUSD(R.price)],
-    ["BMSB (banda alta)",R.bmsbHi!=null?fmtUSD(R.bmsbHi):"—"],
-    ["200W MA",R.ma200!=null?fmtUSD(R.ma200):"—"],
-    ["Realized price",R.realized!=null?fmtUSD(R.realized):"n/d"],
-    ["MVRV Z",R.z!=null?R.z.toFixed(2):"n/d"],
-    ["RSI semanal",R.rsiV!=null?R.rsiV.toFixed(0):"—"],
-    ["Fear & Greed",R.fng!=null?String(R.fng):"n/d"],
-    ["Semana del halving",Math.round(R.hw)],
-    ["Risk metric (aprox Cowen)",R.riskNow!=null?R.riskNow.toFixed(2):"n/d"],
-  ];
-  $("#levels").innerHTML=lv.map(x=>`<div class="lv"><div class="l">${x[0]}</div><div class="n">${x[1]}</div></div>`).join("");
+  // (la rejilla de métricas se quitó: solo importan nuestras 3 señales, arriba)
   $("#logic").innerHTML=`Cada señal es una <b>regla real de un agente</b> (la cita está en su tarjeta). Solo se cuentan las que tienen dato.
     <div class="how" style="margin-top:8px">
       <div><b>Señales y de quién salen:</b><br>

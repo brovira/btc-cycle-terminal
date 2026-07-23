@@ -5,52 +5,31 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BELROGAM · plan del ciclo</title>
 <style>
-  :root{--bg:#0b111b;--bg2:#0e1622;--panel:#121c2b;--panel2:#18263a;--line:#22344b;--ink:#eaf0f8;--ink2:#aebccf;--muted:#7c8fa8;--accent:#3fa9f5;--bull:#2fc39b;--bear:#f2606d;--hot:#f2a33f;--tools:#9b8cff;
+  :root{--bg:#0b111b;--bg2:#0e1622;--panel:#121c2b;--panel2:#18263a;--line:#22344b;--ink:#eaf0f8;--ink2:#aebccf;--muted:#7c8fa8;--accent:#3fa9f5;--bull:#2fc39b;--bear:#f2606d;--hot:#f2a33f;
     --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--mono:ui-monospace,"SF Mono","JetBrains Mono","Menlo","Consolas",monospace;--radius:16px}
-  @media (prefers-color-scheme: light){:root{--bg:#eef1f6;--bg2:#e7ecf3;--panel:#fff;--panel2:#f4f7fb;--line:#dde5ee;--ink:#0e1622;--ink2:#3d4c5e;--muted:#67788c;--accent:#1f74c0;--bull:#0e846a;--bear:#c93a48;--hot:#b9791a;--tools:#6a4bd6}}
-  :root[data-theme="dark"]{--bg:#0b111b;--bg2:#0e1622;--panel:#121c2b;--panel2:#18263a;--line:#22344b;--ink:#eaf0f8;--ink2:#aebccf;--muted:#7c8fa8;--accent:#3fa9f5;--bull:#2fc39b;--bear:#f2606d;--hot:#f2a33f;--tools:#9b8cff}
-  :root[data-theme="light"]{--bg:#eef1f6;--bg2:#e7ecf3;--panel:#fff;--panel2:#f4f7fb;--line:#dde5ee;--ink:#0e1622;--ink2:#3d4c5e;--muted:#67788c;--accent:#1f74c0;--bull:#0e846a;--bear:#c93a48;--hot:#b9791a;--tools:#6a4bd6}
-  *{box-sizing:border-box} html,body{margin:0}
-  body{background:radial-gradient(1100px 560px at 82% -12%,color-mix(in oklab,var(--bull) 8%,transparent),transparent 60%),linear-gradient(var(--bg),var(--bg2));color:var(--ink);font-family:var(--font);line-height:1.5;min-height:100vh}
-  .wrap{max-width:1080px;margin:0 auto;padding:24px 18px 70px}
-  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
-  header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px}
-  .kicker{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600}
-  h1{margin:5px 0 0;font-size:clamp(22px,3vw,30px);font-weight:800;letter-spacing:-.02em}
-  .meta{color:var(--muted);font-size:12.5px;margin-top:6px}
-  .btn{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:8px 12px;border-radius:10px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;text-decoration:none}
-  .btn:hover{border-color:var(--accent);color:var(--accent)}
-  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 14px 34px -22px rgba(0,0,0,.55)}
-  .sec-head{display:flex;align-items:center;gap:10px;margin:24px 2px 12px}
-  .sec-head h2{margin:0;font-size:15px;font-weight:750}
-  .sec-head .rule{flex:1;height:1px;background:var(--line)}
-  .sec-head .mtxt{font-size:12px;color:var(--muted)}
+  @media (prefers-color-scheme: light){:root{--bg:#eef1f6;--bg2:#e7ecf3;--panel:#fff;--panel2:#f4f7fb;--line:#dde5ee;--ink:#0e1622;--ink2:#3d4c5e;--muted:#67788c;--accent:#1f74c0;--bull:#0e846a;--bear:#c93a48;--hot:#b9791a}}
+  :root[data-theme="dark"]{--bg:#0b111b;--bg2:#0e1622;--panel:#121c2b;--panel2:#18263a;--line:#22344b;--ink:#eaf0f8;--ink2:#aebccf;--muted:#7c8fa8;--accent:#3fa9f5;--bull:#2fc39b;--bear:#f2606d;--hot:#f2a33f}
+  :root[data-theme="light"]{--bg:#eef1f6;--bg2:#e7ecf3;--panel:#fff;--panel2:#f4f7fb;--line:#dde5ee;--ink:#0e1622;--ink2:#3d4c5e;--muted:#67788c;--accent:#1f74c0;--bull:#0e846a;--bear:#c93a48;--hot:#b9791a}
+  /* --- solo lo que dashboard.css NO cubre --- */
   .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
   .stat{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--sc,var(--accent));border-radius:13px;padding:13px 15px}
   .stat .l{font-size:11.5px;color:var(--muted)} .stat .n{font-family:var(--font);font-variant-numeric:tabular-nums;font-size:22px;font-weight:750;margin-top:2px} .stat .s{font-size:11.5px;color:var(--muted);margin-top:3px}
-  table{width:100%;border-collapse:collapse;font-size:13.5px}
-  th{text-align:right;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em;padding:9px 12px;border-bottom:1px solid var(--line)}
-  td{text-align:right;padding:10px 12px;border-bottom:1px solid var(--line);font-family:var(--mono)}
-  th:first-child,td:first-child{text-align:left}
-  tbody tr:last-child td{border-bottom:0}
-  .note{font-size:12.5px;color:var(--muted);line-height:1.6}
-  .obj{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;padding:11px 14px;border-radius:11px;background:var(--panel2);border:1px solid var(--line);margin-bottom:10px}
-  .obj .g{font-weight:700;color:var(--bull)}
-  .pbar{height:8px;background:var(--panel2);border-radius:5px;overflow:hidden;border:1px solid var(--line);margin-top:6px}
-  .pbar i{display:block;height:100%;background:var(--bull)}
-  .chip{font-size:11px;font-family:var(--mono);color:var(--muted);background:var(--panel2);border:1px solid var(--line);padding:4px 10px;border-radius:999px;white-space:nowrap}
-  footer{margin-top:30px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;line-height:1.6}
+  .obj{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;padding:12px 15px;border-radius:11px;background:var(--panel2);border:1px solid var(--line);margin-bottom:10px}
+  .obj .g{font-weight:700;color:var(--bull);font-family:var(--mono)}
+  .pbar{height:8px;background:var(--panel2);border-radius:5px;overflow:hidden;border:1px solid var(--line);margin-top:7px}
+  .pbar i{display:block;height:100%;background:var(--bull);transition:width .4s ease}
 </style>
+<link rel="stylesheet" href="dashboard.css">
 </head>
-<body>
+<body class="dashboard-page page-belrogam">
 <div class="wrap">
   <header class="top">
     <div>
       <div class="kicker">Estrategias · Empresa</div>
-      <h1>🏢 BELROGAM · plan del ciclo</h1>
-      <div class="meta" id="meta">Cashflow de la empresa → cuánto comprar y cuándo · spot, hold 3 años</div>
+      <h1><span class="title-icon">🏢</span> BELROGAM · plan del ciclo</h1>
+      <div class="meta"><span class="dot ok"></span>Cashflow de la empresa → cuánto comprar y cuándo · spot, hold 3 años</div>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <div class="controls">
       <a class="btn" href="index.html">← Panel</a>
       <a class="btn" href="decision.html">🧭 ¿Qué hago hoy?</a>
       <button class="btn" id="themeBtn">◐ Tema</button>
@@ -59,24 +38,24 @@
 
   <!-- OBJETIVOS + ESTRATEGIA -->
   <div class="sec-head"><h2>🎯 Objetivos del ciclo</h2><div class="rule"></div><span class="mtxt">estrategia: Patrón temporal (la mejor en backtest)</span></div>
-  <div class="panel" style="padding:16px 18px">
+  <div class="panel" style="padding:18px 20px">
     <div class="obj"><span>💶 <b>Aportar 55.000€</b> a compras de BTC</span><span class="mtxt">de aquí a diciembre 2027</span><span class="g" id="objEurPct" style="margin-left:auto">0%</span></div>
-    <div class="pbar" style="margin-bottom:12px"><i id="objEurBar" style="width:0%"></i></div>
+    <div class="pbar" style="margin-bottom:14px"><i id="objEurBar" style="width:0%"></i></div>
     <div class="obj"><span>₿ <b>Acumular 1 BTC</b> (si es posible)</span><span class="mtxt">spot, hold ≥3 años</span><span class="g" id="objBtcPct" style="margin-left:auto">0%</span></div>
     <div class="pbar"><i id="objBtcBar" style="width:0%;background:var(--hot)"></i></div>
-    <div class="note" style="margin-top:12px">📐 <b>Cómo:</b> órdenes de compra <b>de 60k para abajo</b> (como LMEC, tamaños crecientes cuanto más cae), concentrando el grueso en la <b>ventana de suelo del patrón (oct–nov 2026)</b>. Antes del suelo, solo compras puntuales si BTC pierde 60k. Mantener siempre el <b>colchón operativo de 60k</b> intacto. <span style="color:var(--hot)">Validar fiscalidad con Financial Group antes de la 1ª compra de BELROGAM SL.</span></div>
+    <div class="note" style="margin-top:14px">📐 <b>Cómo:</b> órdenes de compra <b>de 60k para abajo</b> (como LMEC, tamaños crecientes cuanto más cae), concentrando el grueso en la <b>ventana de suelo del patrón (oct–nov 2026)</b>. Antes del suelo, solo compras puntuales si BTC pierde 60k. Mantener siempre el <b>colchón operativo de 60k</b> intacto. <span style="color:var(--hot)">Validar fiscalidad con Financial Group antes de la 1ª compra de BELROGAM SL.</span></div>
   </div>
 
   <!-- ÓRDENES -->
   <div class="sec-head"><h2>📉 Órdenes de compra escalonadas</h2><div class="rule"></div><span class="mtxt" id="pxTag">BTC —</span></div>
-  <div class="panel" style="padding:14px 16px">
+  <div class="panel" style="padding:16px 18px">
     <div id="orders" style="display:flex;flex-wrap:wrap;gap:8px"></div>
-    <div class="note" style="margin-top:10px">Tamaño creciente cuanto más abajo (cada nivel es más improbable pero mejor precio). Se marca <b style="color:var(--hot)">CERCA</b> cuando el precio está a menos del 3%.</div>
+    <div class="note" style="margin-top:12px">Tamaño creciente cuanto más abajo (cada nivel es más improbable pero mejor precio). Se marca <b style="color:var(--hot)">CERCA</b> cuando el precio está a menos del 3%.</div>
   </div>
 
   <!-- CASHFLOW -->
   <div class="sec-head"><h2>💰 Cashflow proyectado → pólvora disponible</h2><div class="rule"></div><span class="mtxt">leído de Supabase (solo lectura)</span></div>
-  <div class="panel" style="padding:16px 18px">
+  <div class="panel" style="padding:18px 20px">
     <div class="note" id="cfMsg">Cargando cashflow…</div>
     <div id="cfBody" style="display:none"></div>
   </div>
@@ -149,10 +128,10 @@ async function load(){
       <div class="stat" style="--sc:var(--hot)"><div class="l">Colchón intocable</div><div class="n">${fmtEUR(CUSHION)}</div><div class="s">no se invierte</div></div>
       <div class="stat" style="--sc:var(--bull)"><div class="l">Pólvora en la ventana (nov-26)</div><div class="n">${fmtEUR(bolsa)}</div><div class="s">escenario prudente ×0,5</div></div>
     </div>
-    <div style="overflow:auto;margin-top:14px"><table><thead><tr><th>Mes</th><th>Reservas confirmadas</th><th>Cash proyectado</th><th>Invertible (prud–base)</th></tr></thead><tbody>
+    <div style="overflow:auto;margin-top:16px"><table><thead><tr><th>Mes</th><th>Reservas confirmadas</th><th>Cash proyectado</th><th>Invertible (prud–base)</th></tr></thead><tbody>
       ${rows.map(r=>`<tr${(r.mes>="2026-10"&&r.mes<="2026-11")?' style="background:color-mix(in oklab,var(--bull) 9%,transparent)"':''}><td class="mono">${r.mes}${(r.mes>="2026-10"&&r.mes<="2026-11")?' <span class="chip" style="color:var(--bull);border-color:var(--bull)">ventana suelo</span>':''}</td><td>${r.conf?fmtEUR(r.conf):"—"}</td><td>${fmtEUR(r.prud)} – ${fmtEUR(r.base)}</td><td style="color:var(--bull)">${fmtEUR(r.invPrud)} – ${fmtEUR(r.invBase)}</td></tr>`).join("")}
     </tbody></table></div>
-    <div class="note" style="margin-top:12px"><b>Lectura:</b> en la ventana de suelo (oct–nov 2026) la pólvora invertible prudente es <b style="color:var(--bull)">${fmtEUR(bolsa)}</b>. Ahí se concentra el grueso de las órdenes (50k y 45k), dejando las de 60k/55k para compras puntuales antes. El resto del cashflow hasta dic-2027 sigue alimentando hacia el objetivo de 55k. Cuando registremos compras reales en <code>btc_compras.json</code>, las barras de arriba y el PnL se llenan solos.</div>`;
+    <div class="note" style="margin-top:14px"><b>Lectura:</b> en la ventana de suelo (oct–nov 2026) la pólvora invertible prudente es <b style="color:var(--bull)">${fmtEUR(bolsa)}</b>. Ahí se concentra el grueso de las órdenes (50k y 45k), dejando las de 60k/55k para compras puntuales antes. El resto del cashflow hasta dic-2027 sigue alimentando hacia el objetivo de 55k. Cuando registremos compras reales en <code>btc_compras.json</code>, las barras de arriba y el PnL se llenan solos.</div>`;
 }
 load();
 </script>
