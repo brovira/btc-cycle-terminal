@@ -55,6 +55,8 @@
   .btctoday{margin:10px 0 2px;font-size:12px;color:var(--ink2);background:color-mix(in oklab,var(--accent) 9%,var(--panel2));border:1px solid color-mix(in oklab,var(--accent) 25%,var(--line));border-radius:9px;padding:7px 9px;line-height:1.5}
   .btctoday b{color:var(--ink)}
   .tuaqui{color:var(--accent);font-weight:700}
+  .est{margin:11px 0 2px;font-size:12px;color:var(--ink2);background:var(--panel2);border:1px dashed var(--line);border-radius:9px;padding:8px 10px;line-height:1.5}
+  .est b{color:var(--ink)}
   .shortmsg{margin-top:11px;border-top:1px solid var(--line);padding-top:11px;font-size:12.5px;color:var(--ink2);line-height:1.55}
   .shortmsg b{color:var(--hot)}
   .reloj-err{border:1px solid var(--bear);border-radius:12px;background:color-mix(in oklab,var(--bear) 10%,transparent);padding:14px 16px;margin-top:16px;font-size:13.5px;color:var(--ink);display:none}
@@ -264,14 +266,35 @@ const num=(v,d)=>v==null?"—":(+v).toFixed(d==null?2:d);
   function bottomBlock(b){
     const btc=b.btc?`<div class="btcpos">📍 <b>BTC entonces:</b> drawdown <b>${pctv(btc0(b))}</b> desde su ATH · <b>${b.btc.weeksSinceTop!=null?b.btc.weeksSinceTop+" sem":"—"}</b> desde su techo (${b.btc.topDate||"—"}).</div>`:"";
     const off=b.offset?`<span class="offset">${offsetTxt(b.offset)}</span>`:"";
+    const partial=b.ongoing;
+    const multTxt=b.nextMax.multiple!=null?(partial?`×${b.nextMax.multiple} y subiendo`:`×${b.nextMax.multiple}`):"—";
     return `<div class="bottom">
-      <div class="btitle">Suelo de ciclo · ${b.date}</div>
+      <div class="btitle">Suelo de ciclo · ${b.date}${partial?' · <span style="color:var(--accent)">en curso</span>':''}</div>
       <div class="kv"><span class="k">Mejor entrada</span><span class="v"><span class="mono">$${fmtP(b.price)}</span> · <span class="dd">${pctv(b.drawdown)}</span> ${b.date}</span></div>
       <div class="kv"><span class="k">Mejor salida (ATH prev.)</span><span class="v"><span class="mono">$${fmtP(b.bestExit.price)}</span> · ${b.bestExit.date}</span></div>
-      <div class="kv"><span class="k">Suelo → sig. máximo</span><span class="v"><span class="mult">×${b.nextMax.multiple!=null?b.nextMax.multiple:"—"}</span> → <span class="mono">$${fmtP(b.nextMax.price)}</span> (${b.nextMax.date})</span></div>
+      <div class="kv"><span class="k">Suelo → ${partial?'máx. actual':'sig. máximo'}</span><span class="v"><span class="mult"${partial?' style="opacity:.65"':''}>${multTxt}</span> → <span class="mono">$${fmtP(b.nextMax.price)}</span> (${b.nextMax.date})</span></div>
+      ${partial?`<div style="font-size:11px;color:var(--muted);margin-top:2px">Ciclo aún en marcha → múltiplo <b>parcial</b> (mínimo; puede crecer).</div>`:""}
       ${off?`<div>${off}</div>`:""}
       ${btc}
     </div>`;
+  }
+
+  // Estimación de entrada por análogo del reloj de BTC: la alt tocó suelo N semanas tras el techo
+  // de BTC; proyectamos esas N semanas sobre el techo ACTUAL (2025-10) → ventana análoga. Heurístico.
+  function entryEstimate(rich, a, btcToday, curTop){
+    if(!rich||!rich.length||!btcToday||!curTop)return "";
+    let deep=null; for(const b of rich){ if(b.btc&&b.btc.weeksSinceTop!=null){ if(deep==null||b.drawdown<deep.drawdown)deep=b; } }
+    if(!deep)return "";
+    const wHist=deep.btc.weeksSinceTop;
+    const entryMs=Date.parse(curTop)+wHist*7*864e5;
+    if(isNaN(entryMs))return "";
+    const entryDate=new Date(entryMs).toISOString().slice(0,7);
+    const faltan=wHist-btcToday.weeks;
+    let verdict;
+    if(faltan>6)verdict=`<span style="color:var(--hot)">Aún pronto</span> — faltan ~<b>${faltan} sem</b> para la ventana análoga.`;
+    else if(faltan>=-6)verdict=`<span style="color:var(--accent)">Cerca</span> — la ventana análoga es <b>~ahora</b> (±6 sem). Vigila capitulación.`;
+    else verdict=`<span style="color:var(--muted)">Ventana análoga ya pasada</span> (~${Math.abs(faltan)} sem). Cada ciclo difiere.`;
+    return `<div class="est">🕐 <b>Estimación de entrada (análogo BTC):</b> ${a.key} tocó suelo ~<b>${wHist} sem</b> tras el techo de BTC, con BTC a <b>${pctv(deep.btc.drawdown)}</b>. Proyectado sobre el techo actual (${curTop}) → <b>~${entryDate}</b>. ${verdict}</div>`;
   }
 
   function render(){
@@ -291,6 +314,7 @@ const num=(v,d)=>v==null?"—":(+v).toFixed(d==null?2:d);
       if(top!=null)btcToday={weeks:Math.round((nowMs-top)/(7*864e5)),drawdown:btc.drawdownNow,topDate:new Date(top).toISOString().slice(0,10)};
     }
     const btcHoyChip=btcToday?`<div class="btctoday">📍 <b>BTC hoy:</b> <b>${btcToday.weeks} sem</b> desde su techo (${btcToday.topDate}) · drawdown <b>${pctv(btcToday.drawdown)}</b> — <span class="tuaqui">tu momento de entrada</span></div>`:"";
+    const curTop=(DATA.btcTops||[]).slice(-1)[0]||null;
     cards.innerHTML=order.map(k=>{
       const a=byKey[k]; if(!a)return "";
       const col=ALT_COLORS[k]||"var(--accent)";
@@ -307,9 +331,20 @@ const num=(v,d)=>v==null?"—":(+v).toFixed(d==null?2:d);
           <div class="kv"><span class="k">ATH</span><span class="v"><span class="mono">$${fmtP(a.ath)}</span> · ${a.athDate||"—"}</span></div>
           <div class="shortmsg"><b>Sin ciclo previo / histórico corto.</b> ${wk} No hay bear anterior que muestrear → <b>no hay plantilla de suelo</b>. Tamaño mínimo, tratar como especulación.</div></div>`;
       }
+      // marcar suelos "en curso" (el pico es casi la última vela → múltiplo parcial)
+      const lastMs=a.lastDate?Date.parse(a.lastDate):null;
+      const rich=a.bottoms.map(b=>{
+        const nmMs=(b.nextMax&&b.nextMax.date)?Date.parse(b.nextMax.date):null;
+        const ongoing=(lastMs!=null&&nmMs!=null)?(lastMs-nmMs)<(5*7*864e5):false;
+        return Object.assign({},b,{ongoing});
+      });
+      const completed=rich.filter(b=>!b.ongoing&&b.nextMax&&b.nextMax.multiple!=null);
+      const best=completed.reduce((m,b)=>(m==null||b.nextMax.multiple>m.nextMax.multiple)?b:m,null);
+      const bestRow=best?`<div class="kv"><span class="k">Mejor x del ciclo</span><span class="v"><span class="mult" style="font-size:15px">×${best.nextMax.multiple}</span> · suelo ${best.date} → ${best.nextMax.date}</span></div>`:"";
+      const est=entryEstimate(rich,a,btcToday,curTop);
       const priceRow=`<div class="kv"><span class="k">Precio · ATH</span><span class="v"><span class="mono">$${fmtP(a.price)}</span> · ATH <span class="mono">$${fmtP(a.ath)}</span> (${a.athDate})</span></div>`;
-      const bs=a.bottoms.slice().reverse().map(bottomBlock).join("");
-      return `<div class="card">${head}${cat}${btcHoyChip}${priceRow}${bs}</div>`;
+      const bs=rich.slice().reverse().map(bottomBlock).join("");
+      return `<div class="card">${head}${cat}${btcHoyChip}${priceRow}${bestRow}${est}${bs}</div>`;
     }).join("");
   }
 
