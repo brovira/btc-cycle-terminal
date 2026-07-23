@@ -707,7 +707,7 @@ async function renderPhaseChart(D){
   const s20=sma(D.c,20),e21=ema(D.c,21),s200=sma(D.c,200);
   const bm=[],m2=[];for(let i=0;i<D.t.length;i++){bm.push((s20[i]!=null&&e21[i]!=null)?Math.max(s20[i],e21[i]):null);m2.push(s200[i]);}
   const shapes=bandShapes(PH_MODE);
-  $("#phaseNote").innerHTML=PH_NOTES[PH_MODE]+` <span class="mtxt">· histórico desde ${xs[0]?xs[0].slice(0,4):"—"} (Coin Metrics + Binance)</span>`;
+  $("#phaseNote").innerHTML=PH_NOTES[PH_MODE]+` <span class="mtxt">· desde la 1ª compra (2012) · datos Coin Metrics + Binance</span>`;
   const traces=[
     {x:xs,y:ys,type:"scatter",mode:"lines",name:"BTC",line:{color:ink,width:1.5},hovertemplate:"%{x}<br>$%{y:,.0f}<extra></extra>"},
     {x:xs,y:bm,type:"scatter",mode:"lines",name:"BMSB",line:{color:accent,width:1,dash:"dot"}},
@@ -718,7 +718,7 @@ async function renderPhaseChart(D){
   const xEnd=new Date(Math.max(D.t[D.t.length-1],Date.parse("2027-07-01"))).toISOString().slice(0,10);
   const layout={margin:{l:56,r:12,t:8,b:32},height:380,paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
     font:{color:ink,size:11},showlegend:true,legend:{orientation:"h",y:1.12,font:{size:11}},shapes,
-    xaxis:{gridcolor:line,type:"date",range:[xs[0],xEnd]},yaxis:{gridcolor:line,type:"log",tickprefix:"$",title:{text:"BTC (log)",font:{size:11}}},hovermode:"x unified",
+    xaxis:{gridcolor:line,type:"date",range:["2012-01-01",xEnd]},yaxis:{gridcolor:line,type:"log",tickprefix:"$",title:{text:"BTC (log)",font:{size:11}}},hovermode:"x unified",
     hoverlabel:{bgcolor:panel,bordercolor:line,font:{size:11,color:ink}}};
   window.Plotly.react("phaseChart",traces,layout,{displayModeBar:false,responsive:true});
 }
