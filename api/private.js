@@ -25,6 +25,7 @@ const FILES = {                       // lista blanca de archivos que se pueden 
   manual_assets: "data/manual_assets.json", // activos sin API pública (Jupiter DAO, CEX…)
   btc_compras: "data/btc_compras.json",     // compras BTC del ciclo (Revolut round-up + órdenes BELROGAM)
   mc_plan: "data/mc_plan.json",             // ajustes por defecto del Monte Carlo del plan (presupuesto, DCA, órdenes…)
+  alt_plan: "data/alt_plan.json",           // objetivo de rotación a alts (target, ritmo mensual, ETH primero)
 };
 
 module.exports = async (req, res) => {

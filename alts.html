@@ -58,8 +58,9 @@ const dot=(on)=>on===true?"🟢":on===false?"⚪":"🔵";
 const num=(v,d)=>v==null?"—":(+v).toFixed(d==null?2:d);
 
 (async function(){
-  let j=null;
+  let j=null,ap=null;
   try{const r=await fetch("/api/altrotation",{cache:"no-store"});j=await r.json();}catch(e){}
+  try{const r2=await fetch("/api/private?file=alt_plan",{cache:"no-store"});if(r2.ok)ap=await r2.json();}catch(e){}
   if(!j){ $("#verdict").innerHTML=`<div class="big">Sin datos</div><div class="sub">No se pudo cargar /api/altrotation. Reintenta en un momento.</div>`; $("#asof").textContent=""; return; }
   $("#asof").textContent = (j.asOf?("tipos a "+j.asOf+" · "):"")+"se actualiza cada 30 min";
 
@@ -76,8 +77,8 @@ const num=(v,d)=>v==null?"—":(+v).toFixed(d==null?2:d);
     {nm:"BTC.D excl. stables", on:null, val:j.btcDominanceExStables!=null?num(j.btcDominanceExStables,1)+"%":"—",
      ds:"Mientras suba (techo previo ~70% jun-2025), sesgo pro-BTC. Rotación solo si <b>rompe a la baja de forma duradera</b> (necesita histórico → juicio).",
      q:"dominance excluding stables… all the way back up to almost 68%."},
-    {nm:"ETH/BTC", on:null, val:j.ethBtc!=null?num(j.ethBtc,4):"—",
-     ds:"ETH es su alt de referencia y la primera rotación. Gate real: <b>reclaim duradero de la 20-month MA</b> (hoy rechazado ahí y en la BMSB) → juicio, no automático.",
+    {nm:"ETH/BTC vs 20-month MA", on:g.ethBtc20m, val:(j.ethBtc!=null?num(j.ethBtc,4):"—")+(j.ethBtc20mMa!=null?" · MA "+num(j.ethBtc20mMa,4):""),
+     ds:"El <b>gatillo real de rotación</b> de Cowen: primero ETH, cuando <b>recupera su media de 20 meses</b>. <b>Automático</b> (velas mensuales ETHBTC de Binance). Encendido = ETH/BTC por encima de su 20M MA.",
      q:"Look at where Ethereum's getting rejected against Bitcoin. Right at that 20-month moving average."},
   ];
   $("#gates").innerHTML=gates.map(x=>`<div class="gate">
@@ -90,27 +91,34 @@ const num=(v,d)=>v==null?"—":(+v).toFixed(d==null?2:d);
   // VEREDICTO ACCIONABLE. Solo el gate de tipos es automático/fiable; el resto (all-pairs proxy,
   // dominancia rompiendo, ETH/BTC reclaim 20M) son de JUICIO → el panel dice qué PREPARAR, no da
   // luz verde a comprar en fuerza.
+  const ethOn=g.ethBtc20m===true;
   const V=$("#verdict");
   let head,sub,vc,prep,buy;
   if(!ratesOn){
     vc="var(--hot)";head="🔴 Hoy: SOLO BTC — alts en espera";
     sub="El gate decisivo (tipos) está apagado: política restrictiva → todo sangra hacia BTC. Cowen no espera altseason hasta que se afloje. Nada que preparar aún.";
     prep="No — todavía no";buy="No";
+  }else if(!ethOn){
+    vc="var(--accent)";head="🟠 Hoy: PREPARAR — cash listo, vigilar ETH";
+    sub=`El <b>macro empieza a aflojar</b> (Fed funds &lt; 2y). Pero <b>ETH/BTC sigue por debajo de su media de 20 meses</b> — el gatillo de rotación de Cowen <b>aún NO se ha dado</b>. Ten la munición lista y vigila ETH; <b>no compres alts en fuerza todavía</b>. <span style="color:var(--muted)">(Y ojo a la durabilidad del gate de tipos.)</span>`;
+    prep="Sí — cash listo";buy="Aún no · esperar el reclaim de ETH/BTC sobre su 20M MA";
   }else{
-    vc="var(--accent)";head="🟠 Hoy: PREPARAR — cash listo, primero ETH";
-    sub=`El gate de <b>tipos se ha encendido</b> (Fed funds &lt; 2y = primer requisito; el macro empieza a aflojar). Pero <b>faltan los gates de JUICIO</b>: que la <b>dominancia ex-stables rompa a la baja</b> y que <b>ETH/BTC recupere la 20-month MA</b>. Hasta que confirmen, <b>NO comprar alts en fuerza</b> — pero SÍ tener la munición lista y vigilar ETH. <span style="color:var(--muted)">(Ojo a la durabilidad: una lectura no es tendencia.)</span>`;
-    prep="Sí — cash listo para rotar";buy="Aún no en fuerza · 1ª compra = ETH cuando confirmen los gates de juicio";
+    vc="var(--bull)";head="🟢 Hoy: EMPEZAR A ROTAR — primero ETH";
+    sub=`Doble confirmación: <b>tipos &lt; 2y</b> y <b>ETH/BTC ha recuperado su media de 20 meses</b> (el gatillo de Cowen). Empieza a rotar <b>por ETH</b>, escalonado con tu ritmo mensual. <span style="color:var(--muted)">Sigue vigilando la dominancia ex-stables (juicio) para abrir el resto de alts.</span>`;
+    prep="Desplegándose";buy="Sí — empezar por ETH, escalonado";
   }
   V.style.setProperty("--vc",vc);
   const row=(k,v)=>`<div style="display:flex;gap:12px;font-size:13.5px;padding:2px 0"><span style="flex:0 0 132px;color:var(--muted)">${k}</span><b>${v}</b></div>`;
+  const curr=(ap&&ap.currency)||"€";const fmtE=n=>(Number(n)||0).toLocaleString("es-ES");
+  const obj=ap?`<div class="note" style="margin-top:12px;background:var(--panel2)"><b>🎯 Objetivo de rotación (persona física, spot):</b> meter <b>${fmtE(ap.target)}${curr}</b> en alts a <b>${fmtE(ap.monthly)}${curr}/mes</b>, empezando por <b>${ap.first||"ETH"}</b>.${ap.fundingRule?" "+ap.fundingRule:""} <span style="color:var(--muted)">BELROGAM va aparte (acumular 1 BTC); loop (Aave) y farming (LPs) son cubos distintos del spot.</span></div>`
+    :`<div class="note" style="margin-top:12px;background:var(--panel2)">Las alts las compras como <b>persona física</b>, en <b>spot</b>. <span style="color:var(--muted)">(Inicia sesión para ver tu objetivo de rotación.)</span></div>`;
   V.innerHTML=`<div class="big">${head}</div><div class="sub">${sub}</div>
     <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px">
       ${row("Preparar cash",prep)}
       ${row("Comprar alts",buy)}
       ${row("Vender","N/A — casi no tienes bolsas alt que vender")}
       ${row("Orden de rotación","BTC → ETH → resto · nunca todo de golpe")}
-    </div>
-    <div class="note" style="margin-top:12px;background:var(--panel2)">Las alts las compras como <b>persona física</b>, en <b>spot</b> (BELROGAM va a lo suyo: acumular 1 BTC). El <b>loop (Aave)</b> y el <b>farming (LPs)</b> son cubos aparte del spot.</div>`;
+    </div>${obj}`;
 })();
 </script>
 </body>

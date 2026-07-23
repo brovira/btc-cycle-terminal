@@ -61,10 +61,29 @@ module.exports = async (req, res) => {
   try { const y2 = await fredLast("DGS2"); out.twoYear = y2 ? y2.value : null; }
   catch (e) { out.warnings.push("2y: " + (e.message || e)); }
 
-  // Gates binarios que SÍ se pueden evaluar hoy (null = sin dato). Los de juicio/histórico
-  // (BTC.D rompiendo a la baja, ETH/BTC reclaim de la 20M, social) se muestran como valor+contexto.
+  // ETH/BTC vs su MEDIA MÓVIL DE 20 MESES — el gatillo real de rotación de Cowen ("reclaim
+  // duradero de la 20-month MA"). Se calcula con velas MENSUALES de ETHBTC (Binance, sin key).
+  for (const host of ["api.binance.com", "api.binance.us"]) {
+    try {
+      const r = await fetch(`https://${host}/api/v3/klines?symbol=ETHBTC&interval=1M&limit=24`, { headers: { "User-Agent": "btc-terminal" } });
+      if (!r.ok) continue;
+      const k = await r.json();
+      const closes = (Array.isArray(k) ? k : []).map(x => +x[4]).filter(v => v > 0);
+      if (closes.length >= 20) {
+        out.ethBtc20mMa = closes.slice(-20).reduce((a, b) => a + b, 0) / 20;
+        out.ethBtcMonthly = closes[closes.length - 1];
+        break;
+      }
+    } catch (e) {}
+  }
+  if (out.ethBtc20mMa == null) out.warnings.push("ethbtc_ma: sin datos Binance");
+
+  // Gates. rates y ethBtc20m son AUTOMÁTICOS y fiables; allBtcPairs es un proxy sin calibrar
+  // (se expone como contexto en el front); dominancia-rompiendo y social quedan a juicio.
+  const ethNow = out.ethBtc != null ? out.ethBtc : out.ethBtcMonthly;
   out.gates = {
     rates: (out.fedFunds != null && out.twoYear != null) ? (out.fedFunds < out.twoYear) : null,
+    ethBtc20m: (out.ethBtc20mMa != null && ethNow != null) ? (ethNow > out.ethBtc20mMa) : null,
     allBtcPairs: (out.allBtcPairs != null) ? (out.allBtcPairs >= 0.25) : null,
   };
   return res.end(JSON.stringify(out));
