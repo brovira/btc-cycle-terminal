@@ -115,7 +115,11 @@ async function fetchEvmChain(base, chain, addr) {
       const wei = +(j.coin_balance || 0); const eth = wei / 1e18;
       const rate = +(j.exchange_rate || 0);
       const nativeSym = chain === "hyperevm" ? "HYPE" : chain === "polygon" ? "POL" : "ETH";
-      if (eth > 0) { const usd = eth * rate; out.tokens.push({ sym: nativeSym, amount: eth, usd: usd || null }); if (usd) out.totalUsd += usd; }
+      if (eth > 0) {
+        let usd = rate ? eth * rate : null;
+        if (usd == null) { const p = await currentMarketUsd(nativeSym); if (p != null) usd = eth * p; } // fallback Binance (ETH)
+        out.tokens.push({ sym: nativeSym, amount: eth, usd: usd || null }); if (usd) out.totalUsd += usd;
+      }
     } else if (a.status !== 404) { out.warning = "blockscout_" + a.status; }
     const t = await fetch(`${base}/api/v2/addresses/${addr}/token-balances`, { headers: { "User-Agent": "portfolio" } });
     if (t.ok) {
@@ -127,7 +131,8 @@ async function fetchEvmChain(base, chain, addr) {
         // tiene pero el precio existe y la cantidad es razonable (spam suele mandar
         // cantidades absurdas, billones/trillones de unidades, para inflar un precio falso).
         const hasMcap = tok.circulating_market_cap != null && +tok.circulating_market_cap > 0;
-        const rate = tok.exchange_rate != null ? +tok.exchange_rate : null;
+        let rate = tok.exchange_rate != null ? +tok.exchange_rate : null;
+        if (rate == null) { const p = await currentMarketUsd(tok.symbol); if (p != null) rate = p; } // fallback Binance (WETH/WBTC/cbBTC/BNB/stables)
         const plausible = rate != null && (hasMcap || amt < 1e9);
         const usd = plausible ? amt * rate : null;
         if (usd == null) { out.hidden++; continue; } // sin precio fiable → fuera (spam/ilíquido)
@@ -213,6 +218,25 @@ function marketPair(symbol) {
   if (["ETH", "WETH"].includes(sym)) return "ETHUSDT";
   if (sym === "BNB") return "BNBUSDT";
   return null;
+}
+
+const SPOT_CACHE = new Map();
+/* Precio USD ACTUAL por símbolo vía Binance (BTC/ETH/BNB/stables) — FALLBACK cuando Blockscout
+   no trae exchange_rate (posiciones V3, native, tokens de wallet). Cacheado por par; solo
+   símbolos que marketPair reconoce, el resto → null (no toca nada). Solo rellena, nunca resta. */
+async function currentMarketUsd(symbol) {
+  const pair = marketPair(symbol);
+  if (pair === "USD") return 1;
+  if (!pair) return null;
+  if (!SPOT_CACHE.has(pair)) {
+    SPOT_CACHE.set(pair, (async () => {
+      for (const host of ["api.binance.com", "api.binance.us"]) {
+        try { const r = await fetch(`https://${host}/api/v3/ticker/price?symbol=${pair}`, { headers: { "User-Agent": "portfolio" } }); if (r.ok) { const p = +(await r.json()).price; if (p > 0) return p; } } catch (e) {}
+      }
+      return null;
+    })());
+  }
+  return SPOT_CACHE.get(pair);
 }
 
 async function historicalUsdPrice(symbol, timestamp) {
@@ -510,7 +534,9 @@ async function fetchV3Positions(baseUrl, rpcs, addr, protoLabel, knownManagers =
       const currentRaw = sp * sp * Math.pow(10, t0.dec - t1.dec);
       let px0 = isUsdStable(t0.sym) ? 1 : t0.px;
       let px1 = isUsdStable(t1.sym) ? 1 : t1.px;
-      if (px0 == null && px1 != null) px0 = currentRaw * px1;
+      if (px0 == null) px0 = await currentMarketUsd(t0.sym); // fallback Binance (WETH/WBTC/BNB/…)
+      if (px1 == null) px1 = await currentMarketUsd(t1.sym);
+      if (px0 == null && px1 != null) px0 = currentRaw * px1; // último recurso: ratio del pool
       if (px1 == null && px0 != null) px1 = px0 / currentRaw;
       const usd = (px0 != null ? amt0 * px0 : 0) + (px1 != null ? amt1 * px1 : 0);
       const priced = px0 != null && px1 != null;
