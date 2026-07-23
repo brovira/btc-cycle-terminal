@@ -110,7 +110,19 @@ const num=(v,d)=>v==null?"—":(+v).toFixed(d==null?2:d);
   V.style.setProperty("--vc",vc);
   const row=(k,v)=>`<div style="display:flex;gap:12px;font-size:13.5px;padding:2px 0"><span style="flex:0 0 132px;color:var(--muted)">${k}</span><b>${v}</b></div>`;
   const curr=(ap&&ap.currency)||"€";const fmtE=n=>(Number(n)||0).toLocaleString("es-ES");
-  const obj=ap?`<div class="note" style="margin-top:12px;background:var(--panel2)"><b>🎯 Objetivo de rotación (persona física, spot):</b> meter <b>${fmtE(ap.target)}${curr}</b> en alts a <b>${fmtE(ap.monthly)}${curr}/mes</b>, empezando por <b>${ap.first||"ETH"}</b>.${ap.fundingRule?" "+ap.fundingRule:""} <span style="color:var(--muted)">BELROGAM va aparte (acumular 1 BTC); loop (Aave) y farming (LPs) son cubos distintos del spot.</span></div>`
+  let objBar="";
+  if(ap){
+    const tgt=+ap.target||0,dep=+ap.deployed||0,prk=+ap.parked||0;
+    const depPct=tgt?Math.min(100,dep/tgt*100):0,prkPct=tgt?Math.min(Math.max(0,100-depPct),prk/tgt*100):0;
+    const cov=tgt?Math.round((dep+prk)/tgt*100):0;
+    objBar=tgt?`<div style="margin-top:9px">
+      <div style="height:10px;border-radius:5px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden;display:flex">
+        <i style="width:${depPct}%;background:var(--bull)"></i><i style="width:${prkPct}%;background:color-mix(in oklab,var(--accent) 55%,transparent)"></i>
+      </div>
+      <div style="margin-top:5px;font-size:12px;color:var(--ink2)"><span style="color:var(--bull)">■</span> desplegado <b>${fmtE(dep)}${curr}</b> · <span style="color:var(--accent)">■</span> listo en CEX <b>${fmtE(prk)}${curr}</b> · objetivo <b>${fmtE(tgt)}${curr}</b> · <b>${cov}%</b> cubierto</div>
+    </div>`:"";
+  }
+  const obj=ap?`<div class="note" style="margin-top:12px;background:var(--panel2)"><b>🎯 Objetivo de rotación (persona física, spot):</b> meter <b>${fmtE(ap.target)}${curr}</b> en alts a <b>${fmtE(ap.monthly)}${curr}/mes</b>, empezando por <b>${ap.first||"ETH"}</b>.${ap.fundingRule?" "+ap.fundingRule:""}${objBar} <span style="color:var(--muted)">BELROGAM va aparte (acumular 1 BTC); loop (Aave) y farming (LPs) son cubos distintos del spot.</span></div>`
     :`<div class="note" style="margin-top:12px;background:var(--panel2)">Las alts las compras como <b>persona física</b>, en <b>spot</b>. <span style="color:var(--muted)">(Inicia sesión para ver tu objetivo de rotación.)</span></div>`;
   V.innerHTML=`<div class="big">${head}</div><div class="sub">${sub}</div>
     <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px">
