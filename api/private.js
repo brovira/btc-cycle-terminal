@@ -24,6 +24,7 @@ const FILES = {                       // lista blanca de archivos que se pueden 
   orca_events: "data/normalized/orca_events.json",
   manual_assets: "data/manual_assets.json", // activos sin API pública (Jupiter DAO, CEX…)
   btc_compras: "data/btc_compras.json",     // compras BTC del ciclo (Revolut round-up + órdenes BELROGAM)
+  mc_plan: "data/mc_plan.json",             // ajustes por defecto del Monte Carlo del plan (presupuesto, DCA, órdenes…)
 };
 
 module.exports = async (req, res) => {

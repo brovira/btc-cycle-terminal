@@ -510,9 +510,25 @@ function loadScript(src){return new Promise((res,rej)=>{const s=document.createE
 async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("no se pudo cargar Plotly");}
 
 function run(){try{$("#errBanner").style.display="none";simulate();paint();}catch(e){const b=$("#errBanner");b.style.display="block";b.textContent=(e&&e.message)||e;}}
+/* precarga los ajustes PERSONALES del plan desde el repo privado (/api/private?file=mc_plan).
+   Si no hay sesión o no existe el archivo, se quedan los placeholders genéricos del HTML.
+   Nada personal vive en este repo público: los números están en brovira/DeFi-Tracker. */
+async function prefillPlan(){
+  try{
+    const r=await fetch("/api/private?file=mc_plan",{cache:"no-store"});
+    if(!r.ok)return;
+    const p=await r.json();if(!p||typeof p!=="object")return;
+    const sv=(id,v)=>{const el=$("#"+id);if(el&&v!=null&&v!=="")el.value=v;};
+    if(p.currency){const c=(p.currency==="$"||/usd|dol/i.test(p.currency))?"$":"€";$("#p_cur").value=c;CUR=c;}
+    sv("b_budget",p.budget);sv("b_dca",p.dca);sv("b_dcam",p.dcaMonths);sv("b_lump",p.lump);
+    sv("b_dip",p.dip);sv("b_floorStart",p.floorStart);sv("b_floorEnd",p.floorEnd);
+    sv("b_objbtc",p.objBtc);sv("b_costtgt",p.costTarget);
+    if(Array.isArray(p.orders)&&p.orders.length)buildOrders(p.orders.map(o=>({caida:+o.caida||0,size:+o.size||0})));
+  }catch(e){}
+}
 async function boot(){
   $("#statusDot").className="dot warn";$("#statusText").textContent="Cargando datos…";$("#errBanner").style.display="none";
-  try{await Promise.all([loadPlotly(),loadData()]);
+  try{await prefillPlan();await Promise.all([loadPlotly(),loadData()]);
     $("#statusDot").className="dot";$("#statusText").textContent=DATA.t.length+" semanas · "+SRC;$("#srcTag").textContent=SRC;$("#srcNote").textContent=SRC;
     if(!$("#p_start").value)$("#p_start").placeholder=fmtM(DATA.c[DATA.c.length-1]);
     run();}
