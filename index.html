@@ -91,7 +91,7 @@
     <div class="hleft">
       <div class="kicker">Ciclos · Decisión</div>
       <div class="haction" id="hAction">🧭 ¿Qué hago hoy?</div>
-      <div class="hsub" id="hSub">Agrega BMSB · 200W · MVRV Z · RSI · Fear&amp;Greed · ventana del ciclo → una acción clara.</div>
+      <div class="hsub" id="hSub">Cowen (DCA) · LMEC (niveles) · Patrón (ventana de suelo) — nuestras 3 señales.</div>
       <div class="hcycle" id="hCycle"></div>
     </div>
     <div class="hright">
@@ -183,52 +183,44 @@ document.getElementById("themeBtn").addEventListener("click",()=>{const r=docume
   }catch(e){document.getElementById("price").textContent="BTC —";}
 })();
 
-/* ---------- resumen "¿Qué hago hoy?" (misma lógica que decision.html, compacto) ---------- */
+/* ---------- resumen "¿Qué hago hoy?" — MISMAS 3 señales que decision.html: Cowen DCA (risk<0,3,
+   log-log sobre el precio) · LMEC temporal (sem≥125 del halving) · Patrón (ventana de suelo,
+   techo→suelo real de los 3 ciclos completos). Nada de la rejilla vieja de 6 métricas. ---------- */
 (async function(){
-  const sma=(a,n)=>{const o=Array(a.length).fill(null);let s=0;for(let i=0;i<a.length;i++){if(a[i]==null)continue;s+=a[i];if(i>=n)s-=a[i-n];if(i>=n-1)o[i]=s/n;}return o;};
-  const ema=(a,n)=>{const o=Array(a.length).fill(null);const k=2/(n+1);let p=null,ss=0,cnt=0,sd=false;for(let i=0;i<a.length;i++){const v=a[i];if(v==null)continue;if(!sd){ss+=v;cnt++;if(cnt>=n){p=ss/n;o[i]=p;sd=true;}continue;}p=v*k+p*(1-k);o[i]=p;}return o;};
-  const rsi=(c,n=14)=>{const o=Array(c.length).fill(null);let g=0,l=0;for(let i=1;i<c.length;i++){const ch=c[i]-c[i-1],gg=Math.max(0,ch),ll=Math.max(0,-ch);if(i<=n){g+=gg;l+=ll;if(i===n){g/=n;l/=n;o[i]=100-100/(1+(l===0?1e9:g/l));}}else{g=(g*(n-1)+gg)/n;l=(l*(n-1)+ll)/n;o[i]=100-100/(1+(l===0?1e9:g/l));}}return o;};
   const HALV=["2012-11-28","2016-07-09","2020-05-11","2024-04-19","2028-04-20"].map(d=>Date.parse(d));
   const hW=ms=>{let H=HALV[0];for(const h of HALV)if(h<=ms)H=h;return(ms-H)/(7*864e5);};
   async function weekly(){for(const h of["api.binance.com","api.binance.us"]){try{const r=await fetch(`https://${h}/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=1000`,{cache:"no-store"});if(r.ok){const j=await r.json();return{t:j.map(k=>k[0]),c:j.map(k=>+k[4])};}}catch(e){}}return null;}
-  async function fng(){try{const r=await fetch("https://api.alternative.me/fng/?limit=1&format=json",{cache:"no-store"});if(r.ok){const j=await r.json();const d=(j.data||[])[0];if(d)return +d.value;}}catch(e){}return null;}
-  async function onchain(){try{const q="assets=btc&metrics=CapMrktCurUSD,CapRealUSD,SplyCur&frequency=1d&page_size=10000&start_time=2011-01-01";
-    for(const u of["/api/coinmetrics?"+q,"https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?"+q]){try{const r=await fetch(u,{cache:"no-store"});if(r.ok){const j=await r.json();const rows=(j&&j.data)||[];if(!rows.length)continue;
-      const mk=[],re=[],sp=[];for(const x of rows){if(x.CapMrktCurUSD!=null&&x.CapRealUSD!=null){mk.push(+x.CapMrktCurUSD);re.push(+x.CapRealUSD);sp.push(x.SplyCur!=null?+x.SplyCur:null);}}if(mk.length<50)continue;
-      const m=mk.reduce((a,b)=>a+b,0)/mk.length,sd=Math.sqrt(mk.reduce((a,b)=>a+(b-m)**2,0)/mk.length);
-      const z=sd>0?(mk[mk.length-1]-re[re.length-1])/sd:null;const ls=sp[sp.length-1];const realized=(ls&&ls>0)?re[re.length-1]/ls:null;return{z,realized};}}catch(e){}}}catch(e){}return{z:null,realized:null};}
+  function riskNow(D){ // idéntico a cowenRiskNow() de decision.html
+    const t0=Date.parse("2009-01-03");let n=0,sx=0,sy=0,sxx=0,sxy=0;const pts=[];
+    for(let i=0;i<D.t.length;i++){const w=(D.t[i]-t0)/(7*864e5),c=D.c[i];if(!(w>0)||!(c>0))continue;const x=Math.log(w),y=Math.log(c);n++;sx+=x;sy+=y;sxx+=x*x;sxy+=x*y;pts.push([x,y]);}
+    if(n<52)return null;const den=n*sxx-sx*sx;if(!(den>0))return null;
+    const b=(n*sxy-sx*sy)/den,a=(sy-b*sx)/n;let dmin=Infinity,dmax=-Infinity,last=null;
+    for(const[x,y]of pts){const dv=y-(a+b*x);if(dv<dmin)dmin=dv;if(dv>dmax)dmax=dv;last=dv;}
+    if(!(dmax>dmin))return null;return(last-dmin)/(dmax-dmin);
+  }
+  // patrón temporal: mismo cálculo que cycleStats() de decision.html (techo→suelo real, 3 ciclos)
+  const CYCLE_EV=["2012-11-28","2013-12-04","2015-01-14","2016-07-09","2017-12-17","2018-12-15","2020-05-11","2021-11-10","2022-11-21","2024-04-19","2025-10-06"].map(d=>Date.parse(d));
+  const months=(a,b)=>(b-a)/864e5/30.4368;
+  const tb=[months(CYCLE_EV[1],CYCLE_EV[2]),months(CYCLE_EV[4],CYCLE_EV[5]),months(CYCLE_EV[7],CYCLE_EV[8])];
+  const avgTB=tb.reduce((a,b)=>a+b,0)/tb.length,loTB=Math.min(...tb),hiTB=Math.max(...tb);
+  const T4=CYCLE_EV[10],projLo=T4+loTB*30.4368*864e5,projHi=T4+hiTB*30.4368*864e5;
   const MES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
-  const fmtD=ms=>{const d=new Date(ms);return d.getUTCDate()+" "+MES[d.getUTCMonth()]+" "+d.getUTCFullYear();};
+  const fMY=ms=>{const d=new Date(ms);return MES[d.getUTCMonth()]+" "+String(d.getUTCFullYear()).slice(2);};
   try{
     const D=await weekly();if(!D){document.getElementById("hN").textContent="";return;}
-    const [oc,fg]=await Promise.all([onchain(),fng()]);const z=oc.z,realized=oc.realized;
-    const c=D.c,n=c.length,price=c[n-1];const s20=sma(c,20),e21=ema(c,21),s200=sma(c,200),rs=rsi(c,14);
-    const bh=(s20[n-1]!=null&&e21[n-1]!=null)?Math.max(s20[n-1],e21[n-1]):null;const ma=s200[n-1],rv=rs[n-1];
-    const now=D.t[n-1],hw=hW(now),d=new Date(now),ym=d.getUTCFullYear()%4,mo=d.getUTCMonth()+1;
-    let lastH=HALV[0];for(const h of HALV)if(h<=now)lastH=h;
-    const accum=hw>=120&&hw<=180,cowen=ym===2&&mo>=7,dist=hw>=70&&hw<=110,cycleBuy=accum||cowen;
-    const below=bh!=null?price<bh:null;
-    // mismas 6 señales fundamentadas que decision.html: 200W(LMEC) · RSI 34-50(LMEC) · MVRV verde(LMEC) · realized(LMEC) · F&G miedo(OCM) · ventana(LMEC+Cowen)
-    const S=[ma!=null?price<=ma:null, rv!=null?(rv>=34&&rv<=50):null, z!=null?z<0:null, realized!=null?price<=realized:null, fg!=null?fg<45:null, cycleBuy];
-    const withData=S.filter(x=>x!=null);const lit=withData.filter(Boolean).length,tot=withData.length;
-    let action,hc;const expensive=below===false;
-    if(dist&&(expensive||(z!=null&&z>2))){action="Tomar beneficio";hc="var(--hot)";}
-    else if(tot&&lit>=Math.ceil(tot*0.66)&&below){action="Comprar por niveles";hc="var(--trading)";}
-    else if(cycleBuy&&expensive){action="Esperar dip a nivel";hc="var(--lps)";}
-    else if(cowen&&lit>=2){action="Esperar seasonality";hc="var(--lps)";}
-    else if(lit>=2){action="DCA base";hc="var(--cycles)";}
-    else{action="Esperar dip";hc="var(--muted)";}
+    const now=D.t[D.t.length-1],hw=hW(now),risk=riskNow(D);
+    const dcaOn=risk!=null&&risk<0.3, lmecOn=hw>=125, patronOn=now>=projLo&&now<=projHi;
+    const sigs=[["Cowen · DCA",dcaOn],["LMEC · niveles",lmecOn],["Patrón · suelo",patronOn]];
+    const nOn=sigs.filter(s=>s[1]).length;
+    let fase,hc;
+    if(now<projLo){fase="🟢 Acumulación — DCA en marcha";hc="var(--cycles)";}
+    else if(now<=projHi){fase="🔥 Ventana de suelo — desplegar";hc="var(--trading)";}
+    else{fase="🔵 Hold — dejar correr";hc="var(--lps)";}
     const hero=document.getElementById("hero");hero.style.setProperty("--hc",hc);
-    document.getElementById("hAction").textContent=action;
-    document.getElementById("hN").textContent=lit+"/"+tot+" señales";
-    document.getElementById("hBeads").innerHTML=Array.from({length:tot},(_,i)=>`<span class="hbead ${i<lit?"on":""}"></span>`).join("");
-    // contador del halving (LMEC): a qué semana estamos y cuánto para la ventana de compra
-    const cyc=Math.round(hw),buyA=120,buyB=180;const buyStart=lastH+buyA*7*864e5,buyEnd=lastH+buyB*7*864e5;
-    let ht;
-    if(hw<buyA)ht=`🎯 Halving: sem <b>${cyc}</b> · ventana de compra en <b>~${Math.ceil(buyA-hw)} sem</b> (≈ ${fmtD(buyStart)})`;
-    else if(hw<=buyB)ht=`🎯 Halving: sem <b>${cyc}</b> · <b>en ventana de compra</b> (hasta ≈ ${fmtD(buyEnd)})`;
-    else ht=`🎯 Halving: sem <b>${cyc}</b> · ventana de acumulación cerrada`;
-    document.getElementById("hCycle").innerHTML=ht;
+    document.getElementById("hAction").textContent=fase;
+    document.getElementById("hN").textContent=nOn+"/3 señales";
+    document.getElementById("hBeads").innerHTML=sigs.map(s=>`<span class="hbead ${s[1]?"on":""}" title="${s[0]}"></span>`).join("");
+    document.getElementById("hCycle").innerHTML=sigs.map(s=>(s[1]?"🟢":"⚪")+" "+s[0]).join("  ·  ")+`  ·  suelo proyectado <b>${fMY(projLo)}–${fMY(projHi)}</b>`;
   }catch(e){document.getElementById("hN").textContent="";}
 })();
 </script>
