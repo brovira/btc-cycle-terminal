@@ -608,6 +608,7 @@ function patronSell(){return[...PATRON_EXTRA_SELL_TOPS_MS.map(T=>({t0:T-2*PH_WKM
 function patronIntervals(){return patronBuyBase();} // confluencia 3-vías: solo ciclos con halving (desde el techo de 2013), sin el mini-ciclo 2011
 /* (la proyección del patrón vive ahora en su tarjeta de estrategia, arriba) */
 let PH_MODE="todos",PH_LASTD=null;
+let PH_XS=null,PH_YS=null,PH_BM=null,PH_M2=null,PH_BOUND=false,PH_YLOCK=false;
 function phRect(x0,x1,color){return{type:"rect",xref:"x",yref:"paper",x0,x1,y0:0,y1:1,fillcolor:color,line:{width:0},layer:"below"};}
 const phIso=ms=>new Date(ms).toISOString().slice(0,10);
 function rectsFromIv(ivs,color){return ivs.map(iv=>phRect(phIso(iv.t0),phIso(iv.t1),color));}
@@ -706,6 +707,7 @@ async function renderPhaseChart(D){
   const xs=[],ys=[];for(let i=0;i<D.t.length;i++){xs.push(new Date(D.t[i]).toISOString().slice(0,10));ys.push(D.c[i]);}
   const s20=sma(D.c,20),e21=ema(D.c,21),s200=sma(D.c,200);
   const bm=[],m2=[];for(let i=0;i<D.t.length;i++){bm.push((s20[i]!=null&&e21[i]!=null)?Math.max(s20[i],e21[i]):null);m2.push(s200[i]);}
+  PH_XS=xs;PH_YS=ys;PH_BM=bm;PH_M2=m2; // para el reajuste del eje Y al hacer zoom
   const shapes=bandShapes(PH_MODE);
   $("#phaseNote").innerHTML=PH_NOTES[PH_MODE]+` <span class="mtxt">· desde la 1ª compra (2012) · datos Coin Metrics + Binance</span>`;
   const traces=[
@@ -720,7 +722,28 @@ async function renderPhaseChart(D){
     font:{color:ink,size:11},showlegend:true,legend:{orientation:"h",y:1.12,font:{size:11}},shapes,
     xaxis:{gridcolor:line,type:"date",range:["2012-01-01",xEnd]},yaxis:{gridcolor:line,type:"log",tickprefix:"$",title:{text:"BTC (log)",font:{size:11}}},hovermode:"x unified",
     hoverlabel:{bgcolor:panel,bordercolor:line,font:{size:11,color:ink}}};
-  window.Plotly.react("phaseChart",traces,layout,{displayModeBar:false,responsive:true});
+  window.Plotly.react("phaseChart",traces,layout,{displayModeBar:false,responsive:true}).then(gd=>{
+    if(!PH_BOUND&&gd&&gd.on){gd.on("plotly_relayout",phAutoY);PH_BOUND=true;}
+  });
+}
+/* Reajusta el eje Y (log) a lo que hay VISIBLE al hacer zoom en X. Sin esto, al acercarse a una
+   ventana estrecha el eje Y sigue mostrando todo el histórico ($1–$100k+) y el precio se ve plano.
+   Doble clic (autorange) → vuelve al rango completo. Guarda contra recursión con PH_YLOCK. */
+function phAutoY(ev){
+  if(PH_YLOCK||!ev||!PH_XS)return;
+  const gd=document.getElementById("phaseChart");if(!gd||!window.Plotly)return;
+  if(ev["xaxis.autorange"]||ev["autosize"]){
+    PH_YLOCK=true;window.Plotly.relayout(gd,{"yaxis.autorange":true}).then(()=>{PH_YLOCK=false;});return;
+  }
+  let x0=ev["xaxis.range[0]"],x1=ev["xaxis.range[1]"];
+  if(x0==null&&Array.isArray(ev["xaxis.range"])){x0=ev["xaxis.range"][0];x1=ev["xaxis.range"][1];}
+  if(x0==null||x1==null)return;
+  const t0=Date.parse(x0),t1=Date.parse(x1);let lo=Infinity,hi=-Infinity;
+  for(let i=0;i<PH_XS.length;i++){const t=Date.parse(PH_XS[i]);if(t<t0||t>t1)continue;
+    const vals=[PH_YS[i],PH_BM[i],PH_M2[i]];for(const v of vals){if(v!=null&&v>0){if(v<lo)lo=v;if(v>hi)hi=v;}}}
+  if(!(hi>lo))return;
+  const pad=0.06,r0=Math.log10(lo)-pad,r1=Math.log10(hi)+pad;
+  PH_YLOCK=true;window.Plotly.relayout(gd,{"yaxis.range":[r0,r1],"yaxis.autorange":false}).then(()=>{PH_YLOCK=false;});
 }
 document.querySelectorAll("#phTabs .btn").forEach(b=>b.addEventListener("click",()=>{
   PH_MODE=b.dataset.ph;
