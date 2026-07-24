@@ -84,6 +84,34 @@ async function backtest(res) {
     return cap + fees - 1; // retorno neto (fracción)
   }
   out.lpSim = { feeApr, alwaysIn: round(sim(false), 3), chopRule: round(sim(true), 3) };
+
+  // ── Test C · STRADDLE largo cuando la vol está BARATA (¿cómo de barata?) ──
+  // Compra un straddle ATM a H días: gana si el movimiento REALIZADO supera al IMPLÍCITO por opciones.
+  // Barremos umbrales de percentil de DVOL para ver a partir de qué "baratura" hay edge.
+  let dvolByDate = {};
+  { const now = Date.now(), start = now - 5 * 365 * 864e5;
+    const d = await j(`https://www.deribit.com/api/v2/public/get_volatility_index_data?currency=BTC&start_timestamp=${start}&end_timestamp=${now}&resolution=1D`, "bt_dvol", W);
+    const data = d && d.result && d.result.data;
+    if (Array.isArray(data)) for (const x of data) { const dt = new Date(+x[0]).toISOString().slice(0, 10); const v = +x[4]; if (v > 0) dvolByDate[dt] = v; } }
+  const dvolVals = Object.values(dvolByDate).sort((a, b) => a - b);
+  const dvolPctOf = v => { if (!dvolVals.length || v == null) return null; let c = 0; for (const x of dvolVals) if (x <= v) c++; return c / dvolVals.length; };
+  if (dvolVals.length > 60) {
+    const H = 14, strRows = [];
+    for (let i = 20; i < n - H; i++) {
+      const dt = new Date(times[i]).toISOString().slice(0, 10), dv = dvolByDate[dt];
+      if (dv == null) continue;
+      const impMove = dv / 100 * Math.sqrt(H / 365);          // movimiento implícito (fracción)
+      const realMove = Math.abs(closes[i + H] / closes[i] - 1); // movimiento realizado
+      strRows.push({ pct: dvolPctOf(dv), pnl: realMove - 0.8 * impMove }); // 0.8·implícito ≈ coste straddle ATM
+    }
+    const sweep = [0.1, 0.2, 0.3, 0.5, 1.0].map(th => {
+      const g = strRows.filter(r => r.pct != null && r.pct <= th), nn = g.length;
+      if (!nn) return { th, n: 0 };
+      return { th, n: nn, avgPnl: round(g.reduce((a, r) => a + r.pnl, 0) / nn, 4), winRate: round(g.filter(r => r.pnl > 0).length / nn, 3) };
+    });
+    out.straddle = { horizon: H, samples: strRows.length, dvolNowPct: null, sweep, note: "PnL = fracción de notional: |mov. realizado| − 0.8·(vol implícita·√T). >0 = el straddle largo gana. 'th' = percentil de DVOL máximo para entrar." };
+  } else { W.push("straddle: sin histórico de DVOL suficiente"); }
+
   return res.end(JSON.stringify(out));
 }
 

@@ -59,6 +59,10 @@
 
   <div class="note" id="reading"></div>
 
+  <div class="sechead">Test C · Straddle largo — ¿cómo de barata la vol para comprar?</div>
+  <table class="bt" id="straddleTbl"></table>
+  <div class="note" id="straddleRead"></div>
+
   <div class="note">
     <b>Cómo leerlo, honesto:</b>
     <ul style="margin:8px 0 0;padding-left:18px">
@@ -122,6 +126,23 @@ const n1=(v)=>v==null?"—":Number(v).toFixed(1);
   $("#reading").innerHTML=`<b>Qué te dice para operar:</b> ${ruleWorks
     ? "en este histórico, retirar el LP cuando el Choppiness supera 60 habría <b>protegido de impermanent loss</b> más de lo que costó en fees perdidos. Es una regla defendible para tu libro de LP — combínala con el rango on-chain (STH bands) para el DÓNDE."
     : "en este histórico la regla no bate claramente a estar siempre dentro (o depende mucho de la APR de fees). No la uses a ciegas; ajusta el umbral o el ancho de rango y vuelve a mirar el drawdown futuro por nivel de CHOP."}`;
+
+  // Test C · straddle
+  const st=j.straddle;
+  if(st&&st.sweep){
+    const rows2=st.sweep.map(r=>r.n?`<tr>
+      <td><b>DVOL percentil ≤ ${pctS(r.th,0)}</b></td>
+      <td class="mono">${r.n}</td>
+      <td class="mono ${r.avgPnl>=0?"up":"down"}">${r.avgPnl!=null?(r.avgPnl>=0?"+":"")+pctS(r.avgPnl):"—"}</td>
+      <td class="mono">${r.winRate!=null?pctS(r.winRate):"—"}</td></tr>`:"").join("");
+    $("#straddleTbl").innerHTML=`<thead><tr><th>Entrar solo si la vol está bajo…</th><th>trades</th><th>PnL medio/trade</th><th>% ganadores</th></tr></thead><tbody>${rows2}</tbody>`;
+    // ¿dónde aparece el edge? el umbral más estricto con PnL>0 y winRate razonable
+    const edge=st.sweep.filter(r=>r.n&&r.avgPnl>0).sort((a,b)=>a.th-b.th)[0];
+    const all=st.sweep.find(r=>r.th===1);
+    $("#straddleRead").innerHTML=`<b>La respuesta a "¿cómo de barata?":</b> `+(edge
+      ? `comprar el straddle solo cuando <b>DVOL está por debajo del percentil ${pctS(edge.th,0)}</b> dio <b>${(edge.avgPnl>=0?"+":"")+pctS(edge.avgPnl)}</b> por trade (${pctS(edge.winRate)} ganadores). ${all&&all.avgPnl<=0?`Comprar vol SIN filtro (percentil ≤100%) da <b>${pctS(all.avgPnl)}</b> → confirma que <b>solo paga cuando la vol está barata de verdad</b>.`:""} Regla: <b>long vol solo en el cubo barato</b>, con lo que retiras del LP.`
+      : `en este histórico ningún umbral de baratura dio PnL medio positivo para el straddle a 14d → comprar vol a secas no tuvo edge (el vendedor de vol suele cobrar la prima). Habría que probar otro horizonte o combinar con la señal de compresión.`);
+  } else { $("#straddleTbl").innerHTML=""; $("#straddleRead").innerHTML="Sin histórico de DVOL suficiente para el test del straddle."; }
 
   if(j.warnings&&j.warnings.length){ const f=$("#foot-warn"); if(f)f.innerHTML="Avisos: "+j.warnings.map(w=>String(w).replace(/</g,"&lt;")).join(" · "); }
 })();
