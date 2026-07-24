@@ -32,8 +32,65 @@ async function klines(interval, limit, tag, W) {
   return null;
 }
 
+// Choppiness(n) en el índice i sobre arrays closes/highs/lows
+function chopIdx(closes, highs, lows, i, n) {
+  if (i < n) return null;
+  let tr = 0, hi = -Infinity, lo = Infinity;
+  for (let jj = i - n + 1; jj <= i; jj++) { const t = Math.max(highs[jj] - lows[jj], Math.abs(highs[jj] - closes[jj - 1]), Math.abs(lows[jj] - closes[jj - 1])); tr += t; if (highs[jj] > hi) hi = highs[jj]; if (lows[jj] < lo) lo = lows[jj]; }
+  const rng = hi - lo; if (rng <= 0) return null;
+  return 100 * Math.log10(tr / rng) / Math.log10(n);
+}
+
+// ── mode=backtest ── ¿el Choppiness predice volatilidad? ¿mejora el PnL del LP salir con CHOP>60?
+async function backtest(res) {
+  res.setHeader("Cache-Control", "public, max-age=3600, s-maxage=3600"); // 1h
+  const W = [], out = { mode: "backtest", asOf: new Date().toISOString(), warnings: W, fwdDays: 14, chopExit: 60, feeApr: 0.30 };
+  let closes = [], highs = [], lows = [], times = [];
+  { const k = await klines("1d", 1000, "bt_klines", W); if (Array.isArray(k)) { closes = k.map(x => +x[4]); highs = k.map(x => +x[2]); lows = k.map(x => +x[3]); times = k.map(x => +x[0]); } }
+  const n = closes.length;
+  if (n < 200) { W.push("backtest: histórico insuficiente"); return res.end(JSON.stringify(out)); }
+  out.from = new Date(times[0]).toISOString().slice(0, 10); out.to = new Date(times[n - 1]).toISOString().slice(0, 10); out.days = n;
+
+  const ret = new Array(n).fill(0); for (let i = 1; i < n; i++) ret[i] = Math.log(closes[i] / closes[i - 1]);
+  const FWD = 14;
+  const rows = []; // {chop, fwdVol, fwdDD}
+  for (let i = 20; i < n - FWD; i++) {
+    const ch = chopIdx(closes, highs, lows, i, 14); if (ch == null) continue;
+    let s = 0, s2 = 0, c = 0; for (let jj = i + 1; jj <= i + FWD; jj++) { s += ret[jj]; s2 += ret[jj] * ret[jj]; c++; }
+    const varr = c > 1 ? (s2 - s * s / c) / (c - 1) : 0;
+    const fwdVol = Math.sqrt(Math.max(0, varr)) * Math.sqrt(365) * 100;
+    let mn = closes[i]; for (let jj = i; jj <= i + FWD; jj++) if (closes[jj] < mn) mn = closes[jj];
+    rows.push({ chop: ch, fwdVol, fwdDD: mn / closes[i] - 1 });
+  }
+  out.samples = rows.length;
+  const buck = (lbl, f) => { const g = rows.filter(f), nn = g.length; if (!nn) return { label: lbl, n: 0 }; return { label: lbl, n: nn, fwdVol: round(g.reduce((a, r) => a + r.fwdVol, 0) / nn, 1), fwdDD: round(g.reduce((a, r) => a + r.fwdDD, 0) / nn, 4), bigMovePct: round(g.filter(r => Math.abs(r.fwdDD) > 0.1).length / nn, 3) }; };
+  out.buckets = [buck("CHOP < 40 (tendencia)", r => r.chop < 40), buck("CHOP 40–60", r => r.chop >= 40 && r.chop <= 60), buck("CHOP > 60 (tanque lleno)", r => r.chop > 60)];
+  const baseVol = rows.reduce((a, r) => a + r.fwdVol, 0) / rows.length; out.baseVol = round(baseVol, 1);
+  const hiCh = rows.filter(r => r.chop > 60); out.signalLift = hiCh.length ? round((hiCh.reduce((a, r) => a + r.fwdVol, 0) / hiCh.length) / baseVol - 1, 3) : null;
+
+  // LP sim (modelo v2: valor LP = capital·√(P/entry); fees ~ feeApr sobre el valor mientras dentro).
+  // Regla: FUERA del LP cuando CHOP>60 (viene vol); DENTRO en caso contrario. vs "siempre dentro".
+  const feeApr = 0.30;
+  function sim(useRule) {
+    let inLP = true, entry = closes[20], cap = 1, fees = 0;
+    for (let i = 21; i < n; i++) {
+      const ch = chopIdx(closes, highs, lows, i, 14);
+      const wantIn = useRule ? (ch == null ? inLP : ch <= 60) : true;
+      if (inLP && !wantIn) { cap *= Math.sqrt(closes[i] / entry); inLP = false; }
+      else if (!inLP && wantIn) { entry = closes[i]; inLP = true; }
+      if (inLP) fees += cap * Math.sqrt(closes[i] / entry) * (feeApr / 365);
+    }
+    if (inLP) cap *= Math.sqrt(closes[n - 1] / entry);
+    return cap + fees - 1; // retorno neto (fracción)
+  }
+  out.lpSim = { feeApr, alwaysIn: round(sim(false), 3), chopRule: round(sim(true), 3) };
+  return res.end(JSON.stringify(out));
+}
+
 module.exports = async (req, res) => {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
+  const _url = new URL(req.url, "http://x");
+  if ((_url.searchParams.get("mode") || "") === "backtest") return backtest(res);
   res.setHeader("Cache-Control", "public, max-age=300, s-maxage=300"); // 5 min
   const out = { asOf: new Date().toISOString(), warnings: [] };
   const W = out.warnings;

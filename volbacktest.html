@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backtest de Volatilidad · Trading</title>
+<link rel="stylesheet" href="dashboard.css">
+<style>
+  .wrap{max-width:960px;margin:0 auto;padding:26px 18px 70px}
+  .lead{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:16px 18px;margin-top:14px;font-size:13.5px;line-height:1.6;color:var(--ink2)}
+  .lead b{color:var(--ink)}
+  .verdict{border:1px solid var(--line);border-left:5px solid var(--vc,var(--muted));border-radius:14px;background:var(--panel);padding:18px 20px;margin-top:16px}
+  .verdict .big{font-size:clamp(18px,2.6vw,23px);font-weight:850;letter-spacing:-.02em;color:var(--vc,var(--ink))}
+  .verdict .sub{color:var(--ink2);font-size:13.5px;margin-top:6px;line-height:1.5}
+  .sechead{margin:24px 0 4px;font-size:16px;font-weight:850;letter-spacing:-.01em}
+  table.bt{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}
+  table.bt th,table.bt td{padding:9px 11px;text-align:right;border-bottom:1px solid var(--line)}
+  table.bt th{color:var(--muted);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.03em}
+  table.bt td:first-child,table.bt th:first-child{text-align:left}
+  table.bt .mono{font-family:var(--mono)}
+  .up{color:var(--bull)}.down{color:var(--bear)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:12px}
+  .g{border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:14px 16px}
+  .g .k{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .g .v{font-family:var(--mono);font-size:23px;font-weight:800;margin-top:6px}
+  .g .d{font-size:11.5px;color:var(--ink2);margin-top:5px;line-height:1.4}
+  .note{margin-top:16px;border:1px solid var(--line);border-radius:13px;background:var(--panel2);padding:14px 16px;font-size:12.5px;line-height:1.6;color:var(--ink2)}
+  .note b{color:var(--ink)}
+  footer{margin-top:24px;color:var(--muted);font-size:12px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px}
+</style>
+</head>
+<body class="dashboard-page page-volbacktest">
+<div class="wrap">
+  <header class="top" style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div>
+      <div class="kicker" style="font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600">Trading · Validación</div>
+      <h1 style="margin:5px 0 0;font-size:clamp(22px,3.4vw,30px);font-weight:800;letter-spacing:-.02em">🔬 Backtest de Volatilidad</h1>
+      <div style="color:var(--ink2);font-size:13.5px;margin-top:5px" id="asof">Corriendo backtest…</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <a class="btn" href="vol.html" style="text-decoration:none">← Cockpit</a>
+      <button class="btn" id="themeBtn">◐ Tema</button>
+    </div>
+  </header>
+
+  <div class="lead">
+    <b>La pregunta:</b> ¿tu regla <b>"CHOP > 60 → sal del LP, viene volatilidad"</b> tiene edge de verdad? Aquí se prueba con el histórico de BTC (velas diarias, gratis), no con intuición. Dos tests:
+    <div style="margin-top:6px">• <b>Test A</b> — ¿el Choppiness alto precede movimientos más grandes? (vol y drawdown futuros por nivel de CHOP)</div>
+    <div>• <b>Test B</b> — ¿mejora el PnL del LP salir con CHOP>60 vs estar siempre dentro? (modelo v2: fees − impermanent loss)</div>
+  </div>
+
+  <div class="verdict" id="verdict"><div class="big">Calculando…</div></div>
+
+  <div class="sechead">Test A · Choppiness → movimiento futuro (14 días)</div>
+  <table class="bt" id="bucketsTbl"></table>
+
+  <div class="sechead">Test B · ¿salir del LP con CHOP&gt;60 mejora el PnL?</div>
+  <div class="cards" id="lpsim"></div>
+
+  <div class="note" id="reading"></div>
+
+  <div class="note">
+    <b>Cómo leerlo, honesto:</b>
+    <ul style="margin:8px 0 0;padding-left:18px">
+      <li><b>Vol realizada</b> (std de retornos) y <b>drawdown</b> son distintos: una caída suave tiene poca "vol" pero mucho drawdown. Para el <b>IL de tu LP importa la MAGNITUD del movimiento</b> → mira sobre todo la columna de drawdown y "% mov &gt;10%".</li>
+      <li>La sim de LP usa un modelo <b>v2</b> (valor = √ del ratio de precio) con una <b>APR de fees supuesta (30%)</b>. Un LP concentrado amplifica fees E impermanent loss; el signo del resultado es más fiable que la cifra exacta.</li>
+      <li><b>Rendimiento pasado ≠ futuro.</b> Esto valida la señal en el histórico disponible, no garantiza nada.</li>
+    </ul>
+  </div>
+
+  <footer>
+    Datos: velas diarias de BTC (Binance, gratis). Señal: Choppiness(14) &gt; 60 → fuera del LP. Ventana futura: 14 días. Cache 1h.
+    <div id="foot-warn" style="margin-top:8px;color:var(--muted);font-size:11.5px"></div>
+    <b>Uso educativo — no es asesoramiento financiero.</b>
+  </footer>
+</div>
+
+<script>
+"use strict";
+(function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
+document.getElementById("themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);});
+const $=s=>document.querySelector(s);
+const pctS=(v,d)=>v==null?"—":(v*100).toFixed(d==null?1:d)+"%";
+const n1=(v)=>v==null?"—":Number(v).toFixed(1);
+
+(async function(){
+  let j=null;
+  try{ const r=await fetch("/api/voldata?mode=backtest",{cache:"no-store"}); j=await r.json(); }
+  catch(e){ $("#verdict").innerHTML=`<div class="big">Sin datos</div><div class="sub">No se pudo cargar el backtest. Reintenta.</div>`; $("#asof").textContent=""; return; }
+  if(!j||!j.buckets){ $("#verdict").innerHTML=`<div class="big">Respuesta vacía</div>`; $("#asof").textContent=""; return; }
+  $("#asof").textContent=(j.from&&j.to?j.from+" → "+j.to+" · "+j.days+" días · ":"")+(j.samples||0)+" muestras";
+
+  // Test A tabla
+  const rows=(j.buckets||[]).map(b=>b.n?`<tr>
+    <td><b>${b.label}</b></td>
+    <td class="mono">${b.n}</td>
+    <td class="mono">${b.fwdVol!=null?b.fwdVol+"%":"—"}</td>
+    <td class="mono down">${b.fwdDD!=null?pctS(b.fwdDD):"—"}</td>
+    <td class="mono">${b.bigMovePct!=null?pctS(b.bigMovePct):"—"}</td></tr>`:"").join("");
+  $("#bucketsTbl").innerHTML=`<thead><tr><th>Nivel de Choppiness</th><th>días</th><th>vol fut. (14d)</th><th>drawdown fut.</th><th>% mov &gt;10%</th></tr></thead><tbody>${rows}</tbody>`;
+
+  // Test B tarjetas
+  const s=j.lpSim||{};
+  const win=(s.chopRule!=null&&s.alwaysIn!=null)?s.chopRule-s.alwaysIn:null;
+  $("#lpsim").innerHTML=[
+    `<div class="g"><div class="k">LP siempre dentro</div><div class="v ${s.alwaysIn>=0?"up":"down"}">${s.alwaysIn!=null?(s.alwaysIn>=0?"+":"")+pctS(s.alwaysIn):"—"}</div><div class="d">retorno neto (fees − IL) del histórico</div></div>`,
+    `<div class="g"><div class="k">Regla CHOP&gt;60 fuera</div><div class="v ${s.chopRule>=0?"up":"down"}">${s.chopRule!=null?(s.chopRule>=0?"+":"")+pctS(s.chopRule):"—"}</div><div class="d">sale del LP cuando el tanque está lleno</div></div>`,
+    `<div class="g" style="border-color:color-mix(in oklab,${win>=0?"var(--bull)":"var(--bear)"} 40%,var(--line))"><div class="k">Diferencia (edge)</div><div class="v ${win>=0?"up":"down"}">${win!=null?(win>=0?"+":"")+pctS(win):"—"}</div><div class="d">${win>=0?"la regla AÑADE valor":"la regla RESTA valor"} · APR fees ${s.feeApr!=null?pctS(s.feeApr,0):"—"}</div></div>`,
+  ].join("");
+
+  // Verdicto + lectura
+  const lift=j.signalLift;
+  const b60=(j.buckets||[]).find(b=>/60/.test(b.label)&&b.n);
+  const b40=(j.buckets||[]).find(b=>/40/.test(b.label)&&/tendencia/.test(b.label)&&b.n);
+  const V=$("#verdict");
+  const ruleWorks=win!=null&&win>0;
+  const precede=b60&&b40&&b60.fwdDD!=null&&b40.fwdDD!=null?(Math.abs(b60.fwdDD)>=Math.abs(b40.fwdDD)*0.8):null;
+  V.style.setProperty("--vc",ruleWorks?"var(--bull)":"var(--accent)");
+  V.innerHTML=`<div class="big">${ruleWorks?"🟢 La regla tiene edge en el histórico":"🟠 La regla no domina claramente"}</div>
+    <div class="sub">Salir del LP con <b>CHOP&gt;60</b> dio <b>${win!=null?(win>=0?"+":"")+pctS(win):"—"}</b> vs estar siempre dentro (modelo v2, APR ${s.feeApr!=null?pctS(s.feeApr,0):"—"}). ${lift!=null?`Tras CHOP&gt;60, la vol futura fue <b>${lift>=0?"+":""}${pctS(lift)}</b> vs la media.`:""} ${precede===true?"El drawdown futuro tras CHOP alto es comparable o mayor → la compresión sí precede movimiento.":""}</div>`;
+
+  $("#reading").innerHTML=`<b>Qué te dice para operar:</b> ${ruleWorks
+    ? "en este histórico, retirar el LP cuando el Choppiness supera 60 habría <b>protegido de impermanent loss</b> más de lo que costó en fees perdidos. Es una regla defendible para tu libro de LP — combínala con el rango on-chain (STH bands) para el DÓNDE."
+    : "en este histórico la regla no bate claramente a estar siempre dentro (o depende mucho de la APR de fees). No la uses a ciegas; ajusta el umbral o el ancho de rango y vuelve a mirar el drawdown futuro por nivel de CHOP."}`;
+
+  if(j.warnings&&j.warnings.length){ const f=$("#foot-warn"); if(f)f.innerHTML="Avisos: "+j.warnings.map(w=>String(w).replace(/</g,"&lt;")).join(" · "); }
+})();
+</script>
+</body>
+</html>
