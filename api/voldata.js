@@ -107,11 +107,51 @@ module.exports = async (req, res) => {
     } else W.push("200w: histórico insuficiente");
   }
 
-  // ── Derivatives (Binance futures; algunos endpoints pueden bloquearse por región) ──
-  { const p = await j(`https://fapi.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT`, "funding", W); out.funding = p && p.lastFundingRate != null ? round(+p.lastFundingRate, 6) : null; }
-  { const oih = await j(`https://fapi.binance.com/futures/data/openInterestHist?symbol=BTCUSDT&period=1d&limit=8`, "oihist", W); if (Array.isArray(oih) && oih.length >= 2) { const a = +oih[0].sumOpenInterest, b = +oih[oih.length - 1].sumOpenInterest; out.oiChg7d = a > 0 ? round(b / a - 1, 3) : null; } }
-  { const ls = await j(`https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol=BTCUSDT&period=1d&limit=1`, "ls", W); if (Array.isArray(ls) && ls.length) out.longShort = round(+ls[0].longShortRatio, 2); }
-  { const tk = await j(`https://fapi.binance.com/futures/data/takerlongshortRatio?symbol=BTCUSDT&period=1d&limit=1`, "taker", W); if (Array.isArray(tk) && tk.length) out.takerRatio = round(+tk[0].buySellRatio, 2); }
+  // ── Derivatives: funding + OI + long/short (Bybit primario; Binance fapi suele geobloquearse) ──
+  { const t = await j(`https://api.bybit.com/v5/market/tickers?category=linear&symbol=BTCUSDT`, "bybit_tick", W);
+    const r0 = t && t.result && t.result.list && t.result.list[0];
+    if (r0) { if (r0.fundingRate != null) out.funding = round(+r0.fundingRate, 6); if (r0.openInterest != null) out.oi = round(+r0.openInterest, 0); } }
+  if (out.funding == null) { const o = await j(`https://www.okx.com/api/v5/public/funding-rate?instId=BTC-USDT-SWAP`, "okx_fund", W); const d0 = o && o.data && o.data[0]; if (d0 && d0.fundingRate != null) out.funding = round(+d0.fundingRate, 6); }
+  { const oih = await j(`https://api.bybit.com/v5/market/open-interest?category=linear&symbol=BTCUSDT&intervalTime=1d&limit=8`, "bybit_oi", W);
+    const lst = oih && oih.result && oih.result.list; // Bybit devuelve del más nuevo al más viejo
+    if (Array.isArray(lst) && lst.length >= 2) { const newest = +lst[0].openInterest, oldest = +lst[lst.length - 1].openInterest; out.oiChg7d = oldest > 0 ? round(newest / oldest - 1, 3) : null; } }
+  { const ls = await j(`https://api.bybit.com/v5/market/account-ratio?category=linear&symbol=BTCUSDT&period=1d&limit=1`, "bybit_ls", W);
+    const l0 = ls && ls.result && ls.result.list && ls.result.list[0];
+    if (l0 && l0.buyRatio != null && l0.sellRatio != null && +l0.sellRatio > 0) out.longShort = round(+l0.buyRatio / +l0.sellRatio, 2); }
+
+  // ── OPCIONES (Deribit) — put/call OI, OI total, skew 25d aprox, expiry cercana ──
+  // Métricas que Glassnode usa en su Week On-Chain para leer posicionamiento y miedo direccional.
+  { const bs = await j(`https://www.deribit.com/api/v2/public/get_book_summary_by_currency?currency=BTC&kind=option`, "opt", W);
+    const list = bs && bs.result;
+    if (Array.isArray(list) && list.length) {
+      let callOi = 0, putOi = 0, spot = null;
+      const byExp = {};
+      const monN = { JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, JUN: 6, JUL: 7, AUG: 8, SEP: 9, OCT: 10, NOV: 11, DEC: 12 };
+      const expMs = s => { const m = String(s).match(/(\d+)([A-Z]{3})(\d{2})/); if (!m || !monN[m[2]]) return Infinity; return Date.parse(`20${m[3]}-${String(monN[m[2]]).padStart(2, "0")}-${String(+m[1]).padStart(2, "0")}`); };
+      for (const o of list) {
+        const parts = String(o.instrument_name || "").split("-"); // BTC-27DEC24-100000-C
+        if (parts.length < 4) continue;
+        const type = parts[3], strike = +parts[2], iv = o.mark_iv != null ? +o.mark_iv : null, oi = o.open_interest != null ? +o.open_interest : 0;
+        if (o.underlying_price) spot = +o.underlying_price;
+        if (type === "C") callOi += oi; else if (type === "P") putOi += oi;
+        (byExp[parts[1]] = byExp[parts[1]] || []).push({ strike, iv, type });
+      }
+      out.optPutCall = callOi > 0 ? round(putOi / callOi, 2) : null;
+      out.optOi = round(callOi + putOi, 0);
+      if (spot == null) spot = price;
+      if (spot) {
+        const now = Date.now();
+        const near = Object.keys(byExp).sort((a, b) => expMs(a) - expMs(b)).find(e => expMs(e) > now + 3 * 864e5);
+        if (near) {
+          const arr = byExp[near], putT = spot * 0.9, callT = spot * 1.1;
+          let bp = null, bc = null;
+          for (const o of arr) { if (o.iv == null) continue; if (o.type === "P") { if (bp == null || Math.abs(o.strike - putT) < Math.abs(bp.strike - putT)) bp = o; } else if (o.type === "C") { if (bc == null || Math.abs(o.strike - callT) < Math.abs(bc.strike - callT)) bc = o; } }
+          if (bp && bc) out.optSkew = round(bp.iv - bc.iv, 1); // >0 = puts más caras = miedo abajo
+          out.optNearExp = near;
+        }
+      }
+    }
+  }
 
   // ── Régimen + lecturas ──
   const dv = out.dvolPct, bw = out.bbwPct, ch = out.chop;
@@ -126,6 +166,8 @@ module.exports = async (req, res) => {
   out.lp = lp; out.lpTxt = lpTxt;
 
   if (out.vrp != null) out.vrpTxt = out.vrp < 0 ? "Vol BARATA (IV<RV) → favorece COMPRAR vol (straddle / long gamma)." : out.vrp > 6 ? "Vol CARA (VRP ancho) → favorece VENDER premium." : "VRP normal — sin edge claro solo por vol.";
+  if (out.optSkew != null) out.optSkewTxt = out.optSkew > 3 ? "Miedo a la BAJADA (puts caras) — cobertura/pesimismo." : out.optSkew < -3 ? "Codicia al ALZA (calls caras) — chase alcista." : "Skew equilibrado — sin sesgo direccional fuerte en opciones.";
+  if (out.optPutCall != null) out.optPutCallTxt = out.optPutCall > 1 ? "Más OI en puts que en calls — posicionamiento defensivo/bajista." : "Más OI en calls que en puts — posicionamiento alcista.";
 
   return res.end(JSON.stringify(out));
 };

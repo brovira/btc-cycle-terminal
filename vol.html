@@ -18,6 +18,15 @@
   .g .k{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:700}
   .g .v{font-family:var(--mono);font-size:23px;font-weight:800;margin-top:6px;letter-spacing:-.01em}
   .g .d{font-size:11.5px;color:var(--ink2);margin-top:5px;line-height:1.4}
+  .g .info{cursor:help;color:var(--muted);font-size:10px;border:1px solid var(--line);border-radius:50%;padding:0 4.5px;margin-left:4px;font-style:normal;vertical-align:middle}
+  .g .info:hover{color:var(--accent);border-color:var(--accent)}
+  .sechead{margin:24px 0 2px;font-size:16px;font-weight:850;letter-spacing:-.01em;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+  .sechead .sh2{font-size:12px;font-weight:400;color:var(--muted)}
+  .thesis{border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:14px;background:var(--panel);padding:16px 18px;margin-top:14px;font-size:13px;line-height:1.6;color:var(--ink2)}
+  .thesis h3{margin:0 0 4px;font-size:14.5px;color:var(--ink);font-weight:800}
+  .thesis b{color:var(--ink)}
+  .thesis .trow{padding:6px 0;border-top:1px solid var(--line);margin-top:6px}
+  .thesis .tk{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700}
   .g .tag{display:inline-block;font-size:10px;font-weight:800;padding:1px 7px;border-radius:999px;margin-top:6px}
   .chartcard{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:14px 16px 8px;margin-top:16px}
   .chartcard h3{margin:0 0 2px;font-size:15px;font-weight:800}
@@ -51,7 +60,13 @@
     <div class="lprow" id="lprow"></div>
   </div>
 
+  <div class="sechead">📊 Volatilidad & flujo <span class="sh2">— pasa el cursor por la ⓘ de cada uno para saber qué es y por qué implica volatilidad</span></div>
   <div class="cards" id="gauges"></div>
+
+  <div class="sechead">🎲 Opciones (Deribit) <span class="sh2">— posicionamiento y miedo direccional (lo que Glassnode usa en su Week On-Chain)</span></div>
+  <div class="cards" id="optcards"></div>
+
+  <div class="thesis" id="thesis" style="display:none"></div>
 
   <div class="chartcard">
     <h3>DVOL — vol implícita (Deribit), ~1 año</h3>
@@ -106,9 +121,11 @@ function drawDvol(){
 }
 window.__drawDvol=drawDvol;
 
-function gauge(k,v,d,tag,tagc){
+function gauge(k,v,d,tag,tagc,tip){
   const t=tag?`<div class="tag" style="color:${tagc};background:color-mix(in oklab,${tagc} 15%,transparent)">${tag}</div>`:"";
-  return `<div class="g"><div class="k">${k}</div><div class="v">${v}</div>${d?`<div class="d">${d}</div>`:""}${t}</div>`;
+  const ti=tip?String(tip).replace(/"/g,"&quot;"):"";
+  const info=tip?` <span class="info" title="${ti}">i</span>`:"";
+  return `<div class="g"${tip?` title="${ti}"`:""}><div class="k">${k}${info}</div><div class="v">${v}</div>${d?`<div class="d">${d}</div>`:""}${t}</div>`;
 }
 
 (async function(){
@@ -135,21 +152,54 @@ function gauge(k,v,d,tag,tagc){
   const bwTag=j.bbwPct==null?["",""]:j.bbwPct<0.3?["comprimido","var(--accent)"]:["","var(--muted)"];
   const chTag=j.chop==null?["",""]:j.chop>61.8?["rango","var(--bull)"]:j.chop<38.2?["tendencia","var(--bear)"]:["mixto","var(--muted)"];
   const g=[
-    gauge("DVOL (vol implícita)", j.dvol!=null?n2(j.dvol,1)+"%":"—", "percentil "+(j.dvolPct!=null?pctS(j.dvolPct):"—")+" · 1 año", dvTag[0],dvTag[1]),
-    gauge("RV (realizada 30d)", j.rv!=null?n2(j.rv,1)+"%":"—", "lo que el precio hizo de verdad"),
-    gauge("VRP = DVOL − RV", j.vrp!=null?(j.vrp>=0?"+":"")+n2(j.vrp,1):"—", "&lt;0 vol barata · &gt;6 vol cara"),
-    gauge("Choppiness (14)", j.chop!=null?n2(j.chop,1):"—", "&gt;61,8 rango · &lt;38,2 tendencia", chTag[0],chTag[1]),
-    gauge("BB width (percentil)", j.bbwPct!=null?pctS(j.bbwPct):"—", "compresión de rango", bwTag[0],bwTag[1]),
-    gauge("Dist. a 200W MA", j.distTo200w!=null?(j.distTo200w>=0?"+":"")+pctS(j.distTo200w,1):"—", j.ma200w!=null?"200W MA $"+n2(j.ma200w,0)+" · tu zona LP":"—"),
-    gauge("Funding (8h)", fund8!=null?(fund8>=0?"+":"")+n2(fund8,4)+"%":"—", "positivo = longs pagan", Math.abs(fund8||0)>0.05?"extremo":"",fundReadC),
-    gauge("OI 7d", j.oiChg7d!=null?(j.oiChg7d>=0?"+":"")+pctS(j.oiChg7d,1):"—", "cambio de posiciones abiertas"),
-    gauge("Long/Short", j.longShort!=null?n2(j.longShort,2):"—", "&gt;1 = mayoría largos"),
-    gauge("Taker buy/sell", j.takerRatio!=null?n2(j.takerRatio,2):"—", "&gt;1 = flujo agresor comprador"),
+    gauge("DVOL (vol implícita)", j.dvol!=null?n2(j.dvol,1)+"%":"—", "percentil "+(j.dvolPct!=null?pctS(j.dvolPct):"—")+" · 1 año", dvTag[0],dvTag[1],
+      "Volatilidad IMPLÍCITA: lo que el mercado de opciones (Deribit) espera que se mueva BTC los próximos 30 días. Percentil BAJO = el mercado espera calma → suele venir ANTES de una expansión (muelle cargado). Es el 'implied vol' de tu chart de checkonchain."),
+    gauge("RV (realizada 30d)", j.rv!=null?n2(j.rv,1)+"%":"—", "lo que el precio hizo de verdad", "","",
+      "Volatilidad REALIZADA: cuánto se ha movido BTC DE VERDAD (30 días, anualizado). Comparada con la implícita te dice si la vol está cara o barata de comprar."),
+    gauge("VRP = DVOL − RV", j.vrp!=null?(j.vrp>=0?"+":"")+n2(j.vrp,1):"—", "&lt;0 vol barata · &gt;6 vol cara", "","",
+      "Variance Risk Premium = la 'prima' de la volatilidad. Normalmente la implícita > realizada (los vendedores de vol cobran prima). NEGATIVO = vol barata → comprar vol (straddle) sale a cuenta. >6 = vol cara → venderla."),
+    gauge("Choppiness (14)", j.chop!=null?n2(j.chop,1):"—", "&gt;61,8 rango · &lt;38,2 tendencia", chTag[0],chTag[1],
+      "Mide si el precio va en RANGO o en TENDENCIA. >61,8 = lateral/comprimido (bueno para LP: cobras fees; y el muelle se carga). <38,2 = tendencia fuerte (malo para LP: impermanent loss; la vol ya explotó). Es tu señal de LP ON/OFF."),
+    gauge("BB width (percentil)", j.bbwPct!=null?pctS(j.bbwPct):"—", "compresión de rango", bwTag[0],bwTag[1],
+      "Ancho de las Bandas de Bollinger vs su propio año. Percentil BAJO = rango MUY estrecho = compresión de volatilidad → históricamente precede a un movimiento grande."),
+    gauge("Dist. a 200W MA", j.distTo200w!=null?(j.distTo200w>=0?"+":"")+pctS(j.distTo200w,1):"—", j.ma200w!=null?"200W MA $"+n2(j.ma200w,0)+" · tu zona LP":"—", "","",
+      "Distancia del precio a su media de 200 semanas — el suelo histórico de ciclo de BTC. Es tu zona de re-entrada de LP (~$62k según tu tesis)."),
+    gauge("Funding (8h)", fund8!=null?(fund8>=0?"+":"")+n2(fund8,4)+"%":"—", "positivo = longs pagan", Math.abs(fund8||0)>0.05?"extremo":"",fundReadC,
+      "Coste de mantener un futuro perpetuo largo, cada 8h. POSITIVO = los largos pagan a los cortos (apalancamiento alcista). Extremos = mercado sobre-apalancado → riesgo de squeeze/liquidaciones en cascada = volatilidad. (Bybit)"),
+    gauge("Open Interest", j.oi!=null?n2(j.oi,0)+" BTC":"—", "contratos abiertos"+(j.oiChg7d!=null?" · 7d "+(j.oiChg7d>=0?"+":"")+pctS(j.oiChg7d,1):""), j.oiChg7d!=null&&Math.abs(j.oiChg7d)>0.2?"salto":"", "var(--accent)",
+      "Open Interest: contratos de futuros abiertos. SUBIENDO = entra apalancamiento nuevo (más combustible para movimientos y liquidaciones). BAJANDO = se cierran posiciones. (Bybit)"),
+    gauge("Long/Short", j.longShort!=null?n2(j.longShort,2):"—", "&gt;1 = mayoría largos", "","",
+      "Ratio de cuentas largas vs cortas. >1 = mayoría largos. Los EXTREMOS suelen ser contrarian: si casi todos están largos, quedan pocos compradores → riesgo de giro. (Bybit)"),
   ];
   $("#gauges").innerHTML=g.join("");
 
+  // ── Opciones ──
+  const skewTag=j.optSkew==null?["",""]:j.optSkew>3?["miedo abajo","var(--bear)"]:j.optSkew<-3?["codicia arriba","var(--bull)"]:["equilibrado","var(--muted)"];
+  const pcTag=j.optPutCall==null?["",""]:j.optPutCall>1?["defensivo","var(--bear)"]:["alcista","var(--bull)"];
+  const og=[
+    gauge("Skew 25Δ (aprox)", j.optSkew!=null?(j.optSkew>=0?"+":"")+n2(j.optSkew,1)+" vol":"—", (j.optSkewTxt||"IV puts − IV calls OTM")+(j.optNearExp?" · exp "+j.optNearExp:""), skewTag[0],skewTag[1],
+      "Diferencia de vol implícita entre puts OTM (~−10%) y calls OTM (~+10%) de la expiry cercana. >0 = las PUTS son más caras = el mercado paga por cubrirse de una CAÍDA (miedo). <0 = calls más caras = codicia al alza. Es el 'risk reversal', clave en el Week On-Chain de Glassnode."),
+    gauge("Put/Call OI", j.optPutCall!=null?n2(j.optPutCall,2):"—", j.optPutCallTxt||"OI puts / OI calls", pcTag[0],pcTag[1],
+      "Open interest en PUTS dividido por el de CALLS. >1 = más apuestas/coberturas bajistas; <1 = más apuestas alcistas. Termómetro de sentimiento direccional en opciones."),
+    gauge("Options OI total", j.optOi!=null?n2(j.optOi,0)+" BTC":"—", "contratos de opciones abiertos", "","",
+      "Volumen total de contratos de opciones abiertos en Deribit. Más OI = más actividad y más flujos de cobertura de los market makers (gamma) que pueden AMPLIFICAR o AMORTIGUAR los movimientos de precio."),
+  ];
+  $("#optcards").innerHTML=og.join("");
+
   drawDvol();
   if(j.warnings&&j.warnings.length){ const f=$("#foot-warn"); if(f)f.innerHTML="Avisos: "+j.warnings.map(w=>String(w).replace(/</g,"&lt;")).join(" · "); }
+
+  // Mi tesis (privada) — contextualiza las decisiones de vol/LP
+  try{
+    const rt=await fetch("/api/private?file=thesis",{cache:"no-store"});
+    if(rt.ok){
+      const t=await rt.json();
+      const row=(k,v)=>v?`<div class="trow"><div class="tk">${k}</div>${v}</div>`:"";
+      $("#thesis").innerHTML=`<h3>🎯 Mi tesis de mercado ${t.updated?`<span style="font-weight:400;color:var(--muted);font-size:12px">· ${t.updated}</span>`:""}</h3>`
+        +row("Base case",t.base_case)+row("Mecanismo",t.mechanism)+row("Plan de LP",t.lp_plan)+row("Invalidación",t.invalidation)+row("Riesgo / lo que puede fallar",t.risk);
+      $("#thesis").style.display="";
+    }
+  }catch(e){}
 })();
 </script>
 </body>

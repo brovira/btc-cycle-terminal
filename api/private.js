@@ -26,6 +26,7 @@ const FILES = {                       // lista blanca de archivos que se pueden 
   btc_compras: "data/btc_compras.json",     // compras BTC del ciclo (Revolut round-up + órdenes BELROGAM)
   mc_plan: "data/mc_plan.json",             // ajustes por defecto del Monte Carlo del plan (presupuesto, DCA, órdenes…)
   alt_plan: "data/alt_plan.json",           // objetivo de rotación a alts (target, ritmo mensual, ETH primero)
+  thesis: "data/thesis.json",               // mi tesis de mercado + plan de LP (lo muestra el Cockpit de Volatilidad)
 };
 
 module.exports = async (req, res) => {
