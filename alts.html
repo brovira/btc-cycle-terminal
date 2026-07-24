@@ -158,9 +158,9 @@ const num=(v,d)=>v==null?"—":(+v).toFixed(d==null?2:d);
 
 (async function(){
   let j=null,ap=null;
-  try{const r=await fetch("/api/altrotation",{cache:"no-store"});j=await r.json();}catch(e){}
+  try{const r=await fetch("/api/altsdata?mode=rotation",{cache:"no-store"});j=await r.json();}catch(e){}
   try{const r2=await fetch("/api/private?file=alt_plan",{cache:"no-store"});if(r2.ok)ap=await r2.json();}catch(e){}
-  if(!j){ $("#verdict").innerHTML=`<div class="big">Sin datos</div><div class="sub">No se pudo cargar /api/altrotation. Reintenta en un momento.</div>`; $("#asof").textContent=""; return; }
+  if(!j){ $("#verdict").innerHTML=`<div class="big">Sin datos</div><div class="sub">No se pudo cargar /api/altsdata. Reintenta en un momento.</div>`; $("#asof").textContent=""; return; }
   $("#asof").textContent = (j.asOf?("tipos a "+j.asOf+" · "):"")+"se actualiza cada 30 min";
 
   const g=j.gates||{};
@@ -332,7 +332,7 @@ const num=(v,d)=>v==null?"—":(+v).toFixed(d==null?2:d);
     if(any)card.style.display="";
   }
   async function pollPrices(){
-    try{ const r=await fetch("/api/altprices",{cache:"no-store"}); const j2=await r.json(); renderSituacion(j2); }catch(e){}
+    try{ const r=await fetch("/api/altsdata?mode=prices",{cache:"no-store"}); const j2=await r.json(); renderSituacion(j2); }catch(e){}
   }
 
   function render(){

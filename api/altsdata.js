@@ -1,13 +1,7 @@
-// api/altrotation.js — datos para el panel "Rotación de alts" (gates del marco de Cowen).
-// Todo son datos PÚBLICOS sin API key (CoinGecko global/price + FRED CSV) → sin secretos, sin auth.
-// Corre server-side (Vercel tiene red), así que funciona aunque no se pueda probar en el sandbox.
-//
-// Gates (marco de Cowen, ver PROJECT_MEMORY §Plan de ALTS):
-//  1. rates       Fed funds < 2-year yield (tipo neutral) — el gate MACRO decisivo
-//  2. allBtcPairs (TOTAL3−USDT)/BTC ≥ ~0.25 sostenido
-//  3. btcDomExStab BTC dominance EXCLUYENDO stables (contexto; "romper a la baja" necesita histórico)
-//  4. ethBtc      ETH/BTC (contexto; el gate real es reclaim de la 20-month MA → juicio)
-// M2 NO se usa (Cowen lo rechaza). Social/retail no tiene fuente pública fiable → se omite.
+// api/altsdata.js — DOS endpoints en uno (el plan Hobby limita a 12 funciones serverless).
+//   ?mode=rotation → gates de rotación de Cowen (CoinGecko global/price + FRED + ETHBTC 20M MA)
+//   ?mode=prices   → precios EN VIVO + drawdown vs ATH (CoinGecko markets, incl. TON) [+fallback Binance]
+// Todo son datos PÚBLICOS sin API key. Cada modo pone su propio Cache-Control.
 
 async function cg(path) {
   const r = await fetch(`https://api.coingecko.com/api/v3/${path}`, { headers: { "User-Agent": "btc-terminal" } });
@@ -28,8 +22,8 @@ async function fredLast(id) {
   return null;
 }
 
-module.exports = async (req, res) => {
-  res.setHeader("Content-Type", "application/json; charset=utf-8");
+// ── mode=rotation ──────────────────────────────────────────────────────────────────
+async function rotation(res) {
   res.setHeader("Cache-Control", "public, max-age=1800"); // 30 min
   const out = { asOf: null, warnings: [] };
 
@@ -42,10 +36,7 @@ module.exports = async (req, res) => {
     const stables = (pct.usdt || 0) + (pct.usdc || 0) + (pct.dai || 0);
     out.totalMcapUsd = (g.total_market_cap && g.total_market_cap.usd) || null;
     out.btcDominance = btc;
-    // BTC.D excluyendo stables ≈ btc% / (100 − stables%)  (los % están sobre el total con stables)
     out.btcDominanceExStables = (btc != null) ? (btc / (100 - stables)) * 100 : null;
-    // "all Bitcoin pairs" = (TOTAL3 − USDT) / BTC.  TOTAL3 = total·(1−btc−eth); todo en %, el total cancela:
-    //   = (100 − btc − eth − usdt) / btc
     out.allBtcPairs = (btc != null && eth != null && usdt != null) ? (100 - btc - eth - usdt) / btc : null;
   } catch (e) { out.warnings.push("global: " + (e.message || e)); }
 
@@ -61,8 +52,6 @@ module.exports = async (req, res) => {
   try { const y2 = await fredLast("DGS2"); out.twoYear = y2 ? y2.value : null; }
   catch (e) { out.warnings.push("2y: " + (e.message || e)); }
 
-  // ETH/BTC vs su MEDIA MÓVIL DE 20 MESES — el gatillo real de rotación de Cowen ("reclaim
-  // duradero de la 20-month MA"). Se calcula con velas MENSUALES de ETHBTC (Binance, sin key).
   for (const host of ["api.binance.com", "api.binance.us"]) {
     try {
       const r = await fetch(`https://${host}/api/v3/klines?symbol=ETHBTC&interval=1M&limit=24`, { headers: { "User-Agent": "btc-terminal" } });
@@ -78,8 +67,6 @@ module.exports = async (req, res) => {
   }
   if (out.ethBtc20mMa == null) out.warnings.push("ethbtc_ma: sin datos Binance");
 
-  // Gates. rates y ethBtc20m son AUTOMÁTICOS y fiables; allBtcPairs es un proxy sin calibrar
-  // (se expone como contexto en el front); dominancia-rompiendo y social quedan a juicio.
   const ethNow = out.ethBtc != null ? out.ethBtc : out.ethBtcMonthly;
   out.gates = {
     rates: (out.fedFunds != null && out.twoYear != null) ? (out.fedFunds < out.twoYear) : null,
@@ -87,4 +74,54 @@ module.exports = async (req, res) => {
     allBtcPairs: (out.allBtcPairs != null) ? (out.allBtcPairs >= 0.25) : null,
   };
   return res.end(JSON.stringify(out));
+}
+
+// ── mode=prices ────────────────────────────────────────────────────────────────────
+const PRICE_IDS = {
+  bitcoin: "BTC", ethereum: "ETH", binancecoin: "BNB",
+  solana: "SOL", hyperliquid: "HYPE", "the-open-network": "TON",
+};
+async function prices(res) {
+  res.setHeader("Cache-Control", "public, max-age=60, s-maxage=60"); // ~tiempo real
+  const out = { asOf: new Date().toISOString(), prices: {}, warnings: [] };
+  const ids = Object.keys(PRICE_IDS).join(",");
+  try {
+    const arr = await cg(`coins/markets?vs_currency=usd&ids=${ids}&price_change_percentage=24h`);
+    for (const c of (Array.isArray(arr) ? arr : [])) {
+      const key = PRICE_IDS[c && c.id];
+      if (!key) continue;
+      out.prices[key] = {
+        price: c.current_price != null ? +c.current_price : null,
+        ath: c.ath != null ? +c.ath : null,
+        athDate: c.ath_date ? String(c.ath_date).slice(0, 10) : null,
+        athPct: c.ath_change_percentage != null ? +c.ath_change_percentage / 100 : null,
+        pct24h: c.price_change_percentage_24h != null ? +c.price_change_percentage_24h / 100 : null,
+        atl: c.atl != null ? +c.atl : null,
+      };
+    }
+  } catch (e) { out.warnings.push("cg_markets: " + ((e && e.message) || e)); }
+
+  if (!Object.keys(out.prices).length) {
+    const SYM = { BTC: "BTCUSDT", ETH: "ETHUSDT", BNB: "BNBUSDT", SOL: "SOLUSDT", HYPE: "HYPEUSDT", TON: "TONUSDT" };
+    for (const host of ["api.binance.com", "api.binance.us"]) {
+      try {
+        const r = await fetch(`https://${host}/api/v3/ticker/price`, { headers: { "User-Agent": "btc-terminal" } });
+        if (!r.ok) continue;
+        const arr = await r.json();
+        const bySym = {};
+        for (const t of (Array.isArray(arr) ? arr : [])) bySym[t.symbol] = +t.price;
+        for (const k in SYM) { if (bySym[SYM[k]] != null) out.prices[k] = { price: bySym[SYM[k]], ath: null, athPct: null, pct24h: null }; }
+        if (Object.keys(out.prices).length) { out.warnings.push("precios: fallback Binance (sin ATH)"); break; }
+      } catch (e) { /* siguiente host */ }
+    }
+  }
+  return res.end(JSON.stringify(out));
+}
+
+module.exports = async (req, res) => {
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  const url = new URL(req.url, "http://x");
+  const mode = (url.searchParams.get("mode") || "rotation").toLowerCase();
+  if (mode === "prices") return prices(res);
+  return rotation(res);
 };
