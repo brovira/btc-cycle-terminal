@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cockpit de Volatilidad · Trading</title>
+<link rel="stylesheet" href="dashboard.css">
+<style>
+  .wrap{max-width:1040px;margin:0 auto;padding:26px 18px 70px}
+  .hero{border:1px solid var(--line);border-left:5px solid var(--vc,var(--muted));border-radius:16px;background:var(--panel);padding:18px 20px;margin-top:14px}
+  .hero .lab{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .hero .big{font-size:clamp(19px,3vw,25px);font-weight:850;letter-spacing:-.02em;color:var(--vc,var(--ink));margin:5px 0 2px}
+  .hero .sub{color:var(--ink2);font-size:13.5px;line-height:1.5;margin-top:4px}
+  .lprow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .lppill{font-size:12.5px;font-weight:700;padding:6px 12px;border-radius:10px;border:1px solid var(--line)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:16px}
+  .g{border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:14px 15px}
+  .g .k{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .g .v{font-family:var(--mono);font-size:23px;font-weight:800;margin-top:6px;letter-spacing:-.01em}
+  .g .d{font-size:11.5px;color:var(--ink2);margin-top:5px;line-height:1.4}
+  .g .tag{display:inline-block;font-size:10px;font-weight:800;padding:1px 7px;border-radius:999px;margin-top:6px}
+  .chartcard{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:14px 16px 8px;margin-top:16px}
+  .chartcard h3{margin:0 0 2px;font-size:15px;font-weight:800}
+  .chartcard .csub{color:var(--ink2);font-size:12.5px;margin-bottom:8px}
+  #dvolchart{width:100%;height:300px}
+  .note{margin-top:16px;border:1px solid var(--line);border-radius:13px;background:var(--panel2);padding:14px 16px;font-size:12.5px;line-height:1.6;color:var(--ink2)}
+  .note b{color:var(--ink)}
+  .note ul{margin:8px 0 0;padding-left:18px}.note li{margin:3px 0}
+  footer{margin-top:24px;color:var(--muted);font-size:12px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px}
+  .up{color:var(--bull)}.down{color:var(--bear)}
+</style>
+</head>
+<body class="dashboard-page page-vol">
+<div class="wrap">
+  <header class="top" style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div>
+      <div class="kicker" style="font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600">Trading · Volatilidad y régimen</div>
+      <h1 style="margin:5px 0 0;font-size:clamp(22px,3.4vw,30px);font-weight:800;letter-spacing:-.02em">🌡️ Cockpit de Volatilidad</h1>
+      <div style="color:var(--ink2);font-size:13.5px;margin-top:5px" id="asof">Cargando…</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <a class="btn" href="index.html" style="text-decoration:none">← Panel</a>
+      <button class="btn" id="themeBtn">◐ Tema</button>
+    </div>
+  </header>
+
+  <div class="hero" id="hero">
+    <div class="lab">Régimen ahora</div>
+    <div class="big" id="regime">Calculando…</div>
+    <div class="sub" id="regimeSub"></div>
+    <div class="lprow" id="lprow"></div>
+  </div>
+
+  <div class="cards" id="gauges"></div>
+
+  <div class="chartcard">
+    <h3>DVOL — vol implícita (Deribit), ~1 año</h3>
+    <div class="csub">Percentil bajo + rango comprimido = <b>muelle cargado</b>. La línea de puntos marca el nivel de hoy.</div>
+    <div id="dvolchart"></div>
+  </div>
+
+  <div class="note">
+    <b>Cómo leerlo (método vol trader):</b>
+    <ul>
+      <li><b>Régimen</b> = ¿viene movimiento? La compresión (DVOL + BB width bajos, CHOP alto) dice <b>SÍ</b> — <b>pero no la dirección</b>.</li>
+      <li><b>LP ON/OFF</b> (Choppiness): rango = cobras fees, poco IL; tendencia = riesgo de IL → fuera.</li>
+      <li><b>VRP = DVOL − RV</b>: negativo → vol barata (comprar straddle); &gt;6 → vol cara (vender premium).</li>
+      <li><b>Funding / OI / Long-Short / Taker</b>: dónde está cargado el apalancamiento = combustible de squeeze.</li>
+      <li><b>Dist. 200W MA</b>: tu zona de re-entrada de LP (~$62k). Alerta cuando se acerque.</li>
+    </ul>
+  </div>
+
+  <footer>
+    Datos GRATIS server-side: <b>Deribit</b> (DVOL) · <b>Binance</b> (precio, RV, CHOP, BB width, 200W MA, funding, OI, long/short, taker). Sin API key. Se actualiza cada 5 min.
+    <div id="foot-warn" style="margin-top:8px;color:var(--muted);font-size:11.5px"></div>
+    <b>Uso educativo — no es asesoramiento financiero. La compresión no predice la dirección.</b>
+  </footer>
+</div>
+
+<script>
+"use strict";
+(function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
+document.getElementById("themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);localStorage.setItem("btc-term-theme",nx);if(window.__drawDvol)window.__drawDvol();});
+const $=s=>document.querySelector(s);
+const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim()||"#888";
+const pctS=(v,d)=>v==null?"—":(v*100).toFixed(d==null?0:d)+"%";
+const n2=(v,d)=>v==null?"—":Number(v).toLocaleString("es-ES",{maximumFractionDigits:d==null?2:d});
+
+const REGC={compression:"var(--accent)",trending:"var(--bear)",stress:"var(--hot)",neutral:"var(--muted)"};
+const LPC={on:"var(--bull)",off:"var(--bear)",neutral:"var(--muted)"};
+
+let DV=null;
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("plotly");}
+function drawDvol(){
+  if(!window.Plotly||!DV||!DV.dvolSeries||!DV.dvolSeries.length)return;
+  const mut=cssv("--muted"),grid=cssv("--grid"),line=cssv("--line"),acc=cssv("--accent");
+  const xs=DV.dvolSeries.map(p=>p[0]),ys=DV.dvolSeries.map(p=>p[1]);
+  const trace={x:xs,y:ys,mode:"lines",line:{color:acc,width:2},hovertemplate:"%{x}<br>DVOL %{y:.1f}<extra></extra>"};
+  const shapes=DV.dvol!=null?[{type:"line",xref:"paper",x0:0,x1:1,y0:DV.dvol,y1:DV.dvol,line:{color:mut,width:1,dash:"dot"}}]:[];
+  const layout={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",margin:{l:44,r:12,t:8,b:32},height:300,
+    font:{color:mut,size:11,family:"inherit"},hovermode:"x",
+    xaxis:{gridcolor:grid,linecolor:line,color:mut,type:"date"},
+    yaxis:{gridcolor:grid,linecolor:line,color:mut,title:{text:"DVOL (%)",font:{size:11}}},shapes:shapes};
+  window.Plotly.react("dvolchart",[trace],layout,{responsive:true,displaylogo:false,scrollZoom:false,modeBarButtonsToRemove:["select2d","lasso2d"]});
+}
+window.__drawDvol=drawDvol;
+
+function gauge(k,v,d,tag,tagc){
+  const t=tag?`<div class="tag" style="color:${tagc};background:color-mix(in oklab,${tagc} 15%,transparent)">${tag}</div>`:"";
+  return `<div class="g"><div class="k">${k}</div><div class="v">${v}</div>${d?`<div class="d">${d}</div>`:""}${t}</div>`;
+}
+
+(async function(){
+  let j=null;
+  try{ const [,r]=await Promise.all([loadPlotly().catch(()=>null),fetch("/api/voldata",{cache:"no-store"})]); j=await r.json(); DV=j; }
+  catch(e){ $("#regime").textContent="Sin datos"; $("#regimeSub").textContent="No se pudo cargar /api/voldata. Reintenta."; $("#asof").textContent=""; return; }
+  if(!j){ $("#regime").textContent="Respuesta vacía"; $("#asof").textContent=""; return; }
+  $("#asof").textContent=(j.asOf?"datos a "+new Date(j.asOf).toISOString().slice(0,16).replace("T"," ")+" UTC · ":"")+"cada 5 min · BTC $"+n2(j.price,0);
+
+  // Régimen
+  const hero=$("#hero"); hero.style.setProperty("--vc",REGC[j.regime]||"var(--muted)");
+  $("#regime").textContent=j.regimeTxt||"—";
+  $("#regimeSub").innerHTML=`Régimen: <b style="color:${REGC[j.regime]}">${(j.regime||"—").toUpperCase()}</b>. La compresión avisa de un movimiento grande, <b>no de su dirección</b>.`;
+  // LP + VRP pills
+  const pills=[];
+  pills.push(`<span class="lppill" style="color:${LPC[j.lp]};border-color:color-mix(in oklab,${LPC[j.lp]} 40%,var(--line))">${j.lpTxt||"LP —"}</span>`);
+  if(j.vrpTxt)pills.push(`<span class="lppill" style="color:var(--ink2)">VRP: ${j.vrpTxt}</span>`);
+  $("#lprow").innerHTML=pills.join("");
+
+  // Gauges
+  const fund8=j.funding!=null?(j.funding*100):null; // % por periodo (8h)
+  const fundReadC=fund8==null?"var(--muted)":Math.abs(fund8)>0.05?"var(--hot)":"var(--muted)";
+  const dvTag=j.dvolPct==null?["",""]:j.dvolPct<0.3?["percentil bajo","var(--accent)"]:j.dvolPct>0.75?["percentil alto","var(--hot)"]:["medio","var(--muted)"];
+  const bwTag=j.bbwPct==null?["",""]:j.bbwPct<0.3?["comprimido","var(--accent)"]:["","var(--muted)"];
+  const chTag=j.chop==null?["",""]:j.chop>61.8?["rango","var(--bull)"]:j.chop<38.2?["tendencia","var(--bear)"]:["mixto","var(--muted)"];
+  const g=[
+    gauge("DVOL (vol implícita)", j.dvol!=null?n2(j.dvol,1)+"%":"—", "percentil "+(j.dvolPct!=null?pctS(j.dvolPct):"—")+" · 1 año", dvTag[0],dvTag[1]),
+    gauge("RV (realizada 30d)", j.rv!=null?n2(j.rv,1)+"%":"—", "lo que el precio hizo de verdad"),
+    gauge("VRP = DVOL − RV", j.vrp!=null?(j.vrp>=0?"+":"")+n2(j.vrp,1):"—", "&lt;0 vol barata · &gt;6 vol cara"),
+    gauge("Choppiness (14)", j.chop!=null?n2(j.chop,1):"—", "&gt;61,8 rango · &lt;38,2 tendencia", chTag[0],chTag[1]),
+    gauge("BB width (percentil)", j.bbwPct!=null?pctS(j.bbwPct):"—", "compresión de rango", bwTag[0],bwTag[1]),
+    gauge("Dist. a 200W MA", j.distTo200w!=null?(j.distTo200w>=0?"+":"")+pctS(j.distTo200w,1):"—", j.ma200w!=null?"200W MA $"+n2(j.ma200w,0)+" · tu zona LP":"—"),
+    gauge("Funding (8h)", fund8!=null?(fund8>=0?"+":"")+n2(fund8,4)+"%":"—", "positivo = longs pagan", Math.abs(fund8||0)>0.05?"extremo":"",fundReadC),
+    gauge("OI 7d", j.oiChg7d!=null?(j.oiChg7d>=0?"+":"")+pctS(j.oiChg7d,1):"—", "cambio de posiciones abiertas"),
+    gauge("Long/Short", j.longShort!=null?n2(j.longShort,2):"—", "&gt;1 = mayoría largos"),
+    gauge("Taker buy/sell", j.takerRatio!=null?n2(j.takerRatio,2):"—", "&gt;1 = flujo agresor comprador"),
+  ];
+  $("#gauges").innerHTML=g.join("");
+
+  drawDvol();
+  if(j.warnings&&j.warnings.length){ const f=$("#foot-warn"); if(f)f.innerHTML="Avisos: "+j.warnings.map(w=>String(w).replace(/</g,"&lt;")).join(" · "); }
+})();
+</script>
+</body>
+</html>
