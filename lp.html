@@ -758,11 +758,15 @@ function freshFlows(){ // flujos on-chain de los pares estables DESDE la línea 
 function freshView(){ // subconjunto que ven las tabs cuando el fresh start está activo
   if(!BASELINE||SHOW_OLD)return PNL;
   const ts=BASELINE.ts;
-  const P=PNL.P.filter(p=>FRESH_SCOPE(p)&&(p.status==="open"||(p.last||0)>=ts));
+  // Ancla = la ÚLTIMA posición cerrada (aunque sea anterior a la línea base): es el "punto de
+  // partida" del ciclo nuevo → se muestra por defecto y su PnL cuenta como el inicio del recuento.
+  const anchor=PNL.P.filter(p=>FRESH_SCOPE(p)&&p.status==="closed").sort((a,b)=>(b.last||0)-(a.last||0))[0];
+  const anchorMint=anchor?anchor.mint:null;
+  const P=PNL.P.filter(p=>FRESH_SCOPE(p)&&(p.status==="open"||(p.last||0)>=ts||p.mint===anchorMint));
   const open=P.filter(p=>p.status==="open"),closed=P.filter(p=>p.status==="closed");
   const realized=closed.filter(p=>p.computed).reduce((s,p)=>s+(p.pnl||0),0);
   const fees=P.reduce((s,p)=>s+(p.fees||0),0);
-  return{...PNL,P,open,closed,realized,fees,_minTs:ts,fresh:true};
+  return{...PNL,P,open,closed,realized,fees,_minTs:ts,fresh:true,anchorMint};
 }
 function renderFresh(){
   const sec=$("#freshSec");
