@@ -42,6 +42,15 @@
   .lt.on{border-color:color-mix(in oklab,var(--bull) 45%,var(--line))}
   .lt .nm{font-weight:750}.lt .st{color:var(--muted);font-size:11px}
   .cnt{margin-top:8px;font-size:11.5px;color:var(--muted);font-family:var(--mono);text-align:right}
+  .ordcard{margin-top:16px;padding:16px 18px}
+  .ordlab{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  #dcaNote{font-size:13px;color:var(--ink2);margin:9px 0 10px;line-height:1.5}#dcaNote b{color:var(--ink)}
+  .order{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+  .order .lv{font-family:var(--mono);font-weight:850;min-width:58px}
+  .order .pc{color:var(--ink2);font-size:13px}
+  .order .badge{margin-left:auto;font-size:11.5px;font-family:var(--mono)}
+  .order.done{opacity:.55}.order.done .lv,.order.done .pc{text-decoration:line-through}
+  .ordfoot{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}.ordfoot b{color:var(--ink2)}
   .bar{margin-top:20px}
   .bar .track{position:relative;height:14px;border-radius:8px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line);overflow:visible}
   .bar .fill{position:absolute;inset:0;border-radius:8px;background:linear-gradient(90deg,var(--bear) 2%,var(--wait) 22%,var(--bull) 38%,var(--hold) 70%,var(--bear));opacity:.85}
@@ -81,6 +90,13 @@
     <div class="do" id="phaseDo"></div>
     <div class="lights" id="lights"></div>
     <div class="cnt" id="cnt"></div>
+  </div>
+
+  <div class="card ordcard" id="ordersCard" style="display:none">
+    <div class="ordlab">Órdenes de compra · escalonadas</div>
+    <div id="dcaNote"></div>
+    <div id="ladder"></div>
+    <div class="ordfoot">Cuanto más baja, <b>más compro</b>. La <b>artillería gorda</b> se despliega en la ventana de suelo (~oct-nov 2026) — para eso guardo liquidez. Después, sigo con el DCA.</div>
   </div>
 
   <div class="bar">
@@ -160,22 +176,45 @@ const wkTop=Math.floor((now-TOP)/WK);
 function loadScript(u){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=u;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("plotly");}
 function band(range,color,op){return {type:"rect",xref:"x",yref:"paper",x0:range[0],x1:range[1],y0:0,y1:1,fillcolor:color,opacity:op,line:{width:0},layer:"below"};}
+// Órdenes escalonadas: nivel + % del capital. Se tacha si el precio ya lo tocó tras el 1-jul-2026.
+const LADDER=[{lvl:60000,pct:20},{lvl:55000,pct:35},{lvl:50000,pct:45}];
+const JUL1=Date.parse("2026-07-01");
+const iso=ts=>new Date(ts).toISOString().slice(0,10);
+
 (async function(){
   let prices=null;
   try{await loadPlotly();
     const r=await fetch("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=max");
     prices=(await r.json()).prices;
   }catch(e){}
-  if(!window.Plotly||!prices||!prices.length){document.querySelector(".chartcard").style.display="none";return;}
-  // adelgazar a ~1 punto cada 3 días
-  const xs=[],ys=[];for(let i=0;i<prices.length;i+=3){xs.push(new Date(prices[i][0]).toISOString().slice(0,10));ys.push(prices[i][1]);}
+  if(!prices||!prices.length){document.querySelector(".chartcard").style.display="none";return;}
+
+  const firstTouch=(level,fromTs)=>{for(const p of prices){if(p[0]>=fromTs&&p[1]<=level)return p[0];}return null;};
+  const dcaStartTs=firstTouch(60000,TOP);   // primer cierre bajo 60k tras el techo = arrancó el DCA
+
+  // ── Órdenes (tarjeta) ──
+  $("#ordersCard").style.display="";
+  $("#dcaNote").innerHTML=dcaStartTs
+    ? `🟢 <b>DCA arrancó</b> al romper <b>$60k</b> (${iso(dcaStartTs)}) — DCA <b>light</b> desde entonces. Órdenes escalonadas por debajo por si sigue cayendo:`
+    : `El DCA arranca al romper <b>$60k</b>. Órdenes escalonadas por debajo por si el precio cae:`;
+  $("#ladder").innerHTML=LADDER.map(o=>{
+    const t=firstTouch(o.lvl,JUL1),done=t!=null;
+    return `<div class="order ${done?"done":""}"><span class="lv">$${o.lvl/1000}k</span><span class="pc">${o.pct}% del capital</span>`
+      +`<span class="badge" style="color:${done?"var(--muted)":"var(--bull)"}">${done?"✅ comprado "+iso(t):"● orden puesta"}</span></div>`;
+  }).join("");
+
+  // ── Gráfico ──
+  if(!window.Plotly){document.querySelector(".chartcard").style.display="none";return;}
+  const xs=[],ys=[];for(let i=0;i<prices.length;i+=3){xs.push(iso(prices[i][0]));ys.push(prices[i][1]);}
   const shapes=[];
   for(const t of TOPS)shapes.push(band(t,"#f2606d",.16));
   for(const f of FLOORS)shapes.push(band(f,"#2fd39b",.15));
-  shapes.push({type:"line",xref:"x",yref:"paper",x0:new Date(now).toISOString().slice(0,10),x1:new Date(now).toISOString().slice(0,10),y0:0,y1:1,line:{color:"#fff",width:1.5,dash:"dot"}});
+  LADDER.forEach(o=>shapes.push({type:"line",xref:"paper",x0:0,x1:1,y0:o.lvl,y1:o.lvl,line:{color:"#e8a13a",width:1,dash:"dot"},opacity:.45,layer:"below"}));
+  if(dcaStartTs)shapes.push({type:"line",xref:"x",yref:"paper",x0:iso(dcaStartTs),x1:iso(dcaStartTs),y0:0,y1:1,line:{color:"#2fd39b",width:1,dash:"dash"}});
+  shapes.push({type:"line",xref:"x",yref:"paper",x0:iso(now),x1:iso(now),y0:0,y1:1,line:{color:"#fff",width:1.5,dash:"dot"}});
   const layout={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",margin:{l:44,r:8,t:6,b:24},height:300,
     font:{color:"#7f92ab",size:10,family:"inherit"},showlegend:false,shapes,
-    xaxis:{gridcolor:"rgba(255,255,255,.04)",linecolor:"#243448",color:"#7f92ab",type:"date",range:["2012-06-01",new Date(NEXT_TOP+60*DAY).toISOString().slice(0,10)]},
+    xaxis:{gridcolor:"rgba(255,255,255,.04)",linecolor:"#243448",color:"#7f92ab",type:"date",range:["2012-06-01",iso(NEXT_TOP+60*DAY)]},
     yaxis:{type:"log",gridcolor:"rgba(255,255,255,.05)",linecolor:"#243448",color:"#7f92ab",tickprefix:"$",tickvals:[10,100,1000,10000,100000],ticktext:["$10","$100","$1k","$10k","$100k"]}};
   window.Plotly.react("chart",[{x:xs,y:ys,mode:"lines",line:{color:"#eef2f8",width:1.4},hovertemplate:"%{x}<br>$%{y:,.0f}<extra></extra>"}],layout,{responsive:true,displayModeBar:false});
 })();
