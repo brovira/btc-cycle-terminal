@@ -4,141 +4,180 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mi plan de Bitcoin · Ciclo de 4 años</title>
-<meta name="description" content="Mi plan de inversión en Bitcoin basado en el ciclo de 4 años: acumular en el suelo, holdear el ciclo, tomar beneficio cerca del techo. Semáforo en vivo de en qué fase estamos.">
+<meta name="description" content="Mi plan de Bitcoin por el ciclo de 4 años: acumular en el suelo (DCA), holdear, tomar profit cerca del techo. Semáforo en vivo de en qué fase estamos.">
 <meta property="og:title" content="Mi plan de Bitcoin · Ciclo de 4 años">
-<meta property="og:description" content="Semáforo en vivo del ciclo de 4 años de BTC: acumular en el suelo, holdear, tomar profit cerca del techo. Este es mi plan.">
+<meta property="og:description" content="Semáforo en vivo del ciclo de 4 años de BTC. Acumular en el suelo, holdear, tomar profit cerca del techo. Este es mi plan.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Mi plan de Bitcoin · Ciclo de 4 años">
 <meta name="twitter:description" content="Semáforo en vivo del ciclo de 4 años de BTC. Acumular en el suelo, holdear, tomar profit cerca del techo.">
 <style>
   :root{color-scheme:dark;
-    --bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;
+    --bg:#0b111b;--bg2:#0e1622;--panel:#141f2e;--panel2:#1a2738;--line:#243448;
     --ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#e8a13a;
-    --bull:#2fc39b;--bear:#f2606d;--wait:#e8a13a;--hold:#3fa9f5;
+    --bull:#2fd39b;--bear:#f2606d;--wait:#e8a13a;--hold:#3fa9f5;
     --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace}
   *{box-sizing:border-box}html,body{margin:0}
-  body{background:radial-gradient(1100px 550px at 75% -10%,color-mix(in oklab,var(--accent) 12%,transparent),transparent 60%),linear-gradient(var(--bg),var(--bg2));
+  body{background:radial-gradient(1200px 600px at 78% -12%,color-mix(in oklab,var(--accent) 13%,transparent),transparent 60%),linear-gradient(var(--bg),var(--bg2));
     color:var(--ink);font-family:var(--font);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh}
-  .wrap{max-width:640px;margin:0 auto;padding:26px 18px 60px}
+  .wrap{max-width:680px;margin:0 auto;padding:24px 16px 60px}
   .kicker{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:700}
-  h1{margin:6px 0 2px;font-size:clamp(23px,6vw,30px);font-weight:850;letter-spacing:-.02em}
-  .sub{color:var(--ink2);font-size:14px;max-width:46ch}
-  .live{margin-top:12px;font-family:var(--mono);font-size:13px;color:var(--ink2)}
+  h1{margin:6px 0 2px;font-size:clamp(23px,6vw,31px);font-weight:850;letter-spacing:-.02em}
+  .sub{color:var(--ink2);font-size:14px;max-width:48ch}
+  .live{margin-top:11px;font-family:var(--mono);font-size:13.5px;color:var(--ink2)}
   .live b{color:var(--ink)}
-  .signal{margin-top:18px;border:1px solid var(--line);border-left:6px solid var(--sc,var(--muted));border-radius:16px;background:var(--panel);padding:18px 20px;box-shadow:0 20px 50px -30px rgba(0,0,0,.7)}
+  .card{border:1px solid var(--line);border-radius:16px;background:var(--panel);box-shadow:0 24px 60px -34px rgba(0,0,0,.75)}
+  .chartcard{margin-top:16px;padding:12px 12px 6px}
+  #chart{width:100%;height:300px}
+  .clegend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;font-size:11.5px;color:var(--muted);padding:4px 4px 8px}
+  .clegend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  .signal{margin-top:16px;border-left:6px solid var(--sc,var(--muted));padding:18px 20px}
   .signal .lab{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
-  .signal .ph{font-size:clamp(21px,5.5vw,27px);font-weight:850;letter-spacing:-.02em;color:var(--sc,var(--ink));margin:4px 0 2px}
-  .signal .do{font-size:14.5px;color:var(--ink2);line-height:1.5}
-  .signal .do b{color:var(--ink)}
-  .bar{margin-top:22px}
-  .bar .track{position:relative;height:14px;border-radius:8px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
-  .bar .fill{position:absolute;inset:0 auto 0 0;border-radius:8px;background:linear-gradient(90deg,var(--bear),var(--wait),var(--bull),var(--hold))}
-  .bar .you{position:absolute;top:-5px;width:4px;height:24px;border-radius:3px;background:#fff;box-shadow:0 0 0 3px var(--bg)}
-  .bar .ends{display:flex;justify-content:space-between;margin-top:7px;font-size:11px;color:var(--muted);font-family:var(--mono)}
-  .bar .floor{position:absolute;top:-3px;width:2px;height:20px;background:var(--bull);opacity:.9}
-  .phases{margin-top:22px;display:grid;gap:10px}
-  .p{border:1px solid var(--line);border-left:5px solid var(--pc);border-radius:13px;background:var(--panel);padding:13px 15px;display:flex;gap:12px;align-items:flex-start}
-  .p.now{box-shadow:0 0 0 1px var(--pc), 0 0 26px -8px var(--pc)}
-  .p .dot{font-size:17px;line-height:1.4}
-  .p .t{font-weight:800;font-size:14.5px}
-  .p .t .when{font-weight:500;color:var(--muted);font-size:12px;font-family:var(--mono);margin-left:6px}
-  .p .d{font-size:13px;color:var(--ink2);margin-top:2px}
-  .p .nowtag{margin-left:auto;font-size:9.5px;font-weight:800;letter-spacing:.06em;color:var(--bg);background:var(--pc);padding:2px 7px;border-radius:999px;text-transform:uppercase;align-self:center}
-  footer{margin-top:26px;color:var(--muted);font-size:12px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px}
-  footer b{color:var(--ink2)}
-  .disc{margin-top:8px;font-size:11.5px;color:var(--muted)}
+  .signal .ph{font-size:clamp(22px,6vw,29px);font-weight:850;letter-spacing:-.02em;color:var(--sc,var(--ink));margin:4px 0 3px}
+  .signal .do{font-size:14.5px;color:var(--ink2);line-height:1.5}.signal .do b{color:var(--ink)}
+  .lights{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .lt{flex:1 1 30%;min-width:130px;border:1px solid var(--line);border-radius:11px;background:var(--panel2);padding:9px 11px;display:flex;align-items:center;gap:8px;font-size:12.5px}
+  .lt .d{width:9px;height:9px;border-radius:50%;flex:0 0 9px;box-shadow:0 0 8px var(--ld)}
+  .lt.on{border-color:color-mix(in oklab,var(--bull) 45%,var(--line))}
+  .lt .nm{font-weight:750}.lt .st{color:var(--muted);font-size:11px}
+  .cnt{margin-top:8px;font-size:11.5px;color:var(--muted);font-family:var(--mono);text-align:right}
+  .bar{margin-top:20px}
+  .bar .track{position:relative;height:14px;border-radius:8px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line);overflow:visible}
+  .bar .fill{position:absolute;inset:0;border-radius:8px;background:linear-gradient(90deg,var(--bear) 2%,var(--wait) 22%,var(--bull) 38%,var(--hold) 70%,var(--bear));opacity:.85}
+  .bar .floor{position:absolute;top:-3px;height:20px;background:color-mix(in oklab,var(--bull) 70%,transparent);border-radius:2px}
+  .bar .you{position:absolute;top:-6px;width:4px;height:26px;border-radius:3px;background:#fff;box-shadow:0 0 0 3px var(--bg)}
+  .bar .ends{display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--muted);font-family:var(--mono)}
+  .phases{margin-top:20px;display:grid;gap:9px}
+  .p{border:1px solid var(--line);border-left:5px solid var(--pc);border-radius:12px;background:var(--panel);padding:12px 14px;display:flex;gap:11px;align-items:flex-start}
+  .p.now{box-shadow:0 0 0 1px var(--pc),0 0 26px -8px var(--pc)}
+  .p .dot{font-size:16px}.p .t{font-weight:800;font-size:14px}
+  .p .t .when{font-weight:500;color:var(--muted);font-size:11.5px;font-family:var(--mono);margin-left:6px}
+  .p .d{font-size:12.5px;color:var(--ink2);margin-top:2px}
+  .p .nowtag{margin-left:auto;font-size:9px;font-weight:800;letter-spacing:.06em;color:var(--bg);background:var(--pc);padding:2px 7px;border-radius:999px;text-transform:uppercase;align-self:center}
+  footer{margin-top:24px;color:var(--muted);font-size:12px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px}
+  footer b{color:var(--ink2)}.disc{margin-top:8px;font-size:11.5px;color:var(--muted)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="kicker">₿ Ciclo de 4 años</div>
   <h1>Mi plan de Bitcoin</h1>
-  <div class="sub">No adivino el precio. Sigo el <b>ciclo de 4 años</b>: acumular en el suelo, holdear, y tomar beneficio cerca del techo. Esto es lo que hago yo.</div>
+  <div class="sub">No adivino el precio. Sigo el <b>ciclo de 4 años</b>: <b>acumular</b> en el suelo, <b>holdear</b> el ciclo, y <b>tomar beneficio</b> cerca del techo.</div>
   <div class="live" id="live">Cargando precio…</div>
 
-  <div class="signal" id="signal">
+  <div class="card chartcard">
+    <div id="chart"></div>
+    <div class="clegend">
+      <span><i style="background:var(--bear)"></i>Techo · vender</span>
+      <span><i style="background:var(--bull)"></i>Suelo · acumular</span>
+      <span><i style="background:#fff"></i>hoy</span>
+    </div>
+  </div>
+
+  <div class="card signal" id="signal">
     <div class="lab">La señal ahora mismo</div>
     <div class="ph" id="phaseName">Calculando…</div>
     <div class="do" id="phaseDo"></div>
+    <div class="lights" id="lights"></div>
+    <div class="cnt" id="cnt"></div>
   </div>
 
   <div class="bar">
-    <div class="track">
-      <div class="fill"></div>
-      <div class="floor" id="floorMark" title="Ventana de suelo"></div>
-      <div class="you" id="youMark"></div>
-    </div>
+    <div class="track"><div class="fill"></div><div class="floor" id="floorMark"></div><div class="you" id="youMark"></div></div>
     <div class="ends"><span>Techo · oct 2025</span><span id="floorLbl">Suelo · ~oct-nov 2026</span><span>Próx. techo · ~2029</span></div>
   </div>
 
   <div class="phases" id="phases"></div>
 
   <footer>
-    <b>Cómo leerlo:</b> el semáforo de arriba marca en qué fase del ciclo estamos <b>hoy</b> y qué toca hacer. Se actualiza solo con la fecha.
-    <div class="disc">Este es <b>mi plan personal</b>, no es asesoramiento financiero. Cada uno debe hacer el suyo y gestionar su riesgo. Las fechas son estimaciones del ciclo, no promesas — el mercado puede hacer cualquier cosa.</div>
+    <b>Cómo leerlo:</b> el semáforo marca en qué fase del ciclo estamos <b>hoy</b> y qué toca hacer. Se actualiza solo con la fecha y el precio.
+    <div class="disc">Es <b>mi plan personal</b>, no asesoramiento financiero — cada uno hace el suyo y gestiona su riesgo. Las fechas son estimaciones del ciclo, no promesas; el mercado puede hacer cualquier cosa.</div>
   </footer>
 </div>
 
 <script>
 "use strict";
 const $=s=>document.querySelector(s);
-const DAY=864e5, WK=7*DAY;
+const DAY=864e5,WK=7*DAY,now=Date.now();
 // Anclas del ciclo (estimaciones)
-const TOP=Date.parse("2025-10-06");
-const FLOOR_S=Date.parse("2026-10-01"), FLOOR_E=Date.parse("2026-11-30");
-const NEXT_TOP=Date.parse("2029-10-01");
-const now=Date.now();
+const TOP=Date.parse("2025-10-06"),FLOOR_S=Date.parse("2026-10-01"),FLOOR_E=Date.parse("2026-11-30"),NEXT_TOP=Date.parse("2029-10-01");
+// Bandas históricas para el gráfico
+const TOPS=[["2013-11-01","2014-01-05"],["2017-12-01","2018-01-20"],["2021-10-15","2021-12-05"],["2025-09-20","2025-11-15"]];
+const FLOORS=[["2015-01-01","2015-09-01"],["2018-11-01","2019-04-15"],["2022-06-15","2023-02-01"],["2026-09-15","2026-12-20"]];
 
-// Fases del ciclo
-const PHASES=[
-  {key:"top",   c:"var(--bear)", dot:"🔴", t:"Techo · Distribución",  when:"cerca del máximo", d:"Tomar beneficio de forma escalonada y pasar a estables. No enamorarse de la subida."},
-  {key:"down",  c:"var(--wait)", dot:"🟠", t:"Bajada · Preparar",      when:"techo → suelo",   d:"No comprar en fuerza. Acumular munición (cash/estables) y tener paciencia hasta el suelo."},
-  {key:"floor", c:"var(--bull)", dot:"🟢", t:"Suelo · ACUMULAR",       when:"~oct-nov 2026",   d:"La señal que espero. DCA + órdenes escalonadas por debajo. Comprar el miedo, sin prisa."},
-  {key:"bull",  c:"var(--hold)", dot:"🔵", t:"Ciclo alcista · Holdear", when:"suelo → próx. techo", d:"Holdear lo acumulado (~3 años). No tocar hasta acercarse al siguiente techo."},
-];
+// ── Fase actual (CORREGIDO: en el bear YA se hace DCA, no se espera) ──
 function phaseNow(){
-  if(now < TOP) return "bull";
-  if(now < FLOOR_S) return "down";
-  if(now <= FLOOR_E) return "floor";
-  // tras el suelo: bull hasta ~6 meses antes del próximo techo, luego "top"
-  if(now < NEXT_TOP - 180*DAY) return "bull";
+  if(now<TOP)return "hold";
+  if(now<=FLOOR_E)return (now>=FLOOR_S)?"floor":"accum";  // bear = acumular; ventana de suelo = artillería
+  if(now<NEXT_TOP-180*DAY)return "hold";
   return "top";
 }
-const cur=phaseNow();
-const curP=PHASES.find(p=>p.key===cur);
+const PHASES=[
+  {key:"top",  c:"var(--bear)",dot:"🔴",t:"Techo · Tomar profit",when:"cerca del máximo",d:"Vender de forma escalonada y pasar a estables. No enamorarse de la subida."},
+  {key:"accum",c:"var(--bull)",dot:"🟢",t:"Acumular · DCA ya",when:"bear → suelo",d:"<b>DCA pequeño YA</b> + órdenes límite escalonadas hacia el soporte. La <b>artillería gorda</b> queda para la ventana de suelo."},
+  {key:"floor",c:"var(--bull)",dot:"🟢",t:"Suelo · Desplegar",when:"~oct-nov 2026",d:"La ventana que espero. Desplegar la artillería: comprar el miedo con fuerza. Suele durar poco."},
+  {key:"hold", c:"var(--hold)",dot:"🔵",t:"Ciclo alcista · Holdear",when:"suelo → próx. techo",d:"Holdear lo acumulado (~3 años). No tocar hasta acercarse al siguiente techo."},
+];
+const cur=phaseNow(),curP=PHASES.find(p=>p.key===cur);
 
-// Semáforo
+// Semáforo principal
 $("#signal").style.setProperty("--sc",curP.c);
 $("#phaseName").textContent=curP.dot+" "+curP.t;
 $("#phaseDo").innerHTML=curP.d;
 
+// 3 señales (por función — sin nombres/umbrales, para no dar la salsa secreta)
+const inFloor=(cur==="floor");
+const LIGHTS=[
+  {nm:"DCA continuo",st:cur==="accum"||inFloor?"activo":(cur==="hold"?"holdeando":"—"),on:cur==="accum"||inFloor},
+  {nm:"Nivel de suelo",st:inFloor?"tocando":"esperando",on:inFloor},
+  {nm:"Ventana de suelo",st:inFloor?"abierta":"esperando (~oct 26)",on:inFloor},
+];
+$("#lights").innerHTML=LIGHTS.map(l=>`<div class="lt ${l.on?"on":""}"><span class="d" style="--ld:${l.on?"var(--bull)":"transparent"};background:${l.on?"var(--bull)":"var(--muted)"}"></span><span><span class="nm">${l.nm}</span><br><span class="st">${l.st}</span></span></div>`).join("");
+$("#cnt").textContent=LIGHTS.filter(l=>l.on).length+"/3 encendidas";
+
 // Barra de progreso (techo → próximo techo)
-const span=NEXT_TOP-TOP;
-const pos=Math.max(0,Math.min(1,(now-TOP)/span));
+const span=NEXT_TOP-TOP,pos=Math.max(0,Math.min(1,(now-TOP)/span));
 $("#youMark").style.left="calc("+(pos*100).toFixed(1)+"% - 2px)";
-const floorPos=((FLOOR_S+FLOOR_E)/2-TOP)/span;
-$("#floorMark").style.left="calc("+(floorPos*100).toFixed(1)+"% - 1px)";
+const fL=((FLOOR_S-TOP)/span*100),fW=((FLOOR_E-FLOOR_S)/span*100);
+$("#floorMark").style.left=fL.toFixed(1)+"%";$("#floorMark").style.width=Math.max(1.5,fW).toFixed(1)+"%";
 
 // Tarjetas de fase
 $("#phases").innerHTML=PHASES.map(p=>`<div class="p ${p.key===cur?"now":""}" style="--pc:${p.c}">
-  <span class="dot">${p.dot}</span>
-  <div><div class="t">${p.t}<span class="when">${p.when}</span></div><div class="d">${p.d}</div></div>
+  <span class="dot">${p.dot}</span><div><div class="t">${p.t}<span class="when">${p.when}</span></div><div class="d">${p.d}</div></div>
   ${p.key===cur?'<span class="nowtag">aquí</span>':''}</div>`).join("");
 
-// Precio en vivo + semanas desde el techo (CoinGecko, público)
+// Precio en vivo
 const wkTop=Math.floor((now-TOP)/WK);
 (async function(){
-  let px=null;
-  try{ const r=await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true"); const j=await r.json(); px=j.bitcoin; }catch(e){}
-  const wkTxt=`<b>${wkTop}</b> semanas desde el techo (oct 2025)`;
-  if(px&&px.usd){
-    const ch=px.usd_24h_change, up=ch>=0;
-    $("#live").innerHTML=`BTC <b>$${Number(px.usd).toLocaleString("es-ES",{maximumFractionDigits:0})}</b> <span style="color:${up?'var(--bull)':'var(--bear)'}">${up?'▲':'▼'} ${Math.abs(ch||0).toFixed(1)}%</span> · ${wkTxt}`;
-  }else{
-    $("#live").innerHTML=wkTxt;
-  }
+  try{const r=await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true");const p=(await r.json()).bitcoin;
+    if(p&&p.usd){const up=(p.usd_24h_change||0)>=0;$("#live").innerHTML=`BTC <b>$${Number(p.usd).toLocaleString("es-ES",{maximumFractionDigits:0})}</b> <span style="color:${up?"var(--bull)":"var(--bear)"}">${up?"▲":"▼"} ${Math.abs(p.usd_24h_change||0).toFixed(1)}%</span> · <b>${wkTop}</b> sem desde el techo`;}
+    else $("#live").innerHTML=`<b>${wkTop}</b> semanas desde el techo (oct 2025)`;
+  }catch(e){$("#live").innerHTML=`<b>${wkTop}</b> semanas desde el techo (oct 2025)`;}
+})();
+
+// ── Gráfico log con bandas del ciclo ──
+function loadScript(u){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=u;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("plotly");}
+function band(range,color,op){return {type:"rect",xref:"x",yref:"paper",x0:range[0],x1:range[1],y0:0,y1:1,fillcolor:color,opacity:op,line:{width:0},layer:"below"};}
+(async function(){
+  let prices=null;
+  try{await loadPlotly();
+    const r=await fetch("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=max");
+    prices=(await r.json()).prices;
+  }catch(e){}
+  if(!window.Plotly||!prices||!prices.length){document.querySelector(".chartcard").style.display="none";return;}
+  // adelgazar a ~1 punto cada 3 días
+  const xs=[],ys=[];for(let i=0;i<prices.length;i+=3){xs.push(new Date(prices[i][0]).toISOString().slice(0,10));ys.push(prices[i][1]);}
+  const shapes=[];
+  for(const t of TOPS)shapes.push(band(t,"#f2606d",.16));
+  for(const f of FLOORS)shapes.push(band(f,"#2fd39b",.15));
+  shapes.push({type:"line",xref:"x",yref:"paper",x0:new Date(now).toISOString().slice(0,10),x1:new Date(now).toISOString().slice(0,10),y0:0,y1:1,line:{color:"#fff",width:1.5,dash:"dot"}});
+  const layout={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",margin:{l:44,r:8,t:6,b:24},height:300,
+    font:{color:"#7f92ab",size:10,family:"inherit"},showlegend:false,shapes,
+    xaxis:{gridcolor:"rgba(255,255,255,.04)",linecolor:"#243448",color:"#7f92ab",type:"date",range:["2012-06-01",new Date(NEXT_TOP+60*DAY).toISOString().slice(0,10)]},
+    yaxis:{type:"log",gridcolor:"rgba(255,255,255,.05)",linecolor:"#243448",color:"#7f92ab",tickprefix:"$",tickvals:[10,100,1000,10000,100000],ticktext:["$10","$100","$1k","$10k","$100k"]}};
+  window.Plotly.react("chart",[{x:xs,y:ys,mode:"lines",line:{color:"#eef2f8",width:1.4},hovertemplate:"%{x}<br>$%{y:,.0f}<extra></extra>"}],layout,{responsive:true,displayModeBar:false});
 })();
 </script>
 </body>
