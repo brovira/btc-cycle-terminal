@@ -12,8 +12,10 @@
 // protege el SITIO desplegado (la URL), que es lo que pediste.
 
 export const config = {
-  // aplica a todo menos al propio favicon/robots (para no romper esas peticiones)
-  matcher: "/((?!favicon.ico|robots.txt).*)",
+  // aplica a todo menos favicon/robots y la página PÚBLICA del plan (btc-plan.html),
+  // que es la única sin contraseña — pensada para compartir (bio de Twitter). Es
+  // autocontenida y no expone datos personales.
+  matcher: "/((?!favicon.ico|robots.txt|btc-plan.html|btc-plan).*)",
 };
 
 async function token(pass) {

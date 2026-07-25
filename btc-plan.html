@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mi plan de Bitcoin · Ciclo de 4 años</title>
+<meta name="description" content="Mi plan de inversión en Bitcoin basado en el ciclo de 4 años: acumular en el suelo, holdear el ciclo, tomar beneficio cerca del techo. Semáforo en vivo de en qué fase estamos.">
+<meta property="og:title" content="Mi plan de Bitcoin · Ciclo de 4 años">
+<meta property="og:description" content="Semáforo en vivo del ciclo de 4 años de BTC: acumular en el suelo, holdear, tomar profit cerca del techo. Este es mi plan.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Mi plan de Bitcoin · Ciclo de 4 años">
+<meta name="twitter:description" content="Semáforo en vivo del ciclo de 4 años de BTC. Acumular en el suelo, holdear, tomar profit cerca del techo.">
+<style>
+  :root{color-scheme:dark;
+    --bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;
+    --ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#e8a13a;
+    --bull:#2fc39b;--bear:#f2606d;--wait:#e8a13a;--hold:#3fa9f5;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace}
+  *{box-sizing:border-box}html,body{margin:0}
+  body{background:radial-gradient(1100px 550px at 75% -10%,color-mix(in oklab,var(--accent) 12%,transparent),transparent 60%),linear-gradient(var(--bg),var(--bg2));
+    color:var(--ink);font-family:var(--font);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh}
+  .wrap{max-width:640px;margin:0 auto;padding:26px 18px 60px}
+  .kicker{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  h1{margin:6px 0 2px;font-size:clamp(23px,6vw,30px);font-weight:850;letter-spacing:-.02em}
+  .sub{color:var(--ink2);font-size:14px;max-width:46ch}
+  .live{margin-top:12px;font-family:var(--mono);font-size:13px;color:var(--ink2)}
+  .live b{color:var(--ink)}
+  .signal{margin-top:18px;border:1px solid var(--line);border-left:6px solid var(--sc,var(--muted));border-radius:16px;background:var(--panel);padding:18px 20px;box-shadow:0 20px 50px -30px rgba(0,0,0,.7)}
+  .signal .lab{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .signal .ph{font-size:clamp(21px,5.5vw,27px);font-weight:850;letter-spacing:-.02em;color:var(--sc,var(--ink));margin:4px 0 2px}
+  .signal .do{font-size:14.5px;color:var(--ink2);line-height:1.5}
+  .signal .do b{color:var(--ink)}
+  .bar{margin-top:22px}
+  .bar .track{position:relative;height:14px;border-radius:8px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
+  .bar .fill{position:absolute;inset:0 auto 0 0;border-radius:8px;background:linear-gradient(90deg,var(--bear),var(--wait),var(--bull),var(--hold))}
+  .bar .you{position:absolute;top:-5px;width:4px;height:24px;border-radius:3px;background:#fff;box-shadow:0 0 0 3px var(--bg)}
+  .bar .ends{display:flex;justify-content:space-between;margin-top:7px;font-size:11px;color:var(--muted);font-family:var(--mono)}
+  .bar .floor{position:absolute;top:-3px;width:2px;height:20px;background:var(--bull);opacity:.9}
+  .phases{margin-top:22px;display:grid;gap:10px}
+  .p{border:1px solid var(--line);border-left:5px solid var(--pc);border-radius:13px;background:var(--panel);padding:13px 15px;display:flex;gap:12px;align-items:flex-start}
+  .p.now{box-shadow:0 0 0 1px var(--pc), 0 0 26px -8px var(--pc)}
+  .p .dot{font-size:17px;line-height:1.4}
+  .p .t{font-weight:800;font-size:14.5px}
+  .p .t .when{font-weight:500;color:var(--muted);font-size:12px;font-family:var(--mono);margin-left:6px}
+  .p .d{font-size:13px;color:var(--ink2);margin-top:2px}
+  .p .nowtag{margin-left:auto;font-size:9.5px;font-weight:800;letter-spacing:.06em;color:var(--bg);background:var(--pc);padding:2px 7px;border-radius:999px;text-transform:uppercase;align-self:center}
+  footer{margin-top:26px;color:var(--muted);font-size:12px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px}
+  footer b{color:var(--ink2)}
+  .disc{margin-top:8px;font-size:11.5px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">₿ Ciclo de 4 años</div>
+  <h1>Mi plan de Bitcoin</h1>
+  <div class="sub">No adivino el precio. Sigo el <b>ciclo de 4 años</b>: acumular en el suelo, holdear, y tomar beneficio cerca del techo. Esto es lo que hago yo.</div>
+  <div class="live" id="live">Cargando precio…</div>
+
+  <div class="signal" id="signal">
+    <div class="lab">La señal ahora mismo</div>
+    <div class="ph" id="phaseName">Calculando…</div>
+    <div class="do" id="phaseDo"></div>
+  </div>
+
+  <div class="bar">
+    <div class="track">
+      <div class="fill"></div>
+      <div class="floor" id="floorMark" title="Ventana de suelo"></div>
+      <div class="you" id="youMark"></div>
+    </div>
+    <div class="ends"><span>Techo · oct 2025</span><span id="floorLbl">Suelo · ~oct-nov 2026</span><span>Próx. techo · ~2029</span></div>
+  </div>
+
+  <div class="phases" id="phases"></div>
+
+  <footer>
+    <b>Cómo leerlo:</b> el semáforo de arriba marca en qué fase del ciclo estamos <b>hoy</b> y qué toca hacer. Se actualiza solo con la fecha.
+    <div class="disc">Este es <b>mi plan personal</b>, no es asesoramiento financiero. Cada uno debe hacer el suyo y gestionar su riesgo. Las fechas son estimaciones del ciclo, no promesas — el mercado puede hacer cualquier cosa.</div>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const DAY=864e5, WK=7*DAY;
+// Anclas del ciclo (estimaciones)
+const TOP=Date.parse("2025-10-06");
+const FLOOR_S=Date.parse("2026-10-01"), FLOOR_E=Date.parse("2026-11-30");
+const NEXT_TOP=Date.parse("2029-10-01");
+const now=Date.now();
+
+// Fases del ciclo
+const PHASES=[
+  {key:"top",   c:"var(--bear)", dot:"🔴", t:"Techo · Distribución",  when:"cerca del máximo", d:"Tomar beneficio de forma escalonada y pasar a estables. No enamorarse de la subida."},
+  {key:"down",  c:"var(--wait)", dot:"🟠", t:"Bajada · Preparar",      when:"techo → suelo",   d:"No comprar en fuerza. Acumular munición (cash/estables) y tener paciencia hasta el suelo."},
+  {key:"floor", c:"var(--bull)", dot:"🟢", t:"Suelo · ACUMULAR",       when:"~oct-nov 2026",   d:"La señal que espero. DCA + órdenes escalonadas por debajo. Comprar el miedo, sin prisa."},
+  {key:"bull",  c:"var(--hold)", dot:"🔵", t:"Ciclo alcista · Holdear", when:"suelo → próx. techo", d:"Holdear lo acumulado (~3 años). No tocar hasta acercarse al siguiente techo."},
+];
+function phaseNow(){
+  if(now < TOP) return "bull";
+  if(now < FLOOR_S) return "down";
+  if(now <= FLOOR_E) return "floor";
+  // tras el suelo: bull hasta ~6 meses antes del próximo techo, luego "top"
+  if(now < NEXT_TOP - 180*DAY) return "bull";
+  return "top";
+}
+const cur=phaseNow();
+const curP=PHASES.find(p=>p.key===cur);
+
+// Semáforo
+$("#signal").style.setProperty("--sc",curP.c);
+$("#phaseName").textContent=curP.dot+" "+curP.t;
+$("#phaseDo").innerHTML=curP.d;
+
+// Barra de progreso (techo → próximo techo)
+const span=NEXT_TOP-TOP;
+const pos=Math.max(0,Math.min(1,(now-TOP)/span));
+$("#youMark").style.left="calc("+(pos*100).toFixed(1)+"% - 2px)";
+const floorPos=((FLOOR_S+FLOOR_E)/2-TOP)/span;
+$("#floorMark").style.left="calc("+(floorPos*100).toFixed(1)+"% - 1px)";
+
+// Tarjetas de fase
+$("#phases").innerHTML=PHASES.map(p=>`<div class="p ${p.key===cur?"now":""}" style="--pc:${p.c}">
+  <span class="dot">${p.dot}</span>
+  <div><div class="t">${p.t}<span class="when">${p.when}</span></div><div class="d">${p.d}</div></div>
+  ${p.key===cur?'<span class="nowtag">aquí</span>':''}</div>`).join("");
+
+// Precio en vivo + semanas desde el techo (CoinGecko, público)
+const wkTop=Math.floor((now-TOP)/WK);
+(async function(){
+  let px=null;
+  try{ const r=await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true"); const j=await r.json(); px=j.bitcoin; }catch(e){}
+  const wkTxt=`<b>${wkTop}</b> semanas desde el techo (oct 2025)`;
+  if(px&&px.usd){
+    const ch=px.usd_24h_change, up=ch>=0;
+    $("#live").innerHTML=`BTC <b>$${Number(px.usd).toLocaleString("es-ES",{maximumFractionDigits:0})}</b> <span style="color:${up?'var(--bull)':'var(--bear)'}">${up?'▲':'▼'} ${Math.abs(ch||0).toFixed(1)}%</span> · ${wkTxt}`;
+  }else{
+    $("#live").innerHTML=wkTxt;
+  }
+})();
+</script>
+</body>
+</html>
