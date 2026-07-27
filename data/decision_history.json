@@ -1,3 +1,34 @@
 {
-  "snapshots": []
+  "snapshots": [
+    {
+      "date": "2026-07-27",
+      "price": 65064.54,
+      "lit": 3,
+      "tot": 4,
+      "action": "Comprar por niveles",
+      "stances": {
+        "lmec": "out",
+        "cowen": "in",
+        "ocm": "dca"
+      },
+      "signals": {
+        "price_le_200w": false,
+        "rsi_34_50": true,
+        "mvrv_green": null,
+        "price_le_realized": null,
+        "fear": true,
+        "cycle_window": true
+      },
+      "metrics": {
+        "bmsb": 69962.08,
+        "ma200": 63562.9,
+        "realized": null,
+        "mvrv_z": null,
+        "rsi": 40.3,
+        "fng": 30,
+        "halv_week": 118.4
+      }
+    }
+  ],
+  "updated_at": "2026-07-27T12:21:31.927006Z"
 }
