@@ -1,0 +1,34 @@
+name: Llamadas forward de analistas (Cowen/LMEC/OnChainMind)
+
+# Extrae la postura direccional/de ciclo de los vídeos NUEVOS (que ya ingesta a diario
+# ingest-transcripts.yml) y re-evalúa TODAS las llamadas pasadas por precio real (7/30/90d).
+# El grading por precio es gratis (CoinGecko) y corre aunque no haya API key.
+
+on:
+  schedule:
+    - cron: "0 14 * * 5" # viernes 14:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  forward:
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      PERSONAS_MODEL: ${{ vars.PERSONAS_MODEL }} # opcional; def. claude-sonnet-5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Extraer llamadas + evaluar por precio
+        run: python agentes/tools/personas_forward.py
+      - name: Commit llamadas + evaluación
+        run: |
+          git config user.name "forward-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add agentes/*/forward/
+          git diff --cached --quiet || git commit -m "personas: llamadas forward + evaluación por precio [skip ci]"
+          git push
