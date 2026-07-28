@@ -150,7 +150,7 @@
   <div class="sec-head" id="chartSec" style="display:none"><h2>Gráfica del histórico</h2><div class="rule"></div></div>
   <div id="histChartWrap" style="display:none">
     <div style="padding:8px 6px 4px;border:1px solid var(--line);border-radius:13px;background:var(--panel)"><div id="histChart" style="width:100%;min-height:360px"></div></div>
-    <div class="note" style="margin-top:8px">▲ verde = comprar por niveles · ● ámbar = DCA base · ○ azul = esperar (dip/seasonality) · ▼ naranja = tomar beneficio. Pasa el ratón por cada punto para ver las señales y el retorno de BTC desde ahí.</div>
+    <div class="note" style="margin-top:8px">▲ verde = DCA + comprar por niveles · ● ámbar = DCA base · ○ azul = esperar (dip/seasonality) · ▼ naranja = tomar beneficio. Pasa el ratón por cada punto para ver las señales y el retorno de BTC desde ahí.</div>
   </div>
 
   <div class="sec-head"><h2>Historial y acierto</h2><div class="rule"></div><span class="mtxt" id="histCount" style="font-size:12px"></span></div>
@@ -741,6 +741,9 @@ document.querySelectorAll("#phTabs .btn").forEach(b=>b.addEventListener("click",
 
 /* ---------- historial: lee data/decision_history.json y puntúa el acierto ---------- */
 const BUY_ACTIONS=new Set(["Comprar por niveles","DCA base","Esperar dip a nivel","Esperar seasonality","Esperar dip"]);
+// etiqueta de DISPLAY: "comprar por niveles" en acumulación ES DCA + tramos → se muestra así
+// (la clave interna sigue siendo "Comprar por niveles" para grading/estilo/matching).
+const actLabel=a=>a==="Comprar por niveles"?"DCA + comprar por niveles":a;
 function hitOf(action,fwd){
   if(action==="Tomar beneficio")return fwd<0;   // vender antes de una caída = acierto
   if(BUY_ACTIONS.has(action))return fwd>0;       // comprar/esperar antes de una subida = acierto
@@ -758,7 +761,7 @@ async function renderChart(D,snaps,livePrice){
   const N=D.t.length,start=Math.max(0,N-180);
   const px=[],py=[];for(let i=start;i<N;i++){px.push(new Date(D.t[i]).toISOString().slice(0,10));py.push(D.c[i]);}
   const traces=[{x:px,y:py,type:"scatter",mode:"lines",name:"BTC",line:{color:muted,width:1.4},hovertemplate:"%{x}<br>$%{y:,.0f}<extra></extra>"}];
-  const styleOf=a=>a==="Comprar por niveles"?{c:bull,s:"triangle-up",n:"Comprar por niveles"}
+  const styleOf=a=>a==="Comprar por niveles"?{c:bull,s:"triangle-up",n:"DCA + comprar por niveles"}
     :a==="DCA base"?{c:accent,s:"circle",n:"DCA base"}
     :a==="Tomar beneficio"?{c:hot,s:"triangle-down",n:"Tomar beneficio"}
     :{c:accum,s:"circle-open",n:"Esperar"};
@@ -767,7 +770,7 @@ async function renderChart(D,snaps,livePrice){
   for(const k in groups){const g=groups[k];
     traces.push({x:g.pts.map(s=>s.date),y:g.pts.map(s=>s.price),type:"scatter",mode:"markers",name:k,
       marker:{color:g.st.c,symbol:g.st.s,size:11,line:{color:ink,width:.6}},
-      customdata:g.pts.map(s=>{const fwd=livePrice/s.price-1;return [s.action,s.lit+"/"+s.tot,(fwd>=0?"+":"")+(fwd*100).toFixed(1)+"%"];}),
+      customdata:g.pts.map(s=>{const fwd=livePrice/s.price-1;return [actLabel(s.action),s.lit+"/"+s.tot,(fwd>=0?"+":"")+(fwd*100).toFixed(1)+"%"];}),
       hovertemplate:"%{x}<br><b>%{customdata[0]}</b><br>Señales %{customdata[1]}<br>Desde entonces %{customdata[2]}<extra></extra>"});}
   const layout={margin:{l:54,r:12,t:6,b:32},height:360,paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
     font:{color:ink,size:11},showlegend:true,legend:{orientation:"h",y:1.14,font:{size:11}},
@@ -782,8 +785,8 @@ function renderDelta(R,snaps){
   if(last){
     const dPx=R.price/last.price-1;
     bits.push(`Desde el <b>${esc(last.date)}</b> (último registro): BTC <b style="color:${dPx>=0?'var(--bull)':'var(--bear)'}">${(dPx>=0?"+":"")+(dPx*100).toFixed(1)}%</b> (${fmtUSD(last.price)} → ${fmtUSD(R.price)})`);
-    if(last.action!==R.action)bits.push(`la acción cambió: <b>${esc(last.action)} → <span style="color:var(--vc,${R.vc})">${esc(R.action)}</span></b>`);
-    else bits.push(`acción sin cambio (<b>${esc(R.action)}</b>)`);
+    if(last.action!==R.action)bits.push(`la acción cambió: <b>${esc(actLabel(last.action))} → <span style="color:var(--vc,${R.vc})">${esc(actLabel(R.action))}</span></b>`);
+    else bits.push(`acción sin cambio (<b>${esc(actLabel(R.action))}</b>)`);
     if(last.lit!==R.lit)bits.push(`señales encendidas: <b>${last.lit}/${last.tot} → ${R.lit}/${R.tot}</b>`);
   }
   // (los cambios de opinión viven en la tarjeta de cada agente, con historial completo y citas)
@@ -806,14 +809,14 @@ async function loadHistory(D,R){
   for(const s of snaps){const fwd=livePrice/s.price-1;(byAction[s.action]=byAction[s.action]||[]).push(fwd);}
   const cards=Object.keys(byAction).map(a=>{const arr=byAction[a];const avg=arr.reduce((x,y)=>x+y,0)/arr.length;
     const hits=arr.map(f=>hitOf(a,f)).filter(h=>h!=null);const hr=hits.length?Math.round(100*hits.filter(Boolean).length/hits.length):null;return{a,n:arr.length,avg,hr};});
-  $("#scorecards").innerHTML=cards.map(c=>`<div class="sig"><div class="r1"><span class="nm">${esc(c.a)}</span><span class="st ${c.hr==null?"off":(c.hr>=50?"on":"nd")}">${c.hr==null?"—":c.hr+"% ok"}</span></div>
+  $("#scorecards").innerHTML=cards.map(c=>`<div class="sig"><div class="r1"><span class="nm">${esc(actLabel(c.a))}</span><span class="st ${c.hr==null?"off":(c.hr>=50?"on":"nd")}">${c.hr==null?"—":c.hr+"% ok"}</span></div>
     <div class="val" style="color:${c.avg>=0?'var(--bull)':'var(--bear)'}">${(c.avg>=0?"+":"")+(c.avg*100).toFixed(1)}%</div>
     <div class="ds">retorno medio de BTC desde esas ${c.n} recomendación(es) hasta hoy</div></div>`).join("");
   // tabla, reciente primero
   const rows=snaps.slice().reverse();
   $("#histTbl").innerHTML=`<thead><tr><th>Semana</th><th>Acción</th><th>Señales</th><th>Precio BTC</th><th>Desde entonces</th><th>Acierto</th></tr></thead><tbody>`+
     rows.map(s=>{const fwd=livePrice/s.price-1;const h=hitOf(s.action,fwd);
-      return `<tr><td class="mono">${esc(s.date)}</td><td>${esc(s.action)}</td><td class="mono">${s.lit}/${s.tot}</td><td class="mono">${fmtUSD(s.price)}</td>
+      return `<tr><td class="mono">${esc(s.date)}</td><td>${esc(actLabel(s.action))}</td><td class="mono">${s.lit}/${s.tot}</td><td class="mono">${fmtUSD(s.price)}</td>
         <td class="mono" style="color:${fwd>=0?'var(--bull)':'var(--bear)'}">${(fwd>=0?"+":"")+(fwd*100).toFixed(1)}%</td>
         <td>${h==null?'<span class="st off">n/a</span>':(h?'<span class="st on">✓</span>':'<span class="st nd">✗</span>')}</td></tr>`;}).join("")+`</tbody>`;
 }
