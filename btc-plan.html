@@ -22,11 +22,9 @@
   body{background:radial-gradient(1200px 600px at 78% -12%,color-mix(in oklab,var(--accent) 13%,transparent),transparent 60%),linear-gradient(var(--bg),var(--bg2));
     color:var(--ink);font-family:var(--font);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh}
   .wrap{max-width:680px;margin:0 auto;padding:24px 16px 60px}
-  .langbar{display:flex;justify-content:space-between;align-items:center;gap:4px;margin-bottom:2px}
+  .langbar{display:flex;justify-content:flex-end;gap:4px;margin-bottom:2px}
   .langbar button{background:transparent;border:1px solid var(--line);color:var(--muted);font:inherit;font-size:11px;font-weight:700;padding:3px 9px;border-radius:8px;cursor:pointer}
   .langbar button.on{color:var(--accent);border-color:var(--accent)}
-  .navlink{background:transparent;border:1px solid var(--line);color:var(--ink2);font:inherit;font-size:11px;font-weight:700;padding:3px 9px;border-radius:8px;cursor:pointer;text-decoration:none}
-  .navlink:hover{border-color:var(--accent);color:var(--accent)}
   .kicker{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:700}
   h1{margin:6px 0 2px;font-size:clamp(23px,6vw,31px);font-weight:850;letter-spacing:-.02em}
   .sub{color:var(--ink2);font-size:14px;max-width:52ch}
@@ -112,7 +110,7 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="langbar"><a class="navlink" id="navDecision" href="decision.html">🧭</a><span style="display:flex;gap:4px"><button id="btnEs">ES</button><button id="btnEn">EN</button></span></div>
+  <div class="langbar"><button id="btnEs">ES</button><button id="btnEn">EN</button></div>
   <div class="kicker" id="kicker"></div>
   <h1 id="h1"></h1>
   <div class="sub" id="sub"></div>
@@ -160,9 +158,6 @@
     <div class="phnote" id="phaseNote"></div>
   </div>
 
-  <div class="sechead"><h2 id="hPhases"></h2><span class="h2sub" id="hPhasesSub"></span></div>
-  <div class="phases" id="phases"></div>
-
   <footer><span id="footMain"></span><div class="disc" id="footDisc"></div></footer>
 </div>
 
@@ -185,7 +180,6 @@ const mesAno=(ts,l)=>new Date(ts).toLocaleDateString(l==="es"?"es-ES":"en-US",{m
 const T={es:{
   htmlTitle:"Mi plan de Bitcoin · Ciclo de 4 años",
   metaDesc:"Mi plan de Bitcoin por el ciclo de 4 años: acumular en el suelo (DCA), holdear, tomar profit cerca del techo.",
-  navDecision:"🧭 ¿Qué hago hoy?",
   kicker:"₿ Ciclo de 4 años", h1:"Mi plan de Bitcoin",
   sub:"No adivino el precio. Sigo el <b>ciclo de 4 años</b>: <b>acumular</b> (DCA) hacia el suelo, <b>holdear</b> el ciclo, y <b>tomar beneficio</b> cerca del techo.",
   signalLab:"La señal ahora mismo",
@@ -251,7 +245,6 @@ const T={es:{
 },en:{
   htmlTitle:"My Bitcoin plan · 4-year cycle",
   metaDesc:"My Bitcoin plan around the 4-year cycle: accumulate at the floor (DCA), hold, take profit near the top.",
-  navDecision:"🧭 What do I do today?",
   kicker:"₿ 4-year cycle", h1:"My Bitcoin plan",
   sub:"I don't predict price. I follow the <b>4-year cycle</b>: <b>accumulate</b> (DCA) toward the floor, <b>hold</b> the cycle, and <b>take profit</b> near the top.",
   signalLab:"The signal right now",
@@ -339,7 +332,6 @@ function render(){
   document.documentElement.lang=LANG;
   document.title=t.htmlTitle; $("#metaDesc").setAttribute("content",t.metaDesc);
   $("#btnEs").classList.toggle("on",LANG==="es"); $("#btnEn").classList.toggle("on",LANG==="en");
-  $("#navDecision").textContent=t.navDecision;
   $("#kicker").textContent=t.kicker; $("#h1").textContent=t.h1; $("#sub").innerHTML=t.sub;
   $("#signalLab").textContent=t.signalLab;
   $("#clegend").innerHTML=`<span><i style="background:var(--bear)"></i>${t.endTop}</span><span><i style="background:var(--bull)"></i>${t.endFloor}</span><span><i style="background:#fff"></i>${t.weeksSince}</span>`;
@@ -348,7 +340,6 @@ function render(){
   $("#hRoad").textContent=t.hRoad; $("#hRoadSub").textContent=t.hRoadSub;
   $("#hBt").textContent=t.hBt; $("#hBtSub").textContent=t.hBtSub;
   $("#hPh").textContent=t.hPh; $("#hPhSub").textContent=t.hPhSub;
-  $("#hPhases").textContent=t.hPhases; $("#hPhasesSub").textContent=t.hPhasesSub;
   $("#btLead").innerHTML=t.btLead; if($("#btLoad"))$("#btLoad").textContent=t.btLoad;
   $("#footMain").innerHTML=t.footMain; $("#footDisc").innerHTML=t.footDisc;
 
@@ -367,9 +358,6 @@ function render(){
 
   renderRoad();
   renderPhBtns(); if(PH_D)renderPhaseChart(PH_D);
-
-  // fases
-  $("#phases").innerHTML=PHASE_META.map(p=>{const x=t.phases[p.key];return `<div class="p ${p.key===cur?"now":""}" style="--pc:${p.c}"><span class="dot">${p.dot}</span><div><div class="t">${x.t}<span class="when">${x.when}</span></div><div class="d">${x.d}</div></div>${p.key===cur?'<span class="nowtag">'+(LANG==="es"?"aquí":"here")+'</span>':''}</div>`;}).join("");
 
   // órdenes (si ya hay precios)
   if(dcaStartTs!==null||Object.keys(ladderTouch).length){
@@ -593,25 +581,63 @@ function phAutoY(ev){
   PH_YLOCK=true;window.Plotly.relayout(gd,{"yaxis.range":[Math.log10(lo*0.85),Math.log10(hi*1.15)]}).then(()=>{PH_YLOCK=false;});
 }
 
+// ── datos: mismo loader robusto que decision.html (Binance → CoinGecko → prefijo Coin Metrics) ──
+async function fetchWeekly(){
+  for(const host of["api.binance.com","api.binance.us"]){
+    try{const r=await fetch(`https://${host}/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=1000`,{cache:"no-store"});
+      if(r.ok){const j=await r.json();return{t:j.map(k=>k[0]),c:j.map(k=>+k[4])};}}catch(e){}}
+  try{const r=await fetch("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=max&interval=daily",{cache:"no-store"});
+    if(r.ok){const j=await r.json();const px=j.prices||[];const t=[],c=[];let bs=null,bc,bt;
+      for(const[ms,p]of px){if(bs==null){bs=ms;bc=p;bt=ms;continue;}if(ms-bs>=WK){t.push(bt);c.push(bc);bs=ms;bc=p;bt=ms;}else{bc=p;bt=ms;}}
+      if(bs!=null){t.push(bt);c.push(bc);}return{t,c};}}catch(e){}
+  throw new Error("sin precio");
+}
+async function cmGet(metrics){
+  const q="assets=btc&metrics="+metrics+"&frequency=1d&page_size=10000&start_time=2011-01-01";
+  for(const u of["/api/coinmetrics?"+q,"https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?"+q]){
+    try{const r=await fetch(u,{cache:"no-store"});if(r.ok){const j=await r.json();if(j&&j.data&&j.data.length)return j.data;}}catch(e){}}
+  return null;
+}
+let CM_PREFIX=null;
+async function fetchFullHistory(D){
+  if(!CM_PREFIX){
+    try{const rows=await cmGet("PriceUSD");
+      if(rows&&rows.length){const dt=[],px=[];
+        for(const x of rows){if(x.PriceUSD!=null){const t=Date.parse(String(x.time).slice(0,10));if(!isNaN(t)){dt.push(t);px.push(+x.PriceUSD);}}}
+        const t=[],c=[];let bs=null,bc,bt;
+        for(let i=0;i<dt.length;i++){const ms=dt[i],p=px[i];if(bs==null){bs=ms;bc=p;bt=ms;continue;}if(ms-bs>=WK){t.push(bt);c.push(bc);bs=ms;bc=p;bt=ms;}else{bc=p;bt=ms;}}
+        if(bs!=null){t.push(bt);c.push(bc);}
+        const b0=D.t[0],pt=[],pc=[];for(let i=0;i<t.length;i++){if(t[i]<b0-3*864e5){pt.push(t[i]);pc.push(c[i]);}}
+        CM_PREFIX={t:pt,c:pc};
+      }else CM_PREFIX={t:[],c:[]};
+    }catch(e){CM_PREFIX={t:[],c:[]};}
+  }
+  return CM_PREFIX.t.length?{t:[...CM_PREFIX.t,...D.t],c:[...CM_PREFIX.c,...D.c]}:D;
+}
+
 // ── gráfico principal + órdenes + backtest ──
 function loadScript(u){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=u;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("plotly");}
 function band(r,c,o){return {type:"rect",xref:"x",yref:"paper",x0:r[0],x1:r[1],y0:0,y1:1,fillcolor:c,opacity:o,line:{width:0},layer:"below"};}
 (async function(){
-  let prices=null;
-  try{await loadPlotly();const r=await fetch("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=max");prices=(await r.json()).prices;}catch(e){}
-  if(!prices||!prices.length){document.querySelector(".chartcard").style.display="none";const bl=$("#btLoad");if(bl)bl.textContent=LANG==="es"?"No se pudo cargar el histórico de precios (fuente caída).":"Couldn't load price history (source down).";return;}
+  // 1) datos — independiente de Plotly
+  let W=null;
+  try{ W=await fetchWeekly(); W=await fetchFullHistory(W); }catch(e){ W=null; }
+  if(!W||!W.c||!W.c.length){document.querySelector(".chartcard").style.display="none";const bl=$("#btLoad");if(bl)bl.textContent=LANG==="es"?"No se pudo cargar el histórico de precios (fuente caída).":"Couldn't load price history (source down).";return;}
+  const prices=W.t.map((ms,i)=>[ms,W.c[i]]); // [ms, cierre semanal]
   const firstTouch=(lvl,from)=>{for(const p of prices){if(p[0]>=from&&p[1]<=lvl)return p[0];}return null;};
   dcaStartTs=firstTouch(60000,TOP);
   LADDER.forEach(o=>{ladderTouch[o.lvl]=firstTouch(o.lvl,JUL1);});
-  // backtest + grafico de confluencia
   try{window.__btResult=runBacktest(prices);}catch(e){window.__btResult=null;}
   try{PH_D=weeklyResample(prices);}catch(e){PH_D=null;}
-  render(); // re-render con órdenes + backtest + confluencia ya calculados
+
+  // 2) Plotly — aparte: si falla, las tablas se ven igual y los gráficos se ocultan solos
+  try{await loadPlotly();}catch(e){}
+  render(); // órdenes + backtest + confluencia (dibuja gráficos si hay Plotly)
   if(!window.__btResult){const bl=$("#btBody");if(bl)bl.innerHTML=`<div class="btload">${LANG==="es"?"No hay suficientes datos para el backtest.":"Not enough data for the backtest."}</div>`;}
 
   if(!window.Plotly){document.querySelector(".chartcard").style.display="none";return;}
-  const xs=[],ys=[];for(let i=0;i<prices.length;i+=3){xs.push(iso(prices[i][0]));ys.push(prices[i][1]);}
+  const xs=prices.map(p=>iso(p[0])),ys=prices.map(p=>p[1]);
   const shapes=[];
   for(const tp of TOPS)shapes.push(band(tp,"#f2606d",.16));
   for(const f of FLOORS)shapes.push(band(f,"#2fd39b",.15));
