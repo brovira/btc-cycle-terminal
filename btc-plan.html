@@ -22,9 +22,11 @@
   body{background:radial-gradient(1200px 600px at 78% -12%,color-mix(in oklab,var(--accent) 13%,transparent),transparent 60%),linear-gradient(var(--bg),var(--bg2));
     color:var(--ink);font-family:var(--font);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh}
   .wrap{max-width:680px;margin:0 auto;padding:24px 16px 60px}
-  .langbar{display:flex;justify-content:flex-end;gap:4px;margin-bottom:2px}
+  .langbar{display:flex;justify-content:space-between;align-items:center;gap:4px;margin-bottom:2px}
   .langbar button{background:transparent;border:1px solid var(--line);color:var(--muted);font:inherit;font-size:11px;font-weight:700;padding:3px 9px;border-radius:8px;cursor:pointer}
   .langbar button.on{color:var(--accent);border-color:var(--accent)}
+  .navlink{background:transparent;border:1px solid var(--line);color:var(--ink2);font:inherit;font-size:11px;font-weight:700;padding:3px 9px;border-radius:8px;cursor:pointer;text-decoration:none}
+  .navlink:hover{border-color:var(--accent);color:var(--accent)}
   .kicker{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:700}
   h1{margin:6px 0 2px;font-size:clamp(23px,6vw,31px);font-weight:850;letter-spacing:-.02em}
   .sub{color:var(--ink2);font-size:14px;max-width:52ch}
@@ -110,7 +112,7 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="langbar"><button id="btnEs">ES</button><button id="btnEn">EN</button></div>
+  <div class="langbar"><a class="navlink" id="navDecision" href="decision.html">🧭</a><span style="display:flex;gap:4px"><button id="btnEs">ES</button><button id="btnEn">EN</button></span></div>
   <div class="kicker" id="kicker"></div>
   <h1 id="h1"></h1>
   <div class="sub" id="sub"></div>
@@ -183,6 +185,7 @@ const mesAno=(ts,l)=>new Date(ts).toLocaleDateString(l==="es"?"es-ES":"en-US",{m
 const T={es:{
   htmlTitle:"Mi plan de Bitcoin · Ciclo de 4 años",
   metaDesc:"Mi plan de Bitcoin por el ciclo de 4 años: acumular en el suelo (DCA), holdear, tomar profit cerca del techo.",
+  navDecision:"🧭 ¿Qué hago hoy?",
   kicker:"₿ Ciclo de 4 años", h1:"Mi plan de Bitcoin",
   sub:"No adivino el precio. Sigo el <b>ciclo de 4 años</b>: <b>acumular</b> (DCA) hacia el suelo, <b>holdear</b> el ciclo, y <b>tomar beneficio</b> cerca del techo.",
   signalLab:"La señal ahora mismo",
@@ -248,6 +251,7 @@ const T={es:{
 },en:{
   htmlTitle:"My Bitcoin plan · 4-year cycle",
   metaDesc:"My Bitcoin plan around the 4-year cycle: accumulate at the floor (DCA), hold, take profit near the top.",
+  navDecision:"🧭 What do I do today?",
   kicker:"₿ 4-year cycle", h1:"My Bitcoin plan",
   sub:"I don't predict price. I follow the <b>4-year cycle</b>: <b>accumulate</b> (DCA) toward the floor, <b>hold</b> the cycle, and <b>take profit</b> near the top.",
   signalLab:"The signal right now",
@@ -335,6 +339,7 @@ function render(){
   document.documentElement.lang=LANG;
   document.title=t.htmlTitle; $("#metaDesc").setAttribute("content",t.metaDesc);
   $("#btnEs").classList.toggle("on",LANG==="es"); $("#btnEn").classList.toggle("on",LANG==="en");
+  $("#navDecision").textContent=t.navDecision;
   $("#kicker").textContent=t.kicker; $("#h1").textContent=t.h1; $("#sub").innerHTML=t.sub;
   $("#signalLab").textContent=t.signalLab;
   $("#clegend").innerHTML=`<span><i style="background:var(--bear)"></i>${t.endTop}</span><span><i style="background:var(--bull)"></i>${t.endFloor}</span><span><i style="background:#fff"></i>${t.weeksSince}</span>`;
