@@ -96,6 +96,16 @@
   .phbtn.on{color:var(--accent);border-color:var(--accent)}
   #phaseChart{width:100%;height:380px}
   .phnote{margin-top:8px;font-size:11px;color:var(--muted);line-height:1.55}.phnote b{color:var(--ink2)}.phnote i{color:var(--ink2)}
+  /* ── acordeón de señales ── */
+  .sigacc{margin-top:12px;display:grid;gap:8px}
+  .sigacc-t{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:2px 2px 2px}
+  .sigit{border:1px solid var(--line);border-radius:11px;background:var(--panel);overflow:hidden}
+  .sigit summary{cursor:pointer;padding:12px 14px;font-weight:750;font-size:13.5px;list-style:none;display:flex;align-items:center;justify-content:space-between;color:var(--ink)}
+  .sigit summary::-webkit-details-marker{display:none}
+  .sigit summary::after{content:"＋";color:var(--muted);font-weight:800;margin-left:8px}
+  .sigit[open] summary::after{content:"−"}
+  .sigit[open] summary{border-bottom:1px solid var(--line)}
+  .sigit-d{padding:12px 14px;font-size:13px;color:var(--ink2);line-height:1.55}.sigit-d b{color:var(--ink)}
 
   .phases{margin-top:14px;display:grid;gap:9px}
   .p{border:1px solid var(--line);border-left:5px solid var(--pc);border-radius:12px;background:var(--panel);padding:12px 14px;display:flex;gap:11px;align-items:flex-start}
@@ -116,11 +126,7 @@
   <div class="sub" id="sub"></div>
   <div class="live" id="live"></div>
 
-  <div class="card chartcard">
-    <div id="chart"></div>
-    <div class="clegend" id="clegend"></div>
-  </div>
-
+  <!-- 1 · Señal de hoy -->
   <div class="sechead"><h2 id="hSignal"></h2><span class="h2sub" id="hSignalSub"></span></div>
   <div class="card signal" id="signal">
     <div class="lab" id="signalLab"></div>
@@ -130,13 +136,7 @@
     <div class="cnt" id="cnt"></div>
   </div>
 
-  <div class="card ordcard" id="ordersCard" style="display:none">
-    <div class="ordlab" id="ordLab"></div>
-    <div id="dcaNote"></div>
-    <div id="ladder"></div>
-    <div class="ordfoot" id="ordFoot"></div>
-  </div>
-
+  <!-- 2 · Hoja de ruta -->
   <div class="sechead"><h2 id="hRoad"></h2><span class="h2sub" id="hRoadSub"></span></div>
   <div class="card road">
     <div class="now" id="roadNow"></div>
@@ -145,17 +145,28 @@
     <div class="buywin" id="buywin"></div>
   </div>
 
-  <div class="sechead"><h2 id="hBt"></h2><span class="h2sub" id="hBtSub"></span></div>
-  <div class="card bt">
-    <div class="btlead" id="btLead"></div>
-    <div id="btBody"><div class="btload" id="btLoad"></div></div>
+  <!-- 3 · Órdenes de compra -->
+  <div class="sechead"><h2 id="hOrders"></h2><span class="h2sub" id="hOrdersSub"></span></div>
+  <div class="card ordcard" id="ordersCard">
+    <div id="dcaNote"></div>
+    <div id="ladder"></div>
+    <div class="ordfoot" id="ordFoot"></div>
   </div>
 
+  <!-- 4 · Precio y ventanas -->
   <div class="sechead"><h2 id="hPh"></h2><span class="h2sub" id="hPhSub"></span></div>
   <div class="card phcard">
     <div class="phbtns" id="phBtns"></div>
     <div id="phaseChart"></div>
     <div class="phnote" id="phaseNote"></div>
+  </div>
+  <div class="sigacc" id="sigAcc"></div>
+
+  <!-- 5 · Backtest -->
+  <div class="sechead"><h2 id="hBt"></h2><span class="h2sub" id="hBtSub"></span></div>
+  <div class="card bt">
+    <div class="btlead" id="btLead"></div>
+    <div id="btBody"><div class="btload" id="btLoad"></div></div>
   </div>
 
   <footer><span id="footMain"></span><div class="disc" id="footDisc"></div></footer>
@@ -171,7 +182,7 @@ const MAXBUY=Date.parse("2027-06-30");           // fin de la ventana de compra 
 const SELL_S=NEXT_TOP-180*DAY;                   // ventana de venta cerca del próximo techo
 const TOPS=[["2013-11-01","2014-01-05"],["2017-12-01","2018-01-20"],["2021-10-15","2021-12-05"],["2025-09-20","2025-11-15"]];
 const FLOORS=[["2015-01-01","2015-09-01"],["2018-11-01","2019-04-15"],["2022-06-15","2023-02-01"],["2026-09-15","2026-12-20"]];
-const LADDER=[{lvl:60000,pct:20},{lvl:55000,pct:35},{lvl:50000,pct:45}];
+const LADDER=[{lvl:55000,pct:20},{lvl:50000,pct:35},{lvl:45000,pct:45}];
 const JUL1=Date.parse("2026-07-01");
 const iso=ts=>new Date(ts).toISOString().slice(0,10);
 const mesAno=(ts,l)=>new Date(ts).toLocaleDateString(l==="es"?"es-ES":"en-US",{month:"short",year:"numeric"});
@@ -185,8 +196,15 @@ const T={es:{
   signalLab:"La señal ahora mismo",
   hSignal:"1 · La señal de hoy", hSignalSub:"qué toca hacer ahora",
   hRoad:"2 · Hoja de ruta del ciclo", hRoadSub:"cuándo comprar, cuándo parar, cuándo vender",
-  hBt:"3 · ¿Y esto funciona?", hBtSub:"backtest de las señales vs comprar y aguantar",
-  hPh:"4 · Ventanas de compra/venta sobre el precio", hPhSub:"confluencia de las 3 señales en todo el histórico",
+  hOrders:"3 · Órdenes de compra", hOrdersSub:"qué comprar y a qué precio",
+  hPh:"4 · Precio y ventanas de compra/venta", hPhSub:"las 3 señales del ciclo sobre el precio real",
+  hBt:"5 · ¿Y esto funciona?", hBtSub:"backtest de las señales vs comprar y aguantar",
+  sigAccTitle:"Las 3 señales temporales que usamos, explicadas",
+  sigItems:[
+    {n:"🎯 LMEC — semanas desde el techo",d:"Mide el ciclo en <b>semanas desde el TECHO</b> (no del halving). La compra fuerte ≈ <b>53 semanas tras el techo</b> (→ oct/nov 2026), confirmada por la <b>2ª ruptura al alza de la BMSB</b> (la 1ª es una trampa). Vende en la euforia cerca del techo. Mientras tanto, DCA por niveles hacia el suelo."},
+    {n:"📊 Cowen — calendario + risk metric",d:"DCA cuando su <b>risk metric</b> está bajo (&lt;0,3) y reduce cuando está alto (&gt;0,6). En calendario: compra la <b>2ª mitad del año midterm</b> (tras el mínimo de junio) y el inicio del pre-halving; vende en el <b>Q4 del año post-halving</b>. Es la ventana de compra más larga de las tres."},
+    {n:"⏱️ Patrón temporal — la matemática del ciclo",d:"Cálculo propio sobre las fechas reales: el suelo llega <b>52-58 semanas tras cada techo</b> y el techo siguiente <b>150-153 semanas tras cada suelo</b>. Muy estable en los 3 ciclos con halving → proyecta el suelo en <b>oct-nov 2026</b>. No es cita de nadie: es el ritmo histórico."}
+  ],
   phBtns:{lmec:"LMEC",cowen:"Cowen",patron:"Patrón",todos:"Todos (overlap)"},
   phSince:" <span class=\"mtxt\">· desde 2013 · histórico de precio (CoinGecko)</span>",
   phNotes:{
@@ -214,19 +232,19 @@ const T={es:{
   },
   buywin:(fin)=>`🎯 <b>Tu ventana de COMPRA está abierta</b> y se cierra <span class="big">~${fin}</span>. La <b>compra fuerte</b> (la artillería) va en el suelo <b>~oct-nov 2026</b>; después, <b>DCA suave</b> hasta ~jun 2027. A partir de ahí <b>NO se compra más</b> — empieza el HOLD (~2 años) hasta el próximo techo.`,
   // backtest
-  btLead:'Pregunta justa: <b>¿merece la pena seguir las señales del ciclo, o comprar y aguantar (HODL) y ya está?</b> Backtest sobre <b>todo el histórico de BTC</b> (velas semanales). Cada estrategia entra/sale al cierre semanal según su regla; fuera del mercado, en efectivo (0%). Sin apalancamiento. Mismo capital inicial. Mira las dos columnas que importan: <b>cuánto multiplicas</b> y, sobre todo, <b>la peor caída que aguantas por el camino</b>.',
+  btLead:'Pregunta justa: <b>¿merece la pena seguir las señales del ciclo, o comprar y aguantar (HODL) y ya está?</b> Backtest <b>desde 2015</b> (mercado ya maduro), velas semanales. Cada estrategia entra/sale al cierre semanal según su regla; fuera del mercado, en efectivo (0%). Sin apalancamiento. Verdad honesta: en <b>retorno bruto NADIE bate a HODL</b> en BTC (estar fuera se pierde subidas). Lo que dan las señales es lo otro: <b>mucho menos sufrimiento</b> — mira la columna de <b>peor caída</b>.',
   btLoad:"Cargando precios y ejecutando el backtest…",
-  btCols:["Estrategia","×  final","Anual (CAGR)","Peor caída","vs HODL"],
+  btCols:["Estrategia","×  final","Anual (CAGR)","Peor caída"],
   stratHODL:{n:"Comprar y aguantar",r:"comprar el día 1 y no tocar nunca"},
   stratLMEC:{n:"LMEC · BMSB / ciclo",r:"entra en la 2ª ruptura de la BMSB, vende en la euforia del techo"},
   stratCowen:{n:"Cowen · Risk metric",r:"DCA con riesgo <0,30 · sale por encima de 0,60 (aprox. abierta)"},
-  stratOCM:{n:"OnChainMind · zona de valor",r:"compra la zona baja de riesgo, holdea hasta que se calienta mucho"},
+  stratPatron:{n:"Patrón temporal · ciclo",r:"compra ~52 sem tras el techo (el suelo) y holdea hasta el techo siguiente"},
   stratCons:{n:"Consenso (las 3)",r:"dentro cuando ≥2 de las 3 señales coinciden"},
   vf:{beat:(n,m,h)=>`<b>${n}</b> habría convertido 1 en <b>×${m}</b>, por encima del ×${h} de comprar y aguantar`,
       near:(n,m,h)=>`<b>${n}</b> convirtió 1 en <b>×${m}</b> (comprar y aguantar dio ×${h})`,
       ddbetter:(dd,ddh)=>` — y con una peor caída de solo <b>−${dd}%</b> frente al <b>−${ddh}%</b> de HODL.`,
       ddsame:(dd)=>`, con una peor caída de −${dd}%.`,
-      tag:` El objetivo del ciclo no es batir el retorno bruto: es <b>capturar la mayor parte con una fracción del sufrimiento</b>.`},
+      tag:` El objetivo del ciclo no es batir el retorno bruto: es <b>capturar buena parte con una fracción del sufrimiento</b>.`},
   btNote:"Aproximación educativa, no asesoramiento financiero. Las reglas replican el método de cada analista pero simplificado a cierre semanal y a partir de precio (la métrica de riesgo de Cowen es propietaria; aquí se aproxima con la desviación sobre la regresión logarítmica, sin mirar al futuro). Rentabilidad pasada no garantiza resultados. El motor completo, con más señales y métricas, está en la pestaña Backtesting.",
   eqYou:"hoy",
   endTop:"Techo · oct 2025", endFloor:"Suelo · ~oct-nov 2026", endNext:"Próx. techo · ~2029",
@@ -250,8 +268,15 @@ const T={es:{
   signalLab:"The signal right now",
   hSignal:"1 · Today's signal", hSignalSub:"what to do now",
   hRoad:"2 · Cycle roadmap", hRoadSub:"when to buy, when to stop, when to sell",
-  hBt:"3 · Does it actually work?", hBtSub:"backtest of the signals vs buy & hold",
-  hPh:"4 · Buy/sell windows over price", hPhSub:"where the 3 signals line up across all history",
+  hOrders:"3 · Buy orders", hOrdersSub:"what to buy and at what price",
+  hPh:"4 · Price & buy/sell windows", hPhSub:"the 3 cycle signals over real price",
+  hBt:"5 · Does it actually work?", hBtSub:"backtest of the signals vs buy & hold",
+  sigAccTitle:"The 3 timing signals we use, explained",
+  sigItems:[
+    {n:"🎯 LMEC — weeks since the top",d:"Measures the cycle in <b>weeks since the TOP</b> (not the halving). The heavy buy ≈ <b>53 weeks after the top</b> (→ Oct/Nov 2026), confirmed by the <b>2nd upward BMSB reclaim</b> (the 1st is a trap). Sells into euphoria near the top. Meanwhile, DCA by price levels toward the floor."},
+    {n:"📊 Cowen — calendar + risk metric",d:"DCA when his <b>risk metric</b> is low (&lt;0.3) and trims when high (&gt;0.6). By calendar: buys the <b>2nd half of the midterm year</b> (after the June low) and the start of the pre-halving year; sells in <b>Q4 of the post-halving year</b>. The longest buying window of the three."},
+    {n:"⏱️ Time pattern — the cycle's math",d:"Own calc on the real dates: the floor lands <b>52-58 weeks after each top</b> and the next top <b>150-153 weeks after each floor</b>. Very stable across the 3 halving cycles → projects the floor at <b>Oct-Nov 2026</b>. Nobody's quote: just the historical rhythm."}
+  ],
   phBtns:{lmec:"LMEC",cowen:"Cowen",patron:"Pattern",todos:"All (overlap)"},
   phSince:" <span class=\"mtxt\">· since 2013 · price history (CoinGecko)</span>",
   phNotes:{
@@ -277,19 +302,19 @@ const T={es:{
     sell:{t:"🔴 Sell",x:"Near the next top (~2029): take profit in tranches and rotate to stables."}
   },
   buywin:(fin)=>`🎯 <b>Your BUYING window is open</b> and closes <span class="big">~${fin}</span>. The <b>heavy buy</b> (the artillery) is at the floor <b>~Oct-Nov 2026</b>; after that, <b>light DCA</b> until ~Jun 2027. From then on <b>you don't buy anymore</b> — the ~2-year HOLD begins until the next top.`,
-  btLead:'Fair question: <b>does following the cycle signals beat buy & hold (HODL)?</b> Below, a backtest over <b>all of BTC history</b> (weekly candles). Each strategy enters/exits at the weekly close by its rule; when out, it sits in cash (0%). No leverage. Same starting stake for all.',
+  btLead:'Fair question: <b>is it worth following the cycle signals, or just buy & hold (HODL)?</b> Backtest <b>since 2015</b> (mature market), weekly candles. Each strategy enters/exits at the weekly close by its rule; when out, it sits in cash (0%). No leverage. Honest truth: on <b>raw return NOBODY beats HODL</b> in BTC (sitting out misses rallies). What the signals give is the other thing: <b>far less pain</b> — look at the <b>worst drop</b> column.',
   btLoad:"Loading prices and running the backtest…",
-  btCols:["Strategy","×  final","Annual (CAGR)","Worst drop","vs HODL"],
+  btCols:["Strategy","×  final","Annual (CAGR)","Worst drop"],
   stratHODL:{n:"Buy & hold",r:"buy on day 1 and never touch it"},
   stratLMEC:{n:"LMEC · BMSB / cycle",r:"enters on the 2nd BMSB reclaim, sells into the top's euphoria"},
   stratCowen:{n:"Cowen · Risk metric",r:"DCA when risk <0.30 · exits above 0.60 (open approximation)"},
-  stratOCM:{n:"OnChainMind · value zone",r:"buys the low-risk zone, holds until it runs very hot"},
+  stratPatron:{n:"Time pattern · cycle",r:"buys ~52 wks after the top (the floor) and holds until the next top"},
   stratCons:{n:"Consensus (all 3)",r:"in-market when ≥2 of the 3 signals agree"},
   vf:{beat:(n,m,h)=>`<b>${n}</b> would have turned 1 into <b>×${m}</b>, above buy & hold's ×${h}`,
       near:(n,m,h)=>`<b>${n}</b> turned 1 into <b>×${m}</b> (buy & hold did ×${h})`,
       ddbetter:(dd,ddh)=>` — and with a worst drop of just <b>−${dd}%</b> vs HODL's <b>−${ddh}%</b>.`,
       ddsame:(dd)=>`, with a worst drop of −${dd}%.`,
-      tag:` The cycle's goal isn't to beat raw return: it's to <b>capture most of it with a fraction of the pain</b>.`},
+      tag:` The cycle's goal isn't to beat raw return: it's to <b>capture a big part of it with a fraction of the pain</b>.`},
   btNote:"Educational approximation, not financial advice. The rules replicate each analyst's method but simplified to weekly close and derived from price (Cowen's risk metric is proprietary; here it's approximated by deviation from a log regression, with no lookahead). Past performance doesn't guarantee results. The full engine, with more signals and metrics, is on the Backtesting tab.",
   eqYou:"now",
   endTop:"Top · Oct 2025", endFloor:"Floor · ~Oct-Nov 2026", endNext:"Next top · ~2029",
@@ -334,13 +359,14 @@ function render(){
   $("#btnEs").classList.toggle("on",LANG==="es"); $("#btnEn").classList.toggle("on",LANG==="en");
   $("#kicker").textContent=t.kicker; $("#h1").textContent=t.h1; $("#sub").innerHTML=t.sub;
   $("#signalLab").textContent=t.signalLab;
-  $("#clegend").innerHTML=`<span><i style="background:var(--bear)"></i>${t.endTop}</span><span><i style="background:var(--bull)"></i>${t.endFloor}</span><span><i style="background:#fff"></i>${t.weeksSince}</span>`;
-  $("#ordLab").textContent=t.ordLab; $("#ordFoot").innerHTML=t.ordFoot;
+  $("#ordFoot").innerHTML=t.ordFoot;
   $("#hSignal").textContent=t.hSignal; $("#hSignalSub").textContent=t.hSignalSub;
   $("#hRoad").textContent=t.hRoad; $("#hRoadSub").textContent=t.hRoadSub;
-  $("#hBt").textContent=t.hBt; $("#hBtSub").textContent=t.hBtSub;
+  $("#hOrders").textContent=t.hOrders; $("#hOrdersSub").textContent=t.hOrdersSub;
   $("#hPh").textContent=t.hPh; $("#hPhSub").textContent=t.hPhSub;
+  $("#hBt").textContent=t.hBt; $("#hBtSub").textContent=t.hBtSub;
   $("#btLead").innerHTML=t.btLead; if($("#btLoad"))$("#btLoad").textContent=t.btLoad;
+  $("#sigAcc").innerHTML=`<div class="sigacc-t">${t.sigAccTitle}</div>`+t.sigItems.map(s=>`<details class="sigit"><summary>${s.n}</summary><div class="sigit-d">${s.d}</div></details>`).join("");
   $("#footMain").innerHTML=t.footMain; $("#footDisc").innerHTML=t.footDisc;
 
   // semáforo
@@ -449,46 +475,49 @@ function runBacktest(prices){
   const lmec=stateMachine(n,i=>b2[i]===1,i=>val(risk[i])!=null&&risk[i]>0.82,false);
   // Cowen: entra risk<0.30, sale risk>0.60
   const cowen=stateMachine(n,i=>val(risk[i])!=null&&risk[i]<0.30,i=>val(risk[i])!=null&&risk[i]>0.60,false);
-  // OnChainMind: compra la zona (risk<0.45), holdea hasta que se calienta mucho (risk>0.78)
-  const ocm=stateMachine(n,i=>val(risk[i])!=null&&risk[i]<0.45,i=>val(risk[i])!=null&&risk[i]>0.78,false);
+  // Patrón temporal: dentro desde ~52 sem tras cada techo (suelo) hasta el techo siguiente
+  const patron=patronInMarket(T_);
   // Consenso: dentro cuando ≥2 de las 3 coinciden
-  const cons=Array(n);for(let i=0;i<n;i++)cons[i]=((lmec[i]?1:0)+(cowen[i]?1:0)+(ocm[i]?1:0))>=2;
+  const cons=Array(n);for(let i=0;i<n;i++)cons[i]=((lmec[i]?1:0)+(cowen[i]?1:0)+(patron[i]?1:0))>=2;
   const hodl=Array(n).fill(true);
-  const R={
-    T:T_,
-    hodl:simulate(T_,C,hodl), lmec:simulate(T_,C,lmec), cowen:simulate(T_,C,cowen),
-    ocm:simulate(T_,C,ocm), cons:simulate(T_,C,cons)
-  };
-  return R;
+  // arranca en 2015: antes BTC valía céntimos y HODL sale ×1M, aplastando cualquier comparación.
+  // Desde 2015 (mercado ya maduro) la comparación es justa y el "vs HODL" tiene sentido.
+  let s=0;const START=Date.parse("2015-01-01");while(s<n-1&&T_[s]<START)s++;
+  const sl=a=>a.slice(s),Ts=sl(T_),Cs=sl(C);
+  return {T:Ts,
+    hodl:simulate(Ts,Cs,sl(hodl)), lmec:simulate(Ts,Cs,sl(lmec)), cowen:simulate(Ts,Cs,sl(cowen)),
+    patron:simulate(Ts,Cs,sl(patron)), cons:simulate(Ts,Cs,sl(cons))};
 }
+// Patrón: en mercado desde 52 sem tras cada techo del ciclo hasta el techo siguiente
+function patronInMarket(T_){const tops=CYCLE_TOPS_MS.slice().sort((a,b)=>a-b);
+  return T_.map(ms=>{for(let i=0;i<tops.length;i++){const buyStart=tops[i]+52*WK,nextTop=tops[i+1]||Infinity;if(ms>=buyStart&&ms<nextTop)return true;}return false;});}
 
-const BT_COLORS={hodl:"#7f92ab",lmec:"#e8a13a",cowen:"#3fa9f5",ocm:"#b48ef2",cons:"#2fd39b"};
+const BT_COLORS={hodl:"#7f92ab",lmec:"#e8a13a",cowen:"#3fa9f5",patron:"#b48ef2",cons:"#2fd39b"};
 function renderBacktest(R){
   const t=T[LANG], body=$("#btBody");
   const rows=[
     {k:"hodl", ...t.stratHODL, m:R.hodl},
     {k:"lmec", ...t.stratLMEC, m:R.lmec},
     {k:"cowen",...t.stratCowen,m:R.cowen},
-    {k:"ocm",  ...t.stratOCM,  m:R.ocm},
+    {k:"patron",...t.stratPatron,m:R.patron},
     {k:"cons", ...t.stratCons, m:R.cons},
   ];
   const hodlMult=R.hodl.mult;
   const fmtMult=x=>x>=100?Math.round(x).toLocaleString():x>=10?x.toFixed(0):x.toFixed(1);
   const fmtPct=x=>(x*100).toFixed(0);
   const table=`<table class="bttable"><thead><tr>${t.btCols.map((c,i)=>`<th>${c}</th>`).join("")}</tr></thead><tbody>`+
-    rows.map(r=>{const vs=r.m.mult/hodlMult;const best=r.k==="cons"||(r.k!=="hodl"&&vs>=1);
+    rows.map(r=>{const best=r.k==="cons";
       return `<tr class="${r.k==="hodl"?"hodl":""} ${best?"best":""}">
         <td><span class="stratdot" style="background:${BT_COLORS[r.k]}"></span><span class="stratname">${r.n}</span><span class="stratrule">${r.r}</span></td>
         <td>×${fmtMult(r.m.mult)}</td>
         <td>${fmtPct(r.m.cagr)}%</td>
-        <td class="neg">−${fmtPct(r.m.maxdd)}%</td>
-        <td class="${vs>=1?"pos":"neg"}">${r.k==="hodl"?"—":(vs>=1?"+":"")+((vs-1)*100).toFixed(0)+"%"}</td></tr>`;}).join("")+
+        <td class="${r.k==="hodl"?"neg":"pos"}">−${fmtPct(r.m.maxdd)}%</td></tr>`;}).join("")+
     `</tbody></table>`;
   // veredicto dinámico y HONESTO sobre el consenso (se adapta a los números reales)
   const c=R.cons, h=R.hodl, beat=c.mult>=h.mult, ddBetter=c.maxdd<h.maxdd-0.05;
   let vtxt=(beat?t.vf.beat:t.vf.near)(t.stratCons.n, fmtMult(c.mult), fmtMult(h.mult))
           +(ddBetter?t.vf.ddbetter(fmtPct(c.maxdd),fmtPct(h.maxdd)):t.vf.ddsame(fmtPct(c.maxdd)))
-          +((!beat&&ddBetter)?t.vf.tag:"");
+          +((!beat&&ddBetter&&c.mult>=3)?t.vf.tag:"");
   const verdict=`<div class="btverdict">${vtxt}</div>`;
   body.innerHTML=`<div id="btEquity"></div>${table}${verdict}<div class="btnote">${t.btNote}</div>`;
   drawEquity(R,rows);
@@ -562,8 +591,11 @@ function renderPhaseChart(D){
     {x:xs,y:m2,type:"scatter",mode:"lines",name:"200W MA",line:{color:"#3fa9f5",width:1,dash:"dash"}},
   ];
   const xEnd=iso(Math.max(D.t[D.t.length-1],Date.parse("2027-07-01")));
+  const shapes=bandShapes(PH_MODE);
+  LADDER.forEach(o=>shapes.push({type:"line",xref:"paper",x0:0,x1:1,y0:o.lvl,y1:o.lvl,line:{color:"#e8a13a",width:1,dash:"dot"},opacity:.35,layer:"below"})); // órdenes 55/50/45k
+  shapes.push({type:"line",xref:"x",yref:"paper",x0:iso(now),x1:iso(now),y0:0,y1:1,line:{color:"#fff",width:1.3,dash:"dot"}}); // hoy
   const layout={margin:{l:52,r:10,t:8,b:28},height:380,paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
-    font:{color:"#aebccf",size:10},showlegend:true,legend:{orientation:"h",y:1.14,font:{size:10}},shapes:bandShapes(PH_MODE),
+    font:{color:"#aebccf",size:10},showlegend:true,legend:{orientation:"h",y:1.14,font:{size:10}},shapes,
     xaxis:{gridcolor:"rgba(255,255,255,.05)",linecolor:"#243448",type:"date",range:["2013-01-01",xEnd]},
     yaxis:{gridcolor:"rgba(255,255,255,.05)",linecolor:"#243448",type:"log",tickprefix:"$",title:{text:"BTC (log)",font:{size:9}}},
     hovermode:"x unified",hoverlabel:{bgcolor:"#141f2e",bordercolor:"#243448",font:{size:11,color:"#e8eef7"}}};
@@ -615,15 +647,14 @@ async function fetchFullHistory(D){
   return CM_PREFIX.t.length?{t:[...CM_PREFIX.t,...D.t],c:[...CM_PREFIX.c,...D.c]}:D;
 }
 
-// ── gráfico principal + órdenes + backtest ──
+// ── carga de datos + backtest + gráfica ──
 function loadScript(u){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=u;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("plotly");}
-function band(r,c,o){return {type:"rect",xref:"x",yref:"paper",x0:r[0],x1:r[1],y0:0,y1:1,fillcolor:c,opacity:o,line:{width:0},layer:"below"};}
 (async function(){
   // 1) datos — independiente de Plotly
   let W=null;
   try{ W=await fetchWeekly(); W=await fetchFullHistory(W); }catch(e){ W=null; }
-  if(!W||!W.c||!W.c.length){document.querySelector(".chartcard").style.display="none";const bl=$("#btLoad");if(bl)bl.textContent=LANG==="es"?"No se pudo cargar el histórico de precios (fuente caída).":"Couldn't load price history (source down).";return;}
+  if(!W||!W.c||!W.c.length){const bl=$("#btLoad");if(bl)bl.textContent=LANG==="es"?"No se pudo cargar el histórico de precios (fuente caída).":"Couldn't load price history (source down).";const pn=$("#phaseNote");if(pn)pn.textContent=LANG==="es"?"No se pudo cargar el precio.":"Couldn't load price.";return;}
   const prices=W.t.map((ms,i)=>[ms,W.c[i]]); // [ms, cierre semanal]
   const firstTouch=(lvl,from)=>{for(const p of prices){if(p[0]>=from&&p[1]<=lvl)return p[0];}return null;};
   dcaStartTs=firstTouch(60000,TOP);
@@ -633,21 +664,8 @@ function band(r,c,o){return {type:"rect",xref:"x",yref:"paper",x0:r[0],x1:r[1],y
 
   // 2) Plotly — aparte: si falla, las tablas se ven igual y los gráficos se ocultan solos
   try{await loadPlotly();}catch(e){}
-  render(); // órdenes + backtest + confluencia (dibuja gráficos si hay Plotly)
+  render(); // órdenes + backtest + gráfica de precio/confluencia (si hay Plotly)
   if(!window.__btResult){const bl=$("#btBody");if(bl)bl.innerHTML=`<div class="btload">${LANG==="es"?"No hay suficientes datos para el backtest.":"Not enough data for the backtest."}</div>`;}
-
-  if(!window.Plotly){document.querySelector(".chartcard").style.display="none";return;}
-  const xs=prices.map(p=>iso(p[0])),ys=prices.map(p=>p[1]);
-  const shapes=[];
-  for(const tp of TOPS)shapes.push(band(tp,"#f2606d",.16));
-  for(const f of FLOORS)shapes.push(band(f,"#2fd39b",.15));
-  LADDER.forEach(o=>shapes.push({type:"line",xref:"paper",x0:0,x1:1,y0:o.lvl,y1:o.lvl,line:{color:"#e8a13a",width:1,dash:"dot"},opacity:.45,layer:"below"}));
-  if(dcaStartTs)shapes.push({type:"line",xref:"x",yref:"paper",x0:iso(dcaStartTs),x1:iso(dcaStartTs),y0:0,y1:1,line:{color:"#2fd39b",width:1,dash:"dash"}});
-  shapes.push({type:"line",xref:"x",yref:"paper",x0:iso(now),x1:iso(now),y0:0,y1:1,line:{color:"#fff",width:1.5,dash:"dot"}});
-  const layout={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",margin:{l:44,r:8,t:6,b:24},height:300,font:{color:"#7f92ab",size:10,family:"inherit"},showlegend:false,shapes,
-    xaxis:{gridcolor:"rgba(255,255,255,.04)",linecolor:"#243448",color:"#7f92ab",type:"date",range:["2012-06-01",iso(NEXT_TOP+60*DAY)]},
-    yaxis:{type:"log",gridcolor:"rgba(255,255,255,.05)",linecolor:"#243448",color:"#7f92ab",tickprefix:"$",tickvals:[10,100,1000,10000,100000],ticktext:["$10","$100","$1k","$10k","$100k"]}};
-  window.Plotly.react("chart",[{x:xs,y:ys,mode:"lines",line:{color:"#eef2f8",width:1.4},hovertemplate:"%{x}<br>$%{y:,.0f}<extra></extra>"}],layout,{responsive:true,displayModeBar:false});
 })();
 </script>
 </body>
