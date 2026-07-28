@@ -201,7 +201,7 @@ const T={es:{
   hBt:"5 · ¿Y esto funciona?", hBtSub:"backtest de las señales vs comprar y aguantar",
   sigAccTitle:"Las 3 señales temporales que usamos, explicadas",
   sigItems:[
-    {n:"🎯 LMEC — semanas desde el techo",d:"Mide el ciclo en <b>semanas desde el TECHO</b> (no del halving). La compra fuerte ≈ <b>53 semanas tras el techo</b> (→ oct/nov 2026), confirmada por la <b>2ª ruptura al alza de la BMSB</b> (la 1ª es una trampa). Vende en la euforia cerca del techo. Mientras tanto, DCA por niveles hacia el suelo."},
+    {n:"🎯 LMEC — semanas desde el techo",d:"Mide el ciclo en <b>semanas desde el TECHO</b> (no del halving). Su <b>compra fuerte está muy definida</b>: la <b>2ª ruptura al alza de la BMSB</b> (la 1ª es una trampa) confirmada por <b>RSI 40-50 + cruce alcista del MACD + MVRV saliendo de la franja verde</b> — las 4 a la vez = compra ideal (~oct/nov 2026). <b>Su señal de VENTA del techo NO está definida todavía</b>: él mismo dice que ese plan lo diseñará en la fase de euforia, y avisa de que los indicadores clásicos de techo (MVRV en rojo…) 'ya no marcan bien los techos' porque decrecen cada ciclo. Lo único concreto que ha dado para vender es táctico: soltar un <b>20-30% en la 1ª ruptura</b> (el rebote-trampa) para tener liquidez."},
     {n:"📊 Cowen — calendario + risk metric",d:"DCA cuando su <b>risk metric</b> está bajo (&lt;0,3) y reduce cuando está alto (&gt;0,6). En calendario: compra la <b>2ª mitad del año midterm</b> (tras el mínimo de junio) y el inicio del pre-halving; vende en el <b>Q4 del año post-halving</b>. Es la ventana de compra más larga de las tres."},
     {n:"⏱️ Patrón temporal — la matemática del ciclo",d:"Cálculo propio sobre las fechas reales: el suelo llega <b>52-58 semanas tras cada techo</b> y el techo siguiente <b>150-153 semanas tras cada suelo</b>. Muy estable en los 3 ciclos con halving → proyecta el suelo en <b>oct-nov 2026</b>. No es cita de nadie: es el ritmo histórico."}
   ],
@@ -236,7 +236,7 @@ const T={es:{
   btLoad:"Cargando precios y ejecutando el backtest…",
   btCols:["Estrategia","×  final","Anual (CAGR)","Peor caída"],
   stratHODL:{n:"Comprar y aguantar",r:"comprar el día 1 y no tocar nunca"},
-  stratLMEC:{n:"LMEC · BMSB / ciclo",r:"entra en la 2ª ruptura de la BMSB, vende en la euforia del techo"},
+  stratLMEC:{n:"LMEC · BMSB / ciclo",r:"entra en la 2ª ruptura de la BMSB; sin regla de venta propia → aquí toma beneficio cerca del techo del ciclo"},
   stratCowen:{n:"Cowen · Risk metric",r:"DCA con riesgo <0,30 · sale por encima de 0,60 (aprox. abierta)"},
   stratPatron:{n:"Patrón temporal · ciclo",r:"compra ~52 sem tras el techo (el suelo) y holdea hasta el techo siguiente"},
   stratCons:{n:"Consenso (las 3)",r:"dentro cuando ≥2 de las 3 señales coinciden"},
@@ -273,7 +273,7 @@ const T={es:{
   hBt:"5 · Does it actually work?", hBtSub:"backtest of the signals vs buy & hold",
   sigAccTitle:"The 3 timing signals we use, explained",
   sigItems:[
-    {n:"🎯 LMEC — weeks since the top",d:"Measures the cycle in <b>weeks since the TOP</b> (not the halving). The heavy buy ≈ <b>53 weeks after the top</b> (→ Oct/Nov 2026), confirmed by the <b>2nd upward BMSB reclaim</b> (the 1st is a trap). Sells into euphoria near the top. Meanwhile, DCA by price levels toward the floor."},
+    {n:"🎯 LMEC — weeks since the top",d:"Measures the cycle in <b>weeks since the TOP</b> (not the halving). His <b>buy signal is very well defined</b>: the <b>2nd upward BMSB reclaim</b> (the 1st is a trap) confirmed by <b>RSI 40-50 + bullish MACD cross + MVRV leaving the green band</b> — all 4 at once = ideal buy (~Oct/Nov 2026). His <b>cycle-TOP sell signal is NOT defined yet</b>: he says he'll design that plan in the euphoria phase, and warns that classic top indicators (MVRV red…) 'no longer mark tops well' because they shrink each cycle. The only concrete sell he's given is tactical: trim <b>20-30% on the 1st reclaim</b> (the trap rally) to hold some cash."},
     {n:"📊 Cowen — calendar + risk metric",d:"DCA when his <b>risk metric</b> is low (&lt;0.3) and trims when high (&gt;0.6). By calendar: buys the <b>2nd half of the midterm year</b> (after the June low) and the start of the pre-halving year; sells in <b>Q4 of the post-halving year</b>. The longest buying window of the three."},
     {n:"⏱️ Time pattern — the cycle's math",d:"Own calc on the real dates: the floor lands <b>52-58 weeks after each top</b> and the next top <b>150-153 weeks after each floor</b>. Very stable across the 3 halving cycles → projects the floor at <b>Oct-Nov 2026</b>. Nobody's quote: just the historical rhythm."}
   ],
@@ -306,7 +306,7 @@ const T={es:{
   btLoad:"Loading prices and running the backtest…",
   btCols:["Strategy","×  final","Annual (CAGR)","Worst drop"],
   stratHODL:{n:"Buy & hold",r:"buy on day 1 and never touch it"},
-  stratLMEC:{n:"LMEC · BMSB / cycle",r:"enters on the 2nd BMSB reclaim, sells into the top's euphoria"},
+  stratLMEC:{n:"LMEC · BMSB / cycle",r:"enters on the 2nd BMSB reclaim; no sell rule of his own → here takes profit near the cycle top"},
   stratCowen:{n:"Cowen · Risk metric",r:"DCA when risk <0.30 · exits above 0.60 (open approximation)"},
   stratPatron:{n:"Time pattern · cycle",r:"buys ~52 wks after the top (the floor) and holds until the next top"},
   stratCons:{n:"Consensus (all 3)",r:"in-market when ≥2 of the 3 signals agree"},
@@ -340,14 +340,14 @@ const cur=phaseNow();
 
 // segmentos del roadmap (fecha inicio → color → clave)
 const ROAD=[
-  {key:"top",   s:TOP,     e:DCA_ON,  c:"var(--bear)"},
   {key:"accum", s:DCA_ON,  e:FLOOR_S, c:"var(--bull)"},
   {key:"floor", s:FLOOR_S, e:FLOOR_E, c:"#20b378"},
   {key:"tail",  s:FLOOR_E, e:MAXBUY,  c:"#7fc9a6"},
   {key:"hold",  s:MAXBUY,  e:SELL_S,  c:"var(--hold)"},
   {key:"sell",  s:SELL_S,  e:NEXT_TOP,c:"var(--bear)"}
 ];
-function roadPhaseNow(){for(const r of ROAD)if(now>=r.s&&now<r.e)return r.key;return now<TOP?"top":"sell";}
+const ROAD0=ROAD[0].s; // el roadmap arranca en el DCA (el techo anterior ya pasó, no se muestra)
+function roadPhaseNow(){for(const r of ROAD)if(now>=r.s&&now<r.e)return r.key;return now<ROAD0?"accum":"sell";}
 
 let dcaStartTs=null, ladderTouch={}; // rellenado tras cargar precios
 let PH_MODE="todos", PH_D=null, PH_XS=null,PH_YS=null,PH_BM=null,PH_M2=null,PH_BOUND=false,PH_YLOCK=false;
@@ -398,11 +398,11 @@ function render(){
 }
 
 function renderRoad(){
-  const t=T[LANG], span=NEXT_TOP-TOP, segNames={top:t.segTop,accum:t.segAccum,floor:t.segFloor,tail:t.segTail,hold:t.segHold,sell:t.segSell};
+  const t=T[LANG], span=NEXT_TOP-ROAD0, segNames={accum:t.segAccum,floor:t.segFloor,tail:t.segTail,hold:t.segHold,sell:t.segSell};
   const rk=roadPhaseNow();
   // barra segmentada
   $("#roadbar").innerHTML=ROAD.map(r=>{const w=(r.e-r.s)/span*100;return `<div class="seg" style="flex:0 0 ${w.toFixed(2)}%;background:${r.c}">${w>8?segNames[r.key]:""}</div>`;}).join("")
-    +`<div class="roadyou" style="left:${(Math.max(0,Math.min(1,(now-TOP)/span))*100).toFixed(2)}%"></div>`;
+    +`<div class="roadyou" style="left:${(Math.max(0,Math.min(1,(now-ROAD0)/span))*100).toFixed(2)}%"></div>`;
   // etiquetas
   $("#roadlabs").innerHTML=ROAD.map(r=>{const x=t.rl[r.key];const isNow=r.key===rk;
     return `<div class="rl ${isNow?"now":""}" style="--rc:${r.c}"><div class="rt">${x.t}</div><div class="rd">${mesAno(r.s,LANG)} → ${mesAno(r.e,LANG)}</div><div class="rx">${x.x}</div></div>`;}).join("");
@@ -471,8 +471,9 @@ function runBacktest(prices){
   if(C.length<80)return null;
   const n=C.length, risk=riskSeries(T_,C), b2=bmsb2Series(C);
   const val=x=>x==null?null:x;
-  // LMEC: entra en 2ª ruptura BMSB, sale cuando el riesgo entra en euforia (>0.82)
-  const lmec=stateMachine(n,i=>b2[i]===1,i=>val(risk[i])!=null&&risk[i]>0.82,false);
+  // LMEC: entra en la 2ª ruptura BMSB. Su regla de venta del techo NO existe (él no la ha
+  // definido) → proxy honesto: toma beneficio cerca del techo del ciclo (~150 sem tras el suelo).
+  const lmec=stateMachine(n,i=>b2[i]===1,i=>{const bw=weeksSince(T_[i],CYCLE_BOTS_MS);return bw>=145&&bw<=160;},false);
   // Cowen: entra risk<0.30, sale risk>0.60
   const cowen=stateMachine(n,i=>val(risk[i])!=null&&risk[i]<0.30,i=>val(risk[i])!=null&&risk[i]>0.60,false);
   // Patrón temporal: dentro desde ~52 sem tras cada techo (suelo) hasta el techo siguiente
@@ -488,6 +489,8 @@ function runBacktest(prices){
     hodl:simulate(Ts,Cs,sl(hodl)), lmec:simulate(Ts,Cs,sl(lmec)), cowen:simulate(Ts,Cs,sl(cowen)),
     patron:simulate(Ts,Cs,sl(patron)), cons:simulate(Ts,Cs,sl(cons))};
 }
+// semanas desde la marca más reciente (≤ ms). -1 si no hay ninguna anterior.
+function weeksSince(ms,marks){let M=-Infinity;for(const m of marks)if(m<=ms&&m>M)M=m;return M===-Infinity?-1:(ms-M)/WK;}
 // Patrón: en mercado desde 52 sem tras cada techo del ciclo hasta el techo siguiente
 function patronInMarket(T_){const tops=CYCLE_TOPS_MS.slice().sort((a,b)=>a-b);
   return T_.map(ms=>{for(let i=0;i<tops.length;i++){const buyStart=tops[i]+52*WK,nextTop=tops[i+1]||Infinity;if(ms>=buyStart&&ms<nextTop)return true;}return false;});}
