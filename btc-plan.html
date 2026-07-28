@@ -89,6 +89,14 @@
   .btnote{margin-top:10px;font-size:11px;color:var(--muted);line-height:1.5}
   .btload{padding:24px 6px;text-align:center;color:var(--muted);font-size:13px}
 
+  /* ── grafico de confluencia ── */
+  .phcard{margin-top:14px;padding:14px 12px 12px}
+  .phbtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;margin-bottom:6px}
+  .phbtn{background:transparent;border:1px solid var(--line);color:var(--muted);font:inherit;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:8px;cursor:pointer}
+  .phbtn.on{color:var(--accent);border-color:var(--accent)}
+  #phaseChart{width:100%;height:380px}
+  .phnote{margin-top:8px;font-size:11px;color:var(--muted);line-height:1.55}.phnote b{color:var(--ink2)}.phnote i{color:var(--ink2)}
+
   .phases{margin-top:14px;display:grid;gap:9px}
   .p{border:1px solid var(--line);border-left:5px solid var(--pc);border-radius:12px;background:var(--panel);padding:12px 14px;display:flex;gap:11px;align-items:flex-start}
   .p.now{box-shadow:0 0 0 1px var(--pc),0 0 26px -8px var(--pc)}
@@ -143,6 +151,13 @@
     <div id="btBody"><div class="btload" id="btLoad"></div></div>
   </div>
 
+  <div class="sechead"><h2 id="hPh"></h2><span class="h2sub" id="hPhSub"></span></div>
+  <div class="card phcard">
+    <div class="phbtns" id="phBtns"></div>
+    <div id="phaseChart"></div>
+    <div class="phnote" id="phaseNote"></div>
+  </div>
+
   <div class="sechead"><h2 id="hPhases"></h2><span class="h2sub" id="hPhasesSub"></span></div>
   <div class="phases" id="phases"></div>
 
@@ -174,6 +189,15 @@ const T={es:{
   hSignal:"1 · La señal de hoy", hSignalSub:"qué toca hacer ahora",
   hRoad:"2 · Hoja de ruta del ciclo", hRoadSub:"cuándo comprar, cuándo parar, cuándo vender",
   hBt:"3 · ¿Y esto funciona?", hBtSub:"backtest de las señales vs comprar y aguantar",
+  hPh:"4 · Ventanas de compra/venta sobre el precio", hPhSub:"confluencia de las 3 señales en todo el histórico",
+  phBtns:{lmec:"LMEC",cowen:"Cowen",patron:"Patrón",todos:"Todos (overlap)"},
+  phSince:" <span class=\"mtxt\">· desde 2013 · histórico de precio (CoinGecko)</span>",
+  phNotes:{
+    lmec:`🎯 <b>Bandas LMEC</b> (su método, en su eje real = <b>semanas desde el TECHO</b>, no del halving): <span style="color:var(--bear)">■ distribución</span> en la zona del techo · <span style="color:var(--bull)">■ suelo/compra</span> ≈ <b>53 sem tras el techo</b> (su vídeo más reciente → oct/nov 2026). Su compra fuerte la confirma la 2ª ruptura de la BMSB, no el calendario. Líneas: BMSB y 200W MA.`,
+    cowen:`📊 <b>Bandas Cowen</b> (calendario, citado): <span style="color:var(--bull)">■ compra activa</span> = 2ª mitad del midterm year, arranca justo tras el mínimo de junio · <span style="color:var(--hold)">■ sigue acumulando</span> = inicio del pre-halving year · <span style="color:var(--bear)">■ venta</span> = Q4 del post-halving year. Ago-sep del midterm suelen ser rojos (−15/18% las 3 veces) — no le impide empezar a comprar en julio, solo avisa de que puede doler antes del suelo.`,
+    patron:`⏱️ <b>Patrón temporal</b> (cálculo propio, no cita de nadie): <span style="color:var(--bull)">■ compra</span> = 52-58 semanas tras cada techo (cerca del suelo) · <span style="color:var(--bear)">■ venta</span> = 150-153 semanas tras cada suelo (cerca del techo). La banda de venta de este ciclo (desde el suelo de nov-2022) cayó justo sobre el techo real de <b>oct-2025</b>, y la de compra proyecta el suelo en <b>oct-nov 2026</b>. <span class="mtxt">Ojo: n=3, medido sobre los mismos ciclos que luego valida.</span>`,
+    todos:`<b>Confluencia de 3 vías, CALCULADA</b> (inclusión-exclusión sobre fechas reales, nunca por transparencia apilada): <span style="color:#facc15">■ dorado</span> = LMEC + Cowen + Patrón coinciden los 3 en comprar (máxima confluencia) · <span style="color:#22d399">■ verde sólido</span> = exactamente 2 de los 3 coinciden en comprar · <span style="color:#f87171">■ rojo sólido</span> = LMEC + Cowen coinciden en vender · tenues = solo una fuente.`
+  },
   hPhases:"Las 4 fases, en detalle", hPhasesSub:"",
   ordLab:"Órdenes de compra · escalonadas",
   ordFoot:'Cuanto más baja, <b>más compro</b>. La <b>artillería gorda</b> se despliega en la ventana de suelo (~oct-nov 2026) — para eso guardo liquidez. Cuando la ventana se cierra, <b>dejo de comprar y holdeo</b>.',
@@ -230,6 +254,15 @@ const T={es:{
   hSignal:"1 · Today's signal", hSignalSub:"what to do now",
   hRoad:"2 · Cycle roadmap", hRoadSub:"when to buy, when to stop, when to sell",
   hBt:"3 · Does it actually work?", hBtSub:"backtest of the signals vs buy & hold",
+  hPh:"4 · Buy/sell windows over price", hPhSub:"where the 3 signals line up across all history",
+  phBtns:{lmec:"LMEC",cowen:"Cowen",patron:"Pattern",todos:"All (overlap)"},
+  phSince:" <span class=\"mtxt\">· since 2013 · price history (CoinGecko)</span>",
+  phNotes:{
+    lmec:`🎯 <b>LMEC bands</b> (its method, on its real axis = <b>weeks since the TOP</b>, not the halving): <span style="color:var(--bear)">■ distribution</span> around the top · <span style="color:var(--bull)">■ floor/buy</span> ≈ <b>53 wks after the top</b> (latest video → Oct/Nov 2026). Its heavy buy is confirmed by the 2nd BMSB reclaim, not the calendar. Lines: BMSB and 200W MA.`,
+    cowen:`📊 <b>Cowen bands</b> (calendar, quoted): <span style="color:var(--bull)">■ active buy</span> = 2nd half of the midterm year, right after the June low · <span style="color:var(--hold)">■ keep accumulating</span> = start of the pre-halving year · <span style="color:var(--bear)">■ sell</span> = Q4 of the post-halving year. Aug-Sep of the midterm tend to be red (−15/18% all 3 times) — doesn't stop him buying in July, just warns it may hurt before the floor.`,
+    patron:`⏱️ <b>Time pattern</b> (own calc, nobody's quote): <span style="color:var(--bull)">■ buy</span> = 52-58 weeks after each top (near the floor) · <span style="color:var(--bear)">■ sell</span> = 150-153 weeks after each floor (near the top). This cycle's sell band (from the Nov-2022 floor) landed right on the real Oct-2025 top, and the buy band projects the floor at <b>Oct-Nov 2026</b>. <span class="mtxt">Note: n=3, measured on the same cycles it then validates.</span>`,
+    todos:`<b>3-way confluence, COMPUTED</b> (inclusion-exclusion on real dates, never by stacked transparency): <span style="color:#facc15">■ gold</span> = LMEC + Cowen + Pattern all 3 agree to buy (max confluence) · <span style="color:#22d399">■ solid green</span> = exactly 2 of 3 agree to buy · <span style="color:#f87171">■ solid red</span> = LMEC + Cowen agree to sell · faint = single source.`
+  },
   hPhases:"The 4 phases, in detail", hPhasesSub:"",
   ordLab:"Buy orders · laddered",
   ordFoot:'The lower it goes, <b>the more I buy</b>. The <b>heavy artillery</b> deploys in the floor window (~Oct-Nov 2026) — that\'s what the cash is for. When the window closes, <b>I stop buying and hold</b>.',
@@ -295,6 +328,7 @@ const ROAD=[
 function roadPhaseNow(){for(const r of ROAD)if(now>=r.s&&now<r.e)return r.key;return now<TOP?"top":"sell";}
 
 let dcaStartTs=null, ladderTouch={}; // rellenado tras cargar precios
+let PH_MODE="todos", PH_D=null, PH_XS=null,PH_YS=null,PH_BM=null,PH_M2=null,PH_BOUND=false,PH_YLOCK=false;
 
 function render(){
   const t=T[LANG];
@@ -308,6 +342,7 @@ function render(){
   $("#hSignal").textContent=t.hSignal; $("#hSignalSub").textContent=t.hSignalSub;
   $("#hRoad").textContent=t.hRoad; $("#hRoadSub").textContent=t.hRoadSub;
   $("#hBt").textContent=t.hBt; $("#hBtSub").textContent=t.hBtSub;
+  $("#hPh").textContent=t.hPh; $("#hPhSub").textContent=t.hPhSub;
   $("#hPhases").textContent=t.hPhases; $("#hPhasesSub").textContent=t.hPhasesSub;
   $("#btLead").innerHTML=t.btLead; if($("#btLoad"))$("#btLoad").textContent=t.btLoad;
   $("#footMain").innerHTML=t.footMain; $("#footDisc").innerHTML=t.footDisc;
@@ -326,6 +361,7 @@ function render(){
   $("#cnt").textContent=t.onCount(LIGHTS.filter(l=>l.on).length);
 
   renderRoad();
+  renderPhBtns(); if(PH_D)renderPhaseChart(PH_D);
 
   // fases
   $("#phases").innerHTML=PHASE_META.map(p=>{const x=t.phases[p.key];return `<div class="p ${p.key===cur?"now":""}" style="--pc:${p.c}"><span class="dot">${p.dot}</span><div><div class="t">${x.t}<span class="when">${x.when}</span></div><div class="d">${x.d}</div></div>${p.key===cur?'<span class="nowtag">'+(LANG==="es"?"aquí":"here")+'</span>':''}</div>`;}).join("");
@@ -477,6 +513,81 @@ function drawEquity(R,rows){
   window.Plotly.react("btEquity",traces,layout,{responsive:true,displayModeBar:false});
 }
 
+// ══════════ grafico de confluencia (portado fiel de decision.html) ══════════
+const PH_HALVINGS=["2012-11-28","2016-07-09","2020-05-11","2024-04-19","2028-04-20"].map(d=>Date.parse(d));
+const PH_WKMS=7*DAY;
+const CYCLE_EV=[["H1","2012-11-28"],["T1","2013-12-04"],["B1","2015-01-14"],["H2","2016-07-09"],["T2","2017-12-17"],
+  ["B2","2018-12-15"],["H3","2020-05-11"],["T3","2021-11-10"],["B3","2022-11-21"],["H4","2024-04-19"],["T4","2025-10-06"]];
+const CYCLE_TOPS_MS=CYCLE_EV.filter(e=>/^T/.test(e[0])).map(e=>Date.parse(e[1]));
+const CYCLE_BOTS_MS=CYCLE_EV.filter(e=>/^B/.test(e[0])).map(e=>Date.parse(e[1]));
+const PATRON_EXTRA_TOPS_MS=[Date.parse("2011-06-08")];
+const PATRON_EXTRA_SELL_TOPS_MS=[Date.parse("2011-06-08"),Date.parse("2013-12-04")];
+function patronBuyBase(){return CYCLE_TOPS_MS.map(T_=>({t0:T_+52*PH_WKMS,t1:T_+58*PH_WKMS}));}
+function patronBuy(){return[...PATRON_EXTRA_TOPS_MS.map(T_=>({t0:T_+52*PH_WKMS,t1:T_+58*PH_WKMS})),...patronBuyBase()];}
+function patronSell(){return[...PATRON_EXTRA_SELL_TOPS_MS.map(T_=>({t0:T_-2*PH_WKMS,t1:T_+2*PH_WKMS})),...CYCLE_BOTS_MS.map(B=>({t0:B+150*PH_WKMS,t1:B+153*PH_WKMS}))];}
+function patronIntervals(){return patronBuyBase();}
+function lmecIntervals(){const buy=[],sell=[];for(const T_ of CYCLE_TOPS_MS){sell.push({t0:T_-8*PH_WKMS,t1:T_+2*PH_WKMS});buy.push({t0:T_+50*PH_WKMS,t1:T_+58*PH_WKMS});}return{buy,sell};}
+function cowenIntervals(){const buyStrong=[],buySoft=[],sell=[];for(const H of PH_HALVINGS){const Y0=new Date(H).getUTCFullYear();
+  sell.push({t0:Date.parse(`${Y0+1}-10-01`),t1:Date.parse(`${Y0+1}-12-31`)});
+  buyStrong.push({t0:Date.parse(`${Y0+2}-07-01`),t1:Date.parse(`${Y0+2}-12-31`)});
+  buySoft.push({t0:Date.parse(`${Y0+3}-01-01`),t1:Date.parse(`${Y0+3}-06-30`)});}return{buyStrong,buySoft,sell};}
+function ivMerge(list){const s=list.slice().sort((a,b)=>a.t0-b.t0);const out=[];for(const iv of s){if(out.length&&iv.t0<=out[out.length-1].t1)out[out.length-1].t1=Math.max(out[out.length-1].t1,iv.t1);else out.push({...iv});}return out;}
+function ivIntersect(a,b){const out=[];let i=0,j=0;while(i<a.length&&j<b.length){const lo=Math.max(a[i].t0,b[j].t0),hi=Math.min(a[i].t1,b[j].t1);if(lo<hi)out.push({t0:lo,t1:hi});if(a[i].t1<b[j].t1)i++;else j++;}return out;}
+function ivSubtract(a,removeList){const rem=ivMerge(removeList);let out=a.slice();for(const r of rem){const next=[];for(const iv of out){if(r.t1<=iv.t0||r.t0>=iv.t1){next.push(iv);continue;}if(r.t0>iv.t0)next.push({t0:iv.t0,t1:Math.min(r.t0,iv.t1)});if(r.t1<iv.t1)next.push({t0:Math.max(r.t1,iv.t0),t1:iv.t1});}out=next;}return out;}
+function classify3(A,B,C){const ab=ivIntersect(A,B),ac=ivIntersect(A,C),bc=ivIntersect(B,C);const abc=ivIntersect(ab,C);
+  const twoOnly=ivSubtract(ivMerge([...ab,...ac,...bc]),abc);
+  const aOnly=ivSubtract(A,ivMerge([...ab,...ac])),bOnly=ivSubtract(B,ivMerge([...ab,...bc])),cOnly=ivSubtract(C,ivMerge([...ac,...bc]));
+  return{abc,twoOnly,aOnly,bOnly,cOnly};}
+function phRect(x0,x1,color){return{type:"rect",xref:"x",yref:"paper",x0,x1,y0:0,y1:1,fillcolor:color,line:{width:0},layer:"below"};}
+function rectsFromIv(ivs,color){return ivs.map(iv=>phRect(iso(iv.t0),iso(iv.t1),color));}
+function bandShapes(mode){const L=lmecIntervals(),C=cowenIntervals(),P=patronIntervals();
+  if(mode==="lmec")return[...rectsFromIv(L.buy,"rgba(47,195,155,0.16)"),...rectsFromIv(L.sell,"rgba(242,163,63,0.16)")];
+  if(mode==="cowen")return[...rectsFromIv(C.buyStrong,"rgba(47,195,155,0.16)"),...rectsFromIv(C.buySoft,"rgba(63,169,245,0.16)"),...rectsFromIv(C.sell,"rgba(242,163,63,0.16)")];
+  if(mode==="patron")return[...rectsFromIv(patronBuy(),"rgba(47,195,155,0.18)"),...rectsFromIv(patronSell(),"rgba(242,163,63,0.18)")];
+  const lmecBuy=ivMerge(L.buy),lmecSell=ivMerge(L.sell),cowenSell=ivMerge(C.sell),patron=ivMerge(P);
+  const cowenBuyAll=ivMerge([...C.buyStrong,...C.buySoft]);
+  const buy=classify3(lmecBuy,cowenBuyAll,patron);
+  const sellOverlap=ivIntersect(lmecSell,cowenSell);
+  const bOnlyStrong=ivIntersect(buy.bOnly,ivMerge(C.buyStrong)),bOnlySoft=ivSubtract(buy.bOnly,bOnlyStrong);
+  return[...rectsFromIv(buy.aOnly,"rgba(47,195,155,0.10)"),...rectsFromIv(bOnlyStrong,"rgba(47,195,155,0.10)"),
+    ...rectsFromIv(bOnlySoft,"rgba(63,169,245,0.10)"),...rectsFromIv(buy.cOnly,"rgba(155,140,255,0.16)"),
+    ...rectsFromIv(ivSubtract(lmecSell,sellOverlap),"rgba(242,163,63,0.11)"),...rectsFromIv(ivSubtract(cowenSell,sellOverlap),"rgba(242,163,63,0.11)"),
+    ...rectsFromIv(buy.twoOnly,"rgba(34,211,153,0.32)"),...rectsFromIv(buy.abc,"rgba(250,204,21,0.45)"),...rectsFromIv(sellOverlap,"rgba(248,113,113,0.34)")];}
+function weeklyResample(prices){const t=[],c=[];let bs=null,bc,bt;for(const[ms,p]of prices){if(bs==null){bs=ms;bc=p;bt=ms;continue;}if(ms-bs>=WK){t.push(bt);c.push(bc);bs=ms;bc=p;bt=ms;}else{bc=p;bt=ms;}}if(bs!=null){t.push(bt);c.push(bc);}return{t,c};}
+function renderPhBtns(){const t=T[LANG],modes=["lmec","cowen","patron","todos"];const box=$("#phBtns");if(!box)return;
+  box.innerHTML=modes.map(m=>`<button class="phbtn ${m===PH_MODE?"on":""}" data-ph="${m}">${t.phBtns[m]}</button>`).join("");
+  box.querySelectorAll(".phbtn").forEach(b=>b.addEventListener("click",()=>{PH_MODE=b.dataset.ph;renderPhBtns();if(PH_D)renderPhaseChart(PH_D);}));}
+function renderPhaseChart(D){
+  if(!window.Plotly||!D||!D.c.length){const el=$("#phaseChart");if(el)el.style.display="none";return;}
+  const t=T[LANG],xs=D.t.map(iso),s20=sma(D.c,20),e21=ema(D.c,21),s200=sma(D.c,200);
+  const bm=D.c.map((_,i)=>(s20[i]!=null&&e21[i]!=null)?Math.max(s20[i],e21[i]):null),m2=s200;
+  PH_XS=xs;PH_YS=D.c;PH_BM=bm;PH_M2=m2;
+  $("#phaseNote").innerHTML=t.phNotes[PH_MODE]+t.phSince;
+  const traces=[
+    {x:xs,y:D.c,type:"scatter",mode:"lines",name:"BTC",line:{color:"#e8eef7",width:1.5},hovertemplate:"%{x}<br>$%{y:,.0f}<extra></extra>"},
+    {x:xs,y:bm,type:"scatter",mode:"lines",name:"BMSB",line:{color:"#e8a13a",width:1,dash:"dot"}},
+    {x:xs,y:m2,type:"scatter",mode:"lines",name:"200W MA",line:{color:"#3fa9f5",width:1,dash:"dash"}},
+  ];
+  const xEnd=iso(Math.max(D.t[D.t.length-1],Date.parse("2027-07-01")));
+  const layout={margin:{l:52,r:10,t:8,b:28},height:380,paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
+    font:{color:"#aebccf",size:10},showlegend:true,legend:{orientation:"h",y:1.14,font:{size:10}},shapes:bandShapes(PH_MODE),
+    xaxis:{gridcolor:"rgba(255,255,255,.05)",linecolor:"#243448",type:"date",range:["2013-01-01",xEnd]},
+    yaxis:{gridcolor:"rgba(255,255,255,.05)",linecolor:"#243448",type:"log",tickprefix:"$",title:{text:"BTC (log)",font:{size:9}}},
+    hovermode:"x unified",hoverlabel:{bgcolor:"#141f2e",bordercolor:"#243448",font:{size:11,color:"#e8eef7"}}};
+  window.Plotly.react("phaseChart",traces,layout,{displayModeBar:false,responsive:true}).then(gd=>{
+    if(!PH_BOUND&&gd&&gd.on){gd.on("plotly_relayout",phAutoY);PH_BOUND=true;}});
+}
+function phAutoY(ev){
+  if(PH_YLOCK||!ev||!PH_XS)return;const gd=document.getElementById("phaseChart");if(!gd||!window.Plotly)return;
+  if(ev["xaxis.autorange"]){PH_YLOCK=true;window.Plotly.relayout(gd,{"yaxis.autorange":true}).then(()=>{PH_YLOCK=false;});return;}
+  const r0=ev["xaxis.range[0]"],r1=ev["xaxis.range[1]"];if(r0==null||r1==null)return;
+  const t0=Date.parse(r0),t1=Date.parse(r1);let lo=Infinity,hi=-Infinity;
+  for(let i=0;i<PH_XS.length;i++){const tt=Date.parse(PH_XS[i]);if(tt<t0||tt>t1)continue;
+    for(const arr of[PH_YS,PH_BM,PH_M2]){const v=arr[i];if(v!=null&&v>0){if(v<lo)lo=v;if(v>hi)hi=v;}}}
+  if(!isFinite(lo)||!isFinite(hi)||hi<=0)return;
+  PH_YLOCK=true;window.Plotly.relayout(gd,{"yaxis.range":[Math.log10(lo*0.85),Math.log10(hi*1.15)]}).then(()=>{PH_YLOCK=false;});
+}
+
 // ── gráfico principal + órdenes + backtest ──
 function loadScript(u){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=u;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("plotly");}
@@ -488,9 +599,10 @@ function band(r,c,o){return {type:"rect",xref:"x",yref:"paper",x0:r[0],x1:r[1],y
   const firstTouch=(lvl,from)=>{for(const p of prices){if(p[0]>=from&&p[1]<=lvl)return p[0];}return null;};
   dcaStartTs=firstTouch(60000,TOP);
   LADDER.forEach(o=>{ladderTouch[o.lvl]=firstTouch(o.lvl,JUL1);});
-  // backtest
+  // backtest + grafico de confluencia
   try{window.__btResult=runBacktest(prices);}catch(e){window.__btResult=null;}
-  render(); // re-render con órdenes + backtest ya calculados
+  try{PH_D=weeklyResample(prices);}catch(e){PH_D=null;}
+  render(); // re-render con órdenes + backtest + confluencia ya calculados
   if(!window.__btResult){const bl=$("#btBody");if(bl)bl.innerHTML=`<div class="btload">${LANG==="es"?"No hay suficientes datos para el backtest.":"Not enough data for the backtest."}</div>`;}
 
   if(!window.Plotly){document.querySelector(".chartcard").style.display="none";return;}
