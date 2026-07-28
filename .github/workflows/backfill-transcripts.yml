@@ -52,7 +52,7 @@ jobs:
         run: |
           python agentes/tools/fetch_captions.py --persona cowen --lang en \
             --max ${{ inputs.max }} --since ${{ inputs.since }} \
-            "https://www.youtube.com/@IntoTheCryptoverse/videos"
+            "https://www.youtube.com/@benjaminjcowen/videos"
 
       - name: OnChainMind (en)
         if: ${{ inputs.persona == 'all' || inputs.persona == 'onchainmind' }}

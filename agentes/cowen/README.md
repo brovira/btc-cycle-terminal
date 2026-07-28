@@ -1,10 +1,7 @@
 # Benjamin Cowen — material del agente
 
-Canales de YouTube:
-- **Into The Cryptoverse** (@IntoTheCryptoverse) — https://www.youtube.com/@IntoTheCryptoverse/videos — su canal **principal** de análisis (risk metric, ciclos, BTC diario). **Es el que usa la ingesta.**
-- **Benjamin Cowen** (@benjaminjcowen) — https://www.youtube.com/@benjaminjcowen/videos — canal secundario/personal.
-
-> ⚠️ La ingesta automática apunta a **@IntoTheCryptoverse** (donde vive su análisis de ciclo/risk metric, que es lo que cita el agente). Si quieres cambiarla a @benjaminjcowen, edita la URL en `.github/workflows/ingest-transcripts.yml` y `backfill-transcripts.yml`.
+Canal: **Benjamin Cowen** (@benjaminjcowen) — https://www.youtube.com/@benjaminjcowen/videos — su canal propio. **Es el que usa la ingesta** (elección del usuario: es el que sigue).
+Enfoque: risk metric, ciclos de Bitcoin, calendario electoral, DCA por riesgo.
 
 ## Estructura
 - **`reports/`** — sus memos/reports ya extraídos a texto (fuente **ESCRITA**, precisa). Fuente principal, grepable.
@@ -15,7 +12,7 @@ Canales de YouTube:
 
 ```
 python3 -m pip install -U yt-dlp
-python3 agentes/tools/fetch_captions.py --persona cowen --lang en --since 20210101 "https://www.youtube.com/@IntoTheCryptoverse/videos"
+python3 agentes/tools/fetch_captions.py --persona cowen --lang en --since 20210101 "https://www.youtube.com/@benjaminjcowen/videos"
 ```
 
 - `--lang en` (canal en inglés). `--since 20210101` = ciclo completo desde 2021. **Ojo:** su canal tiene MUCHOS vídeos; usa `--max N` para acotar o deja que tarde.
