@@ -154,8 +154,9 @@
 const $=s=>document.querySelector(s);
 const DAY=864e5,WK=7*DAY,now=Date.now();
 const TOP=Date.parse("2025-10-06"),FLOOR_S=Date.parse("2026-10-01"),FLOOR_E=Date.parse("2026-11-30"),NEXT_TOP=Date.parse("2029-10-01");
-const ACCUM_S=Date.parse("2026-01-01");          // arranque del bear/acumulación tras el techo
-const HOLD_S=FLOOR_E, SELL_S=NEXT_TOP-180*DAY;   // holdear → ventana de venta
+const DCA_ON=Date.parse("2026-06-22");           // Cowen risk<0,3 tras el mínimo de junio → arranca el DCA (fuente: decision.html)
+const MAXBUY=Date.parse("2027-06-30");           // fin de la ventana de compra (cola de DCA de Cowen, pre-halving) — alineado con decision.html
+const SELL_S=NEXT_TOP-180*DAY;                   // ventana de venta cerca del próximo techo
 const TOPS=[["2013-11-01","2014-01-05"],["2017-12-01","2018-01-20"],["2021-10-15","2021-12-05"],["2025-09-20","2025-11-15"]];
 const FLOORS=[["2015-01-01","2015-09-01"],["2018-11-01","2019-04-15"],["2022-06-15","2023-02-01"],["2026-09-15","2026-12-20"]];
 const LADDER=[{lvl:60000,pct:20},{lvl:55000,pct:35},{lvl:50000,pct:45}];
@@ -181,15 +182,16 @@ const T={es:{
   pctCap:"% del capital", bought:"comprado", placed:"orden puesta",
   // roadmap
   roadNow:(fase,pct)=>`Hoy estás en <b>${fase}</b> · llevas ${pct} de la ventana de compra recorrida`,
-  segTop:"Techo", segAccum:"Acumular", segFloor:"Suelo", segHold:"Holdear", segSell:"Vender",
+  segTop:"Techo", segAccum:"Acumular", segFloor:"Suelo", segTail:"DCA suave", segHold:"Holdear", segSell:"Vender",
   rl:{
     top:{t:"🔴 Techo",x:"Ya pasó (oct 2025). Aquí se vende, no se compra."},
-    accum:{t:"🟢 Acumular · DCA",x:"DCA constante y órdenes límite hacia el soporte. Compra pequeña y regular."},
-    floor:{t:"🟢 Suelo · desplegar",x:"La ventana clave: se despliega la artillería (la compra grande). Suele durar poco."},
-    hold:{t:"🔵 Holdear",x:"Se deja de comprar. Aguantar ~3 años sin tocar hasta acercarse al próximo techo."},
+    accum:{t:"🟢 Acumular · DCA",x:"Desde el mínimo de junio 2026: DCA y órdenes límite hacia el soporte. Compra pequeña y regular."},
+    floor:{t:"🟢 Suelo · desplegar",x:"La ventana clave (~oct-nov 2026): se despliega la artillería (la compra grande). Suele durar poco."},
+    tail:{t:"🟢 DCA suave",x:"La compra fuerte ya pasó. DCA pequeño (estilo Cowen) hasta ~jun 2027, ya en el pre-halving. Sin prisa."},
+    hold:{t:"🔵 Holdear",x:"Se deja de comprar del todo. Aguantar ~2 años sin tocar hasta acercarse al próximo techo."},
     sell:{t:"🔴 Vender",x:"Cerca del próximo techo (~2029): tomar beneficio escalonado y pasar a estables."}
   },
-  buywin:(fin)=>`🎯 <b>Tu ventana de COMPRA está abierta AHORA</b> y se cierra <span class="big">~${fin}</span>. Hasta esa fecha: DCA constante + desplegar la artillería en el suelo (~oct-nov 2026). <b>Después NO se compra más</b> — empieza el HOLD de ~3 años. Eso es todo lo que hay que hacer con capital nuevo este ciclo.`,
+  buywin:(fin)=>`🎯 <b>Tu ventana de COMPRA está abierta</b> y se cierra <span class="big">~${fin}</span>. La <b>compra fuerte</b> (la artillería) va en el suelo <b>~oct-nov 2026</b>; después, <b>DCA suave</b> hasta ~jun 2027. A partir de ahí <b>NO se compra más</b> — empieza el HOLD (~2 años) hasta el próximo techo.`,
   // backtest
   btLead:'Pregunta justa: <b>¿merece la pena seguir las señales del ciclo, o comprar y aguantar (HODL) y ya está?</b> Backtest sobre <b>todo el histórico de BTC</b> (velas semanales). Cada estrategia entra/sale al cierre semanal según su regla; fuera del mercado, en efectivo (0%). Sin apalancamiento. Mismo capital inicial. Mira las dos columnas que importan: <b>cuánto multiplicas</b> y, sobre todo, <b>la peor caída que aguantas por el camino</b>.',
   btLoad:"Cargando precios y ejecutando el backtest…",
@@ -215,7 +217,7 @@ const T={es:{
     top:{t:"Techo · Tomar profit",when:"cerca del máximo",d:"Vender de forma escalonada y pasar a estables. No enamorarse de la subida."},
     accum:{t:"Acumular · DCA ya",when:"bear → suelo",d:"<b>DCA pequeño YA</b> + órdenes límite escalonadas hacia el soporte. La <b>artillería gorda</b> queda para la ventana de suelo."},
     floor:{t:"Suelo · Desplegar",when:"~oct-nov 2026",d:"La ventana que espero. Desplegar la artillería: comprar el miedo con fuerza. Suele durar poco."},
-    hold:{t:"Ciclo alcista · Holdear",when:"suelo → próx. techo",d:"Holdear lo acumulado (~3 años). No tocar hasta acercarse al siguiente techo."}
+    hold:{t:"Ciclo alcista · Holdear",when:"~jun 2027 → próx. techo",d:"Tras la cola de DCA, holdear lo acumulado (~2 años). No tocar hasta acercarse al siguiente techo."}
   },
   lights:{dca:"DCA continuo", lvl:"Nivel de suelo", win:"Ventana de suelo",
     active:"activo", holding:"holdeando", waiting:"esperando", waitOct:"esperando (~oct 26)", touching:"tocando", open:"abierta", dash:"—"}
@@ -235,15 +237,16 @@ const T={es:{
   dcaOff:'DCA starts when BTC breaks <b>$60k</b>. Laddered orders below in case price drops:',
   pctCap:"of capital", bought:"bought", placed:"order placed",
   roadNow:(fase,pct)=>`You are in <b>${fase}</b> · ${pct} of the buying window elapsed`,
-  segTop:"Top", segAccum:"Accumulate", segFloor:"Floor", segHold:"Hold", segSell:"Sell",
+  segTop:"Top", segAccum:"Accumulate", segFloor:"Floor", segTail:"Light DCA", segHold:"Hold", segSell:"Sell",
   rl:{
     top:{t:"🔴 Top",x:"Already passed (Oct 2025). This is where you sell, not buy."},
-    accum:{t:"🟢 Accumulate · DCA",x:"Steady DCA and laddered limit orders toward support. Small and regular."},
-    floor:{t:"🟢 Floor · deploy",x:"The key window: deploy the artillery (the big buy). Usually short-lived."},
-    hold:{t:"🔵 Hold",x:"Stop buying. Sit ~3 years without touching until nearing the next top."},
+    accum:{t:"🟢 Accumulate · DCA",x:"From the June 2026 low: DCA and laddered limit orders toward support. Small and regular."},
+    floor:{t:"🟢 Floor · deploy",x:"The key window (~Oct-Nov 2026): deploy the artillery (the big buy). Usually short-lived."},
+    tail:{t:"🟢 Light DCA",x:"The heavy buying is done. Small DCA (Cowen-style) until ~Jun 2027, into the pre-halving year. No rush."},
+    hold:{t:"🔵 Hold",x:"Stop buying entirely. Sit ~2 years without touching until nearing the next top."},
     sell:{t:"🔴 Sell",x:"Near the next top (~2029): take profit in tranches and rotate to stables."}
   },
-  buywin:(fin)=>`🎯 <b>Your BUYING window is open NOW</b> and closes <span class="big">~${fin}</span>. Until then: steady DCA + deploy the artillery at the floor (~Oct-Nov 2026). <b>After that you don't buy anymore</b> — the ~3-year HOLD begins. That's all there is to do with fresh capital this cycle.`,
+  buywin:(fin)=>`🎯 <b>Your BUYING window is open</b> and closes <span class="big">~${fin}</span>. The <b>heavy buy</b> (the artillery) is at the floor <b>~Oct-Nov 2026</b>; after that, <b>light DCA</b> until ~Jun 2027. From then on <b>you don't buy anymore</b> — the ~2-year HOLD begins until the next top.`,
   btLead:'Fair question: <b>does following the cycle signals beat buy & hold (HODL)?</b> Below, a backtest over <b>all of BTC history</b> (weekly candles). Each strategy enters/exits at the weekly close by its rule; when out, it sits in cash (0%). No leverage. Same starting stake for all.',
   btLoad:"Loading prices and running the backtest…",
   btCols:["Strategy","×  final","Annual (CAGR)","Worst drop","vs HODL"],
@@ -268,7 +271,7 @@ const T={es:{
     top:{t:"Top · Take profit",when:"near the peak",d:"Sell in tranches and rotate to stables. Don't fall in love with the pump."},
     accum:{t:"Accumulate · DCA now",when:"bear → floor",d:"<b>Small DCA NOW</b> + laddered limit orders toward support. The <b>heavy artillery</b> is saved for the floor window."},
     floor:{t:"Floor · Deploy",when:"~Oct-Nov 2026",d:"The window I'm waiting for. Deploy the artillery: buy the fear with size. Usually short-lived."},
-    hold:{t:"Bull market · Hold",when:"floor → next top",d:"Hold what you accumulated (~3 years). Don't touch until nearing the next top."}
+    hold:{t:"Bull market · Hold",when:"~Jun 2027 → next top",d:"After the DCA tail, hold what you accumulated (~2 years). Don't touch until nearing the next top."}
   },
   lights:{dca:"Continuous DCA", lvl:"Floor level", win:"Floor window",
     active:"active", holding:"holding", waiting:"waiting", waitOct:"waiting (~Oct 26)", touching:"touching", open:"open", dash:"—"}
@@ -282,10 +285,11 @@ const cur=phaseNow();
 
 // segmentos del roadmap (fecha inicio → color → clave)
 const ROAD=[
-  {key:"top",   s:TOP,     e:ACCUM_S, c:"var(--bear)"},
-  {key:"accum", s:ACCUM_S, e:FLOOR_S, c:"var(--bull)"},
+  {key:"top",   s:TOP,     e:DCA_ON,  c:"var(--bear)"},
+  {key:"accum", s:DCA_ON,  e:FLOOR_S, c:"var(--bull)"},
   {key:"floor", s:FLOOR_S, e:FLOOR_E, c:"#20b378"},
-  {key:"hold",  s:FLOOR_E, e:SELL_S,  c:"var(--hold)"},
+  {key:"tail",  s:FLOOR_E, e:MAXBUY,  c:"#7fc9a6"},
+  {key:"hold",  s:MAXBUY,  e:SELL_S,  c:"var(--hold)"},
   {key:"sell",  s:SELL_S,  e:NEXT_TOP,c:"var(--bear)"}
 ];
 function roadPhaseNow(){for(const r of ROAD)if(now>=r.s&&now<r.e)return r.key;return now<TOP?"top":"sell";}
@@ -339,16 +343,16 @@ function render(){
 }
 
 function renderRoad(){
-  const t=T[LANG], span=NEXT_TOP-TOP, segNames={top:t.segTop,accum:t.segAccum,floor:t.segFloor,hold:t.segHold,sell:t.segSell};
+  const t=T[LANG], span=NEXT_TOP-TOP, segNames={top:t.segTop,accum:t.segAccum,floor:t.segFloor,tail:t.segTail,hold:t.segHold,sell:t.segSell};
   const rk=roadPhaseNow();
   // barra segmentada
-  $("#roadbar").innerHTML=ROAD.map(r=>{const w=(r.e-r.s)/span*100;return `<div class="seg" style="flex:0 0 ${w.toFixed(2)}%;background:${r.c}">${w>9?segNames[r.key]:""}</div>`;}).join("")
+  $("#roadbar").innerHTML=ROAD.map(r=>{const w=(r.e-r.s)/span*100;return `<div class="seg" style="flex:0 0 ${w.toFixed(2)}%;background:${r.c}">${w>8?segNames[r.key]:""}</div>`;}).join("")
     +`<div class="roadyou" style="left:${(Math.max(0,Math.min(1,(now-TOP)/span))*100).toFixed(2)}%"></div>`;
   // etiquetas
   $("#roadlabs").innerHTML=ROAD.map(r=>{const x=t.rl[r.key];const isNow=r.key===rk;
     return `<div class="rl ${isNow?"now":""}" style="--rc:${r.c}"><div class="rt">${x.t}</div><div class="rd">${mesAno(r.s,LANG)} → ${mesAno(r.e,LANG)}</div><div class="rx">${x.x}</div></div>`;}).join("");
   // callout de ventana de compra: desde ahora hasta el fin del suelo
-  const buyStart=ACCUM_S, buyEnd=FLOOR_E, prog=Math.max(0,Math.min(1,(now-buyStart)/(buyEnd-buyStart)));
+  const buyStart=DCA_ON, buyEnd=MAXBUY, prog=Math.max(0,Math.min(1,(now-buyStart)/(buyEnd-buyStart)));
   $("#roadNow").innerHTML=t.roadNow(segNames[rk]||"", Math.round(prog*100)+"%");
   $("#buywin").innerHTML=t.buywin(mesAno(buyEnd,LANG));
 }
