@@ -255,7 +255,7 @@ function evaluate(D){
   const rsiBand   = rsiV!=null? (rsiV>=34&&rsiV<=50) : null;       // LMEC: RSI 40-50 (y 34 al recuperar) = zona de suelo/compra
   const zGreen    = z!=null? z<0 : null;                           // LMEC: "franja verde = infravaloración" (verde ≈ Z<0)
   const belowReal = (realized!=null)? price<=realized : null;      // LMEC: el suelo perfora el realized price
-  const fngFear   = fng!=null? fng<45 : null;                      // OCM: comprar más "in fear or extreme fear" (índice: <45 = miedo)
+  const fngFear   = fng!=null? fng<45 : null;                      // sentimiento: comprar más en miedo (índice: <45 = miedo)
   const accumStart=fmtDate(PLAN_TOP), accumEnd=fmtDate(PLAN_TOP+58*7*864e5), yr=d.getUTCFullYear();
 
   const SIG=[
@@ -272,8 +272,8 @@ function evaluate(D){
      ds:realized==null?"On-chain no disponible. No cuenta.":(belowReal?"El precio está por debajo del precio medio de los holders (realized) = zona de capitulación/suelo.":"Precio por encima del realized price; aún sin capitulación."),
      q:"BTC siempre perforó por abajo el precio medio de compra de los holders… cerca del suelo real.",src:"LMEC · mvrv-zscore"},
     {key:"fng",nm:"Fear & Greed en miedo",who:"Sentimiento",on:fngFear,nd:fng==null,val:fng!=null?String(fng):"n/d",
-     ds:fng==null?"F&G no disponible.":(fngFear?"F&G en miedo (<45): OCM aumenta compras en miedo/miedo extremo.":"F&G sin miedo (≥45): OCM reduce compras."),
-     q:"selectively increasing your purchases when the market is in fear or extreme fear.",src:"fear-greed (KB onchainmind)"},
+     ds:fng==null?"F&G no disponible.":(fngFear?"F&G en miedo (<45): aumentar compras en miedo/miedo extremo.":"F&G sin miedo (≥45): reducir compras."),
+     q:"Comprar más cuando el mercado está en miedo o miedo extremo.",src:"Fear & Greed · alternative.me"},
     {key:"cycle",nm:"Ventana de ciclo",who:"LMEC + Cowen",on:cycleBuy,val:"sem "+Math.round(wkTop)+" del techo",
      ds:accumWindow?`Acumulación de LMEC: del techo al suelo (${accumStart} → ${accumEnd}, ~53 sem).`:(cowenSeason?`2ª mitad del año midterm: Cowen acumula tras el mínimo de junio (jul–dic ${yr} y principios de ${yr+1}).`:(distWindow?"Zona de techo/distribución del ciclo (alrededor del máximo).":`Fuera de ventana. Acumulación de LMEC: del techo al suelo (${accumStart} → ${accumEnd}).`)),
      q:"after the June low is when I bought and I just DCA… the second half of the midterm year.",src:"Cowen · dynamic-dca"},
@@ -443,20 +443,10 @@ function cowenClock(){
   else{phase="Año "+names[ym];sub=ym===1?"Acumular cash: la ventana llega el año que viene (midterm).":"Fuera de su ventana de acumulación.";}
   return{phase,pc,sub,cards:[["Año del ciclo",names[ym]||ym],["Mínimo esperado","Q4 · oct"],["Invalidación","50W ~$86,5k"]]};
 }
-function ocmClock(){
-  const now=Date.now();const winA=Date.parse("2026-08-25"),winB=Date.parse("2026-10-31");
-  let phase,sub,pc="var(--accum)";
-  if(now<winA){const w=Math.ceil((winA-now)/(7*864e5));phase="Suelo «cerca, no aquí»";
-    sub=`Su ventana de suelo (<b>fin-ago → oct</b>) empieza en <b>~${w} sem</b>. Capitulación por TIEMPO ("pain by boredom"), no crash.`;}
-  else if(now<=winB){phase="🟢 EN ventana de suelo";pc="var(--bull)";sub="Vigilar: LTH-in-loss 41→~45% y cruce STH/LTH realized (~fin sep-oct).";}
-  else{phase="Ventana pasada";sub="Su ventana (fin-ago → oct 2026) quedó atrás.";}
-  return{phase,pc,sub,cards:[["Ventana de suelo","25 ago – oct"],["Omega (citado)","9-11%"],["Fin del bear","$93-96k"]]};
-}
-
 /* ---------- KB de señales por agente (agentes/<a>/senales.json, generado de sus transcripts) ---------- */
 let KB={};
 async function loadKB(){
-  for(const a of["lmec","cowen","onchainmind"]){
+  for(const a of["lmec","cowen"]){
     try{const r=await fetch(`agentes/${a}/senales.json`,{cache:"no-store"});if(r.ok)KB[a]=await r.json();}catch(e){}
   }
 }
@@ -490,10 +480,7 @@ function renderAgents(R){
        if(m.price>=70000)return`Precio en su techo del rebote (200d ~70k): <b>no comprar aquí</b>; acumula cash para ago-oct.`;
        return`<b>DCA pequeño ya</b> (risk <0,3) y guarda la mayoría de la pólvora para el mínimo de Q4 (octubre). Ago-sep suelen ser rojos: no tener prisa.`;}},
   ];
-  // OnChainMind se retiró de esta comparativa (auditoría: nunca dio señal de venta en tiempo
-  // real, ni siquiera en el techo de $111k — "not a time to be defensive yet". Solo sirve
-  // para timing de COMPRA, no de decisión completa). Su panel y KB siguen disponibles en
-  // onchainmind.html si quieres consultar sus métricas on-chain.
+  // OnChainMind se eliminó del terminal (decisión del usuario). Quedan LMEC y Cowen.
   const cardsHtml=A.map(a=>{
     const kb=KB[a.kb];const reg=kb&&kb.regimen_actual;
     const nSig=kb&&Array.isArray(kb.senales)?kb.senales.length:0;

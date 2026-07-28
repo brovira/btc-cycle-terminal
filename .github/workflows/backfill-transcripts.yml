@@ -11,7 +11,7 @@ on:
         description: "Agente a rellenar"
         type: choice
         default: "all"
-        options: ["all", "lmec", "cowen", "onchainmind"]
+        options: ["all", "lmec", "cowen"]
       since:
         description: "Desde fecha YYYYMMDD (20210101 = ciclo completo)"
         default: "20210101"
@@ -53,14 +53,6 @@ jobs:
           python agentes/tools/fetch_captions.py --persona cowen --lang en \
             --max ${{ inputs.max }} --since ${{ inputs.since }} \
             "https://www.youtube.com/@benjaminjcowen/videos"
-
-      - name: OnChainMind (en)
-        if: ${{ inputs.persona == 'all' || inputs.persona == 'onchainmind' }}
-        continue-on-error: true
-        run: |
-          python agentes/tools/fetch_captions.py --persona onchainmind --lang en \
-            --max ${{ inputs.max }} --since ${{ inputs.since }} \
-            "https://www.youtube.com/@OnChainMind/videos"
 
       - name: Commit de transcripts nuevos
         run: |

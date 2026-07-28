@@ -67,8 +67,9 @@ cuánto/cuándo comprar.
   acumulación, excedente de caja invertible (lee `/api/cashflow` → escenarios confirmado/
   esperado, margen 0-3m, desglose saldo→suelo→impuestos→margen→disponible), órdenes
   escalonadas, flujo semanal (Plotly). NO hardcodea cifras (todo del endpoint en vivo).
-- **`lmec.html` / `cowen.html` / `onchainmind.html`** — panel de cada agente (framework,
+- **`lmec.html` / `cowen.html`** — panel de cada agente (framework,
   indicadores, verdict box). lmec.html reframeado al eje del techo esta sesión.
+  (OnChainMind se eliminó del terminal por decisión del usuario.)
 - **`portfolio.html`** — cartera Nansen-style (Overview + Holdings, agrupa por activo
   subyacente, filtros wallet/chain, "ocultar <$5" por defecto). Valor de LPs = valor ACTUAL
   retirable (`performance.currentValueUsd`), no lo aportado. Backend `api/portfolio.js`.
@@ -115,7 +116,6 @@ Cada señal con **cita verbatim + archivo fuente**. Regla de oro: nunca añadir 
   2ª→3ª ruptura BMSB ~280 días → bull ~mar-2027. DCA por niveles de precio, no por calendario.
 - `agentes/cowen/senales.json` — ~25 señales. DCA < 0,3 risk (verbatim), venta > 0,6, estacional
   midterm (2ª mitad tras el mínimo de junio).
-- `agentes/onchainmind/senales.json` — ~27 señales. Retirado de las tarjetas de decisión (ver abajo).
 
 ## Auditorías de track-record (agentes/<agente>/track_record.md + audits)
 - LMEC (7/10 general; 4/10 ciclo 2022-25): no verificable que comprara el suelo real nov-2022
@@ -123,10 +123,8 @@ Cada señal con **cita verbatim + archivo fuente**. Regla de oro: nunca añadir 
   Venta 2025 tardía. **Nunca vende BTC en sí** (rota altcoins→stable).
 - Cowen (6/10 general; 5/10 ciclo 2022-25): fuerte en MACRO (dominance, rallies contratendencia
   2026 con nivel casi exacto); sin venta en ningún techo en tiempo real. **Nunca vende BTC**.
-- OnChainMind: NUNCA dio señal de venta en tiempo real (solo retrospectiva). **Retirado de las
-  tarjetas de decision.html** (sirve solo para timing de compra). Su panel `onchainmind.html`
-  sigue disponible; en decision.html quedan restos muertos (`ocmClock()`, fetch de su KB sin usar)
-  — inofensivos, se pueden limpiar cuando toque.
+- OnChainMind: **ELIMINADO del terminal** por decisión del usuario (página, agente, transcripts,
+  ingesta y restos muertos en decision.html/backtest.html). Quedan LMEC y Cowen.
 
 ## Pendiente de verificar (el usuario lo pidió, AÚN sin cerrar)
 1. **LMEC 2022 "mentalidad + acumular BTC"**: el usuario dice que LMEC ya hablaba de holder
@@ -222,8 +220,7 @@ KB hecha (agente); claves:
   senales.json de cada agente con transcripts nuevos (nunca borra, siempre con cita).
 
 ## Canales YouTube (fetch_captions.py)
-- LMEC: `@LaMejorEstrategiaCriptomonedas` (español) · Cowen: `@IntoTheCryptoverse` (inglés)
-- OnChainMind: `@OnChainMind` (inglés)
+- LMEC: `@LaMejorEstrategiaCriptomonedas` (español) · Cowen: `@benjaminjcowen` (inglés)
 
 ## Wallets (repo privado DeFi-Tracker, data/wallets.json)
 - Solana: `DGL6MYPYaCPQQK5CxYpWLkSgMrSDQsh2eex9WLG8AgNr`

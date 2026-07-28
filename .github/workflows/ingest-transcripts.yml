@@ -3,7 +3,7 @@ name: Ingesta diaria de transcripts (YouTube)
 on:
   schedule:
     # Diario a las 06:30 UTC — baja los subtítulos de los vídeos NUEVOS (últimos 5
-    # por canal, --dateafter 10 días) de los 3 agentes y los commitea.
+    # por canal, --dateafter 10 días) de LMEC y Cowen y los commitea.
     - cron: "30 6 * * *"
   workflow_dispatch: {}
 
@@ -36,12 +36,6 @@ jobs:
           python agentes/tools/fetch_captions.py --persona cowen --lang en --max 5 \
             --since $(date -u -d '10 days ago' +%Y%m%d) \
             "https://www.youtube.com/@benjaminjcowen/videos"
-      - name: OnChainMind (en)
-        continue-on-error: true
-        run: |
-          python agentes/tools/fetch_captions.py --persona onchainmind --lang en --max 5 \
-            --since $(date -u -d '10 days ago' +%Y%m%d) \
-            "https://www.youtube.com/@OnChainMind/videos"
       - name: Commit de transcripts nuevos
         run: |
           git config user.name "transcript-bot"

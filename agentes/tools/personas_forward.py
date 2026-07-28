@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Forward-call + evaluación para los analistas (Cowen / LMEC / OnChainMind).
+"""Forward-call + evaluación para los analistas (Cowen / LMEC).
 
 Mismo patrón que el pase semanal de Glassnode, pero para VÍDEOS (transcripts que ya
 ingesta `ingest-transcripts.yml` a diario):
@@ -28,7 +28,6 @@ MODEL = os.environ.get("PERSONAS_MODEL", "claude-sonnet-5")
 PERSONAS = {
     "cowen": {"nombre": "Benjamin Cowen", "tema": "ciclo de 4 años, risk metric, dominancia, macro BTC/ETH", "lang": "en"},
     "lmec": {"nombre": "LMEC", "tema": "ciclo BTC, Bull Market Support Band, DCA con órdenes, altcoins, farming", "lang": "es"},
-    "onchainmind": {"nombre": "OnChainMind", "tema": "on-chain BTC, cost-basis, cohortes", "lang": "en"},
 }
 HORIZONS = [7, 30, 90]
 

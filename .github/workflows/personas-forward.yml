@@ -1,4 +1,4 @@
-name: Llamadas forward de analistas (Cowen/LMEC/OnChainMind)
+name: Llamadas forward de analistas (Cowen/LMEC)
 
 # Extrae la postura direccional/de ciclo de los vídeos NUEVOS (que ya ingesta a diario
 # ingest-transcripts.yml) y re-evalúa TODAS las llamadas pasadas por precio real (7/30/90d).

@@ -134,7 +134,6 @@
             <option value="lmec_bmsb">LMEC · Ruptura de la BMSB (2ª ruptura ▲)</option>
             <option value="cowen_risk">Cowen · Risk metric (DCA &lt;0,3 / salir &gt;0,6)</option>
             <option value="cowen_mvrv">Cowen · Reset MVRV Z (&lt;0 dentro / &gt;3 fuera)</option>
-            <option value="onchainmind_fng">F&amp;G Cadence 90d (batió al DCA 10× desde 2019)</option>
           </optgroup>
           <optgroup label="📐 Indicadores clásicos">
             <option value="gc">Golden/Death Cross 50/200</option>
@@ -601,17 +600,6 @@ const PRESETS={
     x:{logic:"all",conds:[
     {left:{ind:"botw",params:{}},op:"gt",right:{ind:"value",params:{v:150}}},
     {left:{ind:"botw",params:{}},op:"lt",right:{ind:"value",params:{v:153}}}]}},
-  onchainmind_fng:{name:"F&G Cadence 90d",
-    desc:`<h4>Fear & Greed Cadence (90d)</h4>Compra cuando la <b>cadencia</b> del Fear & Greed (F&G de hoy − F&G de hace 90 días) cruza de negativo a positivo, con precio &gt; MA200 y F&G &gt; 20. Vende <b>en cuanto</b> la cadencia vuelve a cruzar por debajo de 0.
-    <div class="q">"When the Cadence moves from negative to positive, that becomes your buy signal."<span class="src">[ocm/20260325]</span></div>
-    <div class="q">"The moment the cadence crosses back below zero again, you get out. No filters, no waiting."<span class="src">[ocm/20260325]</span></div>
-    <span class="warn">Su backtest es DIARIO (+3.800%, ~10× DCA, 86% aciertos); aquí el motor es SEMANAL, así que la cadencia pierde precisión y rinde por debajo. La regla es fiel; la resolución no.</span>`,
-    e:{logic:"all",conds:[
-    {left:{ind:"fngcad",params:{}},op:"cross_up",right:{ind:"value",params:{v:0}}},
-    {left:{ind:"price",params:{}},op:"gt",right:{ind:"sma",params:{n:29}}},
-    {left:{ind:"fng",params:{}},op:"gt",right:{ind:"value",params:{v:20}}}]},
-    x:{logic:"all",conds:[
-    {left:{ind:"fngcad",params:{}},op:"cross_dn",right:{ind:"value",params:{v:0}}}]}},
   /* === Indicadores clásicos === */
   gc:{name:"Golden/Death Cross 50/200",desc:`<h4>Golden/Death Cross</h4>Compra cuando la SMA50 cruza por encima de la SMA200; vende al revés. Clásico de tendencia, lento.`,e:{logic:"all",conds:[{left:{ind:"sma",params:{n:50}},op:"cross_up",right:{ind:"sma",params:{n:200}}}]},x:{logic:"all",conds:[{left:{ind:"sma",params:{n:50}},op:"cross_dn",right:{ind:"sma",params:{n:200}}}]}},
   rsi:{name:"RSI sobreventa 34/70",desc:`<h4>RSI sobreventa</h4>Compra cuando el RSI semanal recupera 34 (sale de sobreventa); vende al perder 70 (sobrecompra).`,e:{logic:"all",conds:[{left:{ind:"rsi",params:{n:14}},op:"cross_up",right:{ind:"value",params:{v:34}}}]},x:{logic:"all",conds:[{left:{ind:"rsi",params:{n:14}},op:"cross_dn",right:{ind:"value",params:{v:70}}}]}},
