@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mi plan de Bitcoin · Ciclo de 4 años</title>
-<meta name="description" id="metaDesc" content="Mi plan de Bitcoin por el ciclo de 4 años: acumular en el suelo (DCA), holdear, tomar profit cerca del techo.">
+<meta name="description" id="metaDesc" content="Mi plan de Bitcoin por el ciclo de 4 años: acumular en el suelo (DCA), holdear, tomar profit cerca del techo. Con backtest de las señales vs comprar y aguantar.">
 <meta property="og:title" content="Bitcoin plan · 4-year cycle">
 <meta property="og:description" content="Live traffic light of BTC's 4-year cycle: accumulate at the floor, hold, take profit near the top.">
 <meta property="og:type" content="website">
@@ -27,13 +27,16 @@
   .langbar button.on{color:var(--accent);border-color:var(--accent)}
   .kicker{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:700}
   h1{margin:6px 0 2px;font-size:clamp(23px,6vw,31px);font-weight:850;letter-spacing:-.02em}
-  .sub{color:var(--ink2);font-size:14px;max-width:50ch}
+  .sub{color:var(--ink2);font-size:14px;max-width:52ch}
   .live{margin-top:11px;font-family:var(--mono);font-size:13.5px;color:var(--ink2)}.live b{color:var(--ink)}
   .card{border:1px solid var(--line);border-radius:16px;background:var(--panel);box-shadow:0 24px 60px -34px rgba(0,0,0,.75)}
   .chartcard{margin-top:16px;padding:12px 12px 6px}
   #chart{width:100%;height:300px}
   .clegend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;font-size:11.5px;color:var(--muted);padding:4px 4px 8px}
   .clegend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  .sechead{margin:28px 2px 2px;display:flex;align-items:baseline;gap:9px}
+  .sechead h2{font-size:16px;font-weight:850;letter-spacing:-.01em;margin:0}
+  .sechead .h2sub{font-size:11.5px;color:var(--muted)}
   .signal{margin-top:16px;border-left:6px solid var(--sc,var(--muted));padding:18px 20px}
   .signal .lab{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
   .signal .ph{font-size:clamp(22px,6vw,29px);font-weight:850;letter-spacing:-.02em;color:var(--sc,var(--ink));margin:4px 0 3px}
@@ -51,13 +54,42 @@
   .order .badge{margin-left:auto;font-size:11.5px;font-family:var(--mono)}
   .order.done{opacity:.55}.order.done .lv,.order.done .pc{text-decoration:line-through}
   .ordfoot{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}.ordfoot b{color:var(--ink2)}
-  .bar{margin-top:20px}
-  .bar .track{position:relative;height:14px;border-radius:8px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line);overflow:visible}
-  .bar .fill{position:absolute;inset:0;border-radius:8px;background:linear-gradient(90deg,var(--bear) 2%,var(--wait) 22%,var(--bull) 38%,var(--hold) 70%,var(--bear));opacity:.85}
-  .bar .floor{position:absolute;top:-3px;height:20px;background:color-mix(in oklab,var(--bull) 70%,transparent);border-radius:2px}
-  .bar .you{position:absolute;top:-6px;width:4px;height:26px;border-radius:3px;background:#fff;box-shadow:0 0 0 3px var(--bg)}
-  .bar .ends{display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--muted);font-family:var(--mono)}
-  .phases{margin-top:20px;display:grid;gap:9px}
+
+  /* ── roadmap ── */
+  .road{margin-top:14px;padding:18px 18px 16px}
+  .road .now{font-family:var(--mono);font-size:12px;color:var(--ink2);margin-bottom:12px}.road .now b{color:var(--bull)}
+  .roadbar{position:relative;height:34px;border-radius:9px;overflow:hidden;display:flex;box-shadow:inset 0 0 0 1px var(--line)}
+  .seg{position:relative;height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:#0a0f18;white-space:nowrap;overflow:hidden;border-right:1px solid rgba(0,0,0,.35)}
+  .seg:last-child{border-right:0}
+  .roadyou{position:absolute;top:-5px;width:3px;height:44px;background:#fff;box-shadow:0 0 0 3px var(--bg);border-radius:3px;z-index:3}
+  .roadyou::after{content:"▲";position:absolute;top:44px;left:50%;transform:translateX(-50%);color:#fff;font-size:9px}
+  .roadlabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:22px}
+  .rl{border:1px solid var(--line);border-left:4px solid var(--rc);border-radius:10px;background:var(--panel2);padding:8px 10px}
+  .rl.now{box-shadow:0 0 0 1px var(--rc),0 0 22px -8px var(--rc)}
+  .rl .rt{font-weight:800;font-size:12.5px}.rl .rd{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:1px}
+  .rl .rx{font-size:11px;color:var(--ink2);margin-top:4px;line-height:1.4}
+  .buywin{margin-top:16px;border:1px dashed color-mix(in oklab,var(--bull) 55%,var(--line));border-radius:11px;background:color-mix(in oklab,var(--bull) 7%,transparent);padding:12px 14px;font-size:13px;color:var(--ink2);line-height:1.5}
+  .buywin b{color:var(--ink)}.buywin .big{color:var(--bull);font-weight:850}
+
+  /* ── backtest ── */
+  .bt{margin-top:14px;padding:16px 16px 18px}
+  .btlead{font-size:13.5px;color:var(--ink2);line-height:1.55;margin:2px 2px 14px}.btlead b{color:var(--ink)}
+  #btEquity{width:100%;height:230px}
+  .bttable{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
+  .bttable th{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;text-align:right;padding:6px 8px;border-bottom:1px solid var(--line)}
+  .bttable th:first-child{text-align:left}
+  .bttable td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:right;font-family:var(--mono)}
+  .bttable td:first-child{text-align:left;font-family:var(--font)}
+  .bttable tr.hodl td{color:var(--ink2)}
+  .bttable tr.best{background:color-mix(in oklab,var(--bull) 9%,transparent)}
+  .stratdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:0}
+  .stratname{font-weight:750}.stratrule{display:block;font-size:10.5px;color:var(--muted);font-family:var(--font);margin-top:1px;font-weight:400}
+  .pos{color:var(--bull)}.neg{color:var(--bear)}
+  .btverdict{margin-top:14px;border-radius:11px;background:var(--panel2);border:1px solid var(--line);padding:13px 15px;font-size:13.5px;color:var(--ink);line-height:1.55}.btverdict b{color:var(--bull)}
+  .btnote{margin-top:10px;font-size:11px;color:var(--muted);line-height:1.5}
+  .btload{padding:24px 6px;text-align:center;color:var(--muted);font-size:13px}
+
+  .phases{margin-top:14px;display:grid;gap:9px}
   .p{border:1px solid var(--line);border-left:5px solid var(--pc);border-radius:12px;background:var(--panel);padding:12px 14px;display:flex;gap:11px;align-items:flex-start}
   .p.now{box-shadow:0 0 0 1px var(--pc),0 0 26px -8px var(--pc)}
   .p .dot{font-size:16px}.p .t{font-weight:800;font-size:14px}
@@ -81,6 +113,7 @@
     <div class="clegend" id="clegend"></div>
   </div>
 
+  <div class="sechead"><h2 id="hSignal"></h2><span class="h2sub" id="hSignalSub"></span></div>
   <div class="card signal" id="signal">
     <div class="lab" id="signalLab"></div>
     <div class="ph" id="phaseName">…</div>
@@ -96,12 +129,23 @@
     <div class="ordfoot" id="ordFoot"></div>
   </div>
 
-  <div class="bar">
-    <div class="track"><div class="fill"></div><div class="floor" id="floorMark"></div><div class="you" id="youMark"></div></div>
-    <div class="ends"><span id="endTop"></span><span id="endFloor"></span><span id="endNext"></span></div>
+  <div class="sechead"><h2 id="hRoad"></h2><span class="h2sub" id="hRoadSub"></span></div>
+  <div class="card road">
+    <div class="now" id="roadNow"></div>
+    <div class="roadbar" id="roadbar"></div>
+    <div class="roadlabs" id="roadlabs"></div>
+    <div class="buywin" id="buywin"></div>
   </div>
 
+  <div class="sechead"><h2 id="hBt"></h2><span class="h2sub" id="hBtSub"></span></div>
+  <div class="card bt">
+    <div class="btlead" id="btLead"></div>
+    <div id="btBody"><div class="btload" id="btLoad"></div></div>
+  </div>
+
+  <div class="sechead"><h2 id="hPhases"></h2><span class="h2sub" id="hPhasesSub"></span></div>
   <div class="phases" id="phases"></div>
+
   <footer><span id="footMain"></span><div class="disc" id="footDisc"></div></footer>
 </div>
 
@@ -110,25 +154,58 @@
 const $=s=>document.querySelector(s);
 const DAY=864e5,WK=7*DAY,now=Date.now();
 const TOP=Date.parse("2025-10-06"),FLOOR_S=Date.parse("2026-10-01"),FLOOR_E=Date.parse("2026-11-30"),NEXT_TOP=Date.parse("2029-10-01");
+const ACCUM_S=Date.parse("2026-01-01");          // arranque del bear/acumulación tras el techo
+const HOLD_S=FLOOR_E, SELL_S=NEXT_TOP-180*DAY;   // holdear → ventana de venta
 const TOPS=[["2013-11-01","2014-01-05"],["2017-12-01","2018-01-20"],["2021-10-15","2021-12-05"],["2025-09-20","2025-11-15"]];
 const FLOORS=[["2015-01-01","2015-09-01"],["2018-11-01","2019-04-15"],["2022-06-15","2023-02-01"],["2026-09-15","2026-12-20"]];
 const LADDER=[{lvl:60000,pct:20},{lvl:55000,pct:35},{lvl:50000,pct:45}];
 const JUL1=Date.parse("2026-07-01");
 const iso=ts=>new Date(ts).toISOString().slice(0,10);
+const mesAno=(ts,l)=>new Date(ts).toLocaleDateString(l==="es"?"es-ES":"en-US",{month:"short",year:"numeric"});
 
 // ── i18n ──
 const T={es:{
   htmlTitle:"Mi plan de Bitcoin · Ciclo de 4 años",
   metaDesc:"Mi plan de Bitcoin por el ciclo de 4 años: acumular en el suelo (DCA), holdear, tomar profit cerca del techo.",
   kicker:"₿ Ciclo de 4 años", h1:"Mi plan de Bitcoin",
-  sub:"No adivino el precio. Sigo el <b>ciclo de 4 años</b>: <b>acumular</b> en el suelo, <b>holdear</b> el ciclo, y <b>tomar beneficio</b> cerca del techo.",
+  sub:"No adivino el precio. Sigo el <b>ciclo de 4 años</b>: <b>acumular</b> (DCA) hacia el suelo, <b>holdear</b> el ciclo, y <b>tomar beneficio</b> cerca del techo.",
   signalLab:"La señal ahora mismo",
-  legTop:"Techo · vender", legFloor:"Suelo · acumular", legNow:"hoy",
+  hSignal:"1 · La señal de hoy", hSignalSub:"qué toca hacer ahora",
+  hRoad:"2 · Hoja de ruta del ciclo", hRoadSub:"cuándo comprar, cuándo parar, cuándo vender",
+  hBt:"3 · ¿Y esto funciona?", hBtSub:"backtest de las señales vs comprar y aguantar",
+  hPhases:"Las 4 fases, en detalle", hPhasesSub:"",
   ordLab:"Órdenes de compra · escalonadas",
-  ordFoot:'Cuanto más baja, <b>más compro</b>. La <b>artillería gorda</b> se despliega en la ventana de suelo (~oct-nov 2026) — para eso guardo liquidez. Después, sigo con el DCA.',
+  ordFoot:'Cuanto más baja, <b>más compro</b>. La <b>artillería gorda</b> se despliega en la ventana de suelo (~oct-nov 2026) — para eso guardo liquidez. Cuando la ventana se cierra, <b>dejo de comprar y holdeo</b>.',
   dcaOn:(d)=>`🟢 <b>DCA arrancó</b> al romper <b>$60k</b> (${d}) — DCA <b>light</b> desde entonces. Órdenes escalonadas por debajo por si sigue cayendo:`,
   dcaOff:'El DCA arranca al romper <b>$60k</b>. Órdenes escalonadas por debajo por si el precio cae:',
   pctCap:"% del capital", bought:"comprado", placed:"orden puesta",
+  // roadmap
+  roadNow:(fase,pct)=>`Hoy estás en <b>${fase}</b> · llevas ${pct} de la ventana de compra recorrida`,
+  segTop:"Techo", segAccum:"Acumular", segFloor:"Suelo", segHold:"Holdear", segSell:"Vender",
+  rl:{
+    top:{t:"🔴 Techo",x:"Ya pasó (oct 2025). Aquí se vende, no se compra."},
+    accum:{t:"🟢 Acumular · DCA",x:"DCA constante y órdenes límite hacia el soporte. Compra pequeña y regular."},
+    floor:{t:"🟢 Suelo · desplegar",x:"La ventana clave: se despliega la artillería (la compra grande). Suele durar poco."},
+    hold:{t:"🔵 Holdear",x:"Se deja de comprar. Aguantar ~3 años sin tocar hasta acercarse al próximo techo."},
+    sell:{t:"🔴 Vender",x:"Cerca del próximo techo (~2029): tomar beneficio escalonado y pasar a estables."}
+  },
+  buywin:(fin)=>`🎯 <b>Tu ventana de COMPRA está abierta AHORA</b> y se cierra <span class="big">~${fin}</span>. Hasta esa fecha: DCA constante + desplegar la artillería en el suelo (~oct-nov 2026). <b>Después NO se compra más</b> — empieza el HOLD de ~3 años. Eso es todo lo que hay que hacer con capital nuevo este ciclo.`,
+  // backtest
+  btLead:'Pregunta justa: <b>¿merece la pena seguir las señales del ciclo, o comprar y aguantar (HODL) y ya está?</b> Backtest sobre <b>todo el histórico de BTC</b> (velas semanales). Cada estrategia entra/sale al cierre semanal según su regla; fuera del mercado, en efectivo (0%). Sin apalancamiento. Mismo capital inicial. Mira las dos columnas que importan: <b>cuánto multiplicas</b> y, sobre todo, <b>la peor caída que aguantas por el camino</b>.',
+  btLoad:"Cargando precios y ejecutando el backtest…",
+  btCols:["Estrategia","×  final","Anual (CAGR)","Peor caída","vs HODL"],
+  stratHODL:{n:"Comprar y aguantar",r:"comprar el día 1 y no tocar nunca"},
+  stratLMEC:{n:"LMEC · BMSB / ciclo",r:"entra en la 2ª ruptura de la BMSB, vende en la euforia del techo"},
+  stratCowen:{n:"Cowen · Risk metric",r:"DCA con riesgo <0,30 · sale por encima de 0,60 (aprox. abierta)"},
+  stratOCM:{n:"OnChainMind · zona de valor",r:"compra la zona baja de riesgo, holdea hasta que se calienta mucho"},
+  stratCons:{n:"Consenso (las 3)",r:"dentro cuando ≥2 de las 3 señales coinciden"},
+  vf:{beat:(n,m,h)=>`<b>${n}</b> habría convertido 1 en <b>×${m}</b>, por encima del ×${h} de comprar y aguantar`,
+      near:(n,m,h)=>`<b>${n}</b> convirtió 1 en <b>×${m}</b> (comprar y aguantar dio ×${h})`,
+      ddbetter:(dd,ddh)=>` — y con una peor caída de solo <b>−${dd}%</b> frente al <b>−${ddh}%</b> de HODL.`,
+      ddsame:(dd)=>`, con una peor caída de −${dd}%.`,
+      tag:` El objetivo del ciclo no es batir el retorno bruto: es <b>capturar la mayor parte con una fracción del sufrimiento</b>.`},
+  btNote:"Aproximación educativa, no asesoramiento financiero. Las reglas replican el método de cada analista pero simplificado a cierre semanal y a partir de precio (la métrica de riesgo de Cowen es propietaria; aquí se aproxima con la desviación sobre la regresión logarítmica, sin mirar al futuro). Rentabilidad pasada no garantiza resultados. El motor completo, con más señales y métricas, está en la pestaña Backtesting.",
+  eqYou:"hoy",
   endTop:"Techo · oct 2025", endFloor:"Suelo · ~oct-nov 2026", endNext:"Próx. techo · ~2029",
   weeksSince:"sem desde el techo", weeksSinceLong:"semanas desde el techo (oct 2025)",
   onCount:(n)=>`${n}/3 encendidas`,
@@ -146,14 +223,42 @@ const T={es:{
   htmlTitle:"My Bitcoin plan · 4-year cycle",
   metaDesc:"My Bitcoin plan around the 4-year cycle: accumulate at the floor (DCA), hold, take profit near the top.",
   kicker:"₿ 4-year cycle", h1:"My Bitcoin plan",
-  sub:"I don't predict price. I follow the <b>4-year cycle</b>: <b>accumulate</b> at the floor, <b>hold</b> the cycle, and <b>take profit</b> near the top.",
+  sub:"I don't predict price. I follow the <b>4-year cycle</b>: <b>accumulate</b> (DCA) toward the floor, <b>hold</b> the cycle, and <b>take profit</b> near the top.",
   signalLab:"The signal right now",
-  legTop:"Top · sell", legFloor:"Floor · accumulate", legNow:"now",
+  hSignal:"1 · Today's signal", hSignalSub:"what to do now",
+  hRoad:"2 · Cycle roadmap", hRoadSub:"when to buy, when to stop, when to sell",
+  hBt:"3 · Does it actually work?", hBtSub:"backtest of the signals vs buy & hold",
+  hPhases:"The 4 phases, in detail", hPhasesSub:"",
   ordLab:"Buy orders · laddered",
-  ordFoot:'The lower it goes, <b>the more I buy</b>. The <b>heavy artillery</b> deploys in the floor window (~Oct-Nov 2026) — that\'s what the cash is for. After that, DCA continues.',
+  ordFoot:'The lower it goes, <b>the more I buy</b>. The <b>heavy artillery</b> deploys in the floor window (~Oct-Nov 2026) — that\'s what the cash is for. When the window closes, <b>I stop buying and hold</b>.',
   dcaOn:(d)=>`🟢 <b>DCA started</b> when BTC broke <b>$60k</b> (${d}) — <b>light</b> DCA since then. Laddered orders below in case it keeps falling:`,
   dcaOff:'DCA starts when BTC breaks <b>$60k</b>. Laddered orders below in case price drops:',
   pctCap:"of capital", bought:"bought", placed:"order placed",
+  roadNow:(fase,pct)=>`You are in <b>${fase}</b> · ${pct} of the buying window elapsed`,
+  segTop:"Top", segAccum:"Accumulate", segFloor:"Floor", segHold:"Hold", segSell:"Sell",
+  rl:{
+    top:{t:"🔴 Top",x:"Already passed (Oct 2025). This is where you sell, not buy."},
+    accum:{t:"🟢 Accumulate · DCA",x:"Steady DCA and laddered limit orders toward support. Small and regular."},
+    floor:{t:"🟢 Floor · deploy",x:"The key window: deploy the artillery (the big buy). Usually short-lived."},
+    hold:{t:"🔵 Hold",x:"Stop buying. Sit ~3 years without touching until nearing the next top."},
+    sell:{t:"🔴 Sell",x:"Near the next top (~2029): take profit in tranches and rotate to stables."}
+  },
+  buywin:(fin)=>`🎯 <b>Your BUYING window is open NOW</b> and closes <span class="big">~${fin}</span>. Until then: steady DCA + deploy the artillery at the floor (~Oct-Nov 2026). <b>After that you don't buy anymore</b> — the ~3-year HOLD begins. That's all there is to do with fresh capital this cycle.`,
+  btLead:'Fair question: <b>does following the cycle signals beat buy & hold (HODL)?</b> Below, a backtest over <b>all of BTC history</b> (weekly candles). Each strategy enters/exits at the weekly close by its rule; when out, it sits in cash (0%). No leverage. Same starting stake for all.',
+  btLoad:"Loading prices and running the backtest…",
+  btCols:["Strategy","×  final","Annual (CAGR)","Worst drop","vs HODL"],
+  stratHODL:{n:"Buy & hold",r:"buy on day 1 and never touch it"},
+  stratLMEC:{n:"LMEC · BMSB / cycle",r:"enters on the 2nd BMSB reclaim, sells into the top's euphoria"},
+  stratCowen:{n:"Cowen · Risk metric",r:"DCA when risk <0.30 · exits above 0.60 (open approximation)"},
+  stratOCM:{n:"OnChainMind · value zone",r:"buys the low-risk zone, holds until it runs very hot"},
+  stratCons:{n:"Consensus (all 3)",r:"in-market when ≥2 of the 3 signals agree"},
+  vf:{beat:(n,m,h)=>`<b>${n}</b> would have turned 1 into <b>×${m}</b>, above buy & hold's ×${h}`,
+      near:(n,m,h)=>`<b>${n}</b> turned 1 into <b>×${m}</b> (buy & hold did ×${h})`,
+      ddbetter:(dd,ddh)=>` — and with a worst drop of just <b>−${dd}%</b> vs HODL's <b>−${ddh}%</b>.`,
+      ddsame:(dd)=>`, with a worst drop of −${dd}%.`,
+      tag:` The cycle's goal isn't to beat raw return: it's to <b>capture most of it with a fraction of the pain</b>.`},
+  btNote:"Educational approximation, not financial advice. The rules replicate each analyst's method but simplified to weekly close and derived from price (Cowen's risk metric is proprietary; here it's approximated by deviation from a log regression, with no lookahead). Past performance doesn't guarantee results. The full engine, with more signals and metrics, is on the Backtesting tab.",
+  eqYou:"now",
   endTop:"Top · Oct 2025", endFloor:"Floor · ~Oct-Nov 2026", endNext:"Next top · ~2029",
   weeksSince:"weeks since top", weeksSinceLong:"weeks since the top (Oct 2025)",
   onCount:(n)=>`${n}/3 on`,
@@ -175,6 +280,16 @@ function phaseNow(){ if(now<TOP)return "hold"; if(now<=FLOOR_E)return (now>=FLOO
 const PHASE_META=[{key:"top",c:"var(--bear)",dot:"🔴"},{key:"accum",c:"var(--bull)",dot:"🟢"},{key:"floor",c:"var(--bull)",dot:"🟢"},{key:"hold",c:"var(--hold)",dot:"🔵"}];
 const cur=phaseNow();
 
+// segmentos del roadmap (fecha inicio → color → clave)
+const ROAD=[
+  {key:"top",   s:TOP,     e:ACCUM_S, c:"var(--bear)"},
+  {key:"accum", s:ACCUM_S, e:FLOOR_S, c:"var(--bull)"},
+  {key:"floor", s:FLOOR_S, e:FLOOR_E, c:"#20b378"},
+  {key:"hold",  s:FLOOR_E, e:SELL_S,  c:"var(--hold)"},
+  {key:"sell",  s:SELL_S,  e:NEXT_TOP,c:"var(--bear)"}
+];
+function roadPhaseNow(){for(const r of ROAD)if(now>=r.s&&now<r.e)return r.key;return now<TOP?"top":"sell";}
+
 let dcaStartTs=null, ladderTouch={}; // rellenado tras cargar precios
 
 function render(){
@@ -184,9 +299,13 @@ function render(){
   $("#btnEs").classList.toggle("on",LANG==="es"); $("#btnEn").classList.toggle("on",LANG==="en");
   $("#kicker").textContent=t.kicker; $("#h1").textContent=t.h1; $("#sub").innerHTML=t.sub;
   $("#signalLab").textContent=t.signalLab;
-  $("#clegend").innerHTML=`<span><i style="background:var(--bear)"></i>${t.legTop}</span><span><i style="background:var(--bull)"></i>${t.legFloor}</span><span><i style="background:#fff"></i>${t.legNow}</span>`;
+  $("#clegend").innerHTML=`<span><i style="background:var(--bear)"></i>${t.endTop}</span><span><i style="background:var(--bull)"></i>${t.endFloor}</span><span><i style="background:#fff"></i>${t.weeksSince}</span>`;
   $("#ordLab").textContent=t.ordLab; $("#ordFoot").innerHTML=t.ordFoot;
-  $("#endTop").textContent=t.endTop; $("#endFloor").textContent=t.endFloor; $("#endNext").textContent=t.endNext;
+  $("#hSignal").textContent=t.hSignal; $("#hSignalSub").textContent=t.hSignalSub;
+  $("#hRoad").textContent=t.hRoad; $("#hRoadSub").textContent=t.hRoadSub;
+  $("#hBt").textContent=t.hBt; $("#hBtSub").textContent=t.hBtSub;
+  $("#hPhases").textContent=t.hPhases; $("#hPhasesSub").textContent=t.hPhasesSub;
+  $("#btLead").innerHTML=t.btLead; if($("#btLoad"))$("#btLoad").textContent=t.btLoad;
   $("#footMain").innerHTML=t.footMain; $("#footDisc").innerHTML=t.footDisc;
 
   // semáforo
@@ -202,10 +321,7 @@ function render(){
   $("#lights").innerHTML=LIGHTS.map(l=>`<div class="lt ${l.on?"on":""}"><span class="d" style="background:${l.on?"var(--bull)":"var(--muted)"}"></span><span><span class="nm">${l.nm}</span><br><span class="st">${l.st}</span></span></div>`).join("");
   $("#cnt").textContent=t.onCount(LIGHTS.filter(l=>l.on).length);
 
-  // progreso
-  const span=NEXT_TOP-TOP,pos=Math.max(0,Math.min(1,(now-TOP)/span));
-  $("#youMark").style.left="calc("+(pos*100).toFixed(1)+"% - 2px)";
-  $("#floorMark").style.left=((FLOOR_S-TOP)/span*100).toFixed(1)+"%"; $("#floorMark").style.width=Math.max(1.5,(FLOOR_E-FLOOR_S)/span*100).toFixed(1)+"%";
+  renderRoad();
 
   // fases
   $("#phases").innerHTML=PHASE_META.map(p=>{const x=t.phases[p.key];return `<div class="p ${p.key===cur?"now":""}" style="--pc:${p.c}"><span class="dot">${p.dot}</span><div><div class="t">${x.t}<span class="when">${x.when}</span></div><div class="d">${x.d}</div></div>${p.key===cur?'<span class="nowtag">'+(LANG==="es"?"aquí":"here")+'</span>':''}</div>`;}).join("");
@@ -218,9 +334,25 @@ function render(){
       return `<div class="order ${done?"done":""}"><span class="lv">$${o.lvl/1000}k</span><span class="pc">${o.pct}${LANG==="es"?"":"%"} ${t.pctCap}</span><span class="badge" style="color:${done?"var(--muted)":"var(--bull)"}">${done?"✅ "+t.bought+" "+iso(tt):"● "+t.placed}</span></div>`;
     }).join("");
   }
-  // live (con lo que haya)
+  if(window.__btResult)renderBacktest(window.__btResult);
   updateLive();
 }
+
+function renderRoad(){
+  const t=T[LANG], span=NEXT_TOP-TOP, segNames={top:t.segTop,accum:t.segAccum,floor:t.segFloor,hold:t.segHold,sell:t.segSell};
+  const rk=roadPhaseNow();
+  // barra segmentada
+  $("#roadbar").innerHTML=ROAD.map(r=>{const w=(r.e-r.s)/span*100;return `<div class="seg" style="flex:0 0 ${w.toFixed(2)}%;background:${r.c}">${w>9?segNames[r.key]:""}</div>`;}).join("")
+    +`<div class="roadyou" style="left:${(Math.max(0,Math.min(1,(now-TOP)/span))*100).toFixed(2)}%"></div>`;
+  // etiquetas
+  $("#roadlabs").innerHTML=ROAD.map(r=>{const x=t.rl[r.key];const isNow=r.key===rk;
+    return `<div class="rl ${isNow?"now":""}" style="--rc:${r.c}"><div class="rt">${x.t}</div><div class="rd">${mesAno(r.s,LANG)} → ${mesAno(r.e,LANG)}</div><div class="rx">${x.x}</div></div>`;}).join("");
+  // callout de ventana de compra: desde ahora hasta el fin del suelo
+  const buyStart=ACCUM_S, buyEnd=FLOOR_E, prog=Math.max(0,Math.min(1,(now-buyStart)/(buyEnd-buyStart)));
+  $("#roadNow").innerHTML=t.roadNow(segNames[rk]||"", Math.round(prog*100)+"%");
+  $("#buywin").innerHTML=t.buywin(mesAno(buyEnd,LANG));
+}
+
 let LIVE_PX=null;
 function updateLive(){
   const t=T[LANG], wk=Math.floor((now-TOP)/WK);
@@ -235,18 +367,128 @@ render();
 // precio en vivo
 (async function(){try{const r=await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true");LIVE_PX=(await r.json()).bitcoin;updateLive();}catch(e){}})();
 
-// ── gráfico + órdenes ──
+// ══════════ backtest (motor propio, client-side, solo precio) ══════════
+function sma(a,n){const o=Array(a.length).fill(null);let s=0;for(let i=0;i<a.length;i++){s+=a[i];if(i>=n)s-=a[i-n];if(i>=n-1)o[i]=s/n;}return o;}
+function ema(a,n){const o=Array(a.length).fill(null),k=2/(n+1);let p=null,ss=0,sd=false;for(let i=0;i<a.length;i++){const v=a[i];if(v==null){o[i]=null;continue;}if(!sd){ss+=v;if(i>=n-1){p=ss/n;o[i]=p;sd=true;}continue;}p=v*k+p*(1-k);o[i]=p;}return o;}
+// riesgo 0-1 estilo Cowen: desviación de log(precio) sobre regresión log-log, walk-forward (sin lookahead)
+function riskSeries(T_,C){const t0=Date.parse("2009-01-03"),out=Array(T_.length).fill(null);
+  let n=0,sx=0,sy=0,sxx=0,sxy=0,dmin=Infinity,dmax=-Infinity;
+  for(let i=0;i<T_.length;i++){const w=(T_[i]-t0)/WK,c=C[i];if(!(w>0)||!(c>0))continue;
+    const x=Math.log(w),y=Math.log(c);n++;sx+=x;sy+=y;sxx+=x*x;sxy+=x*y;if(n<52)continue;
+    const den=n*sxx-sx*sx;if(!(den>0))continue;const b=(n*sxy-sx*sy)/den,a=(sy-b*sx)/n,d=y-(a+b*x);
+    if(d<dmin)dmin=d;if(d>dmax)dmax=d;if(dmax>dmin)out[i]=(d-dmin)/(dmax-dmin);}
+  return out;}
+// 2ª ruptura al alza de la BMSB (LMEC): 1 en la barra de la 2ª ruptura tras un bear
+function bmsb2Series(C){const n=C.length,s20=sma(C,20),e21=ema(C,21);
+  const hi=i=>(s20[i]!=null&&e21[i]!=null)?Math.max(s20[i],e21[i]):null,lo=i=>(s20[i]!=null&&e21[i]!=null)?Math.min(s20[i],e21[i]):null;
+  const ev=[];let state=null;
+  for(let i=1;i<n;i++){const H=hi(i),Lw=lo(i);if(H==null)continue;
+    const aC=C[i]>H&&hi(i-1)!=null&&C[i-1]>hi(i-1),bC=C[i]<Lw&&lo(i-1)!=null&&C[i-1]<lo(i-1);
+    if(aC&&state!=="up"){if(state)ev.push([i,"up"]);state="up";}
+    else if(bC&&state!=="down"){if(state)ev.push([i,"down"]);state="down";}
+    else if(state==null){state=C[i]>H?"up":(C[i]<Lw?"down":null);}}
+  const out=Array(n).fill(0);let inBear=false,ups=0,lastUp=null;
+  for(const[i,tp]of ev){if(tp==="up"){lastUp=i;if(inBear){ups++;if(ups===2){out[i]=1;inBear=false;}}}
+    else{const bl=lastUp!=null?(i-lastUp):999;if(bl>=40){inBear=true;ups=0;}}}
+  return out;}
+
+// simula una serie booleana "dentro/fuera" → curva de capital + métricas
+function simulate(T_,C,inMkt){
+  const eq=Array(C.length).fill(1);let e=1,peak=1,maxdd=0;
+  for(let i=1;i<C.length;i++){const r=inMkt[i-1]?(C[i]/C[i-1]-1):0;e*=(1+r);eq[i]=e;if(e>peak)peak=e;const dd=1-e/peak;if(dd>maxdd)maxdd=dd;}
+  const yrs=(T_[T_.length-1]-T_[0])/(365.25*DAY);
+  const cagr=yrs>0?(Math.pow(e,1/yrs)-1):0;
+  return {eq,mult:e,cagr,maxdd};
+}
+// máquina de estados genérica: enterFn/exitFn(i)->bool ; devuelve serie dentro/fuera
+function stateMachine(n,enterFn,exitFn,start){let inM=!!start;const out=Array(n).fill(false);
+  for(let i=0;i<n;i++){if(!inM&&enterFn(i))inM=true;else if(inM&&exitFn(i))inM=false;out[i]=inM;}return out;}
+
+function runBacktest(prices){
+  // remuestreo a semanal (cierre de cada bloque de 7 días)
+  const T_=[],C=[];let bs=null,bc=null,bt=null;
+  for(const[ms,p]of prices){if(bs==null){bs=ms;bc=p;bt=ms;}else if(ms-bs>=WK){T_.push(bt);C.push(bc);bs=ms;bc=p;bt=ms;}else{bc=p;bt=ms;}}
+  if(bs!=null){T_.push(bt);C.push(bc);}
+  if(C.length<80)return null;
+  const n=C.length, risk=riskSeries(T_,C), b2=bmsb2Series(C);
+  const val=x=>x==null?null:x;
+  // LMEC: entra en 2ª ruptura BMSB, sale cuando el riesgo entra en euforia (>0.82)
+  const lmec=stateMachine(n,i=>b2[i]===1,i=>val(risk[i])!=null&&risk[i]>0.82,false);
+  // Cowen: entra risk<0.30, sale risk>0.60
+  const cowen=stateMachine(n,i=>val(risk[i])!=null&&risk[i]<0.30,i=>val(risk[i])!=null&&risk[i]>0.60,false);
+  // OnChainMind: compra la zona (risk<0.45), holdea hasta que se calienta mucho (risk>0.78)
+  const ocm=stateMachine(n,i=>val(risk[i])!=null&&risk[i]<0.45,i=>val(risk[i])!=null&&risk[i]>0.78,false);
+  // Consenso: dentro cuando ≥2 de las 3 coinciden
+  const cons=Array(n);for(let i=0;i<n;i++)cons[i]=((lmec[i]?1:0)+(cowen[i]?1:0)+(ocm[i]?1:0))>=2;
+  const hodl=Array(n).fill(true);
+  const R={
+    T:T_,
+    hodl:simulate(T_,C,hodl), lmec:simulate(T_,C,lmec), cowen:simulate(T_,C,cowen),
+    ocm:simulate(T_,C,ocm), cons:simulate(T_,C,cons)
+  };
+  return R;
+}
+
+const BT_COLORS={hodl:"#7f92ab",lmec:"#e8a13a",cowen:"#3fa9f5",ocm:"#b48ef2",cons:"#2fd39b"};
+function renderBacktest(R){
+  const t=T[LANG], body=$("#btBody");
+  const rows=[
+    {k:"hodl", ...t.stratHODL, m:R.hodl},
+    {k:"lmec", ...t.stratLMEC, m:R.lmec},
+    {k:"cowen",...t.stratCowen,m:R.cowen},
+    {k:"ocm",  ...t.stratOCM,  m:R.ocm},
+    {k:"cons", ...t.stratCons, m:R.cons},
+  ];
+  const hodlMult=R.hodl.mult;
+  const fmtMult=x=>x>=100?Math.round(x).toLocaleString():x>=10?x.toFixed(0):x.toFixed(1);
+  const fmtPct=x=>(x*100).toFixed(0);
+  const table=`<table class="bttable"><thead><tr>${t.btCols.map((c,i)=>`<th>${c}</th>`).join("")}</tr></thead><tbody>`+
+    rows.map(r=>{const vs=r.m.mult/hodlMult;const best=r.k==="cons"||(r.k!=="hodl"&&vs>=1);
+      return `<tr class="${r.k==="hodl"?"hodl":""} ${best?"best":""}">
+        <td><span class="stratdot" style="background:${BT_COLORS[r.k]}"></span><span class="stratname">${r.n}</span><span class="stratrule">${r.r}</span></td>
+        <td>×${fmtMult(r.m.mult)}</td>
+        <td>${fmtPct(r.m.cagr)}%</td>
+        <td class="neg">−${fmtPct(r.m.maxdd)}%</td>
+        <td class="${vs>=1?"pos":"neg"}">${r.k==="hodl"?"—":(vs>=1?"+":"")+((vs-1)*100).toFixed(0)+"%"}</td></tr>`;}).join("")+
+    `</tbody></table>`;
+  // veredicto dinámico y HONESTO sobre el consenso (se adapta a los números reales)
+  const c=R.cons, h=R.hodl, beat=c.mult>=h.mult, ddBetter=c.maxdd<h.maxdd-0.05;
+  let vtxt=(beat?t.vf.beat:t.vf.near)(t.stratCons.n, fmtMult(c.mult), fmtMult(h.mult))
+          +(ddBetter?t.vf.ddbetter(fmtPct(c.maxdd),fmtPct(h.maxdd)):t.vf.ddsame(fmtPct(c.maxdd)))
+          +((!beat&&ddBetter)?t.vf.tag:"");
+  const verdict=`<div class="btverdict">${vtxt}</div>`;
+  body.innerHTML=`<div id="btEquity"></div>${table}${verdict}<div class="btnote">${t.btNote}</div>`;
+  drawEquity(R,rows);
+}
+function drawEquity(R,rows){
+  if(!window.Plotly){$("#btEquity").style.display="none";return;}
+  const xs=R.T.map(iso);
+  const traces=rows.map(r=>({x:xs,y:r.m.eq,mode:"lines",name:r.n,
+    line:{color:BT_COLORS[r.k],width:r.k==="cons"?2.4:(r.k==="hodl"?1.6:1.3),dash:r.k==="hodl"?"dot":"solid"},
+    hovertemplate:"%{x}<br>×%{y:,.1f}<extra>"+r.n+"</extra>"}));
+  const layout={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",margin:{l:44,r:8,t:6,b:22},height:230,
+    font:{color:"#7f92ab",size:10,family:"inherit"},showlegend:true,legend:{orientation:"h",font:{size:9},y:1.14,x:0},
+    xaxis:{gridcolor:"rgba(255,255,255,.04)",linecolor:"#243448",color:"#7f92ab",type:"date"},
+    yaxis:{type:"log",gridcolor:"rgba(255,255,255,.05)",linecolor:"#243448",color:"#7f92ab",title:{text:"× (log)",font:{size:9}}}};
+  window.Plotly.react("btEquity",traces,layout,{responsive:true,displayModeBar:false});
+}
+
+// ── gráfico principal + órdenes + backtest ──
 function loadScript(u){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=u;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("plotly");}
 function band(r,c,o){return {type:"rect",xref:"x",yref:"paper",x0:r[0],x1:r[1],y0:0,y1:1,fillcolor:c,opacity:o,line:{width:0},layer:"below"};}
 (async function(){
   let prices=null;
   try{await loadPlotly();const r=await fetch("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=max");prices=(await r.json()).prices;}catch(e){}
-  if(!prices||!prices.length){document.querySelector(".chartcard").style.display="none";return;}
+  if(!prices||!prices.length){document.querySelector(".chartcard").style.display="none";const bl=$("#btLoad");if(bl)bl.textContent=LANG==="es"?"No se pudo cargar el histórico de precios (fuente caída).":"Couldn't load price history (source down).";return;}
   const firstTouch=(lvl,from)=>{for(const p of prices){if(p[0]>=from&&p[1]<=lvl)return p[0];}return null;};
   dcaStartTs=firstTouch(60000,TOP);
   LADDER.forEach(o=>{ladderTouch[o.lvl]=firstTouch(o.lvl,JUL1);});
-  render(); // re-render con las órdenes ya calculadas
+  // backtest
+  try{window.__btResult=runBacktest(prices);}catch(e){window.__btResult=null;}
+  render(); // re-render con órdenes + backtest ya calculados
+  if(!window.__btResult){const bl=$("#btBody");if(bl)bl.innerHTML=`<div class="btload">${LANG==="es"?"No hay suficientes datos para el backtest.":"Not enough data for the backtest."}</div>`;}
+
   if(!window.Plotly){document.querySelector(".chartcard").style.display="none";return;}
   const xs=[],ys=[];for(let i=0;i<prices.length;i+=3){xs.push(iso(prices[i][0]));ys.push(prices[i][1]);}
   const shapes=[];
