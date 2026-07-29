@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "bgapi": {
+      "type": "streamable-http",
+      "url": "https://mcp.bitcoin-data.com/mcp"
+    }
+  }
+}
