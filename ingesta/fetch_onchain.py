@@ -28,7 +28,8 @@ METRICS = {
     "sopr":           "sopr",
 }
 
-DATE_KEYS = ("d", "date", "theDay", "day", "t", "unixTs")
+DATE_KEYS = ("d", "date", "theday", "day", "t")
+IGNORE_KEYS = ("unixts",)  # columnas auxiliares que NO son el valor de la métrica
 
 def fetch(slug):
     """GET /v1/<slug> con el token. Devuelve (status, texto_crudo)."""
@@ -58,8 +59,10 @@ def normalize(raw):
     if not isinstance(data, list) or not data:
         raise ValueError("respuesta no es una lista con datos")
     sample = data[0]
-    dkey = next((k for k in sample if k.lower() in [x.lower() for x in DATE_KEYS]), None)
-    vkey = next((k for k in sample if k != dkey), None)
+    dkey = next((k for k in sample if k.lower() in DATE_KEYS), None)
+    # el valor es la primera clave que no es la fecha ni una columna auxiliar (unixTs)
+    vkey = next((k for k in sample if k != dkey and k.lower() not in IGNORE_KEYS
+                 and k.lower() not in DATE_KEYS), None)
     if not dkey or not vkey:
         raise ValueError(f"no encuentro claves fecha/valor en {sample}")
     out = []
