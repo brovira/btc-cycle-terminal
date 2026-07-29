@@ -26,6 +26,12 @@ METRICS = {
     "mvrv_zscore":    "mvrv-zscore",
     "realized_price": "realized-price",
     "sopr":           "sopr",
+    # STH = short-term holders (compradores de <155 días). Para la estrategia de vol:
+    # sth_realized_price = su precio medio de compra (el "DÓNDE" de Glassnode: resistencia
+    # en bear / soporte en bull, hoy ~$69K); sth_sopr = si venden con ganancia o pérdida.
+    # Si el slug no existe en BGeometrics el script lo salta e informa (ver --probe).
+    "sth_realized_price": "sth-realized-price",
+    "sth_sopr":           "sth-sopr",
 }
 
 DATE_KEYS = ("d", "date", "theday", "day", "t")

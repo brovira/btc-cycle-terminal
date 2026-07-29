@@ -245,17 +245,32 @@ module.exports = async (req, res) => {
   // racha de VRP negativo (DVOL diario − RV30 del mismo día), skew y P/C de volumen.
   const strat = { checks: {} }; const C = strat.checks;
 
-  // funding anualizado, media móvil 3 días (9 periodos de 8h) — Bybit history, fallback OKX
-  { let rates = null;
-    const fh = await j(`https://api.bybit.com/v5/market/funding/history?category=linear&symbol=BTCUSDT&limit=9`, "bybit_fundhist", W);
-    const lst = fh && fh.result && fh.result.list;
-    if (Array.isArray(lst) && lst.length >= 3) rates = lst.map(x => +x.fundingRate).filter(v => !isNaN(v));
-    if (!rates) { const oh = await j(`https://www.okx.com/api/v5/public/funding-rate-history?instId=BTC-USDT-SWAP&limit=9`, "okx_fundhist", W);
-      const od = oh && oh.data; if (Array.isArray(od) && od.length >= 3) rates = od.map(x => +x.fundingRate).filter(v => !isNaN(v)); }
-    if (rates && rates.length >= 3) {
-      const mean = rates.reduce((a, b) => a + b, 0) / rates.length;
-      C.fundingAnn3d = round(mean * 3 * 365 * 100, 2);            // % anualizado
-      C.fundingNeg3d = rates.filter(v => v < 0).length >= Math.ceil(rates.length * 0.7); // negativo sostenido
+  // funding: MM 3 días anualizada + Z-SCORE vs sus últimos ~180d (reduce el long-bias:
+  // el funding es crónicamente positivo y su "normal" cambia por régimen — en mar-24 un +8%
+  // era rutina; el z-score pregunta "¿extremo PARA SU ÉPOCA?"). Bybit history paginado, fallback OKX.
+  { let rates = []; // del más nuevo al más viejo
+    let end = Date.now();
+    for (let page = 0; page < 3; page++) { // 3×200 periodos de 8h ≈ 200 días
+      const fh = await j(`https://api.bybit.com/v5/market/funding/history?category=linear&symbol=BTCUSDT&limit=200&endTime=${end}`, "bybit_fundhist", W);
+      const lst = fh && fh.result && fh.result.list;
+      if (!Array.isArray(lst) || !lst.length) break;
+      for (const x of lst) { const v = +x.fundingRate; if (!isNaN(v)) rates.push(v); }
+      const oldest = +lst[lst.length - 1].fundingRateTimestamp;
+      if (!oldest || oldest >= end) break;
+      end = oldest - 1;
+    }
+    if (rates.length < 9) { const oh = await j(`https://www.okx.com/api/v5/public/funding-rate-history?instId=BTC-USDT-SWAP&limit=100`, "okx_fundhist", W);
+      const od = oh && oh.data; if (Array.isArray(od)) rates = od.map(x => +x.fundingRate).filter(v => !isNaN(v)); }
+    if (rates.length >= 9) {
+      const last9 = rates.slice(0, 9);
+      const cur = last9.reduce((a, b) => a + b, 0) / last9.length;
+      C.fundingAnn3d = round(cur * 3 * 365 * 100, 2);             // % anualizado
+      C.fundingNeg3d = last9.filter(v => v < 0).length >= Math.ceil(last9.length * 0.7); // negativo sostenido
+      if (rates.length >= 90) {                                    // z-score vs la ventana completa
+        const m = rates.reduce((a, b) => a + b, 0) / rates.length, sd = stdev(rates);
+        if (sd > 0) C.fundingZ = round((cur - m) / sd, 2);
+        C.fundingHistDays = Math.round(rates.length / 3);
+      }
     } }
 
   // OI: percentil 180d + cambios 14/28d + flush reciente (−15% en ≤3d dentro de los últimos 60d)
@@ -290,9 +305,14 @@ module.exports = async (req, res) => {
     C.vrpNegDays = run; }
 
   // Evaluación de triggers (umbral = estrategia_leverage.md §C; skew-rotation NO es automatizable
-  // con datos gratis → esa pata queda como "criterio del agente" y no bloquea la señal)
-  const F = C.fundingAnn3d, OIP = C.oiPct180, VRP = out.vrp, SK = out.optSkew, PCV = out.optPutCallVol;
-  const exitCrowded = (F != null && F >= 8) && (OIP != null && OIP >= 0.90);
+  // con datos gratis → esa pata queda como "criterio del agente" y no bloquea la señal).
+  // La pata de funding del flush exige ABSOLUTO (≥+8% ann) Y RELATIVO (z ≥ +1,5 vs sus 180d):
+  // el doble filtro quita el long-bias de los regímenes donde +8% es lo normal. Si no hay
+  // histórico para el z (fallback OKX corto), decide solo el absoluto.
+  const F = C.fundingAnn3d, FZ = C.fundingZ, OIP = C.oiPct180, VRP = out.vrp, SK = out.optSkew, PCV = out.optPutCallVol;
+  const fundingCrowded = (F != null && F >= 8) && (FZ == null || FZ >= 1.5);
+  C.fundingCrowded = fundingCrowded;
+  const exitCrowded = fundingCrowded && (OIP != null && OIP >= 0.90);
   const exitVolReal = (C.vrpNegDays >= 2) || (SK != null && SK > 15 && PCV != null && PCV > 1.0);
   const squeezeSetup = (F != null && F < 0 && C.fundingNeg3d === true) && ((C.oiChg14d != null && C.oiChg14d >= 0.10) || (C.oiChg28d != null && C.oiChg28d >= 0.10));
   const reentryClean = C.flushRecent === true && (OIP != null && OIP <= 0.40) && (F != null && F <= 11) && (VRP != null && VRP >= 5) && (SK != null && SK >= 0 && SK <= 12);

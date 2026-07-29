@@ -203,7 +203,7 @@ const FASES=[
    que:"El leverage se limpió, te vuelven a pagar la prima y nadie está apiñado.", act:"➜ FARMEAR: LP con rango estrecho, cobrar fees."},
   {id:"chop",   c:"var(--muted)",n:"🟡 Chop / vol latente", firma:"Sin extremos: funding indeciso, OI medio, VRP ≈ 0, o vol en mínimos pero con skew defensivo",
    que:"No hay edge claro. La vol puede estar 'diferida' — barata pero lista para repricear con un catalizador.", act:"➜ ENSANCHAR rango / reducir tamaño. No concentrar."},
-  {id:"flush",  c:"var(--bear)", n:"🔴 Longs apiñados (riesgo de flush)", firma:"funding ≥ +8% anualizado 3d + OI en p90/máximos (+ rotación de skew put→call, criterio agente)",
+  {id:"flush",  c:"var(--bear)", n:"🔴 Longs apiñados (riesgo de flush)", firma:"funding ≥ +8% anualizado 3d Y z ≥ +1,5σ vs sus 180d + OI en p90/máximos (+ rotación de skew put→call, criterio agente)",
    que:"El trío que marcó el techo del 10-oct-25 dos días antes del mayor flush de la historia.", act:"➜ SALIR del LP / defensivo. No añadir riesgo largo."},
   {id:"realizing",c:"var(--hot)",n:"🔴 La vol se realiza (VRP<0)", firma:"VRP negativo ≥2 días, o skew 1W >+15 con put/call de volumen >1",
    que:"La realizada supera a la implícita: las opciones amplifican en vez de amortiguar (4-feb-26 marcó así el tramo bajista).", act:"➜ FUERA del LP. No vender premium."},
@@ -241,7 +241,7 @@ const PHASE_HERO={
   // Solo los TIPOS PROBADOS del track record disparan; cada uno lleva su fiabilidad histórica.
   const tk=(hit,tc,name,badge,weak,det)=>`<div class="t${hit?" hit":""}" style="--tc:${tc}"><b>${hit?"●":"○"} ${name}<span class="badge${weak?" weak":""}">${badge}</span></b>${det}</div>`;
   $("#trigrow").innerHTML=[
-    tk(C.exitCrowded,"var(--bear)","Longs apiñados (salir)","probada 8/10",false,`funding 3d ${C.fundingAnn3d!=null?(C.fundingAnn3d>=0?"+":"")+n2(C.fundingAnn3d,1)+"%":"—"} (umbral ≥+8%) · OI p${C.oiPct180!=null?Math.round(C.oiPct180*100):"—"} (umbral ≥p90)`),
+    tk(C.exitCrowded,"var(--bear)","Longs apiñados (salir)","probada 8/10",false,`funding 3d ${C.fundingAnn3d!=null?(C.fundingAnn3d>=0?"+":"")+n2(C.fundingAnn3d,1)+"%":"—"} (≥+8%) · z ${C.fundingZ!=null?(C.fundingZ>=0?"+":"")+n2(C.fundingZ,1):"—"} (≥+1,5) · OI p${C.oiPct180!=null?Math.round(C.oiPct180*100):"—"} (≥p90)`),
     tk(C.exitVolReal,"var(--hot)","Vol realizándose (salir)","familia flush · feb-26 ✅",false,`VRP<0 desde hace ${C.vrpNegDays!=null?C.vrpNegDays:"—"} días (umbral ≥2) · skew ${j.optSkew!=null?(j.optSkew>=0?"+":"")+n2(j.optSkew,1):"—"} (estrés >+15)`),
     tk(C.squeezeSetup,"var(--bull)","Setup de squeeze (bias largo)","probada 3/3",false,`funding negativo sostenido: ${C.fundingNeg3d?"SÍ":"no"} · OI 14d ${C.oiChg14d!=null?(C.oiChg14d>=0?"+":"")+pctS(C.oiChg14d,1):"—"} (umbral ≥+10%)`),
     tk(C.reentryClean,"var(--bull)","Estructura limpia (farmear)","con guardas · reset solo = 1/3",true,`flush reciente: ${C.flushRecent?"SÍ ("+(C.flushDaysAgo!=null?C.flushDaysAgo+"d":"")+")":"no"} · OI ≤p40: ${C.oiPct180!=null?(C.oiPct180<=0.4?"SÍ":"no"):"—"} · VRP≥+5: ${j.vrp!=null?(j.vrp>=5?"SÍ":"no"):"—"}`),
@@ -275,6 +275,7 @@ const PHASE_HERO={
   const ok=(b,txtSi,txtNo)=>b==null?`<span class="st" style="color:var(--muted);background:color-mix(in oklab,var(--muted) 14%,transparent)">sin dato</span>`:b?`<span class="st" style="color:var(--bear);background:color-mix(in oklab,var(--bear) 14%,transparent)">${txtSi}</span>`:`<span class="st" style="color:var(--bull);background:color-mix(in oklab,var(--bull) 14%,transparent)">${txtNo}</span>`;
   const rows=[
     ["Funding anualizado (MM 3d)", C.fundingAnn3d!=null?(C.fundingAnn3d>=0?"+":"")+n2(C.fundingAnn3d,1)+"%":"—", "≥ +8% = longs apiñados", "< 0 sostenido = combustible de squeeze", C.fundingAnn3d==null?null:C.fundingAnn3d>=8, "apiñado","ok"],
+    ["Funding z-score (vs sus "+(C.fundingHistDays||180)+"d)", C.fundingZ!=null?(C.fundingZ>=0?"+":"")+n2(C.fundingZ,2)+"σ":"—", "≥ +1,5σ = extremo PARA SU ÉPOCA (quita el long-bias: el flush exige absoluto Y relativo)", "≤ −1σ = más corto que su normal", C.fundingZ==null?null:C.fundingZ>=1.5, "extremo","normal"],
     ["Open Interest (percentil 180d)", C.oiPct180!=null?"p"+Math.round(C.oiPct180*100)+(C.oiChg14d!=null?" · 14d "+(C.oiChg14d>=0?"+":"")+pctS(C.oiChg14d,1):""):"—", "≥ p90 = máximos (frágil)", "≤ p40 tras flush = limpio", C.oiPct180==null?null:C.oiPct180>=0.9, "frágil","ok"],
     ["Flush reciente (OI −15% en ≤3d, 60d)", C.flushRecent==null?"—":C.flushRecent?"SÍ, hace "+(C.flushDaysAgo!=null?C.flushDaysAgo+" días":"poco"):"no", "—", "condición para re-entrar a farmear", C.flushRecent==null?null:!C.flushRecent, "sin reset","reseteado"],
     ["VRP = DVOL − RV30", j.vrp!=null?((j.vrp>=0?"+":"")+n2(j.vrp,1)+(C.vrpNegDays?" · negativo "+C.vrpNegDays+"d":"")):"—", "< 0 ≥2 días = vol realizándose (fuera)", "≥ +5 = te pagan la prima (farmear)", j.vrp==null?null:C.vrpNegDays>=2, "realizándose","warehousing"],
