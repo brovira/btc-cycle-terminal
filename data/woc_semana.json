@@ -1,0 +1,51 @@
+{
+  "_como_se_actualiza": "RITUAL SEMANAL: cuando salga el nuevo Week On-Chain, pasarlo por el agente derivados_glassnode (Claude Code) → (1) evalúa las llamadas_abiertas de la semana pasada (HIT/PARCIAL/MISS) y las mueve a evaluadas_recientes + track_record.md; (2) escribe el resumen y las llamadas nuevas del WoC fresco; (3) si un TIPO de llamada empieza a acertar más (o menos) que su histórico, lo anota en 'cambios_de_fiabilidad'. Cada llamada es un TEST: solo lo ya evaluado con buena nota se trata como señal.",
+  "updated": "2026-07-29",
+  "woc_fecha": "2026-07-22",
+  "woc_titulo": "Optimism Meets Overhead",
+  "fuentes": ["reports/20260722-optimism-meets-overhead.md (glassnode_woc)", "reports/20260723-tweets-opciones.md (derivados_glassnode)"],
+  "resumen": "Sigue siendo <b>rally de bear market hasta que demuestre lo contrario</b>. El squeeze ya hizo todo lo que podía: coberturas quitadas (skew 1W ≈ 4%, el más barato en meses), put/call OI en mínimo del año (~0,52), funding bajo neutral todo el mes, ETF flows girados a positivo y precio sobre max pain. Pero <b>no ha despejado la resistencia</b>: BTC (~$67K) sigue DEBAJO del STH cost basis en $69K. El combustible de un rechazo (STH en profit >54%) aún no está cargado.",
+  "que_hacemos": "Semana de <b>bisagra, no de apostar fuerte</b>: el squeeze fue de quitar-coberturas (retrocede menos violento que uno de funding), así que ni pánico ni FOMO. Vigilar UNA cosa: el <b>reclaim de $69K con inflows spot sostenidos</b> → abre el hueco hasta $84K (y ahí el bias largo del método tendría el nivel a favor). Rechazo en $69K con inflows a exchanges → vuelta al estante de $63K. Para el LP: posicionamiento limpio pero VRP y max pain mandan (tabla de señales).",
+  "niveles": [
+    {"k": "Resistencia (STH cost basis)", "v": "$69K"},
+    {"k": "Soporte (estante de demanda, ~10% del supply)", "v": "$63K"},
+    {"k": "Aire hasta el siguiente muro si reclama", "v": "$84K"},
+    {"k": "Techo macro que no se ha levantado", "v": "10Y >4,45% · DXY >99"}
+  ],
+  "llamadas_abiertas": [
+    {
+      "llamada": "Reclaim decisivo de $69K con inflows spot persistentes → abre el air pocket hasta $84K; rechazo ahí con inflows a exchanges → vuelta a $63K",
+      "tipo": "posicionamiento + nivel on-chain",
+      "fiabilidad_tipo": "8/10 histórico",
+      "criterio_exito": "cierre semanal sobre $69K con ETF flows positivos ≥2 semanas (HIT alcista) o rechazo claro y retest de $63K (HIT bajista del escenario B)",
+      "estado": "pendiente"
+    },
+    {
+      "llamada": "Un último spike de volatilidad de capitulación no puede descartarse antes del suelo durable (hedge que dejaron abierto en jul-26)",
+      "tipo": "aviso de vol",
+      "fiabilidad_tipo": "1/4 histórico — su tipo más débil, tomar como aviso, no como señal",
+      "criterio_exito": "spike de DVOL >60 con flush de OI antes de que el suelo aguante 3 meses",
+      "estado": "pendiente"
+    },
+    {
+      "llamada": "El unwind defensivo cerca de $67K (skew 1W 4%, P/C 0,52) es complacencia a corto SIN haber despejado $69K — squeeze de hedges-off, retrace menos violento que uno de funding",
+      "tipo": "posicionamiento",
+      "fiabilidad_tipo": "8/10 histórico",
+      "criterio_exito": "si hay rechazo en $69K, la caída NO debería ser cascada de liquidaciones (OI está limpio); si lo es, PARCIAL/MISS",
+      "estado": "pendiente"
+    }
+  ],
+  "evaluadas_recientes": [
+    {
+      "llamada": "«DVOL subiendo desde mínimos = primeras etapas de un suelo» (WoC 2026-07-01)",
+      "veredicto": "HIT",
+      "nota": "22-jul: ETF flows a positivo, reclaim de max pain $66K — el suelo se está desarrollando como dijeron"
+    },
+    {
+      "llamada": "«VRP a negativo → los rallies de alivio son correctivos, riesgo a la baja» (WoC 2026-02-04)",
+      "veredicto": "HIT",
+      "nota": "BTC cayó a $60K y por debajo (feb–jun). El trigger EXIT_VOL_REALIZING del panel viene de aquí"
+    }
+  ],
+  "cambios_de_fiabilidad": "Nada aún. Vigilar: si los avisos de 'último spike de capitulación' (tipo débil, 1/4) empiezan a acertar en esta fase de suelo, subirlos de aviso a señal."
+}

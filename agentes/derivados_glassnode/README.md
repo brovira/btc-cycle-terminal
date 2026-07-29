@@ -24,3 +24,13 @@ aviso aislado de vol barata.
 
 ## Copyright
 Solo resúmenes/datos/framework propio (transformativo). Nada de reproducir reportes verbatim en público.
+
+## Ritual semanal → `data/woc_semana.json` (alimenta vol.html "Qué hacemos esta semana")
+Cada vez que salga un *Week On-Chain* nuevo: pasarlo por este agente y que
+1. **Evalúe** las `llamadas_abiertas` de la semana pasada (HIT/PARCIAL/MISS con su criterio_exito) →
+   moverlas a `evaluadas_recientes` y añadir la fila a `reports/track_record.md`.
+2. **Escriba** el resumen + `que_hacemos` + `llamadas_abiertas` nuevas del WoC fresco (cada llamada
+   con `tipo`, `fiabilidad_tipo` del scorecard y `criterio_exito` medible).
+3. **Vigile la deriva:** si un tipo de llamada empieza a acertar más/menos que su histórico,
+   anotarlo en `cambios_de_fiabilidad` (los tipos se promocionan/degradan con evidencia, no por fe).
+Principio: **cada consejo de Glassnode es un test** — solo lo evaluado con buena nota se opera como señal.

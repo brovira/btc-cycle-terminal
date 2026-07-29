@@ -88,6 +88,16 @@ cuánto/cuándo comprar.
   `api/voldata.js` (`out.strat`): funding anualizado MM3d (Bybit/OKX history), OI percentil 180d +
   flush −15%/3d, racha VRP<0 (DVOL diario − RV30 alineado por fecha), P/C de volumen. La rotación
   de skew y el nivel on-chain NO son automatizables gratis → marcados como criterio del agente.
+  Además (2ª iteración, petición del usuario): sección **"🗞️ Qué hacemos esta semana"** que lee
+  `data/woc_semana.json` — resumen del último WoC + **llamadas de Glassnode como TESTS** (cada
+  una con tipo, fiabilidad histórica del tipo, criterio de éxito y estado ⏳/✅/🟡/❌) + evaluadas
+  recientes. **Ritual semanal:** pasar el WoC nuevo por el agente `derivados_glassnode` → evalúa
+  lo abierto, escribe lo nuevo, alimenta track_record.md y ese JSON. Triggers del hero con badge
+  de fiabilidad (probada 8/10 · 3/3 · con guardas). Instrumentos reagrupados por decisión:
+  🔴 ¿salgo/bias? · 🟢 ¿farmeo? · 🧭 contexto, cada grupo con su evidencia (backtest vs track
+  record vs orientativo). Caja honesta: solo CHOP>60 tiene backtest cuantitativo nuestro; los
+  triggers mecánicos replican el track record del analista (n=13) pero falta el barrido
+  2020-2026 de NUESTROS umbrales → tamaño test.
 - **`onchain.html`** — además del régimen realized-price: **tracker ⚔️ cruce BMSB × 200W MA**
   (ancla `#cruce`): cada cruce histórico + retorno a +3/6/12m, gap actual, veredicto honesto
   (el cruce bajista históricamente = zona de compra ~suelo, no de short). Es donde se vigila la
