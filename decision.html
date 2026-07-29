@@ -592,9 +592,28 @@ function patronBuy(){return[...PATRON_EXTRA_TOPS_MS.map(T=>({t0:T+52*PH_WKMS,t1:
    techos (2011 y T1 dic-2013) no tienen suelo previo en el rango → se les añade su banda anclada al
    techo real, simétrico con la banda de compra del mini-ciclo de 2011. Así cada techo tiene su venta. */
 const PATRON_EXTRA_SELL_TOPS_MS=[Date.parse("2011-06-08"),Date.parse("2013-12-04")];
-function patronSell(){return[...PATRON_EXTRA_SELL_TOPS_MS.map(T=>({t0:T-2*PH_WKMS,t1:T+2*PH_WKMS})),...CYCLE_BOTS_MS.map(B=>({t0:B+150*PH_WKMS,t1:B+153*PH_WKMS}))];}
+function patronSell(){return[...PATRON_EXTRA_SELL_TOPS_MS.map(T=>({t0:T-2*PH_WKMS,t1:T+2*PH_WKMS})),...CYCLE_BOTS_MS.map(B=>({t0:B+150*PH_WKMS,t1:B+153*PH_WKMS})),{t0:NEXT_BOT+150*PH_WKMS,t1:NEXT_BOT+153*PH_WKMS,est:true}];} // + venta proyectada del próximo ciclo (150-153 sem tras el suelo proyectado de oct-2026)
 function patronIntervals(){return patronBuyBase();} // confluencia 3-vías: solo ciclos con halving (desde el techo de 2013), sin el mini-ciclo 2011
 /* (la proyección del patrón vive ahora en su tarjeta de estrategia, arriba) */
+/* --- proyección del PRÓXIMO ciclo (para dibujar sus ventanas de venta) ---
+   Suelo proyectado ≈ oct-2026 (PLAN_LMEC, 53 sem tras el techo de oct-2025).
+   Techo del próximo ciclo ≈ suelo + ~151 sem (media histórica suelo→techo siguiente:
+   B1→T2 152s, B2→T3 152s, B3→T4 150s). Cowen ya proyecta su venta = Q4-2029 vía PH_HALVINGS. */
+const NEXT_BOT=PLAN_LMEC;
+const NEXT_TOP_C=NEXT_BOT+151*PH_WKMS;
+const MESES_AB=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const mAbbr=ms=>{const d=new Date(ms);return MESES_AB[d.getUTCMonth()]+" "+d.getUTCFullYear();};
+/* ventanas de VENTA visibles en el modo actual, etiquetadas, para el hover con fechas */
+function sellWinsForMode(mode){
+  const L=lmecIntervals(),C=cowenIntervals();
+  if(mode==="lmec")return L.sell.map(w=>({...w,src:"LMEC · distribución (techo)"}));
+  if(mode==="cowen")return C.sell.map(w=>({...w,src:"Cowen · Q4 post-halving"}));
+  if(mode==="patron")return patronSell().map(w=>({...w,src:"Patrón · 150-153 sem tras el suelo"}));
+  const lm=ivMerge(L.sell),cw=ivMerge(C.sell),ov=ivIntersect(lm,cw);
+  return[...ov.map(w=>({...w,src:"LMEC + Cowen coinciden en vender"})),
+         ...ivSubtract(lm,ov).map(w=>({...w,src:"LMEC · venta"})),
+         ...ivSubtract(cw,ov).map(w=>({...w,src:"Cowen · venta"}))];
+}
 let PH_MODE="todos",PH_LASTD=null;
 let PH_XS=null,PH_YS=null,PH_BM=null,PH_M2=null,PH_BOUND=false,PH_YLOCK=false;
 function phRect(x0,x1,color){return{type:"rect",xref:"x",yref:"paper",x0,x1,y0:0,y1:1,fillcolor:color,line:{width:0},layer:"below"};}
@@ -608,6 +627,8 @@ function lmecIntervals(){
     sell.push({t0:T-8*PH_WKMS,t1:T+2*PH_WKMS});      // distribución: zona del techo (su indicador "clava el techo")
     buy.push({t0:T+50*PH_WKMS,t1:T+58*PH_WKMS});     // suelo/compra: ~53 sem tras el techo (vídeo más reciente → oct/nov 2026)
   }
+  // venta PROYECTADA del próximo ciclo: distribución en el techo estimado (~151 sem tras el suelo proyectado de oct-2026)
+  sell.push({t0:NEXT_TOP_C-8*PH_WKMS,t1:NEXT_TOP_C+2*PH_WKMS,est:true});
   return{buy,sell};
 }
 function cowenIntervals(){
@@ -697,18 +718,32 @@ async function renderPhaseChart(D){
   const bm=[],m2=[];for(let i=0;i<D.t.length;i++){bm.push((s20[i]!=null&&e21[i]!=null)?Math.max(s20[i],e21[i]):null);m2.push(s200[i]);}
   PH_XS=xs;PH_YS=ys;PH_BM=bm;PH_M2=m2; // para el reajuste del eje Y al hacer zoom
   const shapes=bandShapes(PH_MODE);
-  $("#phaseNote").innerHTML=PH_NOTES[PH_MODE]+` <span class="mtxt">· desde la 1ª compra (2012) · datos Coin Metrics + Binance</span>`;
+  $("#phaseNote").innerHTML=PH_NOTES[PH_MODE]+` <span class="mtxt">· <b>▼ pasa el cursor por los triángulos rojos</b> para ver las fechas de cada ventana de venta, incluida la <b>proyección del próximo ciclo (~2029)</b> · desde la 1ª compra (2012) · datos Coin Metrics + Binance</span>`;
   const traces=[
     {x:xs,y:ys,type:"scatter",mode:"lines",name:"BTC",line:{color:ink,width:1.5},hovertemplate:"%{x}<br>$%{y:,.0f}<extra></extra>"},
     {x:xs,y:bm,type:"scatter",mode:"lines",name:"BMSB",line:{color:accent,width:1,dash:"dot"}},
     {x:xs,y:m2,type:"scatter",mode:"lines",name:"200W MA",line:{color:accum,width:1,dash:"dash"}},
   ];
-  // extiende el eje al futuro para que se vean las bandas proyectadas (Patrón oct-nov 2026,
-  // ventana de compra LMEC hasta mediados de 2027) — si no, quedan fuera del borde derecho.
-  const xEnd=new Date(Math.max(D.t[D.t.length-1],Date.parse("2027-07-01"))).toISOString().slice(0,10);
+  // marcadores ▼ en el centro de cada ventana de VENTA (en un eje Y oculto 0-1, arriba) con
+  // hover = fechas estimadas. Incluye la proyección del PRÓXIMO ciclo (~2029).
+  const nowMs=Date.now(), sells=sellWinsForMode(PH_MODE);
+  const smx=[],smt=[];
+  for(const w of sells){const txt=`<b>Ventana de venta</b><br>${w.src}<br>${mAbbr(w.t0)} – ${mAbbr(w.t1)}${w.t0>nowMs?" · <b>estimada</b>":""}`;
+    for(const t of [w.t0,(w.t0+w.t1)/2,w.t1]){smx.push(phIso(t));smt.push(txt);}}
+  traces.push({x:smx,y:smx.map(()=>0.96),yaxis:"y2",type:"scatter",mode:"markers",name:"Venta ▼ (hover=fechas)",
+    marker:{symbol:"triangle-down",size:11,color:"#f2606d",line:{color:ink,width:.5}},
+    text:smt,hovertemplate:"%{text}<extra></extra>"});
+  const fut=sells.filter(w=>w.t0>nowMs).sort((a,b)=>a.t0-b.t0);
+  const anns=fut.length?[{x:phIso((fut[0].t0+fut[0].t1)/2),y:0.99,xref:"x",yref:"paper",yanchor:"top",showarrow:false,
+    text:`▼ venta próx. ciclo · est. ${mAbbr(fut[0].t0)}`,font:{size:10,color:"#f2606d"},bgcolor:panel,bordercolor:line,borderpad:2}]:[];
+  // extiende el eje al futuro para que se vean las ventanas proyectadas, incl. la VENTA del
+  // próximo ciclo (~2029, LMEC/Cowen/Patrón) — si no, quedan fuera del borde derecho.
+  const futureMax=Math.max(NEXT_TOP_C+3*PH_WKMS,Date.parse("2029-12-31"));
+  const xEnd=new Date(Math.max(D.t[D.t.length-1],futureMax+90*864e5)).toISOString().slice(0,10);
   const layout={margin:{l:56,r:12,t:8,b:32},height:380,paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
-    font:{color:ink,size:11},showlegend:true,legend:{orientation:"h",y:1.12,font:{size:11}},shapes,
-    xaxis:{gridcolor:line,type:"date",range:["2012-01-01",xEnd]},yaxis:{gridcolor:line,type:"log",tickprefix:"$",title:{text:"BTC (log)",font:{size:11}}},hovermode:"x unified",
+    font:{color:ink,size:11},showlegend:true,legend:{orientation:"h",y:1.12,font:{size:11}},shapes,annotations:anns,
+    xaxis:{gridcolor:line,type:"date",range:["2012-01-01",xEnd]},yaxis:{gridcolor:line,type:"log",tickprefix:"$",title:{text:"BTC (log)",font:{size:11}}},
+    yaxis2:{overlaying:"y",range:[0,1],visible:false,fixedrange:true},hovermode:"x unified",
     hoverlabel:{bgcolor:panel,bordercolor:line,font:{size:11,color:ink}}};
   window.Plotly.react("phaseChart",traces,layout,{displayModeBar:false,responsive:true}).then(gd=>{
     if(!PH_BOUND&&gd&&gd.on){gd.on("plotly_relayout",phAutoY);PH_BOUND=true;}
