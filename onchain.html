@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BTC · Régimen on-chain</title>
+<link rel="stylesheet" href="dashboard.css">
+<style>
+  :root{
+    --bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;
+    --ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#3fa9f5;
+    --bull:#2fc39b;--bear:#f2606d;--accum:#3fa9f5;--hot:#f2a33f;
+    --grid:rgba(255,255,255,.06);
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Menlo","Consolas",monospace;
+  }
+  @media (prefers-color-scheme: light){:root{--bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;--ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--grid:rgba(20,40,70,.08)}}
+  :root[data-theme="dark"]{--bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;--ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--grid:rgba(255,255,255,.06)}
+  :root[data-theme="light"]{--bg:#eaeef3;--bg2:#e4e9f0;--panel:#fff;--panel2:#f3f6fa;--line:#dbe3ec;--ink:#101822;--ink2:#3d4c5e;--muted:#67788c;--grid:rgba(20,40,70,.08)}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .banner{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:18px 0}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+  .stat .t{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .stat .v{font-size:22px;font-weight:800;margin-top:4px;letter-spacing:-.01em}
+  .stat .s{font-size:12px;color:var(--ink2);margin-top:2px}
+  .regime{border-radius:14px;padding:16px 18px;margin:8px 0 4px;border:1px solid var(--line);background:var(--panel);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .regime .big{font-size:26px;font-weight:800}
+  .pill{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px}
+  .pill.on{background:color-mix(in oklab,var(--bull) 20%,transparent);color:var(--bull)}
+  .pill.off{background:color-mix(in oklab,var(--bear) 20%,transparent);color:var(--bear)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:16px 0}
+  .card h2{margin:0 0 4px;font-size:16px;font-weight:750}
+  .card .sub{color:var(--ink2);font-size:13px;margin-bottom:10px}
+  .chart{width:100%;height:420px}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:8px}
+  .note{font-size:12.5px;color:var(--ink2);line-height:1.55}
+  .warn{border-left:3px solid var(--hot);padding-left:12px}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:6px}
+  th,td{text-align:right;padding:7px 10px;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  .pos{color:var(--bull)} .neg{color:var(--bear)}
+</style>
+</head>
+<body class="dashboard-page">
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="kicker">Herramientas · On-chain</div>
+      <h1><span class="title-icon">⛓️</span> <b>Régimen on-chain</b> · precio vs coste de la red</h1>
+      <div class="meta"><span class="dot" id="dot"></span><span id="statusText">Cargando datos…</span></div>
+    </div>
+    <div class="controls">
+      <a class="btn" href="index.html">← Panel</a>
+      <a class="btn" href="backtest.html">🧪 Backtest</a>
+      <button class="btn" id="themeBtn">◐ Tema</button>
+      <button class="btn" id="refreshBtn">↻ Datos</button>
+    </div>
+  </header>
+
+  <p class="note">Señal minimalista (navaja de Occam): <b>¿el precio está por encima del coste medio de la red (Realized Price)?</b>
+  Si sí → los holders de media están en beneficio = régimen constructivo. Si no → la red está bajo agua = régimen de riesgo.
+  El <b>MVRV Z-Score</b> y el <b>SOPR</b> se muestran como contexto. Datos gratis de BGeometrics (refresco diario). Uso personal — no es asesoramiento.</p>
+
+  <div class="regime" id="regimeBox"><span class="big">—</span></div>
+
+  <div class="banner" id="banner"></div>
+
+  <div class="card">
+    <h2>Precio, coste de la red y régimen</h2>
+    <div class="sub">Precio semanal (log) · línea = Realized Price · zonas verdes = régimen ON (precio &gt; realized)</div>
+    <div class="chart" id="chartPrice"></div>
+  </div>
+
+  <div class="card">
+    <h2>Backtest: seguir el régimen vs comprar y aguantar</h2>
+    <div class="sub">$1 invertido al inicio del histórico on-chain. La estrategia está en BTC solo cuando el régimen es ON (señal con 1 semana de retardo, sin mirar el futuro).</div>
+    <div class="chart" id="chartEq" style="height:360px"></div>
+    <table id="statsTable"></table>
+    <p class="note warn" id="verdict" style="margin-top:12px"></p>
+  </div>
+
+  <div class="card">
+    <h2>MVRV Z-Score (contexto de ciclo)</h2>
+    <div class="sub">Barato/suelo abajo · caro/techo arriba. Confluye con el régimen pero es más lento.</div>
+    <div class="chart" id="chartMvrv" style="height:300px"></div>
+  </div>
+
+  <p class="note">⚠️ <b>Límite honesto:</b> el plan gratis de BGeometrics da ~4 años de histórico (desde jul-2022), así que este backtest cubre <b>1 ciclo</b> (suelo 2022 → hoy), no varios. Las señales de <i>precio</i> (LMEC, Cowen, 200D) sí llegan a 2015 en <a href="backtest.html">Backtest</a>.</p>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const fmt$=v=>v==null||isNaN(v)?"—":"$"+Number(v).toLocaleString("en-US",{maximumFractionDigits:v<10?4:0});
+const pct=v=>(v>=0?"+":"")+(v*100).toFixed(1)+"%";
+const setStatus=(t,ok)=>{$("#statusText").textContent=t;const d=$("#dot");if(d)d.style.background=ok?"var(--bull)":"var(--hot)";};
+
+// tema
+(function(){const K="onchain-theme";const cur=localStorage.getItem(K);if(cur)document.documentElement.setAttribute("data-theme",cur);
+  $("#themeBtn").addEventListener("click",()=>{const now=document.documentElement.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");const nx=now==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",nx);localStorage.setItem(K,nx);draw();});})();
+
+function loadScript(u){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=u;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("no Plotly");}
+
+// ---- precio semanal ----
+async function weeklyBTC(){
+  for(const h of["api.binance.com","api.binance.us"]){
+    try{const r=await fetch(`https://${h}/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=1000`,{cache:"no-store"});
+      if(r.ok){const j=await r.json();return{t:j.map(k=>k[0]),c:j.map(k=>+k[4])};}}catch(e){}
+  }
+  // fallback CoinGecko diario → semanal
+  try{const r=await fetch("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=max&interval=daily",{cache:"no-store"});
+    if(r.ok){const j=await r.json();const p=j.prices||[];const t=[],c=[];const WK=7*864e5;let bs=null,bc,bt;
+      for(const [ms,px] of p){if(bs==null){bs=ms;bc=px;bt=ms;continue;}if(ms-bs>=WK){t.push(bt);c.push(bc);bs=ms;}bc=px;bt=ms;}
+      if(bs!=null){t.push(bt);c.push(bc);}return{t,c};}}catch(e){}
+  return null;
+}
+// ---- on-chain (repo) ----
+async function loadMetric(name){
+  try{const r=await fetch(`data/onchain/${name}.json?_=`+Date.now(),{cache:"no-store"});
+    if(!r.ok)return null;const j=await r.json();
+    return (j.series||[]).map(p=>({ms:Date.parse(p.date+"T00:00:00Z"),v:p.value})).filter(p=>!isNaN(p.ms));
+  }catch(e){return null;}
+}
+// último valor con ms<=target
+function asOf(arr,target){let lo=0,hi=arr.length-1,res=null;while(lo<=hi){const m=(lo+hi)>>1;if(arr[m].ms<=target){res=arr[m].v;lo=m+1;}else hi=m-1;}return res;}
+
+let STATE=null;
+async function build(){
+  setStatus("Cargando precio y on-chain…",true);
+  const [px,realized,mvrv,sopr]=await Promise.all([weeklyBTC(),loadMetric("realized_price"),loadMetric("mvrv_zscore"),loadMetric("sopr")]);
+  if(!px||!realized){setStatus("No pude cargar los datos",false);return;}
+  const firstOnchain=realized[0].ms;
+  // alinear semanas al histórico on-chain
+  const W=[];
+  for(let i=0;i<px.t.length;i++){
+    const ms=px.t[i];if(ms<firstOnchain-7*864e5)continue;
+    const rp=asOf(realized,ms+6*864e5), mz=mvrv?asOf(mvrv,ms+6*864e5):null, sp=sopr?asOf(sopr,ms+6*864e5):null;
+    if(rp==null)continue;
+    W.push({ms,close:px.c[i],realized:rp,mvrv:mz,sopr:sp,on:px.c[i]>rp});
+  }
+  // backtest: posición = régimen de la semana ANTERIOR (retardo 1, sin lookahead)
+  let eqS=1,eqH=1,peakS=1,peakH=1,ddS=0,ddH=0,timeIn=0,switches=0,prevPos=null;
+  const eqSs=[eqS],eqHs=[eqH],eqT=[W[0].ms];
+  for(let i=1;i<W.length;i++){
+    const ret=W[i].close/W[i-1].close-1;
+    const pos=W[i-1].on?1:0;              // señal de la semana previa
+    if(prevPos!==null&&pos!==prevPos)switches++;prevPos=pos;
+    if(pos)timeIn++;
+    eqS*=(1+pos*ret); eqH*=(1+ret);
+    peakS=Math.max(peakS,eqS);peakH=Math.max(peakH,eqH);
+    ddS=Math.min(ddS,eqS/peakS-1);ddH=Math.min(ddH,eqH/peakH-1);
+    eqSs.push(eqS);eqHs.push(eqH);eqT.push(W[i].ms);
+  }
+  const yrs=(W[W.length-1].ms-W[0].ms)/(365.25*864e5);
+  const cagr=e=>Math.pow(e,1/yrs)-1;
+  STATE={W,eqSs,eqHs,eqT,m:{
+    multS:eqS,multH:eqH,cagrS:cagr(eqS),cagrH:cagr(eqH),ddS,ddH,
+    timeIn:timeIn/(W.length-1),switches,yrs,now:W[W.length-1]
+  }};
+  renderBanner();draw();
+  setStatus(`OK · ${W.length} semanas desde ${new Date(W[0].ms).toISOString().slice(0,7)}`,true);
+}
+
+function renderBanner(){
+  const n=STATE.m.now, m=STATE.m;
+  const on=n.on;
+  $("#regimeBox").innerHTML=`<span class="pill ${on?'on':'off'}">${on?'● RÉGIMEN ON':'● RÉGIMEN OFF'}</span>
+    <span class="big">${on?'Precio sobre el coste de la red':'Precio bajo el coste de la red'}</span>
+    <span class="note" style="margin-left:auto">${fmt$(n.close)} vs realized ${fmt$(n.realized)} · ${pct(n.close/n.realized-1)}</span>`;
+  const mzTxt=n.mvrv==null?'—':n.mvrv.toFixed(2)+(n.mvrv<1?' · barato':n.mvrv>5?' · caro':' · neutral');
+  const spTxt=n.sopr==null?'—':n.sopr.toFixed(3)+(n.sopr<1?' · pérdida realizada':' · beneficio');
+  const tiles=[
+    {t:"Régimen hoy",v:on?"ON":"OFF",s:"precio vs realized"},
+    {t:"MVRV Z-Score",v:n.mvrv==null?'—':n.mvrv.toFixed(2),s:mzTxt},
+    {t:"SOPR",v:n.sopr==null?'—':n.sopr.toFixed(3),s:spTxt},
+    {t:"Estrategia ×",v:m.multS.toFixed(2)+"×",s:`hold ${m.multH.toFixed(2)}×`},
+    {t:"Peor caída estrat.",v:pct(m.ddS),s:`hold ${pct(m.ddH)}`},
+    {t:"Tiempo dentro",v:(m.timeIn*100).toFixed(0)+"%",s:`${m.switches} cambios`},
+  ];
+  $("#banner").innerHTML=tiles.map(x=>`<div class="stat"><div class="t">${x.t}</div><div class="v">${x.v}</div><div class="s">${x.s}</div></div>`).join("");
+  // tabla
+  const r=(a,b,inv)=>{const better=inv?a<b:a>b;return better;};
+  $("#statsTable").innerHTML=`<thead><tr><th>Métrica</th><th>Seguir régimen</th><th>Comprar y aguantar</th></tr></thead><tbody>
+    <tr><td>Multiplicador final</td><td class="${r(m.multS,m.multH)?'pos':''}">${m.multS.toFixed(2)}×</td><td>${m.multH.toFixed(2)}×</td></tr>
+    <tr><td>CAGR (anualizado)</td><td class="${r(m.cagrS,m.cagrH)?'pos':''}">${pct(m.cagrS)}</td><td>${pct(m.cagrH)}</td></tr>
+    <tr><td>Peor caída (maxDD)</td><td class="${r(m.ddS,m.ddH,true)?'pos':''}">${pct(m.ddS)}</td><td class="neg">${pct(m.ddH)}</td></tr>
+    <tr><td>Tiempo en mercado</td><td>${(m.timeIn*100).toFixed(0)}%</td><td>100%</td></tr>
+  </tbody>`;
+  // veredicto honesto
+  const winRet=m.multS>m.multH, softer=m.ddS>m.ddH;
+  let v="";
+  if(winRet&&softer) v=`En este ciclo la señal <b>batió al hold en retorno</b> (${m.multS.toFixed(2)}× vs ${m.multH.toFixed(2)}×) <b>y</b> con menos caída (${pct(m.ddS)} vs ${pct(m.ddH)}). Buen signo, pero es <b>1 solo ciclo</b>: no lo tomes como garantía.`;
+  else if(!winRet&&softer) v=`La señal <b>ganó menos que el hold</b> (${m.multS.toFixed(2)}× vs ${m.multH.toFixed(2)}×) pero <b>sufrió menos caída</b> (${pct(m.ddS)} vs ${pct(m.ddH)}): cambió algo de rentabilidad por dormir tranquilo. Coherente con tu perfil DCA+hold. Es 1 ciclo.`;
+  else if(winRet&&!softer) v=`La señal <b>batió en retorno</b> pero <b>no redujo la caída</b>. Cuidado: puede ser suerte de timing en 1 ciclo.`;
+  else v=`En este ciclo la señal <b>no batió al hold</b> ni en retorno ni en caída. Refuerza tu tesis de <b>DCA + no vender el core</b>: en un mercado alcista secular, salir y entrar suele restar. Úsala como <b>contexto</b>, no como sistema de compra/venta.`;
+  $("#verdict").innerHTML="Lectura: "+v;
+}
+
+async function draw(){
+  if(!STATE)return;await loadPlotly();
+  const light=(document.documentElement.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"))==="light";
+  const ink=light?"#3d4c5e":"#aebccf", grid=light?"rgba(20,40,70,.08)":"rgba(255,255,255,.06)";
+  const base={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:ink,family:"var(--mono)"},margin:{l:55,r:20,t:10,b:34},xaxis:{gridcolor:grid},yaxis:{gridcolor:grid},showlegend:true,legend:{orientation:"h",y:1.12,x:0}};
+  const W=STATE.W, T=W.map(w=>new Date(w.ms));
+  // zonas ON como shapes
+  const shapes=[];let start=null;
+  for(let i=0;i<W.length;i++){if(W[i].on&&start==null)start=W[i].ms;if((!W[i].on||i===W.length-1)&&start!=null){shapes.push({type:"rect",xref:"x",yref:"paper",x0:new Date(start),x1:new Date(W[i].ms),y0:0,y1:1,fillcolor:"rgba(47,195,155,.10)",line:{width:0}});start=null;}}
+  Plotly.react("chartPrice",[
+    {x:T,y:W.map(w=>w.close),type:"scatter",mode:"lines",name:"Precio BTC",line:{color:"#e8a13a",width:1.6}},
+    {x:T,y:W.map(w=>w.realized),type:"scatter",mode:"lines",name:"Realized Price",line:{color:"#3fa9f5",width:1.6,dash:"dot"}},
+  ],{...base,shapes,yaxis:{...base.yaxis,type:"log",title:"USD (log)"}},{responsive:true,displayModeBar:false});
+  Plotly.react("chartEq",[
+    {x:STATE.eqT.map(m=>new Date(m)),y:STATE.eqSs,type:"scatter",mode:"lines",name:"Seguir régimen",line:{color:"#2fc39b",width:2}},
+    {x:STATE.eqT.map(m=>new Date(m)),y:STATE.eqHs,type:"scatter",mode:"lines",name:"Comprar y aguantar",line:{color:"#7f92ab",width:1.6}},
+  ],{...base,yaxis:{...base.yaxis,type:"log",title:"× (log)"}},{responsive:true,displayModeBar:false});
+  if(W.some(w=>w.mvrv!=null))Plotly.react("chartMvrv",[
+    {x:T,y:W.map(w=>w.mvrv),type:"scatter",mode:"lines",name:"MVRV Z-Score",line:{color:"#9b8cff",width:1.8},fill:"tozeroy",fillcolor:"rgba(155,140,255,.10)"},
+  ],{...base,showlegend:false,shapes:[{type:"rect",xref:"paper",yref:"y",x0:0,x1:1,y0:-1,y1:1,fillcolor:"rgba(47,195,155,.10)",line:{width:0}}]},{responsive:true,displayModeBar:false});
+}
+
+$("#refreshBtn").addEventListener("click",build);
+window.addEventListener("resize",()=>{if(STATE)draw();});
+build();
+</script>
+</body>
+</html>
