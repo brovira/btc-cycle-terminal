@@ -6,14 +6,16 @@
 //
 // Ambas rutas están detrás de la MISMA contraseña que /api/private.js.
 //
-// CONFIGURACIÓN (Vercel → Settings → Environment Variables):
-//   DASH_PASSWORD  = <la contraseña> (ya existe si usas /api/private.js)
-//   GH_TOKEN_WRITE = <token GitHub con Contents: Read-AND-write sobre DeFi-Tracker>
-//     GitHub → Settings → Developer settings → Fine-grained tokens → Generate →
-//     Resource owner: tú → Only select repositories → DeFi-Tracker →
-//     Repository permissions → Contents: Read and write → Generate.
-//   (Si no defines GH_TOKEN_WRITE, se intenta GH_TOKEN — que suele ser solo lectura,
-//    así que el GET funcionará pero el POST dará 403 hasta que crees el token de escritura.)
+// CONFIGURACIÓN — OPCIÓN SIMPLE (reutilizar el token que ya tienes):
+//   Basta con SUBIR el permiso del GH_TOKEN existente a escritura:
+//   GitHub → Settings → Developer settings → Fine-grained tokens → (tu token) →
+//   Permissions → Repository permissions → Contents: cambia "Read-only" a
+//   "Read and write" → Save. No hay que crear ninguna variable nueva en Vercel.
+//
+// CONFIGURACIÓN — OPCIÓN LIMPIA (token de escritura aparte, opcional):
+//   Crea GH_TOKEN_WRITE en Vercel con un token nuevo (Contents: Read and write).
+//   Si existe, tiene prioridad sobre GH_TOKEN. Si no, se usa GH_TOKEN.
+//   (DASH_PASSWORD ya existe si usas /api/private.js.)
 
 const { authConfigured, requestAuthorized } = require("../lib/auth");
 const REPO = process.env.PRIVATE_REPO || "brovira/DeFi-Tracker";
@@ -41,7 +43,10 @@ module.exports = async (req, res) => {
   }
 
   const roToken = process.env.GH_TOKEN_WRITE || process.env.GH_TOKEN;
-  const rwToken = process.env.GH_TOKEN_WRITE || null;
+  // Reutilizamos el GH_TOKEN existente para escribir (solo hay que subirlo a
+  // "Contents: Read and write" en GitHub). GH_TOKEN_WRITE sigue teniendo prioridad
+  // por si algún día quieres separar el token de lectura del de escritura.
+  const rwToken = process.env.GH_TOKEN_WRITE || process.env.GH_TOKEN || null;
 
   // ── GET: devolver la bitácora actual ────────────────────────────────
   if (req.method === "GET") {
@@ -60,7 +65,7 @@ module.exports = async (req, res) => {
 
   // ── POST: guardar la bitácora ───────────────────────────────────────
   if (req.method === "POST") {
-    if (!rwToken) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_write_token", message: "Falta GH_TOKEN_WRITE (token con Contents: Read and write) en Vercel." })); }
+    if (!rwToken) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_write_token", message: "Falta un token con permiso de escritura: sube el GH_TOKEN a 'Contents: Read and write' en GitHub (o crea GH_TOKEN_WRITE)." })); }
     let entries;
     try {
       const body = await readBody(req);
