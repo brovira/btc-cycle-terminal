@@ -88,12 +88,12 @@
 
   <div class="tiles" id="tiles"></div>
 
-  <div class="sec-head"><h2>Operaciones</h2><div class="rule"></div><span class="tag" id="count">0</span></div>
+  <div class="sec-head"><h2>Operaciones</h2><div class="rule"></div><span class="src" id="syncStatus" style="margin-right:10px">local</span><span class="tag" id="count">0</span></div>
   <div class="filters" id="filters"></div>
   <div class="card"><table class="tbl" id="tbl"></table></div>
 
   <footer>
-    <b>Bitácora del operador.</b> Cada movimiento con su <b>rationale y tesis</b>, atado a la <b>señal</b> que lo disparó y a la <b>fase</b> del ciclo. El resultado se puntúa solo por el precio de BTC desde la entrada. Se guarda en <b>tu navegador</b> (localStorage) — privado; usa Exportar/Importar para respaldar o mover. <b>Uso personal — no es asesoramiento financiero.</b>
+    <b>Bitácora del operador.</b> Cada movimiento con su <b>rationale y tesis</b>, atado a la <b>señal</b> que lo disparó y a la <b>fase</b> del ciclo. El resultado se puntúa solo por el precio de BTC desde la entrada. Se guarda en <b>tu repo privado</b> (sincronizado entre dispositivos si has entrado con la contraseña) y en el navegador como caché; usa Exportar/Importar para respaldar. <b>Uso personal — no es asesoramiento financiero.</b>
   </footer>
 </div>
 
@@ -119,8 +119,41 @@ const ACC={
 const FASES=["acumulación","suelo","holdear","distribución","techo","bear"];
 const SENALES=["LMEC","Cowen","Patrón","Derivados/Vol","Edge","Propio"];
 
+// Persistencia: localStorage = caché local rápida + fallback; /api/bitacora = fuente
+// sincronizada entre dispositivos (repo privado). El servidor manda si tiene datos.
+let SYNC=false;       // ¿está disponible la sincronización con el repo? (requiere estar logueado)
+let pushTimer=null;
+function setSync(state,msg){SYNC=state;const el=$("#syncStatus");if(el){el.textContent=msg;el.style.color=state?"var(--bull)":"var(--muted)";}}
 function load(){try{LOG=JSON.parse(localStorage.getItem(KEY)||"[]");}catch(e){LOG=[];}}
-function save(){localStorage.setItem(KEY,JSON.stringify(LOG));}
+function saveLocal(){localStorage.setItem(KEY,JSON.stringify(LOG));}
+function save(){saveLocal();pushRemote();}   // guarda local al instante y empuja al repo (debounce)
+function pushRemote(){
+  if(!SYNC)return;                            // sin login → solo local
+  clearTimeout(pushTimer);
+  pushTimer=setTimeout(async()=>{
+    setSync(true,"guardando…");
+    try{
+      const r=await fetch("/api/bitacora",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(LOG)});
+      if(r.ok){const d=await r.json();setSync(true,"sincronizado ("+d.count+")");}
+      else if(r.status===503){const d=await r.json().catch(()=>({}));setSync(false,"falta token de escritura");console.warn("bitacora POST",d);}
+      else{setSync(true,"error al guardar ("+r.status+")");}
+    }catch(e){setSync(true,"sin conexión — guardado local");}
+  },800);
+}
+// Al arrancar: intenta traer del repo. Servidor con datos = fuente de verdad;
+// si el servidor está vacío pero hay datos locales, se migran subiéndolos.
+async function pullRemote(){
+  try{
+    const r=await fetch("/api/bitacora",{headers:{"Accept":"application/json"}});
+    if(r.status===401||r.status===503){setSync(false,"local (sin sincronizar)");return;} // no logueado / no configurado
+    if(!r.ok){setSync(false,"local (repo "+r.status+")");return;}
+    const remote=await r.json();
+    SYNC=true;
+    if(Array.isArray(remote)&&remote.length){LOG=remote;saveLocal();setSync(true,"sincronizado ("+remote.length+")");render();}
+    else if(LOG.length){setSync(true,"migrando local→repo…");pushRemote();}   // 1ª vez: sube lo local
+    else setSync(true,"sincronizado (0)");
+  }catch(e){setSync(false,"local (sin conexión)");}
+}
 const esc=s=>(s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const fmt$=v=>v==null||isNaN(v)?"—":"$"+Number(v).toLocaleString("en-US",{maximumFractionDigits:0});
 const fmtImp=v=>v==null||v===""||isNaN(v)?"—":"€"+Number(v).toLocaleString("en-US",{maximumFractionDigits:0});
@@ -239,7 +272,7 @@ $("#impFile").addEventListener("change",ev=>{const f=ev.target.files[0];if(!f)re
   render();
 }catch(e){}})();
 
-load();render();
+load();render();pullRemote();
 </script>
 </body>
 </html>
