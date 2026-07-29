@@ -44,7 +44,7 @@ Debajo del bloque: lectura, umbrales reales observados, y notas.
 |---|---|---|---|
 | **Precio OHLC** (Binance klines → CoinGecko → Coin Metrics) | **free** | close semanal/diario BTC desde 2015+ | ✅ en uso (loaders de `btc-plan.html`, `backtest.html`) |
 | **Coin Metrics Community** | **free** | MVRV, realized price, algunas on-chain agregadas | ✅ disponible, integración parcial |
-| **bgeometrics** (`charts.bgeometrics.com`) | **free** (por confirmar) | on-chain: MVRV, realized price, SOPR, etc. — API "free" anunciada | 🟡 **verificar desde tu IP** (el proxy datacenter la bloquea con 403) |
+| **BGeometrics** (`bitcoin-data.com/v1/<slug>`) | **free** ✅ CONFIRMADO | on-chain: MVRV-Z, realized price, SOPR (y más). Token gratis, ~15 req/día, **~4 años de histórico** (desde 2022-07) | ✅ **EN PRODUCCIÓN** — workflow diario `onchain.yml` → `data/onchain/*.json`. Formato: `[{"d":"YYYY-MM-DD","unixTs":…,"<metrica>":val}]` |
 | **Deribit public API** | **free** | DVOL, IV ATM, 25d skew, funding, OI (BTC/ETH) | ✅ disponible; **historial limitado** (no cubre 2021) |
 | **Bitbo Pro++** (`charts.bitbo.io/api`) | **paid barato** | **STH realized price (=STH cost basis), STH-MVRV, SOPR, STH-SOPR, MVRV-Z, supply in profit, NUPL, RHODL/Rainbow…** API JSON/CSV, 150k req/mes, 5 req/60s | 🎯 **CANDIDATO recomendado** (cubre el "DÓNDE" que falta, 20× más barato que Glassnode Pro) |
 | **Glassnode Professional** | **paid caro** (~$800/mes) | los 5 "trading models" empaquetados + serie completa | ❌ **NO recomendado** (backtests in-sample de escaparate; replicamos la lógica nosotros con Bitbo) |

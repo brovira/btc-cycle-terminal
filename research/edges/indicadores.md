@@ -132,28 +132,27 @@ DCA inverso al riesgo: comprar más cuando risk<0.4, aligerar cuando risk>0.7-0.
 - **id:** mvrv-z
 - **tipo:** onchain
 - **mide:** desviación del market cap sobre el realized cap, normalizada (z-score)
-- **fuente_dato:** mixto → **free** (Coin Metrics Community da MVRV/realized; z-score calculable)
-- **tenemos_datos:** parcial → MVRV ratio y realized cap free; el z-score lo calculamos
-- **backtesteable_ya:** parcial → sí si integramos Coin Metrics; hoy no está cableado #backtesteable #onchain #free
-- **backtest_en:** —
-- **usado_por:** Ciclo LMEC (confluencia con BMSB)
-- **origen:** agentes/lmec/auditoria_ampliada.md §3b
+- **fuente_dato:** free ✅ → **BGeometrics** `bitcoin-data.com/v1/mvrv-zscore` (ya ingerido)
+- **tenemos_datos:** sí → `data/onchain/mvrv_zscore.json` (desde 2022-07, refresco diario)
+- **backtesteable_ya:** sí (desde 2022) #backtesteable #onchain #free
+- **backtest_en:** data/onchain/mvrv_zscore.json (pendiente cablear a una vista de backtest)
+- **usado_por:** Ciclo LMEC (confluencia con BMSB), régimen on-chain
+- **origen:** agentes/lmec/auditoria_ampliada.md §3b · ingesta BGeometrics
 
-LMEC: **franja verde = suelo**; su salida coincidió con fin del bear en 4 ciclos; confluencia temporal casi idéntica con la BMSB.
-**Acción free:** cablear Coin Metrics `CapMVRVCur` + realized → calcular z-score histórico. #pendiente-integracion (no de pago)
+LMEC: **franja verde = suelo**; su salida coincidió con fin del bear en 4 ciclos; confluencia temporal casi idéntica con la BMSB. Hoy ~0,38 (bajo/neutral). ⚠️ histórico solo desde 2022 (gratis) → backtests on-chain = 1 ciclo, no multi-ciclo.
 
 ### Realized Price
 - **id:** realized-price
 - **tipo:** onchain
 - **mide:** precio medio al que se movió por última vez cada moneda (coste medio agregado)
-- **fuente_dato:** free → Coin Metrics Community (realized cap / supply)
-- **tenemos_datos:** parcial
-- **backtesteable_ya:** parcial → sí vía Coin Metrics #onchain #free
-- **backtest_en:** —
-- **usado_por:** soporte macro, confluencia on-chain
-- **origen:** agentes/derivados_glassnode/framework.md §C5 (el "DÓNDE")
+- **fuente_dato:** free ✅ → **BGeometrics** `bitcoin-data.com/v1/realized-price` (ya ingerido)
+- **tenemos_datos:** sí → `data/onchain/realized_price.json` (desde 2022-07, refresco diario)
+- **backtesteable_ya:** sí (desde 2022) #backtesteable #onchain #free
+- **backtest_en:** data/onchain/realized_price.json
+- **usado_por:** soporte macro, **régimen on-chain (`precio > realized` = on)**, confluencia
+- **origen:** agentes/derivados_glassnode/framework.md §C5 (el "DÓNDE") · ingesta BGeometrics
 
-Glassnode lo usa como nivel de soporte/coste base agregado. Free vía Coin Metrics. #pendiente-integracion
+Glassnode lo usa como nivel de soporte/coste base agregado. Hoy ~$52,4k. **`precio > realized price` = régimen constructivo** (la métrica free más útil para el filtro on-chain minimalista).
 
 ### STH Cost Basis (Short-Term Holder realized price)
 - **id:** sth-cost-basis
@@ -222,13 +221,14 @@ Valores bajos = equilibrio/poca presión (los holders no realizan) → suele mar
 - **id:** sopr
 - **tipo:** onchain
 - **mide:** ratio de beneficio de las monedas gastadas (spent output profit ratio)
-- **fuente_dato:** paid-barato → **Bitbo** ("SOPR", "STH SOPR"); Glassnode `indicators.Sopr/SoprAdjusted`
-- **tenemos_datos:** no
-- **backtesteable_ya:** no aún → sí con Bitbo #onchain #paid #pendiente-suscripcion
-- **usado_por:** Glassnode momentum + confluence (spending behavior)
-- **origen:** dashboard Glassnode On-chain Trading Models
+- **fuente_dato:** free ✅ → **BGeometrics** `bitcoin-data.com/v1/sopr` (ya ingerido). STH-SOPR = Bitbo (paid).
+- **tenemos_datos:** sí (SOPR agregado) → `data/onchain/sopr.json` (desde 2022-07, refresco diario)
+- **backtesteable_ya:** sí (SOPR, desde 2022); STH-SOPR aún no #backtesteable #onchain #free
+- **backtest_en:** data/onchain/sopr.json
+- **usado_por:** Glassnode momentum + confluence (spending behavior), régimen on-chain
+- **origen:** dashboard Glassnode On-chain Trading Models · ingesta BGeometrics
 
->1 = se vende con beneficio (mercado sano/alcista); cruces por debajo de 1 = pérdida realizada (miedo). El momentum de SOPR marca inflexiones.
+>1 = se vende con beneficio (mercado sano/alcista); cruces por debajo de 1 = pérdida realizada (miedo). El momentum de SOPR marca inflexiones. Hoy ~0,997 (leve pérdida realizada).
 
 ### Realized Profit/Loss Ratio (Net Realized P/L)
 - **id:** realized-pl
