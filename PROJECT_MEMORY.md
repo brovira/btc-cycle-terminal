@@ -48,10 +48,11 @@ cuánto/cuándo comprar.
 - `BIRDEYE_API_KEY` → no usado (precios Solana vía Jupiter, gratis, sin key).
 
 ## Páginas (raíz del repo). Body `class="dashboard-page page-<name>"`, estilo en `dashboard.css`.
-- **`index.html`** — hub, reordenado esta sesión: 1) **Estrategias·Señales** (LMEC · Cowen ·
-  BELROGAM plan del ciclo) 2) **Portfolio** (Mi portfolio · LPs · loop futuro) 3) **Herramientas**
-  (backtest · montecarlo) 4) **Trading** (derivados, al fondo, "pendiente de investigar"). El
-  hero "¿Qué hago hoy?" usa las MISMAS 3 señales que decision.html.
+- **`index.html`** — hub, reorganizado al **flujo narrativo acordado** (Hoy → Qué hago → En qué
+  me baso): hero **"¿Qué hago hoy?"** arriba (mismas 3 señales que decision.html) → **① Qué hago**
+  (azul: Mi portfolio · Bitácora · LPs · BELROGAM plan · Rotación alts · Loop futuro) → **② En qué
+  me baso** (ámbar: LMEC · Cowen · Régimen on-chain · Backtest · Monte Carlo · MC del plan) →
+  **③ Trading táctico** (verde: Cockpit vol · Backtest vol · Derivados). Un color por zona.
 - **`decision.html`** — "¿Qué hago hoy?": veredicto + **3 señales que seguimos** (chips) +
   **barra del plan del ciclo** (DCA on → suelo proyectado → fin compra) + tarjetas **LMEC ·
   Cowen** (fase del ciclo, checklist EN VIVO contra el KB, qué hace/por qué, pólvora, aviso de
