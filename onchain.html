@@ -71,6 +71,15 @@
   </div>
 
   <div class="card">
+    <h2>⚔️ Cruce BMSB × 200W MA — ¿qué hizo BTC?</h2>
+    <div class="sub">La <b>BMSB</b> (banda 20/21 sem) y la <b>200W MA</b> son medias rápida vs lenta. Cuando la BMSB cae por debajo de la 200W = fase tardía de bear; cuando la reclama = arranque alcista. Aquí: cada cruce histórico y el <b>movimiento de BTC después</b> (+3/6/12 meses). Histórico de precio completo (Coin Metrics + Binance).</div>
+    <div id="crossNow"></div>
+    <div class="chart" id="chartCross" style="height:360px"></div>
+    <table id="crossTable"></table>
+    <p class="note" id="crossVerdict" style="margin-top:12px"></p>
+  </div>
+
+  <div class="card">
     <h2>Backtest: seguir el régimen vs comprar y aguantar</h2>
     <div class="sub">$1 invertido al inicio del histórico on-chain. La estrategia está en BTC solo cuando el régimen es ON (señal con 1 semana de retardo, sin mirar el futuro).</div>
     <div class="chart" id="chartEq" style="height:360px"></div>
@@ -123,11 +132,46 @@ async function loadMetric(name){
 // último valor con ms<=target
 function asOf(arr,target){let lo=0,hi=arr.length-1,res=null;while(lo<=hi){const m=(lo+hi)>>1;if(arr[m].ms<=target){res=arr[m].v;lo=m+1;}else hi=m-1;}return res;}
 
-let STATE=null;
+// ---- medias móviles + histórico largo (para el cruce BMSB × 200W) ----
+function sma(a,n){const o=Array(a.length).fill(null);let s=0;for(let i=0;i<a.length;i++){s+=a[i];if(i>=n)s-=a[i-n];if(i>=n-1)o[i]=s/n;}return o;}
+function ema(a,n){const o=Array(a.length).fill(null);const k=2/(n+1);let p=null,ss=0,c=0,sd=false;for(let i=0;i<a.length;i++){const v=a[i];if(!sd){ss+=v;c++;if(c>=n){p=ss/n;o[i]=p;sd=true;}continue;}p=v*k+p*(1-k);o[i]=p;}return o;}
+// Coin Metrics: precio diario desde 2011 → semanal, solo la parte ANTERIOR a Binance (para cubrir 2015/2018)
+async function cmPrefix(binT0){
+  const q="assets=btc&metrics=PriceUSD&frequency=1d&page_size=10000&start_time=2011-01-01";
+  for(const u of["/api/coinmetrics?"+q,"https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?"+q]){
+    try{const r=await fetch(u,{cache:"no-store"});if(r.ok){const j=await r.json();if(j&&j.data&&j.data.length){
+      const dt=[],px=[];for(const x of j.data){if(x.PriceUSD!=null){const t=Date.parse(String(x.time).slice(0,10));if(!isNaN(t)){dt.push(t);px.push(+x.PriceUSD);}}}
+      const WK=7*864e5,t=[],cc=[];let bs=null,bc,bt;
+      for(let i=0;i<dt.length;i++){const ms=dt[i],p=px[i];if(bs==null){bs=ms;bc=p;bt=ms;continue;}if(ms-bs>=WK){t.push(bt);cc.push(bc);bs=ms;bc=p;bt=ms;}else{bc=p;bt=ms;}}
+      if(bs!=null){t.push(bt);cc.push(bc);}
+      const pt=[],pc=[];for(let i=0;i<t.length;i++){if(t[i]<binT0-3*864e5){pt.push(t[i]);pc.push(cc[i]);}}
+      return{t:pt,c:pc};
+    }}}catch(e){}
+  }
+  return{t:[],c:[]};
+}
+// detecta cruces BMSB (media 20/21 sem) × 200W MA + retorno de BTC a +3/6/12 meses
+function computeCross(t,c){
+  const s20=sma(c,20),e21=ema(c,21),s200=sma(c,200);
+  const bmsb=c.map((_,i)=>(s20[i]!=null&&e21[i]!=null)?(s20[i]+e21[i])/2:null);
+  const crosses=[];
+  for(let i=1;i<c.length;i++){
+    if(bmsb[i]==null||s200[i]==null||bmsb[i-1]==null||s200[i-1]==null)continue;
+    const d0=bmsb[i-1]-s200[i-1],d1=bmsb[i]-s200[i];
+    if(d0===0||(d0<0)===(d1<0))continue;         // solo cuando cambia de signo
+    const fwd=k=>(i+k<c.length)?(c[i+k]/c[i]-1):null;
+    crosses.push({ms:t[i],price:c[i],dir:d1>0?"up":"down",r13:fwd(13),r26:fwd(26),r52:fwd(52)});
+  }
+  return{t,c,bmsb,s200,crosses};
+}
+
+let STATE=null,CROSS=null;
 async function build(){
   setStatus("Cargando precio y on-chain…",true);
   const [px,realized,mvrv,sopr]=await Promise.all([weeklyBTC(),loadMetric("realized_price"),loadMetric("mvrv_zscore"),loadMetric("sopr")]);
   if(!px||!realized){setStatus("No pude cargar los datos",false);return;}
+  // histórico largo para el cruce BMSB × 200W (Coin Metrics antes de Binance)
+  try{const cmP=await cmPrefix(px.t[0]);CROSS=computeCross([...cmP.t,...px.t],[...cmP.c,...px.c]);renderCross();}catch(e){CROSS=computeCross(px.t.slice(),px.c.slice());renderCross();}
   const firstOnchain=realized[0].ms;
   // alinear semanas al histórico on-chain
   const W=[];
@@ -195,6 +239,29 @@ function renderBanner(){
   $("#verdict").innerHTML="Lectura: "+v;
 }
 
+const MES_AB=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const fdate=ms=>{const d=new Date(ms);return MES_AB[d.getUTCMonth()]+" "+d.getUTCFullYear();};
+function renderCross(){
+  if(!CROSS){return;}
+  const {c,bmsb,s200,crosses}=CROSS;
+  const i=c.length-1;const bl=bmsb[i],ml=s200[i];const gap=(bl&&ml)?(bl/ml-1):null;
+  const heading = gap==null?"":(gap>0
+    ?`La BMSB está <b>${(gap*100).toFixed(1)}% por ENCIMA</b> de la 200W. Para el cruce bajista que esperas, el precio tiene que seguir cayendo.`
+    :`La BMSB está <b>${(Math.abs(gap)*100).toFixed(1)}% por DEBAJO</b> de la 200W → cruce bajista YA activo (fase tardía de bear).`);
+  $("#crossNow").innerHTML=`<div class="regime" style="margin:0 0 12px"><span class="pill ${gap>0?'on':'off'}">BMSB ${fmt$(bl)}</span><span class="pill" style="background:color-mix(in oklab,var(--tool) 20%,transparent);color:var(--tool)">200W ${fmt$(ml)}</span><span class="note" style="margin-left:auto">${heading}</span></div>`;
+  const cell=v=>v==null?'—':`<span class="${v>=0?'pos':'neg'}">${pct(v)}</span>`;
+  const rows=crosses.map(x=>`<tr><td>${fdate(x.ms)}</td><td>${x.dir==="down"?'🔻 BMSB pierde 200W':'🔺 BMSB reclama 200W'}</td><td class="mono">${fmt$(x.price)}</td><td>${cell(x.r13)}</td><td>${cell(x.r26)}</td><td>${cell(x.r52)}</td></tr>`).join("");
+  $("#crossTable").innerHTML=`<thead><tr><th>Cruce</th><th>Dirección</th><th>Precio</th><th>+3m</th><th>+6m</th><th>+1año</th></tr></thead><tbody>${rows||'<tr><td colspan="6" style="text-align:center;color:var(--muted)">Sin cruces en el histórico disponible.</td></tr>'}</tbody>`;
+  const avg=a=>a.length?a.reduce((s,x)=>s+x.r52,0)/a.length:null;
+  const downs=crosses.filter(x=>x.dir==="down"&&x.r52!=null),ups=crosses.filter(x=>x.dir==="up"&&x.r52!=null);
+  const ad=avg(downs),au=avg(ups);
+  let v=`<b>Lectura honesta:</b> `;
+  if(ad!=null)v+=`tras un <b>cruce bajista</b> (BMSB pierde la 200W), a <b>1 año</b> BTC hizo de media <b class="${ad>=0?'pos':'neg'}">${pct(ad)}</b> (n=${downs.length}). Históricamente ese cruce ocurre <b>cerca del suelo</b> (capitulación), no al inicio de la caída → el año siguiente suele ser alcista. `;
+  if(au!=null)v+=`Tras un <b>cruce alcista</b> (reclama la 200W), +1 año media <b class="${au>=0?'pos':'neg'}">${pct(au)}</b> (n=${ups.length}). `;
+  v+=`Tu tesis (cruce = última pata bajista) encaja en el <i>timing</i> (tramo final del bear), pero ojo con la conclusión: los datos dicen que suele ser <b>zona de compra</b>, no de vender/shortear. n bajo → orientativo.`;
+  $("#crossVerdict").innerHTML=v;
+}
+
 async function draw(){
   if(!STATE)return;await loadPlotly();
   const light=(document.documentElement.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"))==="light";
@@ -215,6 +282,19 @@ async function draw(){
   if(W.some(w=>w.mvrv!=null))Plotly.react("chartMvrv",[
     {x:T,y:W.map(w=>w.mvrv),type:"scatter",mode:"lines",name:"MVRV Z-Score",line:{color:"#9b8cff",width:1.8},fill:"tozeroy",fillcolor:"rgba(155,140,255,.10)"},
   ],{...base,showlegend:false,shapes:[{type:"rect",xref:"paper",yref:"y",x0:0,x1:1,y0:-1,y1:1,fillcolor:"rgba(47,195,155,.10)",line:{width:0}}]},{responsive:true,displayModeBar:false});
+  // cruce BMSB × 200W sobre el histórico completo
+  if(CROSS&&CROSS.crosses){
+    const CX=CROSS.t.map(m=>new Date(m)),cr=CROSS.crosses;
+    Plotly.react("chartCross",[
+      {x:CX,y:CROSS.c,type:"scatter",mode:"lines",name:"BTC",line:{color:"#e8a13a",width:1.3}},
+      {x:CX,y:CROSS.bmsb,type:"scatter",mode:"lines",name:"BMSB",line:{color:"#3fa9f5",width:1.2,dash:"dot"}},
+      {x:CX,y:CROSS.s200,type:"scatter",mode:"lines",name:"200W MA",line:{color:"#9b8cff",width:1.2,dash:"dash"}},
+      {x:cr.map(x=>new Date(x.ms)),y:cr.map(x=>x.price),type:"scatter",mode:"markers",name:"Cruce",
+        marker:{symbol:cr.map(x=>x.dir==="down"?"triangle-down":"triangle-up"),size:12,color:cr.map(x=>x.dir==="down"?"#f2606d":"#2fc39b"),line:{color:ink,width:.5}},
+        text:cr.map(x=>x.dir==="down"?"BMSB pierde 200W":"BMSB reclama 200W"),
+        hovertemplate:"%{x|%b %Y}<br>%{text}<br>$%{y:,.0f}<extra></extra>"},
+    ],{...base,yaxis:{...base.yaxis,type:"log",title:"USD (log)"}},{responsive:true,displayModeBar:false});
+  }
 }
 
 $("#refreshBtn").addEventListener("click",build);
