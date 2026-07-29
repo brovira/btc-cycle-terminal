@@ -3,16 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cockpit de Volatilidad · Trading</title>
+<title>La señal de Volatilidad · Trading</title>
 <link rel="stylesheet" href="dashboard.css">
 <style>
   .wrap{max-width:1040px;margin:0 auto;padding:26px 18px 70px}
   .hero{border:1px solid var(--line);border-left:5px solid var(--vc,var(--muted));border-radius:16px;background:var(--panel);padding:18px 20px;margin-top:14px}
   .hero .lab{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:700}
   .hero .big{font-size:clamp(19px,3vw,25px);font-weight:850;letter-spacing:-.02em;color:var(--vc,var(--ink));margin:5px 0 2px}
-  .hero .sub{color:var(--ink2);font-size:13.5px;line-height:1.5;margin-top:4px}
+  .hero .sub{color:var(--ink2);font-size:13.5px;line-height:1.55;margin-top:4px}
   .lprow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
   .lppill{font-size:12.5px;font-weight:700;padding:6px 12px;border-radius:10px;border:1px solid var(--line)}
+  .trig{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-top:14px}
+  .trig .t{border:1px solid var(--line);border-radius:11px;padding:9px 12px;background:var(--panel2);font-size:12px;line-height:1.45;color:var(--ink2)}
+  .trig .t b{display:block;font-size:12px;color:var(--ink)}
+  .trig .t.hit{border-color:color-mix(in oklab,var(--tc) 55%,var(--line));background:color-mix(in oklab,var(--tc) 8%,var(--panel2))}
   .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:16px}
   .g{border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:14px 15px}
   .g .k{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:700}
@@ -20,21 +24,36 @@
   .g .d{font-size:11.5px;color:var(--ink2);margin-top:5px;line-height:1.4}
   .g .info{cursor:help;color:var(--muted);font-size:10px;border:1px solid var(--line);border-radius:50%;padding:0 4.5px;margin-left:4px;font-style:normal;vertical-align:middle}
   .g .info:hover{color:var(--accent);border-color:var(--accent)}
-  .sechead{margin:24px 0 2px;font-size:16px;font-weight:850;letter-spacing:-.01em;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+  .g .tag{display:inline-block;font-size:10px;font-weight:800;padding:1px 7px;border-radius:999px;margin-top:6px}
+  .sechead{margin:26px 0 2px;font-size:16px;font-weight:850;letter-spacing:-.01em;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
   .sechead .sh2{font-size:12px;font-weight:400;color:var(--muted)}
+  .panelbox{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:16px 18px;margin-top:12px;font-size:13px;line-height:1.6;color:var(--ink2)}
+  .panelbox h3{margin:0 0 6px;font-size:14.5px;color:var(--ink);font-weight:800}
+  .panelbox b{color:var(--ink)}
+  .panelbox ul{margin:6px 0 0;padding-left:18px}.panelbox li{margin:4px 0}
+  .fases{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:12px}
+  .fase{border:1px solid var(--line);border-top:4px solid var(--fc);border-radius:13px;background:var(--panel);padding:14px 15px;font-size:12.5px;line-height:1.55;color:var(--ink2)}
+  .fase h4{margin:0 0 4px;font-size:13.5px;color:var(--fc);font-weight:850}
+  .fase .firma{font-size:11.5px;color:var(--muted);margin:6px 0}
+  .fase .act{margin-top:8px;font-weight:700;color:var(--ink);font-size:12.5px}
+  .fase.now{box-shadow:0 0 0 2px color-mix(in oklab,var(--fc) 45%,transparent)}
+  .fase .nowtag{display:inline-block;font-size:10px;font-weight:800;padding:1px 8px;border-radius:999px;background:var(--fc);color:var(--panel);margin-left:6px;vertical-align:middle}
+  table.sig{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:12px}
+  table.sig th{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:left;padding:7px 9px;border-bottom:1px solid var(--line)}
+  table.sig td{padding:8px 9px;border-bottom:1px solid var(--line);color:var(--ink2);vertical-align:top}
+  table.sig td.mono{font-family:var(--mono);font-weight:700;color:var(--ink);white-space:nowrap}
+  .st{font-size:10.5px;font-weight:800;padding:1px 8px;border-radius:999px;white-space:nowrap}
+  .tblwrap{overflow-x:auto;margin-top:12px;border:1px solid var(--line);border-radius:13px;background:var(--panel)}
+  .tblwrap table.sig{margin-top:0}
   .thesis{border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:14px;background:var(--panel);padding:16px 18px;margin-top:14px;font-size:13px;line-height:1.6;color:var(--ink2)}
   .thesis h3{margin:0 0 4px;font-size:14.5px;color:var(--ink);font-weight:800}
   .thesis b{color:var(--ink)}
   .thesis .trow{padding:6px 0;border-top:1px solid var(--line);margin-top:6px}
   .thesis .tk{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700}
-  .g .tag{display:inline-block;font-size:10px;font-weight:800;padding:1px 7px;border-radius:999px;margin-top:6px}
   .chartcard{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:14px 16px 8px;margin-top:16px}
   .chartcard h3{margin:0 0 2px;font-size:15px;font-weight:800}
   .chartcard .csub{color:var(--ink2);font-size:12.5px;margin-bottom:8px}
   #dvolchart{width:100%;height:300px}
-  .note{margin-top:16px;border:1px solid var(--line);border-radius:13px;background:var(--panel2);padding:14px 16px;font-size:12.5px;line-height:1.6;color:var(--ink2)}
-  .note b{color:var(--ink)}
-  .note ul{margin:8px 0 0;padding-left:18px}.note li{margin:3px 0}
   footer{margin-top:24px;color:var(--muted);font-size:12px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px}
   .up{color:var(--bull)}.down{color:var(--bear)}
 </style>
@@ -43,51 +62,84 @@
 <div class="wrap">
   <header class="top" style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
     <div>
-      <div class="kicker" style="font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600">Trading · Volatilidad y régimen</div>
-      <h1 style="margin:5px 0 0;font-size:clamp(22px,3.4vw,30px);font-weight:800;letter-spacing:-.02em">🌡️ Cockpit de Volatilidad</h1>
+      <div class="kicker" style="font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600">Trading · el plan de volatilidad, como la señal del ciclo</div>
+      <h1 style="margin:5px 0 0;font-size:clamp(22px,3.4vw,30px);font-weight:800;letter-spacing:-.02em">⚡ La señal de Volatilidad</h1>
       <div style="color:var(--ink2);font-size:13.5px;margin-top:5px" id="asof">Cargando…</div>
     </div>
-    <div style="display:flex;gap:8px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
       <a class="btn" href="index.html" style="text-decoration:none">← Panel</a>
       <a class="btn" href="volbacktest.html" style="text-decoration:none">🔬 Backtest</a>
+      <a class="btn" href="onchain.html" style="text-decoration:none">⛓️ Nivel on-chain</a>
       <button class="btn" id="themeBtn">◐ Tema</button>
     </div>
   </header>
 
+  <!-- ══ LA SEÑAL AHORA ══ -->
   <div class="hero" id="hero">
-    <div class="lab">Régimen ahora</div>
+    <div class="lab">La señal ahora — ¿viene volatilidad y qué hago con el LP?</div>
     <div class="big" id="regime">Calculando…</div>
     <div class="sub" id="regimeSub"></div>
     <div class="lprow" id="lprow"></div>
+    <div class="trig" id="trigrow"></div>
   </div>
 
-  <div class="sechead">📊 Volatilidad & flujo <span class="sh2">— pasa el cursor por la ⓘ de cada uno para saber qué es y por qué implica volatilidad</span></div>
-  <div class="cards" id="gauges"></div>
+  <!-- ══ 1 · EL MERCADO QUE OPERAMOS ══ -->
+  <div class="sechead">🗺️ El mercado que operamos <span class="sh2">— definición y asunciones, antes de mirar ningún número</span></div>
+  <div class="panelbox">
+    <h3>Qué operamos</h3>
+    El <b>LP concentrado (Orca)</b> = estar <b>corto de volatilidad</b> (mismo perfil que vender un straddle): cobras fees mientras el precio va en rango, pierdes (IL) cuando llega el movimiento grande. La decisión que gobierna este panel es una sola: <b>¿estoy dentro cobrando la prima, o fuera antes del movimiento?</b> Y, solo en extremos de posicionamiento, una segunda: <b>¿hay apuesta direccional a semanas/meses?</b>
+    <h3 style="margin-top:12px">Asunciones (del corpus de 152 Week On-Chain del agente)</h3>
+    <ul>
+      <li><b>Los derivados NO predicen dirección.</b> Miden <b>posicionamiento</b>: quién está apiñado y qué es frágil. La dirección solo la da el <b>signo del funding/basis</b> (¿pagan los largos o los cortos?) cruzado con el nivel on-chain.</li>
+      <li><b>"Vol barata" aislada NO es señal.</b> El aviso "IV en mínimos → viene expansión" llega <b>meses</b> pronto (todo el verano de 2025). Solo actuamos con la <b>confluencia</b>: leverage extremo + posicionamiento estirado + precio en un nivel on-chain clave.</li>
+      <li><b>El DÓNDE lo da on-chain</b> (realized price, cost-basis — página ⛓️), no los derivados. Derivados = el combustible y el momento.</li>
+      <li><b>Horizonte: semanas, no horas.</b> Las señales del agente adelantan los flushes 0–3 semanas. Nada de scalping.</li>
+      <li><b>Riesgo asumido:</b> señales mecánicas sobre datos gratis disparan antes y con más falsos amagos que el juicio del analista. Tamaño pequeño en lo direccional.</li>
+    </ul>
+  </div>
 
-  <div class="sechead">🎲 Opciones (Deribit) <span class="sh2">— posicionamiento y miedo direccional (lo que Glassnode usa en su Week On-Chain)</span></div>
+  <!-- ══ 2 · LAS 4 FASES ══ -->
+  <div class="sechead">🔄 Las 4 fases del mercado de vol <span class="sh2">— en cuál estamos y qué se hace en cada una (la que aplica hoy queda resaltada)</span></div>
+  <div class="fases" id="fases"></div>
+
+  <!-- ══ 3 · LAS SEÑALES DEL AGENTE, EN VIVO ══ -->
+  <div class="sechead">🤖 Las señales del agente, en vivo <span class="sh2">— cada indicador contra su umbral (estrategia mecánica destilada del framework de Glassnode)</span></div>
+  <div class="tblwrap"><table class="sig" id="sigtable"></table></div>
+  <div class="panelbox" style="font-size:12.5px">
+    <b>Lo que la máquina NO ve</b> (queda a criterio del agente / Week On-Chain): la <b>rotación del skew</b> put-rich→call-heavy (el sello del techo del 10-oct-25 — necesita histórico de skew que no hay gratis), el <b>nivel on-chain</b> exacto (⛓️ Régimen on-chain te da realized price y el cruce BMSB×200W), y si una liquidación es <b>voluntaria o forzada</b>. Antes de mover dinero: cruza esta pantalla con <a href="onchain.html">on-chain</a> y pregunta al agente <code>derivados_glassnode</code>.
+  </div>
+
+  <!-- ══ 4 · ¿HA FUNCIONADO? ══ -->
+  <div class="sechead">📜 ¿Ha funcionado? <span class="sh2">— track record real del método (2020→jul-2026), llamada a llamada</span></div>
+  <div class="tblwrap"><table class="sig">
+    <thead><tr><th>Tipo de llamada</th><th>Muestra</th><th>Acierto</th><th>Lectura operativa</th></tr></thead>
+    <tbody>
+      <tr><td><b>Leverage apiñado → flush/squeeze</b></td><td class="mono">10</td><td class="mono up">8 ✅ · 2 🟡 · 0 ❌</td><td>Su punto fuerte. Timing 0–3 semanas. Incluye el techo del <b>10-oct-2025 avisado ~2 días antes</b> del mayor flush de la historia (−$19B OI).</td></tr>
+      <tr><td><b>Backwardation / funding extremo → squeeze direccional</b></td><td class="mono">3</td><td class="mono up">3 ✅</td><td>Muy fiable cuando el signo del funding/basis es claro. <b>Es la única señal direccional del método</b> — la que usamos para el bias largo.</td></tr>
+      <tr><td><b>"IV/DVOL baja → expansión de vol"</b></td><td class="mono">4</td><td class="mono down">1 ✅ · 3 🟡</td><td>Punto débil: acierta que el movimiento llega, pero <b>meses tarde y ciega de dirección</b>. Por eso NO es trigger aquí.</td></tr>
+      <tr><td><b>"Reset de funding → constructivo"</b></td><td class="mono">3</td><td class="mono down">1 ✅ · 1 🟡 · 1 ❌</td><td>Falla cerca de techos de ciclo (abr-2021: "constructivo" → crash −50%). Por eso la re-entrada exige <b>además</b> OI reseteado + VRP&gt;0 + soporte on-chain.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="panelbox" style="font-size:12.5px">
+    Detalle llamada a llamada en <code>agentes/derivados_glassnode/reports/track_record.md</code> y la estrategia mecánica (umbrales exactos) en <code>estrategia_leverage.md</code>. El backtest de la pata LP (regla CHOP&gt;60) vive en <a href="volbacktest.html">🔬 Backtest de Volatilidad</a>. <b>Llamada abierta del agente (jul-26):</b> reclaim del max pain $66k + ETF flows positivos — ¿despeja $69k (STH cost basis) o rechaza y vuelve a $63k?
+  </div>
+
+  <!-- ══ 5 · INSTRUMENTOS ══ -->
+  <div class="sechead">📊 Instrumentos <span class="sh2">— los datos crudos detrás de la señal (ⓘ para saber qué es cada uno)</span></div>
+  <div class="cards" id="gauges"></div>
+  <div class="sechead">🎲 Opciones (Deribit) <span class="sh2">— posicionamiento y miedo direccional</span></div>
   <div class="cards" id="optcards"></div>
 
   <div class="thesis" id="thesis" style="display:none"></div>
 
   <div class="chartcard">
     <h3>DVOL — vol implícita (Deribit), ~1 año</h3>
-    <div class="csub">Percentil bajo + rango comprimido = <b>muelle cargado</b>. La línea de puntos marca el nivel de hoy.</div>
+    <div class="csub">Percentil bajo + rango comprimido = <b>muelle cargado</b> (pero recuerda: eso solo NO dispara nada). La línea de puntos marca el nivel de hoy.</div>
     <div id="dvolchart"></div>
   </div>
 
-  <div class="note">
-    <b>Cómo leerlo (método vol trader):</b>
-    <ul>
-      <li><b>Régimen</b> = ¿viene movimiento? La compresión (DVOL + BB width bajos, CHOP alto) dice <b>SÍ</b> — <b>pero no la dirección</b>.</li>
-      <li><b>LP ON/OFF</b> (Choppiness): rango = cobras fees, poco IL; tendencia = riesgo de IL → fuera.</li>
-      <li><b>VRP = DVOL − RV</b>: negativo → vol barata (comprar straddle); &gt;6 → vol cara (vender premium).</li>
-      <li><b>Funding / OI / Long-Short / Taker</b>: dónde está cargado el apalancamiento = combustible de squeeze.</li>
-      <li><b>Dist. 200W MA</b>: tu zona de re-entrada de LP (~$62k). Alerta cuando se acerque.</li>
-    </ul>
-  </div>
-
   <footer>
-    Datos GRATIS server-side: <b>Deribit</b> (DVOL) · <b>Binance</b> (precio, RV, CHOP, BB width, 200W MA, funding, OI, long/short, taker). Sin API key. Se actualiza cada 5 min.
+    Datos GRATIS server-side: <b>Deribit</b> (DVOL, opciones) · <b>Bybit/OKX</b> (funding, OI) · <b>Binance</b> (precio, RV, CHOP). Sin API key. Se actualiza cada 5 min.
     <div id="foot-warn" style="margin-top:8px;color:var(--muted);font-size:11.5px"></div>
     <b>Uso educativo — no es asesoramiento financiero. La compresión no predice la dirección.</b>
   </footer>
@@ -101,9 +153,6 @@ const $=s=>document.querySelector(s);
 const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim()||"#888";
 const pctS=(v,d)=>v==null?"—":(v*100).toFixed(d==null?0:d)+"%";
 const n2=(v,d)=>v==null?"—":Number(v).toLocaleString("es-ES",{maximumFractionDigits:d==null?2:d});
-
-const REGC={compression:"var(--accent)",trending:"var(--bear)",stress:"var(--hot)",neutral:"var(--muted)"};
-const LPC={on:"var(--bull)",off:"var(--bear)",neutral:"var(--muted)"};
 
 let DV=null;
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
@@ -129,6 +178,27 @@ function gauge(k,v,d,tag,tagc,tip){
   return `<div class="g"${tip?` title="${ti}"`:""}><div class="k">${k}${info}</div><div class="v">${v}</div>${d?`<div class="d">${d}</div>`:""}${t}</div>`;
 }
 
+// ── Las 4 fases del plan (estrategia_leverage.md §B-C) ──
+const FASES=[
+  {id:"clean",  c:"var(--bull)", n:"🟢 Estructura limpia", firma:"OI reseteado (≤p40 tras un flush) · funding ≤ +11% · VRP ≥ +5 · skew 0…+12 · precio sobre soporte on-chain",
+   que:"El leverage se limpió, te vuelven a pagar la prima y nadie está apiñado.", act:"➜ FARMEAR: LP con rango estrecho, cobrar fees."},
+  {id:"chop",   c:"var(--muted)",n:"🟡 Chop / vol latente", firma:"Sin extremos: funding indeciso, OI medio, VRP ≈ 0, o vol en mínimos pero con skew defensivo",
+   que:"No hay edge claro. La vol puede estar 'diferida' — barata pero lista para repricear con un catalizador.", act:"➜ ENSANCHAR rango / reducir tamaño. No concentrar."},
+  {id:"flush",  c:"var(--bear)", n:"🔴 Longs apiñados (riesgo de flush)", firma:"funding ≥ +8% anualizado 3d + OI en p90/máximos (+ rotación de skew put→call, criterio agente)",
+   que:"El trío que marcó el techo del 10-oct-25 dos días antes del mayor flush de la historia.", act:"➜ SALIR del LP / defensivo. No añadir riesgo largo."},
+  {id:"realizing",c:"var(--hot)",n:"🔴 La vol se realiza (VRP<0)", firma:"VRP negativo ≥2 días, o skew 1W >+15 con put/call de volumen >1",
+   que:"La realizada supera a la implícita: las opciones amplifican en vez de amortiguar (4-feb-26 marcó así el tramo bajista).", act:"➜ FUERA del LP. No vender premium."},
+  {id:"squeeze",c:"var(--bull)", n:"🟩 Shorts apiñados (setup de squeeze)", firma:"funding negativo sostenido 3d + OI subiendo +10% en 2–4 sem (+ reclaim de soporte on-chain)",
+   que:"La única señal DIRECCIONAL del método (3/3 en el track record): combustible de squeeze al alza.", act:"➜ BIAS LARGO direccional a semanas (tamaño pequeño) + LP puede seguir."},
+];
+const PHASE_HERO={
+  flush:   {c:"var(--bear)", t:"🔴 FUERA / DEFENSIVO — longs apiñados", s:"Funding y OI en zona de flush: el patrón que precede las cascadas (8/10 en el track record). Cierra/reduce el LP, no añadas riesgo largo y confirma la rotación del skew con el agente."},
+  realizing:{c:"var(--hot)", t:"🔴 FUERA DEL LP — la vol se está realizando", s:"VRP negativo o estrés en el front-end: la realizada supera a la implícita, las opciones amplifican. No es momento de estar corto de vol."},
+  squeeze: {c:"var(--bull)", t:"🟩 SETUP DE SQUEEZE — bias largo a semanas", s:"Shorts pagando + OI subiendo = combustible al alza (3/3 histórico). Confirma el reclaim del soporte on-chain (⛓️) antes de poner la apuesta direccional. Tamaño pequeño."},
+  clean:   {c:"var(--bull)", t:"🟢 FARMEAR — estructura limpia", s:"Hubo flush, el leverage está reseteado y el VRP vuelve a pagarte la prima. Rango estrecho OK mientras el precio respete el soporte on-chain."},
+  chop:    {c:"var(--muted)",t:"🟡 SIN EDGE CLARO — ensancha y espera", s:"Ningún trigger activo: ni longs ni shorts apiñados, ni estructura recién limpia. Rango ancho, tamaño reducido, y a esperar el extremo — las mejores llamadas del método salen SOLO en extremos."},
+};
+
 (async function(){
   let j=null;
   try{ const [,r]=await Promise.all([loadPlotly().catch(()=>null),fetch("/api/voldata",{cache:"no-store"})]); j=await r.json(); DV=j; }
@@ -136,61 +206,90 @@ function gauge(k,v,d,tag,tagc,tip){
   if(!j){ $("#regime").textContent="Respuesta vacía"; $("#asof").textContent=""; return; }
   $("#asof").textContent=(j.asOf?"datos a "+new Date(j.asOf).toISOString().slice(0,16).replace("T"," ")+" UTC · ":"")+"cada 5 min · BTC $"+n2(j.price,0);
 
-  // Régimen
-  const hero=$("#hero"); hero.style.setProperty("--vc",REGC[j.regime]||"var(--muted)");
-  $("#regime").textContent=j.regimeTxt||"—";
-  $("#regimeSub").innerHTML=`Régimen: <b style="color:${REGC[j.regime]}">${(j.regime||"—").toUpperCase()}</b>. La compresión avisa de un movimiento grande, <b>no de su dirección</b>.`;
-  // LP + VRP pills
+  const C=(j.strat&&j.strat.checks)||{};
+  const phase=(j.strat&&j.strat.phase)||"chop";
+  const H=PHASE_HERO[phase]||PHASE_HERO.chop;
+
+  // ── HERO: la señal ──
+  const hero=$("#hero"); hero.style.setProperty("--vc",H.c);
+  $("#regime").textContent=H.t;
+  $("#regimeSub").innerHTML=H.s+` <span style="color:var(--muted)">· Régimen técnico: ${(j.regime||"—")} — ${j.regimeTxt?String(j.regimeTxt).replace(/^[^\w🪤📈⚡]*/,""):""}</span>`;
   const pills=[];
-  pills.push(`<span class="lppill" style="color:${LPC[j.lp]};border-color:color-mix(in oklab,${LPC[j.lp]} 40%,var(--line))">${j.lpTxt||"LP —"}</span>`);
+  if(j.lpTxt)pills.push(`<span class="lppill" style="color:${j.lp==="on"?"var(--bull)":j.lp==="off"?"var(--bear)":"var(--muted)"}">${j.lpTxt}</span>`);
   if(j.vrpTxt)pills.push(`<span class="lppill" style="color:var(--ink2)">VRP: ${j.vrpTxt}</span>`);
   $("#lprow").innerHTML=pills.join("");
+  // triggers como checklist (mismo patrón que las 3 señales de la señal del ciclo)
+  const tk=(hit,tc,name,det)=>`<div class="t${hit?" hit":""}" style="--tc:${tc}"><b>${hit?"●":"○"} ${name}</b>${det}</div>`;
+  $("#trigrow").innerHTML=[
+    tk(C.exitCrowded,"var(--bear)","Longs apiñados (salir)",`funding 3d ${C.fundingAnn3d!=null?(C.fundingAnn3d>=0?"+":"")+n2(C.fundingAnn3d,1)+"%":"—"} (umbral ≥+8%) · OI p${C.oiPct180!=null?Math.round(C.oiPct180*100):"—"} (umbral ≥p90)`),
+    tk(C.exitVolReal,"var(--hot)","Vol realizándose (salir)",`VRP<0 desde hace ${C.vrpNegDays!=null?C.vrpNegDays:"—"} días (umbral ≥2) · skew ${j.optSkew!=null?(j.optSkew>=0?"+":"")+n2(j.optSkew,1):"—"} (estrés >+15)`),
+    tk(C.squeezeSetup,"var(--bull)","Setup de squeeze (bias largo)",`funding negativo sostenido: ${C.fundingNeg3d?"SÍ":"no"} · OI 14d ${C.oiChg14d!=null?(C.oiChg14d>=0?"+":"")+pctS(C.oiChg14d,1):"—"} (umbral ≥+10%)`),
+    tk(C.reentryClean,"var(--bull)","Estructura limpia (farmear)",`flush reciente: ${C.flushRecent?"SÍ ("+(C.flushDaysAgo!=null?C.flushDaysAgo+"d":"")+")":"no"} · OI ≤p40: ${C.oiPct180!=null?(C.oiPct180<=0.4?"SÍ":"no"):"—"} · VRP≥+5: ${j.vrp!=null?(j.vrp>=5?"SÍ":"no"):"—"}`),
+  ].join("");
 
-  // Gauges
-  const fund8=j.funding!=null?(j.funding*100):null; // % por periodo (8h)
+  // ── Fases (resaltar la actual) ──
+  $("#fases").innerHTML=FASES.map(f=>`<div class="fase${f.id===phase?" now":""}" style="--fc:${f.c}"><h4>${f.n}${f.id===phase?'<span class="nowtag">HOY</span>':""}</h4>${f.que}<div class="firma">Firma: ${f.firma}</div><div class="act">${f.act}</div></div>`).join("");
+
+  // ── Tabla de señales en vivo ──
+  const ok=(b,txtSi,txtNo)=>b==null?`<span class="st" style="color:var(--muted);background:color-mix(in oklab,var(--muted) 14%,transparent)">sin dato</span>`:b?`<span class="st" style="color:var(--bear);background:color-mix(in oklab,var(--bear) 14%,transparent)">${txtSi}</span>`:`<span class="st" style="color:var(--bull);background:color-mix(in oklab,var(--bull) 14%,transparent)">${txtNo}</span>`;
+  const rows=[
+    ["Funding anualizado (MM 3d)", C.fundingAnn3d!=null?(C.fundingAnn3d>=0?"+":"")+n2(C.fundingAnn3d,1)+"%":"—", "≥ +8% = longs apiñados", "< 0 sostenido = combustible de squeeze", C.fundingAnn3d==null?null:C.fundingAnn3d>=8, "apiñado","ok"],
+    ["Open Interest (percentil 180d)", C.oiPct180!=null?"p"+Math.round(C.oiPct180*100)+(C.oiChg14d!=null?" · 14d "+(C.oiChg14d>=0?"+":"")+pctS(C.oiChg14d,1):""):"—", "≥ p90 = máximos (frágil)", "≤ p40 tras flush = limpio", C.oiPct180==null?null:C.oiPct180>=0.9, "frágil","ok"],
+    ["Flush reciente (OI −15% en ≤3d, 60d)", C.flushRecent==null?"—":C.flushRecent?"SÍ, hace "+(C.flushDaysAgo!=null?C.flushDaysAgo+" días":"poco"):"no", "—", "condición para re-entrar a farmear", C.flushRecent==null?null:!C.flushRecent, "sin reset","reseteado"],
+    ["VRP = DVOL − RV30", j.vrp!=null?((j.vrp>=0?"+":"")+n2(j.vrp,1)+(C.vrpNegDays?" · negativo "+C.vrpNegDays+"d":"")):"—", "< 0 ≥2 días = vol realizándose (fuera)", "≥ +5 = te pagan la prima (farmear)", j.vrp==null?null:C.vrpNegDays>=2, "realizándose","warehousing"],
+    ["Skew 25Δ 1W (aprox)", j.optSkew!=null?(j.optSkew>=0?"+":"")+n2(j.optSkew,1)+" vol pts":"—", "> +15 con P/C vol >1 = estrés", "0 a +12 estable = normal", j.optSkew==null?null:j.optSkew>15, "estrés","normal"],
+    ["Put/Call de VOLUMEN (24h)", j.optPutCallVol!=null?n2(j.optPutCallVol,2):"—", "> 1,0 (desde ~0,8) = pánico comprando puts", "bajo y estable", j.optPutCallVol==null?null:j.optPutCallVol>1, "defensivo","calmado"],
+    ["Put/Call de OI", j.optPutCall!=null?n2(j.optPutCall,2):"—", "subiendo >1 = defensivo", "~0,4–0,6 = risk-on", j.optPutCall==null?null:j.optPutCall>1, "defensivo","risk-on"],
+  ];
+  $("#sigtable").innerHTML=`<thead><tr><th>Indicador</th><th>Ahora</th><th>Umbral rojo (flush / fuera)</th><th>Umbral verde (squeeze / farmear)</th><th>Estado</th></tr></thead><tbody>`+
+    rows.map(r=>`<tr><td><b>${r[0]}</b></td><td class="mono">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${ok(r[4],r[5],r[6])}</td></tr>`).join("")+`</tbody>`;
+
+  // ── Instrumentos (gauges) ──
+  const fund8=j.funding!=null?(j.funding*100):null;
   const fundReadC=fund8==null?"var(--muted)":Math.abs(fund8)>0.05?"var(--hot)":"var(--muted)";
   const dvTag=j.dvolPct==null?["",""]:j.dvolPct<0.3?["percentil bajo","var(--accent)"]:j.dvolPct>0.75?["percentil alto","var(--hot)"]:["medio","var(--muted)"];
   const bwTag=j.bbwPct==null?["",""]:j.bbwPct<0.3?["comprimido","var(--accent)"]:["","var(--muted)"];
   const chTag=j.chop==null?["",""]:j.chop>61.8?["rango","var(--bull)"]:j.chop<38.2?["tendencia","var(--bear)"]:["mixto","var(--muted)"];
   const g=[
     gauge("DVOL (vol implícita)", j.dvol!=null?n2(j.dvol,1)+"%":"—", "percentil "+(j.dvolPct!=null?pctS(j.dvolPct):"—")+" · 1 año", dvTag[0],dvTag[1],
-      "Volatilidad IMPLÍCITA: lo que el mercado de opciones (Deribit) espera que se mueva BTC los próximos 30 días. Percentil BAJO = el mercado espera calma → suele venir ANTES de una expansión (muelle cargado). Es el 'implied vol' de tu chart de checkonchain."),
+      "Volatilidad IMPLÍCITA: lo que el mercado de opciones (Deribit) espera que se mueva BTC los próximos 30 días. Percentil BAJO = calma esperada → muelle cargándose (pero NO es trigger por sí solo)."),
     gauge("RV (realizada 30d)", j.rv!=null?n2(j.rv,1)+"%":"—", "lo que el precio hizo de verdad", "","",
-      "Volatilidad REALIZADA: cuánto se ha movido BTC DE VERDAD (30 días, anualizado). Comparada con la implícita te dice si la vol está cara o barata de comprar."),
-    gauge("VRP = DVOL − RV", j.vrp!=null?(j.vrp>=0?"+":"")+n2(j.vrp,1):"—", "&lt;0 vol barata · &gt;6 vol cara", "","",
-      "Variance Risk Premium = la 'prima' de la volatilidad. Normalmente la implícita > realizada (los vendedores de vol cobran prima). NEGATIVO = vol barata → comprar vol (straddle) sale a cuenta. >6 = vol cara → venderla."),
+      "Volatilidad REALIZADA: cuánto se ha movido BTC DE VERDAD (30 días, anualizado)."),
+    gauge("VRP = DVOL − RV", j.vrp!=null?(j.vrp>=0?"+":"")+n2(j.vrp,1):"—", "&lt;0 fuera del LP · &gt;5 farmear", "","",
+      "Variance Risk Premium = la prima de la vol. Es el semáforo de farmeo: positivo = te pagan por estar corto de vol; negativo = la vol se realiza y las opciones amplifican → fuera."),
     gauge("Choppiness (14)", j.chop!=null?n2(j.chop,1):"—", "&gt;61,8 rango · &lt;38,2 tendencia", chTag[0],chTag[1],
-      "Mide si el precio va en RANGO o en TENDENCIA. >61,8 = lateral/comprimido (bueno para LP: cobras fees; y el muelle se carga). <38,2 = tendencia fuerte (malo para LP: impermanent loss; la vol ya explotó). Es tu señal de LP ON/OFF."),
+      "Rango vs tendencia. >61,8 = lateral (LP cobra fees). <38,2 = tendencia (IL). Señal LP ON/OFF, backtesteada en 🔬."),
     gauge("BB width (percentil)", j.bbwPct!=null?pctS(j.bbwPct):"—", "compresión de rango", bwTag[0],bwTag[1],
-      "Ancho de las Bandas de Bollinger vs su propio año. Percentil BAJO = rango MUY estrecho = compresión de volatilidad → históricamente precede a un movimiento grande."),
+      "Ancho de Bandas de Bollinger vs su año. Percentil bajo = compresión → suele preceder un movimiento grande (sin dirección)."),
     gauge("Dist. a 200W MA", j.distTo200w!=null?(j.distTo200w>=0?"+":"")+pctS(j.distTo200w,1):"—", j.ma200w!=null?"200W MA $"+n2(j.ma200w,0)+" · tu zona LP":"—", "","",
-      "Distancia del precio a su media de 200 semanas — el suelo histórico de ciclo de BTC. Es tu zona de re-entrada de LP (~$62k según tu tesis)."),
-    gauge("Funding (8h)", fund8!=null?(fund8>=0?"+":"")+n2(fund8,4)+"%":"—", "positivo = longs pagan", Math.abs(fund8||0)>0.05?"extremo":"",fundReadC,
-      "Coste de mantener un futuro perpetuo largo, cada 8h. POSITIVO = los largos pagan a los cortos (apalancamiento alcista). Extremos = mercado sobre-apalancado → riesgo de squeeze/liquidaciones en cascada = volatilidad. (Bybit)"),
+      "Distancia del precio a la media de 200 semanas — suelo histórico de ciclo y tu zona de re-entrada de LP."),
+    gauge("Funding (último, 8h)", fund8!=null?(fund8>=0?"+":"")+n2(fund8,4)+"%":"—", "positivo = longs pagan", Math.abs(fund8||0)>0.05?"extremo":"",fundReadC,
+      "Coste de estar largo en el perpetuo, cada 8h. La señal del agente usa la media de 3 días anualizada (tabla de arriba)."),
     gauge("Open Interest", j.oi!=null?n2(j.oi,0)+" BTC":"—", "contratos abiertos"+(j.oiChg7d!=null?" · 7d "+(j.oiChg7d>=0?"+":"")+pctS(j.oiChg7d,1):""), j.oiChg7d!=null&&Math.abs(j.oiChg7d)>0.2?"salto":"", "var(--accent)",
-      "Open Interest: contratos de futuros abiertos. SUBIENDO = entra apalancamiento nuevo (más combustible para movimientos y liquidaciones). BAJANDO = se cierran posiciones. (Bybit)"),
+      "Contratos de futuros abiertos (Bybit). El percentil de 180 días de la tabla de arriba dice si está en máximos (frágil) o limpio."),
     gauge("Long/Short", j.longShort!=null?n2(j.longShort,2):"—", "&gt;1 = mayoría largos", "","",
-      "Ratio de cuentas largas vs cortas. >1 = mayoría largos. Los EXTREMOS suelen ser contrarian: si casi todos están largos, quedan pocos compradores → riesgo de giro. (Bybit)"),
+      "Ratio de cuentas largas vs cortas. Extremos = contrarian."),
   ];
   $("#gauges").innerHTML=g.join("");
 
-  // ── Opciones ──
   const skewTag=j.optSkew==null?["",""]:j.optSkew>3?["miedo abajo","var(--bear)"]:j.optSkew<-3?["codicia arriba","var(--bull)"]:["equilibrado","var(--muted)"];
   const pcTag=j.optPutCall==null?["",""]:j.optPutCall>1?["defensivo","var(--bear)"]:["alcista","var(--bull)"];
   const og=[
     gauge("Skew 25Δ (aprox)", j.optSkew!=null?(j.optSkew>=0?"+":"")+n2(j.optSkew,1)+" vol":"—", (j.optSkewTxt||"IV puts − IV calls OTM")+(j.optNearExp?" · exp "+j.optNearExp:""), skewTag[0],skewTag[1],
-      "Diferencia de vol implícita entre puts OTM (~−10%) y calls OTM (~+10%) de la expiry cercana. >0 = las PUTS son más caras = el mercado paga por cubrirse de una CAÍDA (miedo). <0 = calls más caras = codicia al alza. Es el 'risk reversal', clave en el Week On-Chain de Glassnode."),
+      "IV de puts OTM menos IV de calls OTM (expiry cercana). >0 = puts caras = miedo a la caída. La ROTACIÓN rápida put→call es el sello de techo (criterio del agente)."),
     gauge("Put/Call OI", j.optPutCall!=null?n2(j.optPutCall,2):"—", j.optPutCallTxt||"OI puts / OI calls", pcTag[0],pcTag[1],
-      "Open interest en PUTS dividido por el de CALLS. >1 = más apuestas/coberturas bajistas; <1 = más apuestas alcistas. Termómetro de sentimiento direccional en opciones."),
+      "Open interest de puts / calls. >1 = defensivo; 0,4–0,6 = risk-on/mínimos."),
+    gauge("Put/Call volumen 24h", j.optPutCallVol!=null?n2(j.optPutCallVol,2):"—", "flujo del día (confirma o adelanta al OI)", j.optPutCallVol!=null&&j.optPutCallVol>1?"pánico puts":"", "var(--bear)",
+      "Volumen de puts / calls de las últimas 24h. Un spike >1 desde ~0,8 acompaña el estrés (el 10-oct-25 saltó a 1,51)."),
     gauge("Options OI total", j.optOi!=null?n2(j.optOi,0)+" BTC":"—", "contratos de opciones abiertos", "","",
-      "Volumen total de contratos de opciones abiertos en Deribit. Más OI = más actividad y más flujos de cobertura de los market makers (gamma) que pueden AMPLIFICAR o AMORTIGUAR los movimientos de precio."),
+      "OI total de opciones en Deribit. Más OI = más flujos de cobertura de dealers (gamma) que amplifican o amortiguan."),
   ];
   $("#optcards").innerHTML=og.join("");
 
   drawDvol();
   if(j.warnings&&j.warnings.length){ const f=$("#foot-warn"); if(f)f.innerHTML="Avisos: "+j.warnings.map(w=>String(w).replace(/</g,"&lt;")).join(" · "); }
 
-  // Mi tesis (privada) — contextualiza las decisiones de vol/LP
+  // Mi tesis (privada)
   try{
     const rt=await fetch("/api/private?file=thesis",{cache:"no-store"});
     if(rt.ok){

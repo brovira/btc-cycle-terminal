@@ -78,6 +78,20 @@ cuánto/cuándo comprar.
 - **`backtest.html`** — backtester con presets de los 3 (citas reales), risk-metric (variante
   walk-forward propia, NO usa risk.js), modo DCA, builder libre. Deep-link `?strat=<clave>`
   precarga una estrategia (usado por los botones de las fichas). Presets LMEC en eje del techo.
+- **`vol.html`** — "⚡ La señal de Volatilidad", rediseñada **estrategia-first como la señal del
+  ciclo** (petición del usuario): mercado que operamos + asunciones (LP = corto de vol; derivados
+  no dan dirección) → **4 fases** (🟢 limpia/farmear · 🟡 chop/ensanchar · 🔴 longs apiñados/salir ·
+  🔴 VRP<0/fuera · 🟩 squeeze/bias largo) con la fase de HOY resaltada → hero con la señal y los
+  4 triggers como checklist → tabla de señales en vivo contra umbrales → track record del método
+  (8/10 flush, 3/3 squeeze direccional, 1/4 IV-baja) → instrumentos (gauges de antes). La lógica
+  mecánica viene de `agentes/derivados_glassnode/estrategia_leverage.md` §C y la calcula
+  `api/voldata.js` (`out.strat`): funding anualizado MM3d (Bybit/OKX history), OI percentil 180d +
+  flush −15%/3d, racha VRP<0 (DVOL diario − RV30 alineado por fecha), P/C de volumen. La rotación
+  de skew y el nivel on-chain NO son automatizables gratis → marcados como criterio del agente.
+- **`onchain.html`** — además del régimen realized-price: **tracker ⚔️ cruce BMSB × 200W MA**
+  (ancla `#cruce`): cada cruce histórico + retorno a +3/6/12m, gap actual, veredicto honesto
+  (el cruce bajista históricamente = zona de compra ~suelo, no de short). Es donde se vigila la
+  tesis del usuario "cruce → suelo en octubre".
 - **`montecarlo.html`, `derivados.html`** — sin cambios recientes.
 
 ## risk.js (NUEVO esta sesión) — fuente única de la métrica de riesgo

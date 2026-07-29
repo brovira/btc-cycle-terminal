@@ -141,10 +141,10 @@ module.exports = async (req, res) => {
     .filter(p => { if (seen[p[0]]) return false; seen[p[0]] = 1; return true; });
 
   // ── Binance diario (RV, CHOP, BB width) ──
-  let closes = [], highs = [], lows = [];
+  let closes = [], highs = [], lows = [], times = [];
   {
     const k = await klines("1d", 400, "klines", W);
-    if (Array.isArray(k)) { closes = k.map(x => +x[4]); highs = k.map(x => +x[2]); lows = k.map(x => +x[3]); }
+    if (Array.isArray(k)) { closes = k.map(x => +x[4]); highs = k.map(x => +x[2]); lows = k.map(x => +x[3]); times = k.map(x => +x[0]); }
   }
   const price = closes.length ? closes[closes.length - 1] : null;
   out.price = round(price, 0);
@@ -209,7 +209,7 @@ module.exports = async (req, res) => {
   { const bs = await j(`https://www.deribit.com/api/v2/public/get_book_summary_by_currency?currency=BTC&kind=option`, "opt", W);
     const list = bs && bs.result;
     if (Array.isArray(list) && list.length) {
-      let callOi = 0, putOi = 0, spot = null;
+      let callOi = 0, putOi = 0, callVol = 0, putVol = 0, spot = null;
       const byExp = {};
       const monN = { JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, JUN: 6, JUL: 7, AUG: 8, SEP: 9, OCT: 10, NOV: 11, DEC: 12 };
       const expMs = s => { const m = String(s).match(/(\d+)([A-Z]{3})(\d{2})/); if (!m || !monN[m[2]]) return Infinity; return Date.parse(`20${m[3]}-${String(monN[m[2]]).padStart(2, "0")}-${String(+m[1]).padStart(2, "0")}`); };
@@ -218,10 +218,12 @@ module.exports = async (req, res) => {
         if (parts.length < 4) continue;
         const type = parts[3], strike = +parts[2], iv = o.mark_iv != null ? +o.mark_iv : null, oi = o.open_interest != null ? +o.open_interest : 0;
         if (o.underlying_price) spot = +o.underlying_price;
-        if (type === "C") callOi += oi; else if (type === "P") putOi += oi;
+        const vol = o.volume != null ? +o.volume : 0;
+        if (type === "C") { callOi += oi; callVol += vol; } else if (type === "P") { putOi += oi; putVol += vol; }
         (byExp[parts[1]] = byExp[parts[1]] || []).push({ strike, iv, type });
       }
       out.optPutCall = callOi > 0 ? round(putOi / callOi, 2) : null;
+      out.optPutCallVol = callVol > 0 ? round(putVol / callVol, 2) : null; // flujo del día (24h)
       out.optOi = round(callOi + putOi, 0);
       if (spot == null) spot = price;
       if (spot) {
@@ -237,6 +239,66 @@ module.exports = async (req, res) => {
       }
     }
   }
+
+  // ── ESTRATEGIA DEL AGENTE (derivados_glassnode/estrategia_leverage.md §C) ──
+  // Señales mecánicas: funding anualizado MM3d, OI en percentil 180d + detección de flush,
+  // racha de VRP negativo (DVOL diario − RV30 del mismo día), skew y P/C de volumen.
+  const strat = { checks: {} }; const C = strat.checks;
+
+  // funding anualizado, media móvil 3 días (9 periodos de 8h) — Bybit history, fallback OKX
+  { let rates = null;
+    const fh = await j(`https://api.bybit.com/v5/market/funding/history?category=linear&symbol=BTCUSDT&limit=9`, "bybit_fundhist", W);
+    const lst = fh && fh.result && fh.result.list;
+    if (Array.isArray(lst) && lst.length >= 3) rates = lst.map(x => +x.fundingRate).filter(v => !isNaN(v));
+    if (!rates) { const oh = await j(`https://www.okx.com/api/v5/public/funding-rate-history?instId=BTC-USDT-SWAP&limit=9`, "okx_fundhist", W);
+      const od = oh && oh.data; if (Array.isArray(od) && od.length >= 3) rates = od.map(x => +x.fundingRate).filter(v => !isNaN(v)); }
+    if (rates && rates.length >= 3) {
+      const mean = rates.reduce((a, b) => a + b, 0) / rates.length;
+      C.fundingAnn3d = round(mean * 3 * 365 * 100, 2);            // % anualizado
+      C.fundingNeg3d = rates.filter(v => v < 0).length >= Math.ceil(rates.length * 0.7); // negativo sostenido
+    } }
+
+  // OI: percentil 180d + cambios 14/28d + flush reciente (−15% en ≤3d dentro de los últimos 60d)
+  { const oih = await j(`https://api.bybit.com/v5/market/open-interest?category=linear&symbol=BTCUSDT&intervalTime=1d&limit=180`, "bybit_oi180", W);
+    const lst = oih && oih.result && oih.result.list; // del más nuevo al más viejo
+    if (Array.isArray(lst) && lst.length >= 30) {
+      const series = lst.map(x => +x.openInterest).reverse(); // viejo → nuevo
+      const nowOi = series[series.length - 1];
+      C.oiPct180 = round(pctile(series, nowOi), 2);
+      const at = d => series.length > d ? series[series.length - 1 - d] : null;
+      C.oiChg14d = at(14) ? round(nowOi / at(14) - 1, 3) : null;
+      C.oiChg28d = at(28) ? round(nowOi / at(28) - 1, 3) : null;
+      let flush = null;
+      for (let i = Math.max(3, series.length - 60); i < series.length; i++)
+        for (let b = 1; b <= 3; b++) { const prev = series[i - b]; if (prev > 0 && series[i] / prev - 1 <= -0.15) { flush = i; break; } }
+      C.flushRecent = flush != null;
+      C.flushDaysAgo = flush != null ? series.length - 1 - flush : null;
+    } }
+
+  // Racha de VRP negativo: DVOL de cada día − RV30 calculada en ese día (alineado por fecha)
+  { const dvolByDate = {}; for (const p of dvolSeries) dvolByDate[new Date(p[0]).toISOString().slice(0, 10)] = p[1];
+    let run = 0;
+    if (closes.length > 40 && times.length === closes.length) {
+      for (let i = closes.length - 1; i >= 31 && run === (closes.length - 1 - i); i--) {
+        const dt = new Date(times[i]).toISOString().slice(0, 10); const dvv = dvolByDate[dt];
+        if (dvv == null) break;
+        const rets = []; for (let k2 = i - 29; k2 <= i; k2++) rets.push(Math.log(closes[k2] / closes[k2 - 1]));
+        const sd = stdev(rets); if (sd == null) break;
+        if (dvv - sd * Math.sqrt(365) * 100 < 0) run++; else break;
+      }
+    }
+    C.vrpNegDays = run; }
+
+  // Evaluación de triggers (umbral = estrategia_leverage.md §C; skew-rotation NO es automatizable
+  // con datos gratis → esa pata queda como "criterio del agente" y no bloquea la señal)
+  const F = C.fundingAnn3d, OIP = C.oiPct180, VRP = out.vrp, SK = out.optSkew, PCV = out.optPutCallVol;
+  const exitCrowded = (F != null && F >= 8) && (OIP != null && OIP >= 0.90);
+  const exitVolReal = (C.vrpNegDays >= 2) || (SK != null && SK > 15 && PCV != null && PCV > 1.0);
+  const squeezeSetup = (F != null && F < 0 && C.fundingNeg3d === true) && ((C.oiChg14d != null && C.oiChg14d >= 0.10) || (C.oiChg28d != null && C.oiChg28d >= 0.10));
+  const reentryClean = C.flushRecent === true && (OIP != null && OIP <= 0.40) && (F != null && F <= 11) && (VRP != null && VRP >= 5) && (SK != null && SK >= 0 && SK <= 12);
+  C.exitCrowded = exitCrowded; C.exitVolReal = exitVolReal; C.squeezeSetup = squeezeSetup; C.reentryClean = reentryClean;
+  strat.phase = exitCrowded ? "flush" : exitVolReal ? "realizing" : squeezeSetup ? "squeeze" : reentryClean ? "clean" : "chop";
+  out.strat = strat;
 
   // ── Régimen + lecturas ──
   const dv = out.dvolPct, bw = out.bbwPct, ch = out.chop;
