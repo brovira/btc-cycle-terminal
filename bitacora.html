@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>📓 Bitácora · Operaciones</title>
+<link rel="stylesheet" href="dashboard.css">
+<style>
+  :root{
+    --bg:#0d1420;--bg2:#101a28;--panel:#152131;--panel2:#1b2a3d;--line:#25384f;
+    --ink:#e8eef7;--ink2:#aebccf;--muted:#7f92ab;--accent:#e8a13a;
+    --bull:#2fc39b;--bear:#f2606d;--accum:#3fa9f5;--hot:#f2a33f;--alt:#b48ef2;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:22px 16px 60px}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+  .kicker{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  h1{margin:6px 0 2px;font-size:26px;font-weight:850;letter-spacing:-.02em}
+  .price-now{font-family:var(--mono);font-size:13.5px;color:var(--ink2);margin-top:4px}.price-now .big{color:var(--ink);font-weight:700}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .btn{background:var(--panel);border:1px solid var(--line);color:var(--ink2);font:inherit;font-size:13px;font-weight:650;padding:7px 12px;border-radius:9px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+  .btn:hover{border-color:var(--accent);color:var(--ink)} .btn.pri{background:var(--accent);color:#161006;border-color:var(--accent)} .btn.on{border-color:var(--accent);color:var(--accent)}
+  /* tiles */
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:20px}
+  .tile{border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:13px 15px}
+  .tile .t{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .tile .v{font-size:22px;font-weight:800;margin-top:5px;font-family:var(--mono)}
+  .tile .s{font-size:11.5px;color:var(--muted);margin-top:2px}
+  /* section head */
+  .sec-head{display:flex;align-items:center;gap:12px;margin:30px 2px 14px}
+  .sec-head h2{margin:0;font-size:14px;font-weight:800}.sec-head .rule{flex:1;height:1px;background:var(--line)}
+  .sec-head .tag{font-size:11.5px;color:var(--muted);font-family:var(--mono)}
+  /* filters */
+  .filters{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 14px}
+  .fpill{background:transparent;border:1px solid var(--line);color:var(--muted);font:inherit;font-size:12px;font-weight:650;padding:5px 11px;border-radius:999px;cursor:pointer}
+  .fpill.on{color:var(--ink);border-color:var(--accent);background:color-mix(in oklab,var(--accent) 12%,transparent)}
+  /* table */
+  .card{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden}
+  .tbl{width:100%;border-collapse:collapse;font-size:13px}
+  .tbl th{text-align:left;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:11px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+  .tbl td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl tr.row:hover{background:var(--panel2);cursor:pointer}
+  .mono{font-family:var(--mono)}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:750;padding:3px 9px;border-radius:999px;border:1px solid var(--ac,var(--line));color:var(--ac,var(--ink2));white-space:nowrap}
+  .chip .d{width:7px;height:7px;border-radius:50%;background:var(--ac,var(--muted))}
+  .why{color:var(--ink2);font-size:12.5px;line-height:1.45;max-width:340px}
+  .why b{color:var(--ink)}
+  .src{font-size:11px;color:var(--muted);font-family:var(--mono)}
+  .pos{color:var(--bull)}.neg{color:var(--bear)}
+  .empty{padding:36px 16px;text-align:center;color:var(--muted);font-size:14px;line-height:1.6}
+  /* modal */
+  .overlay{position:fixed;inset:0;background:rgba(4,8,14,.66);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:50;padding:18px}
+  .overlay.open{display:flex}
+  .modal{background:var(--panel);border:1px solid var(--line);border-radius:16px;max-width:560px;width:100%;max-height:90vh;overflow:auto;padding:20px 22px;box-shadow:0 30px 80px -30px #000}
+  .modal h3{margin:0 0 4px;font-size:18px}
+  .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  .fld{display:flex;flex-direction:column;gap:4px}.fld.full{grid-column:1/-1}
+  .fld label{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}
+  .fld input,.fld select,.fld textarea{font:inherit;font-size:13.5px;color:var(--ink);background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:8px 10px}
+  .fld textarea{resize:vertical;min-height:56px}
+  .mact{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+  footer{margin-top:30px;color:var(--muted);font-size:12px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px}
+  footer b{color:var(--ink2)}
+  @media(max-width:620px){.fgrid{grid-template-columns:1fr}.why{max-width:none}}
+</style>
+</head>
+<body class="dashboard-page page-bitacora">
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="kicker">Operador · Registro</div>
+      <h1><span class="title-icon">📓</span> Bitácora</h1>
+      <div class="price-now">BTC <span class="big mono" id="price">—</span> <span id="chg"></span> · <span id="phaseNow" class="src">fase —</span></div>
+    </div>
+    <div class="controls">
+      <a class="btn" href="index.html">← Panel</a>
+      <a class="btn" href="decision.html">🧭 Hoy</a>
+      <a class="btn on" href="bitacora.html">📓 Bitácora</a>
+      <a class="btn" href="lmec.html">🎯 LMEC</a>
+      <a class="btn" href="cowen.html">📊 Cowen</a>
+      <button class="btn pri" id="addBtn">➕ Nueva</button>
+      <button class="btn" id="expBtn">⭳ Exportar</button>
+      <button class="btn" id="impBtn">⭱ Importar</button>
+      <input type="file" id="impFile" accept="application/json" style="display:none">
+    </div>
+  </header>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="sec-head"><h2>Operaciones</h2><div class="rule"></div><span class="tag" id="count">0</span></div>
+  <div class="filters" id="filters"></div>
+  <div class="card"><table class="tbl" id="tbl"></table></div>
+
+  <footer>
+    <b>Bitácora del operador.</b> Cada movimiento con su <b>rationale y tesis</b>, atado a la <b>señal</b> que lo disparó y a la <b>fase</b> del ciclo. El resultado se puntúa solo por el precio de BTC desde la entrada. Se guarda en <b>tu navegador</b> (localStorage) — privado; usa Exportar/Importar para respaldar o mover. <b>Uso personal — no es asesoramiento financiero.</b>
+  </footer>
+</div>
+
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const KEY="btc-bitacora-v1";
+let LOG=[]; let FILTER="all"; let LIVE=null;
+
+// acciones: clave → {etiqueta, color, signo(+compra/-venta para grading)}
+const ACC={
+  compra:   {n:"Compra",     c:"var(--bull)",  dir:1},
+  venta:    {n:"Venta",      c:"var(--bear)",  dir:-1},
+  abrir_lp: {n:"Abrir LP",   c:"var(--accum)", dir:0},
+  cerrar_lp:{n:"Cerrar LP",  c:"var(--muted)", dir:0},
+  loop:     {n:"Loop (Aave)",c:"var(--accent)",dir:0},
+  short:    {n:"Short",      c:"var(--bear)",  dir:-1},
+  vol:      {n:"Vol / táctico",c:"var(--hot)", dir:0},
+  otro:     {n:"Otro",       c:"var(--muted)", dir:0},
+};
+const FASES=["acumulación","suelo","holdear","distribución","techo","bear"];
+const SENALES=["LMEC","Cowen","Patrón","Derivados/Vol","Edge","Propio"];
+
+function load(){try{LOG=JSON.parse(localStorage.getItem(KEY)||"[]");}catch(e){LOG=[];}}
+function save(){localStorage.setItem(KEY,JSON.stringify(LOG));}
+const esc=s=>(s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt$=v=>v==null||isNaN(v)?"—":"$"+Number(v).toLocaleString("en-US",{maximumFractionDigits:0});
+const fmtImp=v=>v==null||v===""||isNaN(v)?"—":"€"+Number(v).toLocaleString("en-US",{maximumFractionDigits:0});
+
+// resultado: para compra/venta con precio, % de BTC desde la entrada (dir da el signo del acierto)
+function grade(e){
+  if(!LIVE||!e.precio||!ACC[e.accion]||ACC[e.accion].dir===0)return null;
+  const move=(LIVE/e.precio-1);            // variación de BTC desde la entrada
+  const acierto=move*ACC[e.accion].dir;    // comprar antes de subir / vender antes de bajar = +
+  return {move, acierto};
+}
+
+function renderTiles(){
+  const n=LOG.length;
+  const abiertas=LOG.filter(e=>e.accion==="abrir_lp"||e.accion==="loop").length - LOG.filter(e=>e.accion==="cerrar_lp").length;
+  const cap=LOG.filter(e=>ACC[e.accion]&&ACC[e.accion].dir>=0).reduce((s,e)=>s+(+e.importe||0),0);
+  const ultima=LOG.length?[...LOG].sort((a,b)=>a.fecha<b.fecha?1:-1)[0]:null;
+  const graded=LOG.map(grade).filter(Boolean);
+  const hr=graded.length?Math.round(100*graded.filter(g=>g.acierto>0).length/graded.length):null;
+  const tiles=[
+    {t:"Operaciones",v:n,s:n===1?"1 registrada":"registradas"},
+    {t:"Posiciones abiertas",v:Math.max(0,abiertas),s:"LP / loop"},
+    {t:"Capital desplegado",v:"€"+Math.round(cap).toLocaleString("en-US"),s:"compras + LP"},
+    {t:"Última",v:ultima?ACC[ultima.accion].n:"—",s:ultima?ultima.fecha:"sin registros"},
+    {t:"Acierto",v:hr==null?"—":hr+"%",s:"compra/venta vs precio"},
+  ];
+  $("#tiles").innerHTML=tiles.map(t=>`<div class="tile"><div class="t">${t.t}</div><div class="v">${t.v}</div><div class="s">${esc(t.s)}</div></div>`).join("");
+}
+
+function renderFilters(){
+  const opts=[["all","Todas"],...Object.keys(ACC).map(k=>[k,ACC[k].n])];
+  $("#filters").innerHTML=opts.map(([k,n])=>`<button class="fpill ${k===FILTER?"on":""}" data-f="${k}">${n}</button>`).join("");
+  $$("#filters .fpill").forEach(b=>b.addEventListener("click",()=>{FILTER=b.dataset.f;renderFilters();renderTable();}));
+}
+
+function renderTable(){
+  const rows=[...LOG].filter(e=>FILTER==="all"||e.accion===FILTER).sort((a,b)=>a.fecha<b.fecha?1:-1);
+  $("#count").textContent=LOG.length+(LOG.length===1?" entrada":" entradas");
+  const head=`<thead><tr><th>Fecha</th><th>Acción</th><th>Importe · precio</th><th>Fase · señal</th><th>Rationale / tesis</th><th>Resultado</th></tr></thead>`;
+  if(!rows.length){$("#tbl").innerHTML=head+`<tbody><tr><td colspan="6"><div class="empty">Sin operaciones${FILTER!=="all"?" de este tipo":""} todavía.<br>Pulsa <b>➕ Nueva</b> para registrar tu primer movimiento con su porqué.</div></td></tr></tbody>`;return;}
+  $("#tbl").innerHTML=head+"<tbody>"+rows.map(e=>{
+    const a=ACC[e.accion]||ACC.otro; const g=grade(e);
+    const res=g?`<span class="${g.acierto>=0?"pos":"neg"} mono" title="${e.accion==="venta"||e.accion==="short"?"lo que evitó al vender":"retorno de BTC desde la compra"}">${g.acierto>=0?"✓ ":"✗ "}${(g.acierto*100>=0?"+":"")+(g.acierto*100).toFixed(1)}%</span>`:(e.resultado?esc(e.resultado):"—");
+    return `<tr class="row" data-id="${e.id}">
+      <td class="mono">${esc(e.fecha)}</td>
+      <td><span class="chip" style="--ac:${a.c}"><span class="d"></span>${a.n}</span>${e.activo?` <span class="src">${esc(e.activo)}</span>`:""}</td>
+      <td class="mono">${fmtImp(e.importe)}${e.precio?` · <span style="color:var(--muted)">${fmt$(e.precio)}</span>`:""}</td>
+      <td>${e.fase?`<span class="src">${esc(e.fase)}</span>`:"—"}${e.senal?`<br><span class="chip" style="--ac:var(--accum)"><span class="d"></span>${esc(e.senal)}</span>`:""}</td>
+      <td><div class="why">${e.rationale?`<b>${esc(e.rationale)}</b>`:""}${e.tesis?`<br>${esc(e.tesis)}`:""}${!e.rationale&&!e.tesis?"—":""}</div></td>
+      <td>${res}</td></tr>`;
+  }).join("")+"</tbody>";
+  $$("#tbl .row").forEach(r=>r.addEventListener("click",()=>openForm(r.dataset.id)));
+}
+
+function render(){renderTiles();renderFilters();renderTable();}
+
+// ---- modal (nueva / editar) ----
+const ov=$("#overlay"),md=$("#modal");
+function closeModal(){ov.classList.remove("open");md.innerHTML="";}
+ov.addEventListener("click",e=>{if(e.target===ov)closeModal();});
+function openForm(id){
+  const e=id?LOG.find(x=>x.id===id):null;
+  const v=(k,d="")=>e&&e[k]!=null?e[k]:d;
+  const today=new Date().toISOString().slice(0,10);
+  md.innerHTML=`<h3>${e?"Editar operación":"Nueva operación"}</h3>
+    <div class="src">Rellena lo que aplique — solo la fecha y la acción son obligatorias.</div>
+    <div class="fgrid">
+      <div class="fld"><label>Fecha</label><input type="date" id="f_fecha" value="${v("fecha",today)}"></div>
+      <div class="fld"><label>Acción</label><select id="f_accion">${Object.keys(ACC).map(k=>`<option value="${k}" ${v("accion","compra")===k?"selected":""}>${ACC[k].n}</option>`).join("")}</select></div>
+      <div class="fld"><label>Activo</label><input id="f_activo" placeholder="BTC" value="${esc(v("activo","BTC"))}"></div>
+      <div class="fld"><label>Importe (€)</label><input id="f_importe" type="number" step="any" placeholder="1000" value="${esc(v("importe"))}"></div>
+      <div class="fld"><label>Precio BTC ($)</label><input id="f_precio" type="number" step="any" placeholder="${LIVE?Math.round(LIVE):"65000"}" value="${esc(v("precio"))}"></div>
+      <div class="fld"><label>Fase del ciclo</label><input id="f_fase" list="fases" placeholder="acumulación" value="${esc(v("fase"))}"><datalist id="fases">${FASES.map(f=>`<option value="${f}">`).join("")}</datalist></div>
+      <div class="fld full"><label>Señal que lo disparó</label><input id="f_senal" list="senales" placeholder="LMEC / Cowen / Patrón / Derivados / Edge / Propio" value="${esc(v("senal"))}"><datalist id="senales">${SENALES.map(s=>`<option value="${s}">`).join("")}</datalist></div>
+      <div class="fld full"><label>🧠 Rationale — por qué lo hago</label><textarea id="f_rationale" placeholder="Qué me hizo actuar hoy">${esc(v("rationale"))}</textarea></div>
+      <div class="fld full"><label>📌 Tesis — qué espero</label><textarea id="f_tesis" placeholder="Mi tesis / objetivo de esta operación">${esc(v("tesis"))}</textarea></div>
+    </div>
+    <div class="mact">
+      ${e?'<button class="btn" id="f_del" style="border-color:var(--bear);color:var(--bear);margin-right:auto">🗑 Borrar</button>':""}
+      <button class="btn" id="f_cancel">Cancelar</button>
+      <button class="btn pri" id="f_save">${e?"Guardar":"Añadir"}</button>
+    </div>`;
+  ov.classList.add("open");
+  $("#f_cancel").addEventListener("click",closeModal);
+  if(e)$("#f_del").addEventListener("click",()=>{LOG=LOG.filter(x=>x.id!==id);save();render();closeModal();});
+  $("#f_save").addEventListener("click",()=>{
+    const rec={
+      id:id||("b"+Date.now()),
+      fecha:$("#f_fecha").value||today,
+      accion:$("#f_accion").value,
+      activo:$("#f_activo").value.trim(),
+      importe:$("#f_importe").value,
+      precio:$("#f_precio").value,
+      fase:$("#f_fase").value.trim(),
+      senal:$("#f_senal").value.trim(),
+      rationale:$("#f_rationale").value.trim(),
+      tesis:$("#f_tesis").value.trim(),
+      resultado:e?e.resultado:"",
+    };
+    if(id)LOG=LOG.map(x=>x.id===id?rec:x); else LOG.push(rec);
+    save();render();closeModal();
+  });
+}
+$("#addBtn").addEventListener("click",()=>openForm(null));
+
+// export / import
+$("#expBtn").addEventListener("click",()=>{const b=new Blob([JSON.stringify(LOG,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="bitacora.json";a.click();});
+$("#impBtn").addEventListener("click",()=>$("#impFile").click());
+$("#impFile").addEventListener("change",ev=>{const f=ev.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const arr=JSON.parse(rd.result);if(Array.isArray(arr)){LOG=arr;save();render();}}catch(e){alert("Archivo no válido");}};rd.readAsText(f);});
+
+// precio en vivo (para el grading y el placeholder de precio)
+(async function(){try{const r=await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true");const d=(await r.json()).bitcoin;LIVE=d.usd;
+  const up=(d.usd_24h_change||0)>=0;
+  $("#price").textContent="$"+Math.round(LIVE).toLocaleString("en-US");
+  $("#chg").innerHTML=`<span style="color:${up?"var(--bull)":"var(--bear)"}">${up?"▲":"▼"} ${Math.abs(d.usd_24h_change||0).toFixed(1)}%</span>`;
+  render();
+}catch(e){}})();
+
+load();render();
+</script>
+</body>
+</html>
