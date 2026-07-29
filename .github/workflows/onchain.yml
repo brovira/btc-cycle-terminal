@@ -1,0 +1,42 @@
+name: Ingesta on-chain (BGeometrics)
+
+on:
+  schedule:
+    # Diario 07:00 UTC. Baja MVRV-Z, realized price y SOPR (histórico completo)
+    # y los commitea a data/onchain/. Frugal: ~3 peticiones (límite gratis ~15/día).
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+    inputs:
+      probe:
+        description: "Modo prueba (solo 1 métrica, imprime la respuesta cruda)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: onchain
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Ingesta on-chain
+        env:
+          BGAPI_TOKEN: ${{ secrets.BGAPI_TOKEN }}
+        run: |
+          python ingesta/fetch_onchain.py ${{ inputs.probe && '--probe' || '' }}
+      - name: Commit de datos on-chain
+        if: ${{ !inputs.probe }}
+        run: |
+          git config user.name "onchain-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/onchain/
+          git diff --cached --quiet || git commit -m "onchain: ingesta diaria [skip ci]"
+          git push
