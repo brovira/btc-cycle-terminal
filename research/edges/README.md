@@ -44,12 +44,16 @@ Debajo del bloque: lectura, umbrales reales observados, y notas.
 |---|---|---|---|
 | **Precio OHLC** (Binance klines → CoinGecko → Coin Metrics) | **free** | close semanal/diario BTC desde 2015+ | ✅ en uso (loaders de `btc-plan.html`, `backtest.html`) |
 | **Coin Metrics Community** | **free** | MVRV, realized price, algunas on-chain agregadas | ✅ disponible, integración parcial |
+| **bgeometrics** (`charts.bgeometrics.com`) | **free** (por confirmar) | on-chain: MVRV, realized price, SOPR, etc. — API "free" anunciada | 🟡 **verificar desde tu IP** (el proxy datacenter la bloquea con 403) |
 | **Deribit public API** | **free** | DVOL, IV ATM, 25d skew, funding, OI (BTC/ETH) | ✅ disponible; **historial limitado** (no cubre 2021) |
-| **Suscripción on-chain + derivados** (Glassnode / CryptoQuant) | **paid** | STH cost basis, SSR (sell-side risk ratio), true market mean, GEX/dealer gamma, VRP con historia larga | 🟡 **PENDIENTE de contratar** (el usuario la va a pagar) |
+| **Bitbo Pro++** (`charts.bitbo.io/api`) | **paid barato** | **STH realized price (=STH cost basis), STH-MVRV, SOPR, STH-SOPR, MVRV-Z, supply in profit, NUPL, RHODL/Rainbow…** API JSON/CSV, 150k req/mes, 5 req/60s | 🎯 **CANDIDATO recomendado** (cubre el "DÓNDE" que falta, 20× más barato que Glassnode Pro) |
+| **Glassnode Professional** | **paid caro** (~$800/mes) | los 5 "trading models" empaquetados + serie completa | ❌ **NO recomendado** (backtests in-sample de escaparate; replicamos la lógica nosotros con Bitbo) |
 
-> Mientras no haya suscripción, todo lo marcado `#paid` / `#pendiente-suscripcion` se documenta pero
-> **no se backtestea** (o solo con proxy free y aviso explícito). Al contratar, revisar los
-> `backtesteable_ya: no → sí` de `indicadores.md`.
+> **Decisión de fuentes (jul-2026):** para el "DÓNDE" on-chain (STH cost basis, SOPR, MVRV-Z, supply
+> in profit) el camino es **Bitbo Pro++** (barato) o **bgeometrics** (free, a verificar) — **NO** Glassnode
+> Professional. Con esos datos **replicamos** los modelos de momentum/confluencia de Glassnode con NUESTRO
+> backtest walk-forward honesto, en vez de pagar 20× por sus backtests in-sample. Mientras no haya fuente,
+> lo `#paid`/`#pendiente-suscripcion` se documenta pero no se backtestea.
 
 ## 🔗 Conocimiento ya existente que alimenta este catálogo
 

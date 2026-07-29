@@ -159,14 +159,14 @@ Glassnode lo usa como nivel de soporte/coste base agregado. Free vía Coin Metri
 - **id:** sth-cost-basis
 - **tipo:** onchain
 - **mide:** coste base de los holders de corto plazo (<155 días) = soporte/resistencia clave del ciclo
-- **fuente_dato:** paid → Glassnode/CryptoQuant (Coin Metrics no lo da limpio)
-- **tenemos_datos:** no
-- **backtesteable_ya:** no → **requiere suscripción** #no-backtesteable #onchain #paid #pendiente-suscripcion
+- **fuente_dato:** paid-barato → **Bitbo Pro++** endpoint "STH Realized Price"; o bgeometrics (free, verificar). NO hace falta Glassnode.
+- **tenemos_datos:** no (disponible al contratar Bitbo)
+- **backtesteable_ya:** no aún → **sí en cuanto haya Bitbo/bgeometrics** #onchain #paid #pendiente-suscripcion
 - **backtest_en:** —
-- **usado_por:** framework Glassnode (el "DÓNDE" que cruza con derivados)
+- **usado_por:** framework Glassnode (el "DÓNDE" que cruza con derivados), modelos de momentum on-chain
 - **origen:** agentes/derivados_glassnode/framework.md §C5
 
-**El nivel más importante del método Glassnode.** Reclaim del STH-CB = alcista; rechazo = techo local (cluster $114-117k oct-25).
+**El nivel más importante del método Glassnode = mi #1 prioridad de dato.** Reclaim del STH-CB = alcista; rechazo = techo local (cluster $114-117k oct-25). **Bitbo lo sirve barato** ("STH Realized Price").
 Se cruza SIEMPRE con la lente de derivados. **Prioridad #1 al contratar la suscripción.**
 
 ### SSR — Sell-Side Risk Ratio
@@ -205,6 +205,72 @@ Valores bajos = equilibrio/poca presión (los holders no realizan) → suele mar
 - **origen:** Coin Metrics
 
 >3.7 histórico = zona de techo; <1 = por debajo de coste base = suelo profundo. Free.
+
+### STH-MVRV (MVRV de holders de corto plazo, "MvrvLess155")
+- **id:** sth-mvrv
+- **tipo:** onchain
+- **mide:** precio / coste base de los STH (<155d) = profit/loss del dinero reciente
+- **fuente_dato:** paid-barato → **Bitbo** ("STH MVRV"); Glassnode `market.MvrvLess155`
+- **tenemos_datos:** no
+- **backtesteable_ya:** no aún → sí con Bitbo #onchain #paid #pendiente-suscripcion
+- **usado_por:** Glassnode "Tracking Market Momentum" (condición de profitability)
+- **origen:** dashboard Glassnode On-chain Trading Models
+
+>1 = STH en beneficio (momentum); <1 = STH en pérdida (capitulación/suelo). Núcleo del filtro de régimen on-chain.
+
+### SOPR / aSOPR / STH-SOPR
+- **id:** sopr
+- **tipo:** onchain
+- **mide:** ratio de beneficio de las monedas gastadas (spent output profit ratio)
+- **fuente_dato:** paid-barato → **Bitbo** ("SOPR", "STH SOPR"); Glassnode `indicators.Sopr/SoprAdjusted`
+- **tenemos_datos:** no
+- **backtesteable_ya:** no aún → sí con Bitbo #onchain #paid #pendiente-suscripcion
+- **usado_por:** Glassnode momentum + confluence (spending behavior)
+- **origen:** dashboard Glassnode On-chain Trading Models
+
+>1 = se vende con beneficio (mercado sano/alcista); cruces por debajo de 1 = pérdida realizada (miedo). El momentum de SOPR marca inflexiones.
+
+### Realized Profit/Loss Ratio (Net Realized P/L)
+- **id:** realized-pl
+- **tipo:** onchain
+- **mide:** beneficio realizado vs pérdida realizada en cadena
+- **fuente_dato:** paid-barato → Bitbo / Glassnode `indicators.NetRealizedProfitLoss`
+- **tenemos_datos:** no
+- **backtesteable_ya:** no aún #onchain #paid #pendiente-suscripcion
+- **usado_por:** Glassnode momentum + confluence
+- **origen:** dashboard Glassnode On-chain Trading Models
+
+### Supply in Profit
+- **id:** supply-in-profit
+- **tipo:** onchain
+- **mide:** % de la oferta cuyo último movimiento fue a un precio menor que el actual
+- **fuente_dato:** paid-barato → **Bitbo** ("Supply in Profit"); Glassnode `supply.ProfitSum`
+- **tenemos_datos:** no
+- **backtesteable_ya:** no aún → sí con Bitbo #onchain #paid #pendiente-suscripcion
+- **usado_por:** Glassnode momentum + confluence (profitability + distribution)
+- **origen:** dashboard Glassnode On-chain Trading Models
+
+### RHODL Ratio
+- **id:** rhodl
+- **tipo:** onchain
+- **mide:** distribución de riqueza entre monedas nuevas (1w) y viejas (1-2y) — techos/suelos de ciclo
+- **fuente_dato:** paid-barato → **Bitbo** (Rainbow/RHODL family); Glassnode `indicators.RhodlRatio`
+- **tenemos_datos:** no
+- **backtesteable_ya:** no aún #onchain #paid #pendiente-suscripcion
+- **usado_por:** Glassnode confluence (wealth distribution)
+- **origen:** dashboard Glassnode On-chain Trading Models
+
+### Otras del confluence (New Addresses, Miner fee revenue, AVIV, SLRV)
+- **id:** onchain-misc
+- **tipo:** onchain
+- **mide:** utilización de red (nuevas direcciones, fees de mineros) y distribución de valor (AVIV, SLRV ribbons)
+- **fuente_dato:** mixto → New Addresses / Miner revenue = **free-ish** (Coin Metrics `AdrActCnt`, fees); AVIV/SLRV = Bitbo/Glassnode
+- **tenemos_datos:** parcial (las de red, free)
+- **backtesteable_ya:** parcial #onchain #free #paid
+- **usado_por:** Glassnode "Tracking Market Momentum" + confluence
+- **origen:** dashboard Glassnode On-chain Trading Models
+
+Nuevas direcciones + fees de mineros al alza = adopción/utilización creciente (momentum de red). AVIV/SLRV = ribbons de transferencia de riqueza viejo↔nuevo.
 
 ---
 

@@ -75,6 +75,25 @@ El LP concentrado = corto de gamma/vol. **Semáforos:** VRP+ y leverage limpio y
 
 Motor de confluencia por intervalos (inclusión-exclusión): las 3 señales votan ventana de compra/venta; el consenso (2+ de acuerdo) es la señal operativa. Backtesteado 2015→hoy en btc-plan.html.
 
+## 7. On-chain momentum régimen (modelos Glassnode — replicados)
+- **id:** onchain-momentum
+- **indicadores:** sth-mvrv + sopr + realized-pl + supply-in-profit + rhodl + sma200(dia) + realized-price + onchain-misc
+- **fuente_dato:** paid-barato (Bitbo) o free-parcial (200D + realized price)
+- **backtesteable_ya:** parcial → **el subconjunto free ya**; completo con Bitbo #pendiente-suscripcion
+- **backtest_en:** — (a construir con NUESTRO walk-forward, no el de Glassnode)
+- **origen:** dashboard Glassnode "On-chain Trading Models" (pegado por el usuario, jul-2026)
+
+Familia de osciladores de Glassnode: **cuenta cuántas condiciones on-chain son alcistas → dentro de BTC si ≥umbral, a cash si menos.** 5 variantes (todas la misma idea):
+1. **Tracking Market Momentum** — 4-de-8 condiciones (actividad, profitability STH-MVRV/AVIV, spending SOPR/realized-P/L, distribución SLRV). Dentro si ≥4.
+2. **STH Realized P/L momentum** — solo STH: dentro si el oscilador de profit/loss realizado es positivo.
+3. **Confluence Summary ("recovering bear")** — 3-de-4 bloques (precio>200D & >realized · red · profitability aSOPR/realized-P/L · distribución RHODL/supply-in-profit). Dentro si ≥3.
+4. **ML Sharpe** — caja negra, plan Enterprise. ❌ descartado (no auditable).
+5. **ETH Tracking Momentum** — la variante 1 para ETH (4-de-6).
+
+> ⚠️ **AVISO (navaja de Occam + honestidad):** son **market-timing long-only** (venden a cash en bear) → **chocan con "DCA + no vender el core"**. NO adoptar literalmente. **Uso correcto:** UN régimen on-chain como **filtro** (¿DCA agresivo o ligero? ¿farmeo LP o me salgo?), no como sistema que vende BTC. Y sus backtests ($1k desde 2014, in-sample, long-only en un bull secular) son **de escaparate** → cuando tengamos los datos, **rehacemos el backtest walk-forward** nosotros antes de creerlo.
+>
+> **Subconjunto GRATIS y backtesteable YA:** de la variante 3, `precio > SMA200D` **Y** `precio > realized price` (ambos free) ≈ el 70% del valor con 2 métricas. Primer experimento a construir sin pagar nada.
+
 ---
 
 ## 🔭 Qué podemos backtestear YA (con datos free) vs qué espera a la suscripción
@@ -87,7 +106,10 @@ Motor de confluencia por intervalos (inclusión-exclusión): las 3 señales vota
 | Confluencia 3 | ✅ completo | — |
 | LP short-vol | 🟡 CHOP ✅; **añadir VRP (free)** | GEX/dealer gamma, leverage-ratio limpio |
 | Leverage flush/squeeze | 🟡 ventana reciente con funding+OI+skew de Binance/Deribit | serie larga (2021), STH cost basis para el cruce on-chain, leverage-ratio |
+| On-chain momentum (Glassnode) | 🟡 subconjunto free: precio>200D & >realized | STH-MVRV, SOPR, supply-in-profit, RHODL (= **Bitbo**, barato) |
 
-**Prioridad al contratar la suscripción** (orden): (1) **STH cost basis** — el "DÓNDE" que le falta a todo el método derivados; (2) leverage-ratio + GEX — completa flush/squeeze y LP; (3) SSR / true market mean — niveles de suelo on-chain; (4) serie histórica larga de derivados para backtest completo.
+**Fuente recomendada (NO Glassnode Pro):** **Bitbo Pro++** (barato, 150k req/mes) da STH cost basis, STH-MVRV, SOPR, MVRV-Z, supply-in-profit → cubre casi todo el on-chain de un tirón. Alternativa free por verificar: **bgeometrics**. Ver README §fuentes.
 
-**Siguiente backtest construible sin pagar nada:** integrar Coin Metrics (MVRV-z, realized) + VRP de Deribit → cierra 3 casillas 🟡 → verde parcial. Ver `indicadores.md` #pendiente-integracion.
+**Prioridad de dato** (orden): (1) **STH cost basis / STH-MVRV** — el "DÓNDE" que le falta a todo (Bitbo); (2) SOPR + supply-in-profit — completan el régimen on-chain; (3) leverage-ratio + GEX — flush/squeeze y LP; (4) serie histórica larga de derivados.
+
+**Siguiente backtest construible SIN pagar nada:** (a) `precio>SMA200D & >realized price` (Coin Metrics) = régimen on-chain minimalista; (b) VRP de Deribit (IV−RV) = semáforo LP. Cierran 3 casillas 🟡 → verde parcial. Ver `indicadores.md` #pendiente-integracion.
