@@ -19,7 +19,8 @@ literales y sus propias advertencias.
 >
 > Consecuencia: el método aquí descrito es **sólido para 2023-2026** (que es además el método que usan HOY,
 > mucho más formalizado) y **flojo en el bear de 2022** — justo el análogo del régimen actual. Para cerrar
-> ese hueco hay que re-ingestar 2022 (ver `README.md §Re-ingesta`).
+> ese hueco **se intentó re-ingestar y no se pudo** (0 de 56 recuperados: están cerradas a
+> miembros). La cobertura de 2022 son los vídeos. Ver `README.md`.
 
 ---
 

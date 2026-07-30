@@ -53,7 +53,21 @@ SOPR (17) · true market mean (9).
 2023→2026 está completo. El método actual (la escalera de cost basis) es de 2023+, así que el framework es
 válido — pero el **bear de 2022**, que es el análogo del régimen actual, está mal cubierto.
 
-### Re-ingesta de 2022 (pendiente, requiere red)
+### Re-ingesta de 2022 — ❌ PROBADA Y DESCARTADA (30-jul-2026)
+
+**Resultado: 0 recuperados de 56.** Se ejecutó `agentes/tools/reingestar_glassnode.py` en local
+(el sandbox no tiene salida a glassnode.com): borró los stubs, los quitó de `_state.json` y
+relanzó `run.py`. Volvieron a bajarse **exactamente igual de truncados**.
+
+**Conclusión firme: Glassnode cerró las ediciones antiguas a miembros.** El texto de 2020-2022
+no es recuperable por la Content API pública. **No volver a intentarlo por esta vía.**
+
+Lo que queda como cobertura de ese periodo: los **67 vídeos de 2022** del canal (mismas
+ediciones del WoC), con la salvedad de que son auto-subs — sirven para el razonamiento,
+no para citar cifras exactas.
+
+<details><summary>Cómo se hizo (por si algún día cambia el acceso)</summary>
+
 
 `research/glassnode-kb/run.py` (en DeFi-Tracker) **no necesita API key**, solo salida a
 `research.glassnode.com`. Desde el sandbox de Claude Code el proxy lo bloquea (403 en CONNECT), así que
@@ -79,9 +93,7 @@ EOF
 cd .. && python run.py
 ```
 
-**Advertencia:** puede que no funcione. Los stubs contienen intro + índice y cortan justo donde empieza el
-cuerpo, lo que sugiere que **las ediciones antiguas están cerradas a miembros**. Si tras re-ingestar siguen
-en <3KB, el texto no es recuperable por esta vía y el hueco se queda.
+</details>
 
 ## Archivos (actualizado 30-jul-2026)
 
