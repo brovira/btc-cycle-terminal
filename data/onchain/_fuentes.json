@@ -24,8 +24,85 @@
       "SplyExUSD",
       "SplyExpFut10yr"
     ],
-    "prueba_http": 403,
-    "respuesta": "{\"error\":{\"type\":\"forbidden\",\"message\":\"Requested metric 'CapRealUSD' with frequency '1d' for asset 'btc' is not available with supplied credentials.\"}}"
+    "prueba_individual": {
+      "CapMVRVCur": {
+        "http": 200,
+        "primer_dato": "2026-07-25",
+        "valor": "1.216416341558775665"
+      },
+      "CapMrktCurUSD": {
+        "http": 200,
+        "primer_dato": "2026-07-25",
+        "valor": "1290563096381.072380858217011128"
+      },
+      "SplyCur": {
+        "http": 200,
+        "primer_dato": "2026-07-25",
+        "valor": "20061191.76057864"
+      },
+      "PriceUSD": {
+        "http": 200,
+        "primer_dato": "2026-07-25",
+        "valor": "64331.3274596727"
+      },
+      "CapRealUSD": {
+        "http": 403,
+        "motivo": "{\"error\":{\"type\":\"forbidden\",\"message\":\"Requested metric 'CapRealUSD' with frequency '1d' for asset 'btc' is n"
+      }
+    },
+    "derivacion": {
+      "fecha": "2026-07-25",
+      "realized_cap_derivado": 1060955079514,
+      "realized_price_derivado": 52885.94,
+      "veredicto": "FUNCIONA — realized price reconstruible con histórico largo"
+    },
+    "mvrv_primer_dato": "2026-07-29"
+  },
+  "checkonchain": {
+    "fuente": "Checkonchain",
+    "url": "charts.checkonchain.com",
+    "key": "no",
+    "formato": "HTML+Plotly JSON",
+    "indice_http": 200,
+    "rutas_encontradas": 400,
+    "rutas_interesantes": [
+      "btconchain/cointime/cointime_histogram_mvrv_active/cointime_histogram_mvrv_active_light.html",
+      "btconchain/cointime/cointime_histogram_mvrv_aviv/cointime_histogram_mvrv_aviv_light.html",
+      "btconchain/cointime/cointime_histogram_mvrv_cointime/cointime_histogram_mvrv_cointime_light.html",
+      "btconchain/cointime/cointime_histogram_mvrv_vaulted/cointime_histogram_mvrv_vaulted_light.html",
+      "btconchain/cointime/pricing_mvrv_active_1/pricing_mvrv_active_1_light.html",
+      "btconchain/cointime/pricing_mvrv_aviv_1/pricing_mvrv_aviv_1_light.html",
+      "btconchain/cointime/pricing_mvrv_cointime_0/pricing_mvrv_cointime_0_light.html",
+      "btconchain/cointime/pricing_mvrv_vaulted_1/pricing_mvrv_vaulted_1_light.html",
+      "btconchain/entities/btctc_realisedcap_0/btctc_realisedcap_0_light.html",
+      "btconchain/entities/btctc_realisedcap_1/btctc_realisedcap_1_light.html",
+      "btconchain/entities/mstr_mvrv/mstr_mvrv_light.html",
+      "btconchain/entities/mstr_mvrv_sth_vwap/mstr_mvrv_sth_vwap_light.html",
+      "btconchain/entities/mstr_realised_volatility/mstr_realised_volatility_light.html",
+      "btconchain/entities/mstr_realised_volatility_vsbtc/mstr_realised_volatility_vsbtc_light.html",
+      "btconchain/entities/mstr_supplyinprofit/mstr_supplyinprofit_light.html",
+      "btconchain/entities/mstr_unrealisedinprofit/mstr_unrealisedinprofit_light.html",
+      "btconchain/entities/mstr_vsbtc_sthmvrv/mstr_vsbtc_sthmvrv_light.html",
+      "btconchain/etfs/etf_flows_profitloss_1_1d/etf_flows_profitloss_1_1d_light.html",
+      "btconchain/etfs/etf_flows_profitloss_1_1w/etf_flows_profitloss_1_1w_light.html",
+      "btconchain/etfs/etf_mvrv/etf_mvrv_light.html",
+      "btconchain/lifespan/binarycdd_zscoresth/binarycdd_zscoresth_light.html",
+      "btconchain/lifespan/cdd90_lthsth/cdd90_lthsth_light.html",
+      "btconchain/lifespan/coinday_nvtrvtsth/coinday_nvtrvtsth_light.html",
+      "btconchain/mining/minerprofitabledays/minerprofitabledays_light.html",
+      "btconchain/premium/urpd_heatmap_realized_value/urpd_heatmap_realized_value_light.html",
+      "btconchain/premium/urpd_heatmap_supply_sth/urpd_heatmap_supply_sth_light.html",
+      "btconchain/premium/urpd_heatmap_unrealized_value/urpd_heatmap_unrealized_value_light.html",
+      "btconchain/pricing/consecutivedays_mvrv/consecutivedays_mvrv_light.html",
+      "btconchain/pricing/consecutivedays_mvrv_sth/consecutivedays_mvrv_sth_light.html",
+      "btconchain/pricing/consecutivedays_sopr/consecutivedays_sopr_light.html"
+    ],
+    "prueba_chart": {
+      "url": "https://charts.checkonchain.com/btconchain/entities/btctc_realisedcap_0/btctc_realisedcap_0_light.html",
+      "http": 200,
+      "bytes": 862,
+      "tiene_plotly_json": false
+    }
   },
   "blockchain": {
     "fuente": "Blockchain.com Charts",
@@ -96,22 +173,17 @@
     "CoinGecko (precio/mcap)": {
       "http": 401,
       "bytes": 0,
-      "muestra": "{\"error\":{\"status\":{\"timestamp\":\"2026-07-30T08:52:39.586+00:00\",\"error_code\":10012,\"error_message\":\"Your request exceeds"
+      "muestra": "{\"error\":{\"status\":{\"timestamp\":\"2026-07-30T09:04:14.073+00:00\",\"error_code\":10012,\"error_message\":\"Your request exceeds"
     },
     "Blockchair (stats)": {
       "http": 200,
-      "bytes": 1879,
+      "bytes": 1880,
       "muestra": "{\"data\":{\"blocks\":960233,\"transactions\":1407568631,\"outputs\":3851315880,\"circulation\":2006319916655096,\"blocks_24h\":146,"
     },
     "bitcoin-data.com (raíz API)": {
       "http": 404,
       "bytes": 0,
-      "muestra": "{\"timestamp\":\"2026-07-30T08:52:17.189+00:00\",\"status\":404,\"error\":\"Not Found\",\"path\":\"/v1/\"}"
-    },
-    "Checkonchain (charts JSON)": {
-      "http": 200,
-      "bytes": 195637,
-      "muestra": "<!doctype html>\n<html lang=\"en\" prefix=\"og: https://ogp.me/ns#\">\n    <head>\n        <!-- Google tag (gtag.js) -->\n<scrip"
+      "muestra": "{\"timestamp\":\"2026-07-30T09:03:50.339+00:00\",\"status\":404,\"error\":\"Not Found\",\"path\":\"/v1/\"}"
     }
   }
 }
