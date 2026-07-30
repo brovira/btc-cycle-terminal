@@ -8,11 +8,11 @@ qué probar primero en la operativa real: **LP concentrado + algún trade direcc
 
 | Fuente | Métricas | Histórico REAL disponible |
 |---|---|---|
-| **BGeometrics** (bitcoin-data.com, gratis) | realized price, MVRV Z, SOPR | **4 años exactos, ventana móvil** (hoy: jul-2022 → jul-2026) — 1.461 puntos |
+| **BGeometrics** (bitcoin-data.com, gratis) | **true market mean · STH cost basis · realized price · realized profit/loss · STH-MVRV · STH/LTH-SOPR** · MVRV Z · SOPR | **4 años exactos, ventana móvil** (hoy: jul-2022 → jul-2026) — 1.461 puntos |
 | **Binance + Coin Metrics** (gratis) | precio OHLC, 200W MA, BMSB, RV, Choppiness | Histórico completo (2010→) |
 | **Deribit** (gratis) | DVOL, skew, put/call, max pain | DVOL desde ~mar-2021 |
 | **Bybit / OKX** (gratis) | funding, OI | Funding largo; **OI solo ~180-400d** |
-| **Glassnode de pago** | TMM, URPD, ATS, Sell-Side Risk, cohortes | ❌ No disponible |
+| **Sin fuente gratis** | URPD, ATS, Sell-Side Risk, GEX, supply quantiles, ETF flows*, Spot CVD | ❌ (*ETF flows sí, vía Farside — falta ingestor) |
 
 > **Consecuencia clave:** el backtest on-chain cubre **~1 ciclo** (suelo 2022 → bull 2024-25 → techo oct-2025 →
 > bear 2026). Suficiente para validar la *mecánica* de una regla; **insuficiente** para afirmar que funciona
