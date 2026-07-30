@@ -52,13 +52,33 @@ def get(url, timeout=45, binario=False):
 
 # ───────────────────────────── catálogo ─────────────────────────────
 def catalogo():
+    """Catálogo COMPLETO de charts.
+
+    ⚠️ Raspar el índice NO basta: su buscador se alimenta de un manifiesto aparte, así que hay charts
+    que la portada no enlaza (p.ej. `options_25deltaskew`, que existe pero no salía). El `robots.txt`
+    publica un **sitemap.xml** — esa es la lista completa. El índice queda como respaldo.
+    """
+    rutas = set()
+
+    st, raw = get("https://charts.checkonchain.com/sitemap.xml")
+    if st == 200:
+        for u in re.findall(r"<loc>\s*([^<\s]+)\s*</loc>", raw):
+            if u.endswith(".html"):
+                rutas.add(re.sub(r"^https?://[^/]+/", "", u))
+        print(f"  sitemap.xml: {len(rutas)} charts")
+    else:
+        print(f"  sitemap.xml HTTP {st} — voy con el índice", file=sys.stderr)
+
     st, raw = get(WEB)
-    if st != 200:
-        print(f"índice HTTP {st}", file=sys.stderr); return {}
-    rutas = sorted(set(re.findall(r'href="([^"]+\.html)"', raw)))
-    rutas = [r.lstrip("./") for r in rutas if not r.startswith("http")]
+    if st == 200:
+        for r in re.findall(r'href="([^"]+\.html)"', raw):
+            if not r.startswith("http"):
+                rutas.add(r.lstrip("./"))
+    if not rutas:
+        print("no pude obtener el catálogo por ninguna vía", file=sys.stderr); return {}
+
     porcat = {}
-    for r in rutas:
+    for r in sorted(rutas):
         partes = r.split("/")
         cat = partes[1] if len(partes) > 2 else (partes[0] if partes else "?")
         porcat.setdefault(cat, []).append(r)
@@ -199,13 +219,20 @@ def traces_a_series(traces):
 
 
 def bajar_chart(ruta):
-    """Baja el chart desde el CDN (con la web pública como respaldo)."""
+    """Baja el chart desde el CDN (web pública como respaldo). Prueba las variantes _light/_dark:
+    algunos charts solo publican una de las dos."""
     ruta = ruta.lstrip("/")
-    for base in (CDN, WEB):
-        st, html = get(base + ruta)
-        if st == 200 and len(html) > 2000:      # la cáscara son ~860 bytes
-            return base + ruta, html
-        time.sleep(PAUSA)
+    variantes = [ruta]
+    if "_light.html" in ruta:
+        variantes.append(ruta.replace("_light.html", "_dark.html"))
+    elif "_dark.html" in ruta:
+        variantes.append(ruta.replace("_dark.html", "_light.html"))
+    for v in variantes:
+        for base in (CDN, WEB):
+            st, html = get(base + v)
+            if st == 200 and len(html) > 2000:      # la cáscara son ~860 bytes
+                return base + v, html
+            time.sleep(PAUSA)
     return None, None
 
 
@@ -310,6 +337,14 @@ LOTE = [
     ("derivatives", "derivatives_futures_oi_byexchange_0"),
     ("derivatives", "derivatives_spotvolume_cvd_0"),   # Spot CVD (32% de conclusiones en 2026)
     ("derivatives", "derivatives_termstructure_0"),
+    # 🔑 SKEW: desbloquea la pata que faltaba de P1/P4 — la ROTACIÓN put→call, que es el sello
+    # del techo del 10-oct-2025 (1W pasó de +18 a +3 vol pts en <1 semana). Sin esto, el trigger
+    # de "longs apiñados" iba cojo. Está en su sitemap aunque la portada no lo enlace.
+    ("derivatives", "options_25deltaskew"),
+    ("derivatives", "options_atmimpliedvolatility"),   # IV por tenor → term structure y VRP
+    ("derivatives", "options_ibit_25deltaskew"),
+    ("derivatives", "derivatives_btc_liquidations"),
+    ("technical", "technical_realizedvolatility"),     # RV para el VRP = IV − RV
     # distribuciones (no series temporales): estantes y air gaps
     ("urpd", "urpd"),
     ("urpd", "urpd_cohort"),
@@ -339,11 +374,13 @@ def lote(catalogo_dict):
     resumen = []
     for cat, nombre in LOTE:
         rutas = catalogo_dict.get(cat, [])
-        ruta = next((r for r in rutas if r.split("/")[-1].replace("_light.html", "") == nombre), None)
+        ruta = next((r for r in rutas
+                     if r.split("/")[-1].replace("_light.html", "").replace("_dark.html", "") == nombre), None)
         if not ruta:
-            print(f"  ?? no encontrado en el catálogo: {cat}/{nombre}")
-            resumen.append({"cat": cat, "nombre": nombre, "estado": "no_encontrado"})
-            continue
+            # No está en el catálogo pero su ruta es predecible → construirla y probar.
+            # (Su portada no enlaza todos los charts; bajar_chart prueba _light y _dark.)
+            ruta = f"btconchain/{cat}/{nombre}/{nombre}_light.html"
+            print(f"  ?? no está en el catálogo, pruebo ruta construida: {ruta}")
         url, html = bajar_chart(ruta)
         if not html:
             print(f"  -- no se pudo bajar {nombre}")

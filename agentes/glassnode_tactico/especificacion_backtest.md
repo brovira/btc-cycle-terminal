@@ -33,10 +33,12 @@ arbitraria disfrazada de resultado.
 | URPD (estantes / air gaps) | `urpd__urpd`, `urpd__urpd_cohort` | **distribución, snapshot** |
 | Precio diario | Binance + Coin Metrics (ya en el terminal) | 2010→hoy |
 | DVOL / VRP | `api/voldata` (Deribit) | **2021-03→hoy** |
-| 25d Skew histórico | ❌ **no disponible** | — |
+| 25d Skew (1W/1M/3M/6M) | `derivatives__options_25deltaskew` | **~2021→hoy** ✅ |
+| ATM Implied Vol por tenor | `derivatives__options_atmimpliedvolatility` | ~2021→hoy ✅ |
+| Realized Volatility | `technical__technical_realizedvolatility` | 2009→hoy ✅ |
 
-**Ventanas efectivas (manda la serie más corta de cada regla):** on-chain puro **4 ciclos** ·
-con funding/OI **2020→** (1,5 ciclos) · con VRP **2021→** · con ETF **2024→**.
+**Ventanas efectivas (manda la serie más corta de cada regla):** on-chain puro **2009→ (4 ciclos)** ·
+cruce con derivados/vol **2021→ (ventana fijada, ver §5)** · con ETF **2024→**.
 
 ---
 
@@ -48,8 +50,8 @@ con funding/OI **2020→** (1,5 ciclos) · con VRP **2021→** · con ETF **2024
 | **N2** | TMM = *"the dividing line between bear and bull market regimes"* [wk21-2026] | cruce | True Mean Price | ✅ |
 | **N3** | Realised Price = suelo estructural; perderlo requiere *"a systemic dislocation similar to LUNA or FTX"* [wk06-2026] | cruce | Realised Price | ✅ |
 | **N4** | 4 regímenes: Deep bear `<RP` · Recovery `RP→TMM` · Enthusiastic `TMM→ATH` · Euphoric `>ATH` | bandas | los 3 + ATH | ✅ |
-| **N5** | Bandas ±1σ/±2σ del STH CB como rango local; −1σ = sobreventa, +1σ techo local (*solo 17,5% de la historia cotiza sobre +1σ* [WoC21-2025]) | ±σ | **hay que calcularlas** ⚠️ | 🟡 ver D1 |
-| **N6** | *"Pre-bull market phases require **weeks to months** of sustained consolidation around this model"* [wk20-2026] — reclamar ≠ tocar | duración | precio + TMM | 🟡 ver D2 |
+| **N5** | Bandas ±1σ/±2σ del STH CB como rango local; −1σ = sobreventa, +1σ techo local (*solo 17,5% de la historia cotiza sobre +1σ* [WoC21-2025]) | ±σ | calculadas: **1 año móvil** (D1, su ventana) | ✅ |
+| **N6** | *"Pre-bull market phases require **weeks to months** of sustained consolidation around this model"* [wk20-2026] — reclamar ≠ tocar | **cierre semanal ≥2 sem** (D2, su unidad) | precio + TMM | ✅ |
 | **N7** | Air gaps: zonas de baja densidad de cost basis donde el precio corre rápido → **no poner rango de LP estrecho ahí** | densidad | URPD (snapshot) | 🟡 ver D3 |
 
 ## 2) Reglas de OSCILADOR (confirmación de régimen)
@@ -71,10 +73,10 @@ con funding/OI **2020→** (1,5 ciclos) · con VRP **2021→** · con ETF **2024
 
 | ID | Regla | Umbral | Datos | Testeable |
 |---|---|---|---|---|
-| **P1** | `EXIT_CROWDED_LONG` = funding ann MM3d **≥ +8%** Y z **≥ +1,5σ** Y OI **≥ p90/180d** (+ rotación de skew, no automatizable) | los 3 | funding + OI (2020→) | 🟡 sin la pata de skew |
-| **P2** | `EXIT_VOL_REALIZING` = VRP `<0` ≥2 días **O** skew `>+15` con P/C volumen `>1` | VRP<0 | DVOL (2021→) | 🟡 solo la pata VRP |
+| **P1** | `EXIT_CROWDED_LONG` = funding ann MM3d **≥ +8%** Y z **≥ +1,5σ** Y OI **≥ p90/180d** Y **rotación de skew** put-rich→call-heavy (1W de ≥+10 a ≤+5 en ≤7d) | los 4 | funding + OI + **skew** | ✅ **completo** |
+| **P2** | `EXIT_VOL_REALIZING` = VRP `<0` ≥2 días **O** skew `>+15` con P/C volumen `>1` | VRP<0 · skew>15 | IV + RV (**VRP derivable**) + skew | ✅ **completo** |
 | **P3** | `SQUEEZE` (la única señal direccional, **3/3** en el track record) = funding `<0` sostenido 3d + OI subiendo `+10%` en 2-4 sem + reclaim de soporte on-chain | los 3 | funding + OI + STH CB | ✅ |
-| **P4** | `REENTRY_CLEAN` = flush (OI −15% en ≤3d) + OI `≤p40` + funding `≤+11%` + VRP `≥+5` + skew 0–12 | los 5 | funding + OI + DVOL | 🟡 sin skew |
+| **P4** | `REENTRY_CLEAN` = flush (OI −15% en ≤3d) + OI `≤p40` + funding `≤+11%` + VRP `≥+5` + skew 0–12 | los 5 | funding + OI + IV/RV + skew | ✅ **completo** |
 
 ## 4) Reglas de CRUCE — **la tesis de verdad**
 
@@ -87,25 +89,45 @@ con funding/OI **2020→** (1,5 ciclos) · con VRP **2021→** · con ETF **2024
 
 ---
 
-## 5) ⚠️ DECISIONES DE DISEÑO ABIERTAS (hay que fijarlas ANTES de correr nada)
+## 5) ⚠️ DECISIONES DE DISEÑO — FIJADAS (30-jul-2026)
 
-Cada una es un grado de libertad. Si se eligen *después* de ver resultados, el backtest está contaminado.
-**Propuesta: fijar el valor de la columna "por defecto" y no tocarlo; si se prueba otro, reportar los dos.**
+**Principio acordado con el usuario:** esta sección usa **solo el conocimiento de Glassnode**. Todo
+parámetro debe venir de **sus artículos, con cita**. Lo que sea criterio operativo propio va aparte,
+etiquetado como tal — nunca disfrazado de método suyo.
 
-| ID | Decisión | Por defecto propuesto | Por qué |
+Por eso se releyó el corpus buscando sus definiciones operativas. **5 de 7 decisiones ya no son mías:**
+
+| ID | Decisión | Valor FIJADO | Origen |
 |---|---|---|---|
-| **D1** | Ventana de σ para las bandas del STH CB | **1 año móvil** | Es la que ellos usan para calibrar el MVRV Z [WoC06-2025]; coherente por analogía |
-| **D2** | ¿Qué es "reclaim sostenido"? | **cierre semanal por encima 2 semanas seguidas** | Ellos dicen "semanas a meses"; 2 semanas es el mínimo compatible y evita el ruido diario |
-| **D3** | ¿Qué es un "air gap"? | **percentil <20 de densidad de supply** en el bucket URPD | Arbitrario pero declarado; el URPD solo es snapshot, así que no es backtesteable en el tiempo |
-| **D4** | Umbrales absolutos ($25M/día) | **convertir a percentil de su propia historia** | Un umbral en dólares de 2026 no es comparable con 2015. Reportar ambos |
-| **D5** | "Sostenido" en funding negativo | **3 días consecutivos** | Es lo que dice `estrategia_leverage.md §C` |
-| **D6** | Horizontes de evaluación | **+2, +4, +8 semanas** | El método declara horizonte de semanas-meses |
-| **D7** | ¿Qué cuenta como acierto? | **Para nivel: dirección correcta a +4 sem. Para LP: PnL (fees−IL) vs estar siempre dentro** | Son objetivos distintos y no se deben mezclar |
+| **D1** | Ventana de σ / z-score | **Depende de la métrica, y ellos lo dicen:** MVRV Z → **1 año móvil** · AVIV z y STH-SOPR z → **4 años** | 📗 *"we have applied a **1-year rolling window** to the Z-Score calculation, resulting in a more refined and promising [transition]"* · *"Bull markets are characterized by prices trading between the **1-year mean**, and peaking around **2σ** above it"* · *"This chart uses a **[4-year Z-Score]** `sma(m1,1460)`"* · *"AVIV Ratio… its **4-year** z-score"* |
+| **D2** | ¿Qué es "reclaim sostenido"? | **Cierre de vela SEMANAL por encima, ≥2 semanas** | 📗 *"Over the past **two weeks**, Bitcoin has struggled to **close a weekly candle above** this key level"* · *"**weekly close** above $70k, establishing this region as a meaningful near-term resistance"* · *"sustained **over multiple weeks**, would constitute a more meaningful signal"* |
+| **D3** | ¿Qué es un "air gap"? | **percentil <20 de densidad en el bucket URPD** | ⚙️ **criterio propio** — ellos lo describen en cualitativo ("thinly populated"). Y el URPD es snapshot, así que **no es backtesteable en el tiempo**: queda como criterio del agente |
+| **D4** | Umbrales absolutos ($25M/día) | **percentil de su propia historia** (reportando también el absoluto) | ⚙️ criterio propio, confirmado por el usuario. Un umbral en dólares de 2026 no es comparable con 2015 |
+| **D5** | "Sostenido" en funding negativo | **3 días consecutivos** | 📗 `estrategia_leverage.md §C`, destilado de su corpus |
+| **D6** | Horizontes de evaluación | **+2, +4, +8 semanas** | 📗 Su horizonte declarado es semanas-meses; sus llamadas se cumplen en 0-3 semanas (`track_record.md`) |
+| **D7** | ¿Qué cuenta como acierto? | **Nivel:** dirección correcta a +4 sem · **LP:** PnL (fees−IL) vs estar siempre dentro | ⚙️ criterio propio: son objetivos distintos y no se mezclan |
+
+**Umbral de % Supply in Profit, confirmado literal:** *"broken below its **−1 standard deviation
+threshold near 60%**, and currently sits at approximately 57%"* → el 60% de O3 es suyo, no interpolado.
+
+### Ventana temporal del backtest — FIJADA
+
+**5 años (2021→2026)** para las reglas que cruzan familias (on-chain × derivados × vol), decisión del
+usuario: maximiza el solape real. Las reglas **solo on-chain** se corren además sobre los **17 años**
+completos (4 ciclos) porque los datos lo permiten. Los ETF entran en 2024 y se aceptan como serie corta.
+
+| Alcance | Ventana | Ciclos |
+|---|---|---|
+| Solo on-chain (N1-N4, O1-O4, O6, O8, O10) | 2009→2026 | 4 |
+| Cruce con derivados (P1-P4, X1, X2) | **2021→2026** | ~1,5 |
+| Con ETF (X4) | 2024→2026 | — |
 
 ## 6) Lo que NO se puede testear (y hay que decirlo)
 
-- **25d Skew histórico** → sin fuente gratis. Tumba la pata de rotación de skew de P1/P4 (el sello del techo del 10-oct-25).
-- **Rotación put→call** → requiere el skew. Queda como criterio del agente.
+- ~~25d Skew histórico~~ → **RESUELTO (30-jul-2026)**: Checkonchain lo publica (`options_25deltaskew`,
+  tenores 1W/1M/3M/6M, ~2021→hoy) — lo detectó el usuario; no salía en el índice porque su portada no
+  enlaza todos los charts, hay que ir por el **sitemap.xml**. Con esto **P1 y P4 quedan completos** y la
+  **rotación put→call sí es testeable** (el sello del techo del 10-oct-25: 1W de +18 a +3 vol pts en <1 sem).
 - **URPD en el tiempo** → solo tenemos snapshots, no la serie histórica de la distribución.
 - **DXY / 10Y** → el veto macro X3 necesita ingerirlos (fuente gratis: FRED). Pendiente.
 - **Dealer gamma / GEX** → no hay fuente gratis; y es el 42% de sus conclusiones de 2026.
