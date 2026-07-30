@@ -1,0 +1,45 @@
+name: Sincronizar Week On-Chain al dashboard
+
+# Cierra la cadena: el pipeline del repo privado (DeFi-Tracker, jueves 13:00 UTC) ingiere el WoC
+# nuevo y emite su recomendación → este workflow (14:00 UTC) la trae a data/woc_semana.json, que
+# es lo que muestra la sección "Qué hacemos esta semana" de vol.html.
+#
+# Antes de esto, ese JSON estaba escrito a mano y NUNCA se actualizaba solo.
+
+on:
+  schedule:
+    - cron: "0 14 * * 4"      # jueves 14:00 UTC, 1h después del pipeline privado
+  workflow_dispatch:
+    inputs:
+      forzar:
+        description: "Reescribir aunque la fecha coincida"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-woc
+  cancel-in-progress: false
+
+jobs:
+  sincronizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Sincronizar
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          python ingesta/sync_woc.py ${{ inputs.forzar && '--forzar' || '' }}
+      - name: Commit
+        run: |
+          git config user.name "woc-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/woc_semana.json
+          git diff --cached --quiet || git commit -m "woc: sincronizar semana desde el KB [skip ci]"
+          git push

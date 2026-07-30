@@ -294,3 +294,38 @@ research.glassnode.com; puede que las ediciones viejas estén cerradas a miembro
 
 **⚠️ Techo de datos on-chain gratis:** BGeometrics devuelve **4 años exactos en ventana móvil**
 (1.461 pts, hoy jul-2022→jul-2026) → el backtest on-chain cubre ~1 ciclo. Reportarlo siempre.
+
+## Checkonchain = la fuente definitiva (jul-2026) — 539 charts gratis, 17 años
+`ingesta/checkonchain.py` extrae sus charts públicos. Estructura: `charts.checkonchain.com/<ruta>`
+es una **cáscara** de ~860 B que apunta a **`charts-cdn.checkonchain.com/<ruta>`**, donde el chart
+real es un export de Plotly. **Clave técnica:** Plotly ≥5.18 serializa los arrays como *typed arrays*
+en **base64** (`{"dtype":"f8","bdata":"…"}`), no como listas JSON → hay que decodificarlos con
+`struct` (por eso al principio salían 0 series pese a detectar los traces).
+- `robots.txt`: `User-agent: * / Allow: /`. Pausa de 1,2 s. **Uso personal de lectura.**
+- **Catálogo: 539 charts en 22 categorías** (supply 61, derivatives 57, unrealised 55, pricing 52,
+  entities 44, tradfi 41, technical 37, realised 34, cointime 24, adoption 21, etfs 18, urpd 13…).
+- `--lote` extrae 21 charts curados → **21/21 OK**. `pricing_costbasisoriginals` trae la escalera
+  ENTERA con **6.415 pts, 2009-01-01 → hoy**: True Mean Price · STH/LTH Cost Basis · Realised Price ·
+  Cointime · Vaulted · 128/200DMA · bandas MVRV +1sd/+2sd.
+- **Validado vs BGeometrics:** Realised Price −0,00% (2025-01-01), −0,22%, +1,30%. Coinciden.
+- **Cubre los 3 huecos y el Tier-3 entero:** ETF flows (2024-01-11→), Spot CVD (2014→),
+  % supply in profit (`supply/breakdown_pnl`), Sell-Side Risk Ratio, URPD (como *distribución*:
+  x = bucket de precio, y = magnitud), AVIV z-score, funding (2020→), OI, term structure.
+- Formato compacto (fechas una vez + arrays alineados) y se descarta la serie `Price` de 141k pts
+  intradía. Los histogramas/URPD se guardan con `"tipo":"distribucion"` (no son series temporales).
+**Impacto:** el backtest pasa de ~1 ciclo a **4 ciclos** (suelos 2011/2015/2018/2022, techos
+2013/2017/2021). BGeometrics queda como verificación cruzada.
+
+## Puente del Week On-Chain al dashboard — ARREGLADO (jul-2026)
+**Bug de diseño:** `data/woc_semana.json` (lo que muestra "Qué hacemos esta semana" en vol.html) se
+escribió A MANO y **nada lo actualizaba** → el dashboard se quedaba congelado en la semana vieja
+para siempre, aunque el pipeline privado ingiriese el WoC nuevo.
+Cadena ahora completa: `semanal.py` en DeFi-Tracker (jueves 13:00 UTC) → **`ingesta/sync_woc.py`**
+(workflow `sync-woc.yml`, jueves 14:00 UTC, lee el `recomendaciones.jsonl` privado con `GH_TOKEN`)
+→ `data/woc_semana.json` → vol.html.
+- Automático: fecha, título, resumen, niveles, acción de LP, métricas, señal a vigilar, evaluación
+  de la semana previa (narrativa + precio).
+- **NO automatizable** (marcado con `_pendiente_agente`): `fiabilidad_tipo` fino y
+  `cambios_de_fiabilidad` → los calibra el agente `glassnode_tactico` contra `track_record.md`.
+- Gotcha corregido: la heurística de fiabilidad usa **regex con `\b`**, no substring — `"iv"` hacía
+  match dentro de "decis**iv**o" y clasificaba un reclaim de nivel como «IV baja» (1/4 en vez de 8/10).
