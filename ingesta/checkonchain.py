@@ -128,6 +128,10 @@ def extraer_traces(html):
         s = _json_balanceado(html, m.end())
         if s and s.startswith("["): intentos.append(('"data":', s))
 
+    # ⚠️ NO devolver el primer candidato que parsee: una página puede traer VARIAS figuras
+    # (paneles, insets, mini-charts) y el primero puede ser el pequeño. Se puntúan todos y gana
+    # el que más traces con datos aporta; a igualdad, el que más puntos totales.
+    mejor, mejor_puntos = None, (-1, -1)
     for etiqueta, blob in intentos:
         try:
             d = json.loads(blob)
@@ -135,8 +139,20 @@ def extraer_traces(html):
             continue
         if isinstance(d, dict):
             d = d.get("data") or d.get("figure", {}).get("data")
-        if isinstance(d, list) and d and isinstance(d[0], dict) and ("x" in d[0] or "y" in d[0]):
-            return etiqueta, d
+        if not (isinstance(d, list) and d and isinstance(d[0], dict) and ("x" in d[0] or "y" in d[0])):
+            continue
+        n_tr, n_pt = 0, 0
+        for t in d:
+            if not isinstance(t, dict):
+                continue
+            xs = _decodificar_array(t.get("x"))
+            if xs:
+                n_tr += 1
+                n_pt += len(xs)
+        if (n_tr, n_pt) > mejor_puntos:
+            mejor, mejor_puntos = (etiqueta, d), (n_tr, n_pt)
+    if mejor:
+        return mejor
     return None, None
 
 
@@ -162,9 +178,12 @@ def _decodificar_array(v):
         if n == 0:
             return None
         try:
-            return list(struct.unpack("<" + fmt * n, raw[:n * tam]))
+            vals = list(struct.unpack("<" + fmt * n, raw[:n * tam]))
         except struct.error:
             return None
+        # Plotly codifica los huecos como NaN en el array de floats. Si se dejan pasar, contaminan
+        # cualquier media/comparación del backtest en silencio → se convierten en None (hueco explícito).
+        return [None if isinstance(v, float) and v != v else v for v in vals]
     return None
 
 
@@ -394,11 +413,20 @@ def lote(catalogo_dict):
             dest = os.path.join(OUTDIR, f"{cat}__{nombre}.json")
             with open(dest, "w") as f:
                 json.dump({"fuente": "checkonchain", "ruta": ruta, "tipo": "serie_temporal",
-                           "fechas": fechas, "series": arrays}, f, separators=(",", ":"))
+                           "fechas": fechas, "series": arrays}, f, separators=(",", ":"),
+                          allow_nan=False)   # falla ruidosamente si quedara algún NaN
             print(f"  OK {cat}/{nombre}: {len(series)} series, {len(fechas)} fechas "
                   f"({fechas[0]} → {fechas[-1]}), {os.path.getsize(dest)//1024} KB")
+            # rangos por serie: la única forma de detectar a ojo una extracción con la escala mal
+            rangos = {}
+            for k, v in arrays.items():
+                vv = [x for x in v if x is not None]
+                if vv:
+                    rangos[k] = [round(min(vv), 4), round(max(vv), 4), len(vv)]
+                    print(f"       · {k[:40]:42s} [{min(vv):12.4f} … {max(vv):12.4f}]  n={len(vv)}")
             resumen.append({"cat": cat, "nombre": nombre, "estado": "ok", "tipo": "serie_temporal",
-                            "series": list(series), "desde": fechas[0], "hasta": fechas[-1]})
+                            "series": list(series), "desde": fechas[0], "hasta": fechas[-1],
+                            "rangos": rangos, "n_traces_figura": len(traces)})
         else:
             # sin fechas → es una DISTRIBUCIÓN (histograma, URPD): x = bucket, y = valor
             dist = {}
