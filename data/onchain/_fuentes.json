@@ -1,0 +1,117 @@
+{
+  "objetivos": [
+    "realized profit/loss",
+    "ETF flows",
+    "true market mean",
+    "STH cost basis",
+    "realized price / realized cap",
+    "% supply in profit",
+    "spot CVD",
+    "supply por cohorte"
+  ],
+  "coinmetrics": {
+    "fuente": "Coin Metrics Community",
+    "url": "community-api.coinmetrics.io",
+    "key": "no",
+    "catalogo_endpoint": "catalog-v2/asset-metrics?asset",
+    "metricas_totales": 31,
+    "relevantes": [
+      "CapMVRVCur",
+      "CapMrktCurUSD",
+      "CapMrktEstUSD",
+      "SplyCur",
+      "SplyExNtv",
+      "SplyExUSD",
+      "SplyExpFut10yr"
+    ],
+    "prueba_http": 403,
+    "respuesta": "{\"error\":{\"type\":\"forbidden\",\"message\":\"Requested metric 'CapRealUSD' with frequency '1d' for asset 'btc' is not available with supplied credentials.\"}}"
+  },
+  "blockchain": {
+    "fuente": "Blockchain.com Charts",
+    "url": "api.blockchain.info",
+    "key": "no",
+    "graficos": {
+      "market-price": {
+        "http": 200,
+        "puntos": 1605,
+        "desde": "2009-01-03"
+      },
+      "market-cap": {
+        "http": 200,
+        "puntos": 1500,
+        "desde": "2009-01-03"
+      },
+      "estimated-transaction-volume-usd": {
+        "http": 200,
+        "puntos": 1449,
+        "desde": "2010-08-28"
+      },
+      "mvrv": {
+        "http": 404
+      },
+      "nvt": {
+        "http": 404
+      },
+      "hash-rate": {
+        "http": 200,
+        "puntos": 1604,
+        "desde": "2009-01-03"
+      }
+    }
+  },
+  "glassnode": {
+    "fuente": "Glassnode API (tier free)",
+    "url": "api.glassnode.com",
+    "key": "requiere (gratis limitada)",
+    "sin_key_http": 401,
+    "respuesta": "<html>\r\n<head><title>401 Authorization Required</title></head>\r\n<body>\r\n<center><h1>401 Authorization Required</h1></center>\r\n<hr><center>nginx</center>\r\n<scrip",
+    "nota": "401/403 = necesita API key. El tier gratis de Glassnode da métricas T1 con retardo; si te registras, la key va en un secret y se añade un /api/glassnode como proxy."
+  },
+  "farside": {
+    "fuente": "Farside Investors (ETF flows)",
+    "url": "farside.co.uk",
+    "key": "no",
+    "formato": "HTML",
+    "http": 200,
+    "bytes": 769633,
+    "tiene_tabla": true,
+    "muestra_fechas": [
+      "11 Jan 2024",
+      "12 Jan 2024",
+      "15 Jan 2024",
+      "…",
+      "27 Jul 2026",
+      "28 Jul 2026",
+      "29 Jul 2026"
+    ],
+    "nota": "Scrapeable con pandas.read_html. Requiere ingestor propio (no hay API JSON)."
+  },
+  "otras": {
+    "mempool.space (fees/bloques)": {
+      "http": 200,
+      "bytes": 24924,
+      "muestra": "{\"hashrates\":[{\"timestamp\":1753920000,\"avgHashrate\":886683915361128500000},{\"timestamp\":1754006400,\"avgHashrate\":9529294"
+    },
+    "CoinGecko (precio/mcap)": {
+      "http": 401,
+      "bytes": 0,
+      "muestra": "{\"error\":{\"status\":{\"timestamp\":\"2026-07-30T08:52:39.586+00:00\",\"error_code\":10012,\"error_message\":\"Your request exceeds"
+    },
+    "Blockchair (stats)": {
+      "http": 200,
+      "bytes": 1879,
+      "muestra": "{\"data\":{\"blocks\":960233,\"transactions\":1407568631,\"outputs\":3851315880,\"circulation\":2006319916655096,\"blocks_24h\":146,"
+    },
+    "bitcoin-data.com (raíz API)": {
+      "http": 404,
+      "bytes": 0,
+      "muestra": "{\"timestamp\":\"2026-07-30T08:52:17.189+00:00\",\"status\":404,\"error\":\"Not Found\",\"path\":\"/v1/\"}"
+    },
+    "Checkonchain (charts JSON)": {
+      "http": 200,
+      "bytes": 195637,
+      "muestra": "<!doctype html>\n<html lang=\"en\" prefix=\"og: https://ogp.me/ns#\">\n    <head>\n        <!-- Google tag (gtag.js) -->\n<scrip"
+    }
+  }
+}
