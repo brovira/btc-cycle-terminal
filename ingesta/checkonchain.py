@@ -120,6 +120,34 @@ def extraer_traces(html):
     return None, None
 
 
+def _decodificar_array(v):
+    """Plotly ≥5.18 serializa los arrays como typed arrays en base64:
+         "x": {"dtype": "f8", "bdata": "AAAA…"}
+    en vez de una lista JSON. Hay que decodificarlos para leer los datos.
+    Devuelve lista de números, la propia lista si ya lo era, o None."""
+    if isinstance(v, list):
+        return v
+    if isinstance(v, dict) and "bdata" in v:
+        import base64, struct
+        fmt = {"f8": "d", "f4": "f", "i1": "b", "i2": "h", "i4": "i", "i8": "q",
+               "u1": "B", "u2": "H", "u4": "I", "u8": "Q"}.get(str(v.get("dtype", "f8")))
+        if not fmt:
+            return None
+        try:
+            raw = base64.b64decode(v["bdata"])
+        except Exception:
+            return None
+        tam = struct.calcsize(fmt)
+        n = len(raw) // tam
+        if n == 0:
+            return None
+        try:
+            return list(struct.unpack("<" + fmt * n, raw[:n * tam]))
+        except struct.error:
+            return None
+    return None
+
+
 def _a_fecha(x):
     """Plotly usa fechas ISO ('2018-01-01', '2018-01-01T00:00:00') o epoch numérico (s o ms)."""
     if isinstance(x, str):
@@ -145,8 +173,8 @@ def traces_a_series(traces):
     for i, t in enumerate(traces):
         if not isinstance(t, dict):
             continue
-        xs, ys = t.get("x"), t.get("y")
-        if not isinstance(xs, list) or not isinstance(ys, list) or not xs or not ys:
+        xs, ys = _decodificar_array(t.get("x")), _decodificar_array(t.get("y"))
+        if not xs or not ys:
             continue
         nombre = t.get("name") or t.get("legendgroup") or f"trace_{i}"
         serie = []
@@ -194,10 +222,34 @@ def inspeccionar(ruta):
     etiqueta, traces = extraer_traces(html)
     r["estrategia_que_funciono"] = etiqueta
     if traces:
-        series = traces_a_series(traces)
         r["n_traces"] = len(traces)
+        # Diagnóstico SIEMPRE: cómo viene x/y en cada trace. Si la extracción falla,
+        # esto dice exactamente por qué sin gastar otra corrida.
+        diag = []
+        for t in traces[:6]:
+            if not isinstance(t, dict):
+                continue
+            fila = {"name": str(t.get("name"))[:40], "type": t.get("type"), "claves": sorted(t.keys())[:12]}
+            for eje in ("x", "y"):
+                v = t.get(eje)
+                if isinstance(v, list):
+                    fila[eje] = {"forma": "lista", "n": len(v), "muestra": [str(z)[:24] for z in v[:2]]}
+                elif isinstance(v, dict):
+                    fila[eje] = {"forma": "dict", "claves": sorted(v.keys())[:6],
+                                 "dtype": v.get("dtype"),
+                                 "bdata_len": len(v["bdata"]) if isinstance(v.get("bdata"), str) else None}
+                    dec = _decodificar_array(v)
+                    fila[eje]["decodificado_n"] = len(dec) if dec else None
+                    fila[eje]["decodificado_muestra"] = [str(z)[:20] for z in dec[:2]] if dec else None
+                else:
+                    fila[eje] = {"forma": type(v).__name__, "valor": str(v)[:40]}
+            diag.append(fila)
+        r["diagnostico_traces"] = diag
+        series = traces_a_series(traces)
         r["series"] = {k: {"puntos": len(v), "desde": v[0]["date"], "hasta": v[-1]["date"]}
                        for k, v in series.items()}
+        if not series:
+            r["aviso"] = "traces detectados pero ninguna serie fecha/valor — mirar diagnostico_traces"
     else:
         os.makedirs(OUTDIR, exist_ok=True)
         p = os.path.join(OUTDIR, "_muestra_html.txt")
@@ -256,10 +308,14 @@ def main():
         cat = informe.get("catalogo") or catalogo()
         todas = [r for rs in cat.values() for r in rs]
         # priorizar lo que nos falta: cost basis de cohortes, realized, ETF, derivados
-        pref = [r for r in todas if re.search(r"realis|realiz|cost.?basis|sth|short.?term|true.?market", r, re.I)]
-        objetivos = (pref[:2] or todas[:1])
-        if any("etf" in r.lower() for r in todas):
-            objetivos.append(next(r for r in todas if "etf" in r.lower()))
+        # una muestra de las categorías que cubren nuestros huecos, no 2 charts al azar
+        objetivos = []
+        for patron in [r"/pricing/.*(realis|cost)", r"/realised/", r"/cointime/.*(aviv|true)",
+                       r"/urpd/", r"/etfs/", r"/unrealised/", r"/derivatives/.*(funding|skew|dvol)"]:
+            m2 = next((r for r in todas if re.search(patron, r, re.I)), None)
+            if m2 and m2 not in objetivos:
+                objetivos.append(m2)
+        objetivos = objetivos or todas[:1]
 
     if objetivos:
         print("\n" + "=" * 72, "\nINSPECCIÓN\n", "=" * 72)
