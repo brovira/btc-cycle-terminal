@@ -270,3 +270,27 @@ KB hecha (agente); claves:
 - El usuario se queda sin tokens en sesiones largas — ser eficiente, no releer de más,
   usar Agent en paralelo para investigaciones/auditorías grandes.
 - Respuestas cortas, al grano, en español (bullets/negritas/tablas).
+
+## Agente `glassnode_tactico` (NUEVO, jul-2026) — dirección + niveles on-chain
+Barrido de los **328 Week On-Chain** del KB privado (DeFi-Tracker `research/glassnode-kb/articulos/`,
+2019→jul-2026) con 12 extractores en paralelo → destilado en `agentes/glassnode_tactico/`:
+- **`framework_direccion.md`** — la **escalera de cost basis** (Realized Price → True Market Mean →
+  STH Cost Basis ±σ → quantiles 0,75/0,85/0,95 → URPD/air gaps), los **4 regímenes de ciclo**, la
+  **asimetría clave** (en bear el STH CB es TECHO, en bull SUELO — confirmado literal en wk29-2026),
+  osciladores con umbrales literales (STH-MVRV 1,0 · % supply in profit 54,2/60/75/90 · Realized P/L
+  Ratio <1/>2/>9 · SOPR 1,0 · NUPL bandas · AVIV z<−1 · STH-SOPR z=−2), árbol de decisión semanal y
+  guardarraíles que ellos mismos declaran.
+- **`backtest_repertorio.md`** — 3 tiers por disponibilidad de datos gratis + orden de ataque.
+- `.claude/agents/glassnode_tactico.md` — el agente, con la regla de distinguir SIEMPRE 3 niveles de
+  evidencia: **probado** (backtest/track record con número) · **del corpus sin backtest** · **criterio**.
+
+**Hallazgo de método:** Glassnode CAMBIÓ de herramientas. 2019-20 = GNI/Market Compass (muerto);
+2021-22 = cohortes+SOPR+URPD; **2023-26 = la escalera de cost basis** (el método vivo). Backtestear
+solo 2023→hoy; mezclar épocas mezcla métodos.
+
+**⚠️ Hueco del corpus:** 56/328 artículos son stubs (solo intro) — **78% de 2022**, 26% de 2021;
+2023-2026 completo. Re-ingesta documentada en el README (necesita red; el proxy del sandbox da 403 a
+research.glassnode.com; puede que las ediciones viejas estén cerradas a miembros).
+
+**⚠️ Techo de datos on-chain gratis:** BGeometrics devuelve **4 años exactos en ventana móvil**
+(1.461 pts, hoy jul-2022→jul-2026) → el backtest on-chain cubre ~1 ciclo. Reportarlo siempre.
