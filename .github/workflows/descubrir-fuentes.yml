@@ -1,0 +1,42 @@
+name: Descubrir fuentes on-chain gratis
+
+# Manual. Explora QUÉ fuentes gratis existen, qué métricas dan y cuánto histórico.
+# Motivo: BGeometrics solo da 4 años en ventana móvil → el backtest cubre ~1 ciclo.
+# Si otra fuente da histórico completo, podríamos validar contra 2015/2018/2022.
+#
+# NO gasta cuota de BGeometrics. Resultado: data/onchain/_fuentes.json (commiteado).
+
+on:
+  workflow_dispatch:
+    inputs:
+      fuente:
+        description: "Probar solo una fuente (coinmetrics, blockchain, glassnode, farside, otras). Vacío = todas"
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: onchain
+  cancel-in-progress: false
+
+jobs:
+  explorar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Explorar fuentes
+        run: |
+          python ingesta/descubrir_fuentes.py \
+            ${{ inputs.fuente && format('--fuente={0}', inputs.fuente) || '' }}
+      - name: Commit del informe
+        run: |
+          git config user.name "onchain-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/onchain/_fuentes.json
+          git diff --cached --quiet || git commit -m "onchain: informe de fuentes gratis [skip ci]"
+          git push

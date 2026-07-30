@@ -112,3 +112,20 @@ BGeometrics gratis devuelve **1.461 puntos = 4 años exactos en ventana móvil**
 El backtest cubre **~1 ciclo**: suelo 2022 → bull 2024-25 → techo oct-2025 → bear 2026. Es suficiente para
 validar la *mecánica* de una regla y ver cómo se comportó en un bear, un bull y un techo — pero **no** para
 afirmar que funciona "en todos los ciclos". Cada resultado debe llevar esa etiqueta.
+
+### Búsqueda de fuentes alternativas (en curso)
+
+`ingesta/descubrir_fuentes.py` (+ workflow *Descubrir fuentes on-chain gratis*) explora 5 vías para romper
+ese techo de 4 años y tapar los huecos de ETF flows y CVD:
+
+| Fuente | Qué podría aportar | Apuesta |
+|---|---|---|
+| **Coin Metrics Community** (sin key) | `CapRealUSD` + `SplyCur` → **realized price desde 2010**. Si está en el tier gratis, multiplica por 4 la ventana de backtest | 🟢 la más prometedora |
+| **Farside Investors** | **ETF flows** diarios — 2º driver de 2026, hoy sin cobertura. HTML scrapeable | 🟢 alta |
+| **Blockchain.com Charts** (sin key) | Precio, market cap, volumen, MVRV, NVT con histórico completo | 🟡 métricas básicas |
+| **Glassnode tier gratis** | Sus métricas T1 con retardo — la fuente original | 🟡 requiere registro |
+| **Checkonchain / Blockchair / mempool** | Cobertura suelta | 🔴 baja |
+
+**Ojo con mezclar fuentes:** cada proveedor calcula el realized price con su propio filtro de monedas
+perdidas/internas. Si se usa Coin Metrics para 2013-2022 y BGeometrics para 2022-2026, **hay que verificar
+el solape** (4 años de datos comunes) antes de empalmar nada.
