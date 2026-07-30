@@ -282,11 +282,117 @@ def extraer(ruta):
     return series
 
 
+# ─────────────── LOTE: los charts que cubren nuestros huecos ───────────────
+# (categoría, nombre) → se resuelve contra el catálogo real en tiempo de ejecución.
+# Prioridad = peso en las decisiones de Glassnode (ver agentes/glassnode_tactico/catalogo_indicadores.md).
+LOTE = [
+    # la escalera de cost basis: TMM + STH/LTH CB + realised + cointime + bandas MVRV, 2009→hoy
+    ("pricing", "pricing_costbasisoriginals"),
+    # driver nº1: beneficio/pérdida realizados y sus ratios por cohorte
+    ("realised", "netrealisedpnl"),
+    ("realised", "realisedpnl_ratio_all"),
+    ("realised", "realisedpnl_ratio_sth"),
+    ("realised", "realisedpnl_ratio_lth"),
+    ("realised", "sellsideriskratio_all"),      # estaba en "Tier 3 · no disponible gratis"
+    # osciladores de régimen
+    ("supply", "breakdown_pnl"),                # % supply en profit (el slug 404 de BGeometrics)
+    ("supply", "breakdown_lthsth_pnl_0"),
+    ("unrealised", "mvrv_all_zscore"),
+    ("unrealised", "mvrv_aviv_zscore"),         # AVIV z-score (umbral −1 = descuento extremo)
+    ("cointime", "liveliness"),
+    ("cointime", "hodlernetpositionchange"),
+    # driver nº2: flujos de ETF (sin cobertura hasta ahora)
+    ("etfs", "etf_flows_1"),
+    ("etfs", "etf_cumflows"),
+    ("etfs", "etf_balance_1"),
+    # derivados / posicionamiento
+    ("derivatives", "derivatives_futures_fundingrate"),
+    ("derivatives", "derivatives_futures_oi_byexchange_0"),
+    ("derivatives", "derivatives_spotvolume_cvd_0"),   # Spot CVD (32% de conclusiones en 2026)
+    ("derivatives", "derivatives_termstructure_0"),
+    # distribuciones (no series temporales): estantes y air gaps
+    ("urpd", "urpd"),
+    ("urpd", "urpd_cohort"),
+]
+
+# La serie "Price" viene en casi todos los charts con 141k puntos intradía. Ya tenemos precio
+# de sobra (Binance/Coin Metrics) → se descarta para no inflar el repo.
+DESCARTAR_SERIES = {"price"}
+
+
+def _compacto(series):
+    """Formato compacto: fechas una sola vez + arrays alineados. ~60% menos que [{date,value}]."""
+    fechas = sorted({p["date"] for v in series.values() for p in v})
+    idx = {f: i for i, f in enumerate(fechas)}
+    out = {}
+    for nombre, puntos in series.items():
+        arr = [None] * len(fechas)
+        for p in puntos:
+            arr[idx[p["date"]]] = p["value"]
+        out[nombre] = arr
+    return fechas, out
+
+
+def lote(catalogo_dict):
+    """Extrae los charts de LOTE, en formato compacto, saltando lo redundante."""
+    os.makedirs(OUTDIR, exist_ok=True)
+    resumen = []
+    for cat, nombre in LOTE:
+        rutas = catalogo_dict.get(cat, [])
+        ruta = next((r for r in rutas if r.split("/")[-1].replace("_light.html", "") == nombre), None)
+        if not ruta:
+            print(f"  ?? no encontrado en el catálogo: {cat}/{nombre}")
+            resumen.append({"cat": cat, "nombre": nombre, "estado": "no_encontrado"})
+            continue
+        url, html = bajar_chart(ruta)
+        if not html:
+            print(f"  -- no se pudo bajar {nombre}")
+            resumen.append({"cat": cat, "nombre": nombre, "estado": "sin_descarga"})
+            time.sleep(PAUSA); continue
+        _, traces = extraer_traces(html)
+        series = traces_a_series(traces) if traces else {}
+        series = {k: v for k, v in series.items() if k.strip().lower() not in DESCARTAR_SERIES}
+        if series:
+            fechas, arrays = _compacto(series)
+            dest = os.path.join(OUTDIR, f"{cat}__{nombre}.json")
+            with open(dest, "w") as f:
+                json.dump({"fuente": "checkonchain", "ruta": ruta, "tipo": "serie_temporal",
+                           "fechas": fechas, "series": arrays}, f, separators=(",", ":"))
+            print(f"  OK {cat}/{nombre}: {len(series)} series, {len(fechas)} fechas "
+                  f"({fechas[0]} → {fechas[-1]}), {os.path.getsize(dest)//1024} KB")
+            resumen.append({"cat": cat, "nombre": nombre, "estado": "ok", "tipo": "serie_temporal",
+                            "series": list(series), "desde": fechas[0], "hasta": fechas[-1]})
+        else:
+            # sin fechas → es una DISTRIBUCIÓN (histograma, URPD): x = bucket, y = valor
+            dist = {}
+            for i, t in enumerate(traces or []):
+                if not isinstance(t, dict): continue
+                xs, ys = _decodificar_array(t.get("x")), _decodificar_array(t.get("y"))
+                if not xs or not ys: continue
+                nm = t.get("name") or f"trace_{i}"
+                dist[nm] = {"x": xs[:2000], "y": ys[:2000]}
+            if dist:
+                dest = os.path.join(OUTDIR, f"{cat}__{nombre}.json")
+                with open(dest, "w") as f:
+                    json.dump({"fuente": "checkonchain", "ruta": ruta, "tipo": "distribucion",
+                               "nota": "x = bucket (precio/valor), y = magnitud. Snapshot, no serie temporal.",
+                               "distribuciones": dist}, f, separators=(",", ":"))
+                print(f"  OK {cat}/{nombre}: DISTRIBUCIÓN con {len(dist)} traces")
+                resumen.append({"cat": cat, "nombre": nombre, "estado": "ok", "tipo": "distribucion",
+                                "traces": list(dist)})
+            else:
+                print(f"  -- {cat}/{nombre}: sin datos reconocibles")
+                resumen.append({"cat": cat, "nombre": nombre, "estado": "sin_datos"})
+        time.sleep(PAUSA)
+    return resumen
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--catalogo", action="store_true")
     ap.add_argument("--inspeccionar", default="")
     ap.add_argument("--extraer", default="")
+    ap.add_argument("--lote", action="store_true", help="extraer el LOTE curado (lo que cubre nuestros huecos)")
     ap.add_argument("--auto", action="store_true", help="catálogo + inspección + extracción de prueba")
     a = ap.parse_args()
 
@@ -325,6 +431,14 @@ def main():
             r = inspeccionar(ruta); informe["inspeccion"].append(r)
             print(json.dumps(r, indent=1, ensure_ascii=False)[:1500])
             time.sleep(PAUSA)
+
+    if a.lote:
+        print("\n" + "=" * 72, "\nLOTE CURADO\n", "=" * 72)
+        cat = informe.get("catalogo") or catalogo()
+        informe["catalogo"] = cat
+        informe["lote"] = lote(cat)
+        ok = [r for r in informe["lote"] if r.get("estado") == "ok"]
+        print(f"\nresultado: {len(ok)}/{len(informe['lote'])} charts extraídos")
 
     if a.extraer:
         print("\n" + "=" * 72, "\nEXTRACCIÓN\n", "=" * 72)

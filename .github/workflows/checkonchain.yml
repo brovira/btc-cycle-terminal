@@ -15,8 +15,8 @@ on:
       modo:
         description: "auto (catálogo+inspección+prueba) · catalogo · inspeccionar · extraer"
         type: choice
-        options: [auto, catalogo, inspeccionar, extraer]
-        default: auto
+        options: [lote, auto, catalogo, inspeccionar, extraer]
+        default: lote
       ruta:
         description: "Ruta del chart (solo para inspeccionar/extraer). Ej: btconchain/pricing/pricing_realisedprice/pricing_realisedprice_light.html"
         type: string
@@ -43,6 +43,7 @@ jobs:
             catalogo)     python ingesta/checkonchain.py --catalogo ;;
             inspeccionar) python ingesta/checkonchain.py --inspeccionar "${{ inputs.ruta }}" ;;
             extraer)      python ingesta/checkonchain.py --extraer "${{ inputs.ruta }}" ;;
+            lote)         python ingesta/checkonchain.py --lote ;;
             *)            python ingesta/checkonchain.py --auto ;;
           esac
       - name: Commit
