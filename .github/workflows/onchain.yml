@@ -32,6 +32,10 @@ jobs:
           BGAPI_TOKEN: ${{ secrets.BGAPI_TOKEN }}
         run: |
           python ingesta/fetch_onchain.py ${{ inputs.probe && '--probe' || '' }}
+      - name: Histórico largo (Coin Metrics, sin key, sin cuota)
+        continue-on-error: true
+        run: |
+          python ingesta/fetch_onchain_largo.py --desde 2011
       - name: Commit de datos on-chain
         if: ${{ !inputs.probe }}
         run: |

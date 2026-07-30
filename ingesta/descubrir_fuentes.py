@@ -247,9 +247,14 @@ def checkonchain():
                 refs = re.findall(r'(?:src|href|data-src)="([^"]+)"', raw2)
                 refs += re.findall(r'["\'](https?://[^"\']+\.(?:json|csv|js))["\']', raw2)
                 pc["referencias"] = sorted(set(refs))[:15]
-                # seguir la 1ª referencia que parezca datos o iframe
-                sig = next((x for x in refs if re.search(r"\.(json|csv)$|iframe|plotly|_data", x, re.I)),
-                           refs[0] if refs else None)
+                # La ronda 3 revelo que el dato vive en OTRO dominio: charts-cdn.checkonchain.com
+                # (la pagina de charts. es solo una cascara con <link> al favicon + el iframe al CDN).
+                # Prioridad: charts-cdn > .json/.csv > iframe/plotly. NUNCA imagenes.
+                cand = [x for x in refs if not re.search(r"\.(png|jpg|jpeg|svg|ico|css|woff2?)($|\?)", x, re.I)]
+                sig = next((x for x in cand if "charts-cdn" in x), None) \
+                    or next((x for x in cand if re.search(r"\.(json|csv)($|\?)", x, re.I)), None) \
+                    or next((x for x in cand if re.search(r"iframe|plotly|_data", x, re.I)), None) \
+                    or (cand[0] if cand else None)
                 if sig:
                     base = "https://charts.checkonchain.com/"
                     u3 = sig if sig.startswith("http") else base + sig.lstrip("./")
