@@ -63,12 +63,27 @@ def list_videos(url, limit=0, since=None):
                             "url": f"https://www.youtube.com/watch?v={vid}",
                             "date": (p[2] if len(p) > 2 else "")})
         return out
-    cmd = YTDLP + CLIENT + ["-J", "--flat-playlist", "--ignore-errors"]
+    # OJO: --flat-playlist es rapido pero NO devuelve upload_date -> los archivos salian como
+    # "0000-titulo.md". La fecha importa: el metodo de los analistas cambia con los anos y el agente
+    # necesita saber si una cita es vigente o vieja. Por eso se pide el print con la fecha.
+    cmd = YTDLP + CLIENT + ["--flat-playlist", "--ignore-errors", "--no-warnings",
+                            "--print", "%(id)s|||%(title)s|||%(upload_date)s"]
     if limit:
         cmd += ["--playlist-end", str(limit)]
     r = run(cmd + [url])
     if r.returncode != 0 and not r.stdout.strip():
         print(f"  ! no pude leer {url}: {r.stderr.strip()[:200]}"); return []
+    filas = []
+    for ln in (r.stdout or "").splitlines():
+        p = ln.strip().split("|||")
+        if p and p[0].strip() and not p[0].startswith("{"):
+            vid = p[0].strip()
+            fecha = p[2].strip() if len(p) > 2 else ""
+            filas.append({"id": vid, "title": (p[1] if len(p) > 1 else vid),
+                          "url": f"https://www.youtube.com/watch?v={vid}",
+                          "date": fecha if re.fullmatch(r"\d{8}", fecha) else ""})
+    if filas:
+        return filas
     try:
         data = json.loads(r.stdout)
     except Exception:
