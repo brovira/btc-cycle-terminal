@@ -567,6 +567,9 @@
       "btconchain/urpd/urpd_unrealised/urpd_unrealised_light.html",
       "btconchain/urpd/urpd_unrealised_cohort/urpd_unrealised_cohort_light.html"
     ],
+    "darkmode.html": [
+      "darkmode.html"
+    ],
     "framework_00": [
       "framework/framework_00/framework_00_dark.html"
     ],
@@ -908,6 +911,80 @@
         "8 Weeks Ago",
         "12 Weeks Ago"
       ]
+    },
+    {
+      "cat": "derivatives",
+      "nombre": "options_25deltaskew",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "1 Week",
+        "1 Month",
+        "3 Months",
+        "6 Months"
+      ],
+      "desde": "2021-02-16",
+      "hasta": "2026-07-30"
+    },
+    {
+      "cat": "derivatives",
+      "nombre": "options_atmimpliedvolatility",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "1 Week",
+        "1 Month",
+        "3 Months",
+        "6 Months"
+      ],
+      "desde": "2021-02-16",
+      "hasta": "2026-07-30"
+    },
+    {
+      "cat": "derivatives",
+      "nombre": "options_ibit_25deltaskew",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "1 Week",
+        "2 Weeks",
+        "1 Month",
+        "3 Months",
+        "6 Months",
+        "1 Year",
+        "2 Years"
+      ],
+      "desde": "2024-11-19",
+      "hasta": "2026-07-29"
+    },
+    {
+      "cat": "derivatives",
+      "nombre": "derivatives_btc_liquidations",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "Short Liquidations",
+        "Long Liquidations",
+        "Net Liquidation Volume"
+      ],
+      "desde": "2014-04-05",
+      "hasta": "2026-07-30"
+    },
+    {
+      "cat": "technical",
+      "nombre": "technical_realizedvolatility",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "1-week",
+        "2-weeks",
+        "1-month",
+        "3-months",
+        "6-months",
+        "1-year"
+      ],
+      "desde": "2010-07-17",
+      "hasta": "2026-07-30"
     },
     {
       "cat": "urpd",
