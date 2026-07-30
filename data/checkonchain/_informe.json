@@ -1,8 +1,4 @@
 {
-  "robots": {
-    "http": 200,
-    "contenido": "# Robots.txt for charts.checkonchain.com\r\nUser-agent: *\r\nAllow: /\r\n\r\n# Sitemap location\r\nSitemap: https://charts.checkonchain.com/sitemap.xml\r\n\r\n# Optional: Block specific paths if needed\r\n# Disallow: /admin/\r\n# Disallow: /private/\r\n\r\n# Allow all search engines to crawl\r\nUser-agent: Googlebot\r\nAllow: /\r\n\r\nUser-agent: Bingbot\r\nAllow: /\r\n\r\nUser-agent: Slurp\r\nAllow: /\r\n\r\n"
-  },
   "catalogo": {
     "adoption": [
       "btconchain/adoption/actaddress_momentum/actaddress_momentum_light.html",
@@ -588,1628 +584,356 @@
       "macroeconomic/macro/ustreasury_yields_inversion/ustreasury_yields_inversion_light.html"
     ]
   },
-  "inspeccion": [
+  "lote": [
     {
-      "ruta": "btconchain/pricing/pricing_costbasisoriginals/pricing_costbasisoriginals_light.html",
-      "url": "https://charts-cdn.checkonchain.com/btconchain/pricing/pricing_costbasisoriginals/pricing_costbasisoriginals_light.html",
-      "bytes": 6889472,
-      "tiene_plotly": true,
-      "marcadores": {
-        "Plotly.newPlot": 1,
-        "Plotly.react": 0,
-        "application/json": 0,
-        "\"data\"": 1,
-        "\"x\":": 17,
-        "\"y\":": 15
-      },
-      "estrategia_que_funciono": "Plotly.newPlot",
-      "n_traces": 11,
-      "diagnostico_traces": [
-        {
-          "name": "Price",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "x"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 141535,
-            "muestra": [
-              "2010-07-17T23:00:00",
-              "2010-07-18T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 1509708,
-            "decodificado_n": 141535,
-            "decodificado_muestra": [
-              "0.04951",
-              "0.04951"
-            ]
-          }
-        },
-        {
-          "name": "128DMA",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "x"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 6415,
-            "muestra": [
-              "2009-01-01T00:00:00",
-              "2009-01-02T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 68428,
-            "decodificado_n": 6415,
-            "decodificado_muestra": [
-              "nan",
-              "nan"
-            ]
-          }
-        },
-        {
-          "name": "200DMA",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "x"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 6415,
-            "muestra": [
-              "2009-01-01T00:00:00",
-              "2009-01-02T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 68428,
-            "decodificado_n": 6415,
-            "decodificado_muestra": [
-              "nan",
-              "nan"
-            ]
-          }
-        },
-        {
-          "name": "True Mean Price",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "x"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 6415,
-            "muestra": [
-              "2009-01-01T00:00:00",
-              "2009-01-02T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 68428,
-            "decodificado_n": 6415,
-            "decodificado_muestra": [
-              "nan",
-              "nan"
-            ]
-          }
-        },
-        {
-          "name": "Realised Price",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "x"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 6415,
-            "muestra": [
-              "2009-01-01T00:00:00",
-              "2009-01-02T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 68428,
-            "decodificado_n": 6415,
-            "decodificado_muestra": [
-              "nan",
-              "nan"
-            ]
-          }
-        },
-        {
-          "name": "Cointime Price",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "x"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 6415,
-            "muestra": [
-              "2009-01-01T00:00:00",
-              "2009-01-02T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 68428,
-            "decodificado_n": 6415,
-            "decodificado_muestra": [
-              "nan",
-              "nan"
-            ]
-          }
-        }
+      "cat": "pricing",
+      "nombre": "pricing_costbasisoriginals",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "128DMA",
+        "200DMA",
+        "True Mean Price",
+        "Realised Price",
+        "Cointime Price",
+        "STH Cost Basis",
+        "LTH Cost Basis",
+        "Vaulted Price",
+        "MVRV Mean+1sd",
+        "MVRV Mean+2sd"
       ],
-      "series": {
-        "Price": {
-          "puntos": 141535,
-          "desde": "2010-07-17",
-          "hasta": "2026-07-30"
-        },
-        "128DMA": {
-          "puntos": 6415,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        },
-        "200DMA": {
-          "puntos": 6415,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        },
-        "True Mean Price": {
-          "puntos": 6415,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        },
-        "Realised Price": {
-          "puntos": 6415,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        },
-        "Cointime Price": {
-          "puntos": 6415,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        },
-        "STH Cost Basis": {
-          "puntos": 6415,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        },
-        "LTH Cost Basis": {
-          "puntos": 6415,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        },
-        "Vaulted Price": {
-          "puntos": 6415,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        },
-        "MVRV Mean+1sd": {
-          "puntos": 6415,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        },
-        "MVRV Mean+2sd": {
-          "puntos": 6415,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        }
-      }
+      "desde": "2009-01-01",
+      "hasta": "2026-07-30"
     },
     {
-      "ruta": "btconchain/realised/histogram_sopr/histogram_sopr_light.html",
-      "url": "https://charts-cdn.checkonchain.com/btconchain/realised/histogram_sopr/histogram_sopr_light.html",
-      "bytes": 23485,
-      "tiene_plotly": true,
-      "marcadores": {
-        "Plotly.newPlot": 1,
-        "Plotly.react": 0,
-        "application/json": 0,
-        "\"data\"": 1,
-        "\"x\":": 7,
-        "\"y\":": 5
-      },
-      "estrategia_que_funciono": "Plotly.newPlot",
-      "n_traces": 2,
-      "diagnostico_traces": [
-        {
-          "name": "SOPR",
-          "type": "bar",
-          "claves": [
-            "hovertemplate",
-            "marker",
-            "name",
-            "opacity",
-            "showlegend",
-            "type",
-            "x",
-            "xaxis",
-            "y",
-            "yaxis"
-          ],
-          "x": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 1624,
-            "decodificado_n": 152,
-            "decodificado_muestra": [
-              "0.49",
-              "0.4966887417218543"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "i2",
-            "bdata_len": 408,
-            "decodificado_n": 152,
-            "decodificado_muestra": [
-              "0",
-              "0"
-            ]
-          }
-        },
-        {
-          "name": "SOPR CDF",
-          "type": "scatter",
-          "claves": [
-            "hovertemplate",
-            "line",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "type",
-            "x",
-            "xaxis",
-            "y",
-            "yaxis"
-          ],
-          "x": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 1624,
-            "decodificado_n": 152,
-            "decodificado_muestra": [
-              "0.49",
-              "0.4966887417218543"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 1624,
-            "decodificado_n": 152,
-            "decodificado_muestra": [
-              "0.0",
-              "0.0"
-            ]
-          }
-        }
+      "cat": "realised",
+      "nombre": "netrealisedpnl",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "Hot",
+        "Warm",
+        "Cool",
+        "Cold",
+        "Relative Net Realized Profit/Loss"
       ],
-      "series": {},
-      "aviso": "traces detectados pero ninguna serie fecha/valor — mirar diagnostico_traces"
+      "desde": "2009-01-01",
+      "hasta": "2026-07-30"
     },
     {
-      "ruta": "btconchain/cointime/cointime_histogram_mvrv_aviv/cointime_histogram_mvrv_aviv_light.html",
-      "url": "https://charts-cdn.checkonchain.com/btconchain/cointime/cointime_histogram_mvrv_aviv/cointime_histogram_mvrv_aviv_light.html",
-      "bytes": 30162,
-      "tiene_plotly": true,
-      "marcadores": {
-        "Plotly.newPlot": 1,
-        "Plotly.react": 0,
-        "application/json": 0,
-        "\"data\"": 1,
-        "\"x\":": 9,
-        "\"y\":": 7
-      },
-      "estrategia_que_funciono": "Plotly.newPlot",
-      "n_traces": 4,
-      "diagnostico_traces": [
-        {
-          "name": "MVRV",
-          "type": "bar",
-          "claves": [
-            "hovertemplate",
-            "marker",
-            "name",
-            "opacity",
-            "showlegend",
-            "type",
-            "x",
-            "xaxis",
-            "y",
-            "yaxis"
-          ],
-          "x": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 1304,
-            "decodificado_n": 122,
-            "decodificado_muestra": [
-              "-0.05",
-              "-6.938893903907228e-"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "i2",
-            "bdata_len": 328,
-            "decodificado_n": 122,
-            "decodificado_muestra": [
-              "0",
-              "0"
-            ]
-          }
-        },
-        {
-          "name": "Active MVRV",
-          "type": "bar",
-          "claves": [
-            "hovertemplate",
-            "marker",
-            "name",
-            "opacity",
-            "showlegend",
-            "type",
-            "x",
-            "xaxis",
-            "y",
-            "yaxis"
-          ],
-          "x": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 1304,
-            "decodificado_n": 122,
-            "decodificado_muestra": [
-              "-0.05",
-              "-6.938893903907228e-"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "i2",
-            "bdata_len": 328,
-            "decodificado_n": 122,
-            "decodificado_muestra": [
-              "0",
-              "0"
-            ]
-          }
-        },
-        {
-          "name": "MVRV CDF",
-          "type": "scatter",
-          "claves": [
-            "hovertemplate",
-            "line",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "type",
-            "x",
-            "xaxis",
-            "y",
-            "yaxis"
-          ],
-          "x": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 1304,
-            "decodificado_n": 122,
-            "decodificado_muestra": [
-              "-0.05",
-              "-6.938893903907228e-"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 1304,
-            "decodificado_n": 122,
-            "decodificado_muestra": [
-              "0.0",
-              "0.0"
-            ]
-          }
-        },
-        {
-          "name": "Active MVRV CDF",
-          "type": "scatter",
-          "claves": [
-            "hovertemplate",
-            "line",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "type",
-            "x",
-            "xaxis",
-            "y",
-            "yaxis"
-          ],
-          "x": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 1304,
-            "decodificado_n": 122,
-            "decodificado_muestra": [
-              "-0.05",
-              "-6.938893903907228e-"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 1304,
-            "decodificado_n": 122,
-            "decodificado_muestra": [
-              "0.0",
-              "0.0"
-            ]
-          }
-        }
+      "cat": "realised",
+      "nombre": "realisedpnl_ratio_all",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "Realised Profit/Loss Ratio (+ve)",
+        "Realised Profit/Loss Ratio (-ve)"
       ],
-      "series": {},
-      "aviso": "traces detectados pero ninguna serie fecha/valor — mirar diagnostico_traces"
+      "desde": "2009-01-01",
+      "hasta": "2026-07-30"
     },
     {
-      "ruta": "btconchain/urpd/urpd/urpd_light.html",
-      "url": "https://charts-cdn.checkonchain.com/btconchain/urpd/urpd/urpd_light.html",
-      "bytes": 33450,
-      "tiene_plotly": true,
-      "marcadores": {
-        "Plotly.newPlot": 1,
-        "Plotly.react": 0,
-        "application/json": 0,
-        "\"data\"": 1,
-        "\"x\":": 8,
-        "\"y\":": 6
-      },
-      "estrategia_que_funciono": "Plotly.newPlot",
-      "n_traces": 3,
-      "diagnostico_traces": [
-        {
-          "name": "Supply in Profit/Loss",
-          "type": "bar",
-          "claves": [
-            "hovertemplate",
-            "marker",
-            "name",
-            "opacity",
-            "showlegend",
-            "type",
-            "x",
-            "y",
-            "yaxis"
-          ],
-          "x": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 2688,
-            "decodificado_n": 252,
-            "decodificado_muestra": [
-              "0.0",
-              "500.0"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 2688,
-            "decodificado_n": 252,
-            "decodificado_muestra": [
-              "nan",
-              "nan"
-            ]
-          }
-        },
-        {
-          "name": "",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "type",
-            "x",
-            "y"
-          ],
-          "x": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 2688,
-            "decodificado_n": 252,
-            "decodificado_muestra": [
-              "0.0",
-              "500.0"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 2688,
-            "decodificado_n": 252,
-            "decodificado_muestra": [
-              "nan",
-              "nan"
-            ]
-          }
-        },
-        {
-          "name": "Percent of Total",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "type",
-            "x",
-            "y"
-          ],
-          "x": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 2688,
-            "decodificado_n": 252,
-            "decodificado_muestra": [
-              "0.0",
-              "500.0"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 2688,
-            "decodificado_n": 252,
-            "decodificado_muestra": [
-              "0.1608329402964366",
-              "0.18284124812304134"
-            ]
-          }
-        }
+      "cat": "realised",
+      "nombre": "realisedpnl_ratio_sth",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "Realised Profit/Loss Ratio (+ve)",
+        "Realised Profit/Loss Ratio (-ve)"
       ],
-      "series": {},
-      "aviso": "traces detectados pero ninguna serie fecha/valor — mirar diagnostico_traces"
+      "desde": "2009-01-01",
+      "hasta": "2026-07-30"
     },
     {
-      "ruta": "btconchain/etfs/aggregate_volume/aggregate_volume_light.html",
-      "url": "https://charts-cdn.checkonchain.com/btconchain/etfs/aggregate_volume/aggregate_volume_light.html",
-      "bytes": 6475412,
-      "tiene_plotly": true,
-      "marcadores": {
-        "Plotly.newPlot": 1,
-        "Plotly.react": 0,
-        "application/json": 0,
-        "\"data\"": 1,
-        "\"x\":": 15,
-        "\"y\":": 13
-      },
-      "estrategia_que_funciono": "Plotly.newPlot",
-      "n_traces": 9,
-      "diagnostico_traces": [
-        {
-          "name": "Price",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "x"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 141535,
-            "muestra": [
-              "2010-07-17T23:00:00",
-              "2010-07-18T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 1509708,
-            "decodificado_n": 141535,
-            "decodificado_muestra": [
-              "0.04951",
-              "0.04951"
-            ]
-          }
-        },
-        {
-          "name": "Futures Trade Volume",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "x"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 6415,
-            "muestra": [
-              "2009-01-01T00:00:00",
-              "2009-01-02T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 68428,
-            "decodificado_n": 6415,
-            "decodificado_muestra": [
-              "nan",
-              "nan"
-            ]
-          }
-        },
-        {
-          "name": "Options Trade Volume",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "x"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 6415,
-            "muestra": [
-              "2009-01-01T00:00:00",
-              "2009-01-02T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 68428,
-            "decodificado_n": 6415,
-            "decodificado_muestra": [
-              "nan",
-              "nan"
-            ]
-          }
-        },
-        {
-          "name": "Spot Trade Volume",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "x"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 6415,
-            "muestra": [
-              "2009-01-01T00:00:00",
-              "2009-01-02T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 68428,
-            "decodificado_n": 6415,
-            "decodificado_muestra": [
-              "nan",
-              "nan"
-            ]
-          }
-        },
-        {
-          "name": "IBIT Options Trade Volume",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "x"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 6415,
-            "muestra": [
-              "2009-01-01T00:00:00",
-              "2009-01-02T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 68428,
-            "decodificado_n": 6415,
-            "decodificado_muestra": [
-              "nan",
-              "nan"
-            ]
-          }
-        },
-        {
-          "name": "ETF Trade Volume",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "x"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 6415,
-            "muestra": [
-              "2009-01-01T00:00:00",
-              "2009-01-02T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 68428,
-            "decodificado_n": 6415,
-            "decodificado_muestra": [
-              "nan",
-              "nan"
-            ]
-          }
-        }
+      "cat": "realised",
+      "nombre": "realisedpnl_ratio_lth",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "Realised Profit/Loss Ratio (+ve)",
+        "Realised Profit/Loss Ratio (-ve)"
       ],
-      "series": {
-        "Price": {
-          "puntos": 141535,
-          "desde": "2010-07-17",
-          "hasta": "2026-07-30"
-        },
-        "Futures Trade Volume": {
-          "puntos": 6415,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        },
-        "Options Trade Volume": {
-          "puntos": 6415,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        },
-        "Spot Trade Volume": {
-          "puntos": 6415,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        },
-        "IBIT Options Trade Volume": {
-          "puntos": 6415,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        },
-        "ETF Trade Volume": {
-          "puntos": 6415,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        },
-        "Onchain Volume": {
-          "puntos": 6415,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        },
-        "Revived Supply 6m+": {
-          "puntos": 6415,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        },
-        "Issuance to Miners": {
-          "puntos": 6415,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        }
-      }
+      "desde": "2009-01-01",
+      "hasta": "2026-07-30"
     },
     {
-      "ruta": "btconchain/unrealised/aviv_gradient_180/aviv_gradient_180_light.html",
-      "url": "https://charts-cdn.checkonchain.com/btconchain/unrealised/aviv_gradient_180/aviv_gradient_180_light.html",
-      "bytes": 1115611,
-      "tiene_plotly": true,
-      "marcadores": {
-        "Plotly.newPlot": 1,
-        "Plotly.react": 0,
-        "application/json": 0,
-        "\"data\"": 1,
-        "\"x\":": 11,
-        "\"y\":": 9
-      },
-      "estrategia_que_funciono": "Plotly.newPlot",
-      "n_traces": 5,
-      "diagnostico_traces": [
-        {
-          "name": "Price",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "x"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 6420,
-            "muestra": [
-              "2009-01-01T00:00:00",
-              "2009-01-02T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 68480,
-            "decodificado_n": 6420,
-            "decodificado_muestra": [
-              "nan",
-              "nan"
-            ]
-          }
-        },
-        {
-          "name": "True Mean Price",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "x"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 6420,
-            "muestra": [
-              "2009-01-01T00:00:00",
-              "2009-01-02T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 68480,
-            "decodificado_n": 6420,
-            "decodificado_muestra": [
-              "nan",
-              "nan"
-            ]
-          }
-        },
-        {
-          "name": "Market Gradient",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "x"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 6420,
-            "muestra": [
-              "2009-01-01T00:00:00",
-              "2009-01-02T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 68480,
-            "decodificado_n": 6420,
-            "decodificado_muestra": [
-              "nan",
-              "nan"
-            ]
-          }
-        },
-        {
-          "name": "Realised Gradient",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "x"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 6420,
-            "muestra": [
-              "2009-01-01T00:00:00",
-              "2009-01-02T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 68480,
-            "decodificado_n": 6420,
-            "decodificado_muestra": [
-              "nan",
-              "nan"
-            ]
-          }
-        },
-        {
-          "name": "Delta Gradient",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "x"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 6420,
-            "muestra": [
-              "2009-01-01T00:00:00",
-              "2009-01-02T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 68480,
-            "decodificado_n": 6420,
-            "decodificado_muestra": [
-              "nan",
-              "nan"
-            ]
-          }
-        }
+      "cat": "realised",
+      "nombre": "sellsideriskratio_all",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "Extreme Liquidity",
+        "High Liquidity",
+        "Low Liquditiy",
+        "Very Low Liquidity",
+        "ALL Sell-side Risk Ratio",
+        "0.01%",
+        "0.005%",
+        "0.001%",
+        "0.0006%"
       ],
-      "series": {
-        "Price": {
-          "puntos": 6420,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        },
-        "True Mean Price": {
-          "puntos": 6420,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        },
-        "Market Gradient": {
-          "puntos": 6420,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        },
-        "Realised Gradient": {
-          "puntos": 6420,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        },
-        "Delta Gradient": {
-          "puntos": 6420,
-          "desde": "2009-01-01",
-          "hasta": "2026-07-30"
-        }
-      }
+      "desde": "2009-01-01",
+      "hasta": "2026-07-30"
     },
     {
-      "ruta": "btconchain/derivatives/derivatives_futures_fundingrate/derivatives_futures_fundingrate_light.html",
-      "url": "https://charts-cdn.checkonchain.com/btconchain/derivatives/derivatives_futures_fundingrate/derivatives_futures_fundingrate_light.html",
-      "bytes": 5214675,
-      "tiene_plotly": true,
-      "marcadores": {
-        "Plotly.newPlot": 1,
-        "Plotly.react": 0,
-        "application/json": 0,
-        "\"data\"": 1,
-        "\"x\":": 13,
-        "\"y\":": 11
-      },
-      "estrategia_que_funciono": "Plotly.newPlot",
-      "n_traces": 7,
-      "diagnostico_traces": [
-        {
-          "name": "Price",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "x"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 141535,
-            "muestra": [
-              "2010-07-17T23:00:00",
-              "2010-07-18T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 1509708,
-            "decodificado_n": 141535,
-            "decodificado_muestra": [
-              "0.04951",
-              "0.04951"
-            ]
-          }
-        },
-        {
-          "name": "Funding Rate (+ve)",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "x"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 2313,
-            "muestra": [
-              "2020-03-31T00:00:00",
-              "2020-04-01T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 24672,
-            "decodificado_n": 2313,
-            "decodificado_muestra": [
-              "0.0",
-              "0.0"
-            ]
-          }
-        },
-        {
-          "name": "Funding Rate (-ve)",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "x"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 2313,
-            "muestra": [
-              "2020-03-31T00:00:00",
-              "2020-04-01T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 24672,
-            "decodificado_n": 2313,
-            "decodificado_muestra": [
-              "-0.306759432",
-              "-0.36778750500000007"
-            ]
-          }
-        },
-        {
-          "name": "Premium Longs-Pay",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "x"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 2313,
-            "muestra": [
-              "2020-03-31T00:00:00",
-              "2020-04-01T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 24672,
-            "decodificado_n": 2313,
-            "decodificado_muestra": [
-              "0.0",
-              "0.0"
-            ]
-          }
-        },
-        {
-          "name": "Premium Shorts-Pay",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "x"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 2313,
-            "muestra": [
-              "2020-03-31T00:00:00",
-              "2020-04-01T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 24672,
-            "decodificado_n": 2313,
-            "decodificado_muestra": [
-              "-659855.7107573425",
-              "-807425.5909600519"
-            ]
-          }
-        },
-        {
-          "name": "Adj-FR (+ve)",
-          "type": "scatter",
-          "claves": [
-            "fill",
-            "fillcolor",
-            "hovertemplate",
-            "line",
-            "marker",
-            "mode",
-            "name",
-            "opacity",
-            "showlegend",
-            "stackgroup",
-            "type",
-            "visible"
-          ],
-          "x": {
-            "forma": "lista",
-            "n": 2313,
-            "muestra": [
-              "2020-03-31T00:00:00",
-              "2020-04-01T00:00:00"
-            ]
-          },
-          "y": {
-            "forma": "dict",
-            "claves": [
-              "bdata",
-              "dtype"
-            ],
-            "dtype": "f8",
-            "bdata_len": 24672,
-            "decodificado_n": 2313,
-            "decodificado_muestra": [
-              "0.0",
-              "0.0"
-            ]
-          }
-        }
+      "cat": "supply",
+      "nombre": "breakdown_pnl",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "Supply in Loss",
+        "Supply in Profit",
+        "Circulating Supply",
+        "Percent Supply in Profit/Loss"
       ],
-      "series": {
-        "Price": {
-          "puntos": 141535,
-          "desde": "2010-07-17",
-          "hasta": "2026-07-30"
-        },
-        "Funding Rate (+ve)": {
-          "puntos": 2313,
-          "desde": "2020-03-31",
-          "hasta": "2026-07-30"
-        },
-        "Funding Rate (-ve)": {
-          "puntos": 2313,
-          "desde": "2020-03-31",
-          "hasta": "2026-07-30"
-        },
-        "Premium Longs-Pay": {
-          "puntos": 2313,
-          "desde": "2020-03-31",
-          "hasta": "2026-07-30"
-        },
-        "Premium Shorts-Pay": {
-          "puntos": 2313,
-          "desde": "2020-03-31",
-          "hasta": "2026-07-30"
-        },
-        "Adj-FR (+ve)": {
-          "puntos": 2313,
-          "desde": "2020-03-31",
-          "hasta": "2026-07-30"
-        },
-        "Adj-FR (-ve)": {
-          "puntos": 2313,
-          "desde": "2020-03-31",
-          "hasta": "2026-07-30"
-        }
-      }
+      "desde": "2009-01-01",
+      "hasta": "2026-07-30"
+    },
+    {
+      "cat": "supply",
+      "nombre": "breakdown_lthsth_pnl_0",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "LTH in Profit",
+        "LTH in Loss",
+        "STH in Loss",
+        "STH in Profit"
+      ],
+      "desde": "2009-01-01",
+      "hasta": "2026-07-30"
+    },
+    {
+      "cat": "unrealised",
+      "nombre": "mvrv_all_zscore",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "Realised Price",
+        "MVRV Z-Score",
+        "trace_3",
+        "trace_4",
+        "trace_5",
+        "trace_6",
+        "trace_7",
+        "Price 2.0sd",
+        "Price 1.5sd",
+        "Price 1.0sd",
+        "Price -0.5sd",
+        "Price -1.0sd"
+      ],
+      "desde": "2009-01-01",
+      "hasta": "2026-07-30"
+    },
+    {
+      "cat": "unrealised",
+      "nombre": "mvrv_aviv_zscore",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "True Mean Price",
+        "AVIV Z-Score",
+        "trace_3",
+        "trace_4",
+        "trace_5",
+        "trace_6",
+        "trace_7",
+        "Price 2.0sd",
+        "Price 1.0sd",
+        "Price -1.0sd",
+        "Price -1.5sd"
+      ],
+      "desde": "2009-01-01",
+      "hasta": "2026-07-30"
+    },
+    {
+      "cat": "cointime",
+      "nombre": "liveliness",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "Liveliness",
+        "Vaultedness",
+        "Activity-to-Vaulting Ratio (A2VR)"
+      ],
+      "desde": "2009-01-01",
+      "hasta": "2026-07-30"
+    },
+    {
+      "cat": "cointime",
+      "nombre": "hodlernetpositionchange",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "HODLer Net Position Change (+ve)",
+        "HODLer Net Position Change (-ve)"
+      ],
+      "desde": "2009-01-01",
+      "hasta": "2026-07-30"
+    },
+    {
+      "cat": "etfs",
+      "nombre": "etf_flows_1",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "GBTC",
+        "IBIT",
+        "FBTC",
+        "ARKB",
+        "BITB",
+        "BTCO",
+        "HODL",
+        "BRRR",
+        "EZBC",
+        "BTCW",
+        "BTC",
+        "Total Net Flow",
+        "Weekly Total Flow",
+        "ETF Cost Basis"
+      ],
+      "desde": "2024-01-11",
+      "hasta": "2026-07-29"
+    },
+    {
+      "cat": "etfs",
+      "nombre": "etf_cumflows",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "GBTC",
+        "IBIT",
+        "FBTC",
+        "ARKB",
+        "BITB",
+        "BTCO",
+        "HODL",
+        "BRRR",
+        "EZBC",
+        "BTCW",
+        "BTC",
+        "Total Net ETF Flows",
+        "Flows Excl GBTC",
+        "Flows IBIT+FBTC"
+      ],
+      "desde": "2024-01-11",
+      "hasta": "2026-07-29"
+    },
+    {
+      "cat": "etfs",
+      "nombre": "etf_balance_1",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "GBTC",
+        "IBIT",
+        "FBTC",
+        "ARKB",
+        "BITB",
+        "BTCO",
+        "HODL",
+        "BRRR",
+        "EZBC",
+        "BTCW",
+        "BTC",
+        "Total ETF AUM",
+        "Total Excl GBTC",
+        "Total IBIT+FBTC"
+      ],
+      "desde": "2024-01-11",
+      "hasta": "2026-07-29"
+    },
+    {
+      "cat": "derivatives",
+      "nombre": "derivatives_futures_fundingrate",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "Funding Rate (+ve)",
+        "Funding Rate (-ve)",
+        "Premium Longs-Pay",
+        "Premium Shorts-Pay",
+        "Adj-FR (+ve)",
+        "Adj-FR (-ve)"
+      ],
+      "desde": "2020-03-31",
+      "hasta": "2026-07-30"
+    },
+    {
+      "cat": "derivatives",
+      "nombre": "derivatives_futures_oi_byexchange_0",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "Binance",
+        "CME",
+        "Bybit",
+        "Hyperliquid",
+        "OKX",
+        "Coinbase",
+        "Bitget",
+        "Deribit",
+        "Bitfinex",
+        "GateIO",
+        "Bitmex",
+        "Others",
+        "Aggregate Total"
+      ],
+      "desde": "2020-02-28",
+      "hasta": "2026-07-30"
+    },
+    {
+      "cat": "derivatives",
+      "nombre": "derivatives_spotvolume_cvd_0",
+      "estado": "ok",
+      "tipo": "serie_temporal",
+      "series": [
+        "Spot CVD (-ve)",
+        "Spot CVD (+ve)",
+        "Spot CVD"
+      ],
+      "desde": "2014-04-05",
+      "hasta": "2026-07-30"
+    },
+    {
+      "cat": "derivatives",
+      "nombre": "derivatives_termstructure_0",
+      "estado": "ok",
+      "tipo": "distribucion",
+      "traces": [
+        "Current",
+        "1 Weeks Ago",
+        "2 Weeks Ago",
+        "4 Weeks Ago",
+        "8 Weeks Ago",
+        "12 Weeks Ago"
+      ]
+    },
+    {
+      "cat": "urpd",
+      "nombre": "urpd",
+      "estado": "ok",
+      "tipo": "distribucion",
+      "traces": [
+        "Supply in Profit/Loss",
+        "trace_1",
+        "Percent of Total"
+      ]
+    },
+    {
+      "cat": "urpd",
+      "nombre": "urpd_cohort",
+      "estado": "ok",
+      "tipo": "distribucion",
+      "traces": [
+        "Long-Term Holder Supply",
+        "Short-Term Holder Supply",
+        "trace_2",
+        "trace_3",
+        "Percent of Total",
+        "Percent of LTH",
+        "Percent of STH"
+      ]
     }
   ]
 }
