@@ -56,7 +56,29 @@
       "realized_price_derivado": 52885.94,
       "veredicto": "FUNCIONA — realized price reconstruible con histórico largo"
     },
-    "mvrv_primer_dato": "2026-07-29"
+    "historico": {
+      "2018 (rango cerrado)": {
+        "http": 200,
+        "filas": 10,
+        "primera": "2018-01-01",
+        "ultima": "2018-01-10",
+        "realized_price_derivado": 4997.58
+      },
+      "2022 (rango cerrado)": {
+        "http": 200,
+        "filas": 10,
+        "primera": "2022-06-01",
+        "ultima": "2022-06-10",
+        "realized_price_derivado": 23705.16
+      },
+      "2025 (rango cerrado)": {
+        "http": 200,
+        "filas": 10,
+        "primera": "2025-01-01",
+        "ultima": "2025-01-10",
+        "realized_price_derivado": 41013.52
+      }
+    }
   },
   "checkonchain": {
     "fuente": "Checkonchain",
@@ -101,7 +123,20 @@
       "url": "https://charts.checkonchain.com/btconchain/entities/btctc_realisedcap_0/btctc_realisedcap_0_light.html",
       "http": 200,
       "bytes": 862,
-      "tiene_plotly_json": false
+      "tiene_plotly_json": false,
+      "html_crudo": "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Bitcoin Treasury Company Realised Cap - _checkonchain</title>\n<meta name=\"description\" content=\"Bitcoin Treasury Company Realised Cap - Bitcoin on-chain analysis chart by _checkonchain (Entities).\">\n<link rel=\"icon\" type=\"image/png\" href=\"https://cdn.prod.website-files.com/660a0afa9461dd6b2c8d20ca/661e1dcc98b2d700ee15fd1e_CoC-Favicon-lrg.png\">\n<style>html,body{margin:0;padding:0;height:100%;overflow:hidden}iframe{border:0;width:100%;height:100%;display:block}</style>\n</head>\n<body>\n<iframe id=\"chart\" title=\"Bitcoin Treasury Company Realised Cap - _checkonchain\" src=\"https://charts-cdn.checkonchain.com/btconchain/entities/btctc_realisedcap_0/btctc_realisedcap_0_light.html\" allowfullscreen></iframe>\n</body>\n</html>\n",
+      "referencias": [
+        "https://cdn.prod.website-files.com/660a0afa9461dd6b2c8d20ca/661e1dcc98b2d700ee15fd1e_CoC-Favicon-lrg.png",
+        "https://charts-cdn.checkonchain.com/btconchain/entities/btctc_realisedcap_0/btctc_realisedcap_0_light.html"
+      ],
+      "seguimiento": {
+        "url": "https://cdn.prod.website-files.com/660a0afa9461dd6b2c8d20ca/661e1dcc98b2d700ee15fd1e_CoC-Favicon-lrg.png",
+        "http": 200,
+        "bytes": 29492,
+        "tiene_plotly_json": false,
+        "rango_fechas": null,
+        "muestra": "�PNG\r\n\u001a\n\u0000\u0000\u0000\rIHDR\u0000\u0000\u0001\u0000\u0000\u0000\u0001\u0000\b\u0006\u0000\u0000\u0000\\r�f\u0000\u0000\u0000\tpHYs\u0000\u0000\u000b\u0013\u0000\u0000\u000b\u0013\u0001\u0000��\u0018\u0000\u0000\u0001eiCCPDisplay P3\u0000\u0000x�u��K�P\u0014�O�R�:�\u000e\u001d\u001c2�C��\nvqh+\u0014E0T\u0005�S�~\tm|$)Rq\u0013W)�\u001fX�Yp��Tpqp\u0010D\u0007\u0011ݜ:)�hxޗT�\"����8�s�\\�\u001bP\u0019+�\u0002(閑LĤ�Ժ�{���S�f���,\n��������O�YM�v\u0010�O\\��.�v�\u0002S�]՟ɚ\u001a���A�\u0019\u0016����m�\t�%\u001e1h)���ǂ�.�;��d���X�\nj��I,�;�|\u0007��e����ޟ�W��\u001c�Q�a\u0013&\u0018�PQ�\u0004\u0005��ӎ?�-rW`P."
+      }
     }
   },
   "blockchain": {
@@ -151,7 +186,7 @@
     "key": "no",
     "formato": "HTML",
     "http": 200,
-    "bytes": 769633,
+    "bytes": 769636,
     "tiene_tabla": true,
     "muestra_fechas": [
       "11 Jan 2024",
@@ -173,17 +208,17 @@
     "CoinGecko (precio/mcap)": {
       "http": 401,
       "bytes": 0,
-      "muestra": "{\"error\":{\"status\":{\"timestamp\":\"2026-07-30T09:04:14.073+00:00\",\"error_code\":10012,\"error_message\":\"Your request exceeds"
+      "muestra": "{\"error\":{\"status\":{\"timestamp\":\"2026-07-30T09:10:14.372+00:00\",\"error_code\":10012,\"error_message\":\"Your request exceeds"
     },
     "Blockchair (stats)": {
       "http": 200,
-      "bytes": 1880,
-      "muestra": "{\"data\":{\"blocks\":960233,\"transactions\":1407568631,\"outputs\":3851315880,\"circulation\":2006319916655096,\"blocks_24h\":146,"
+      "bytes": 1878,
+      "muestra": "{\"data\":{\"blocks\":960235,\"transactions\":1407576238,\"outputs\":3851333652,\"circulation\":2006320541655096,\"blocks_24h\":148,"
     },
     "bitcoin-data.com (raíz API)": {
       "http": 404,
       "bytes": 0,
-      "muestra": "{\"timestamp\":\"2026-07-30T09:03:50.339+00:00\",\"status\":404,\"error\":\"Not Found\",\"path\":\"/v1/\"}"
+      "muestra": "{\"timestamp\":\"2026-07-30T09:09:50.907+00:00\",\"status\":404,\"error\":\"Not Found\",\"path\":\"/v1/\"}"
     }
   }
 }
