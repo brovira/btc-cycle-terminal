@@ -37,9 +37,16 @@ PRIORITARIOS = [
     "lth-sopr",
 ]
 EXTRA = [
-    "lth-realized-price", "active-realized-price", "aviv", "nupl", "sth-nupl", "lth-nupl",
-    "realized-cap", "cdd", "liveliness", "reserve-risk", "puell-multiple",
-    "sopr-adjusted", "hodl-waves", "sell-side-risk-ratio",
+    "lth-realized-price", "active-realized-price", "aviv", "realized-cap",
+    "sell-side-risk-ratio", "supply-in-profit-percent", "percent-supply-in-profit",
+]
+
+# `supply-in-profit` dio 404 el 30-jul-2026. Variantes a probar (el % de supply en profit
+# es el oscilador con los umbrales 54,2 / 60 / 75 / 90 → techo de rally de bear y confirmación
+# de bull). Se prueban con --slugs para no gastar cuota en el lote completo.
+CANDIDATOS_SUPPLY = [
+    "percent-supply-in-profit", "supply-in-profit-percent", "supply-profit",
+    "percentage-supply-in-profit", "sth-supply-in-profit", "profit-supply",
 ]
 
 # Métricas de Coin Metrics que interesan (se comprueban contra su catálogo)
@@ -98,18 +105,38 @@ def probar_bgeometrics(slugs):
 
 
 def probar_coinmetrics():
-    print("\nCoin Metrics Community (catálogo completo, 1 petición):")
-    status, raw = get("https://community-api.coinmetrics.io/v4/catalog/asset-metrics?assets=btc",
-                      {"Accept": "application/json", "User-Agent": "Mozilla/5.0 (compatible; btc-cycle-terminal)"})
-    if status != 200:
-        print(f"  -- catálogo HTTP {status}: {raw[:160]}")
-        return {"http": status}
-    try:
-        data = json.loads(raw)["data"][0]["metrics"]
-    except Exception as e:
-        print("  -- no pude parsear el catálogo:", e)
-        return {"http": status, "error": str(e)}
-    disponibles = {m["metric"] for m in data}
+    """El endpoint del catálogo ha cambiado entre versiones de la API v4 → probamos varios."""
+    print("\nCoin Metrics Community (catálogo de métricas):")
+    H = {"Accept": "application/json", "User-Agent": "Mozilla/5.0 (compatible; btc-cycle-terminal)"}
+    CANDIDATOS = [
+        "https://community-api.coinmetrics.io/v4/catalog-v2/asset-metrics?assets=btc&page_size=10000",
+        "https://community-api.coinmetrics.io/v4/catalog-all/asset-metrics?assets=btc&page_size=10000",
+        "https://community-api.coinmetrics.io/v4/catalog/asset-metrics?assets=btc&page_size=10000",
+        "https://community-api.coinmetrics.io/v4/reference-data/asset-metrics?page_size=10000",
+    ]
+    data = None
+    for url in CANDIDATOS:
+        status, raw = get(url, H)
+        print(f"  probando {url.split('/v4/')[1][:34]:36s} → HTTP {status}")
+        if status != 200:
+            continue
+        try:
+            j = json.loads(raw)
+            d = j.get("data", [])
+            # forma A: [{asset, metrics:[{metric,...}]}]  ·  forma B: [{metric,...}]
+            if d and isinstance(d[0], dict) and "metrics" in d[0]:
+                data = d[0]["metrics"]
+            elif d:
+                data = d
+            if data:
+                break
+        except Exception as e:
+            print("     no pude parsear:", e)
+    if not data:
+        print("  -- ningún endpoint de catálogo respondió. Se puede seguir sin Coin Metrics:")
+        print("     BGeometrics ya cubre la escalera de cost basis (ver informe de arriba).")
+        return {"http": 0, "nota": "catalogo_no_disponible"}
+    disponibles = {m.get("metric") for m in data if isinstance(m, dict) and m.get("metric")}
     print(f"  total métricas de BTC en el tier gratis: {len(disponibles)}")
     res = {"total": len(disponibles), "interes": {}}
     for m, para_que in CM_INTERES.items():
@@ -130,11 +157,17 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--todos", action="store_true", help="probar también los slugs EXTRA (más cuota)")
     ap.add_argument("--solo-cm", action="store_true", help="saltar BGeometrics (0 cuota)")
+    ap.add_argument("--slugs", default="", help="lista separada por comas de slugs concretos a probar "
+                                               "(usa 'supply' como atajo de los candidatos de % supply in profit)")
     a = ap.parse_args()
 
     informe = {}
     if not a.solo_cm:
-        slugs = PRIORITARIOS + (EXTRA if a.todos else [])
+        if a.slugs:
+            slugs = CANDIDATOS_SUPPLY if a.slugs.strip() == "supply" else \
+                    [s.strip() for s in a.slugs.split(",") if s.strip()]
+        else:
+            slugs = PRIORITARIOS + (EXTRA if a.todos else [])
         print(f"BGeometrics — probando {len(slugs)} slugs (cuota gratis ~15/día):")
         informe["bgeometrics"] = probar_bgeometrics(slugs)
     informe["coinmetrics"] = probar_coinmetrics()

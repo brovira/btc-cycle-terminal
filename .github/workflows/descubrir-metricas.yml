@@ -17,6 +17,10 @@ on:
         description: "Solo Coin Metrics (no gasta cuota de BGeometrics)"
         type: boolean
         default: false
+      slugs:
+        description: "Slugs concretos separados por comas (o 'supply' para buscar el % supply in profit)"
+        type: string
+        default: ""
 
 permissions:
   contents: write
@@ -39,7 +43,8 @@ jobs:
         run: |
           python ingesta/descubrir_metricas.py \
             ${{ inputs.todos && '--todos' || '' }} \
-            ${{ inputs.solo_cm && '--solo-cm' || '' }}
+            ${{ inputs.solo_cm && '--solo-cm' || '' }} \
+            ${{ inputs.slugs && format('--slugs={0}', inputs.slugs) || '' }}
       - name: Commit del informe
         run: |
           git config user.name "onchain-bot"

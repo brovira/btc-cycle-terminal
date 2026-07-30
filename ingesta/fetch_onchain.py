@@ -21,18 +21,33 @@ import argparse, json, os, sys, urllib.request, urllib.error
 BASE = "https://bitcoin-data.com/v1"
 OUTDIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "onchain")
 
-# nombre_local -> slug del endpoint en bitcoin-data.com (ajustar según respuesta real)
+# nombre_local -> slug del endpoint en bitcoin-data.com.
+# TODOS verificados el 30-jul-2026 con `descubrir_metricas.py` (ver data/onchain/_disponibilidad.json):
+# devuelven 1.461 puntos = ventana MÓVIL de 4 años exactos (el plan gratis no da más histórico).
+#
+# El orden importa: si la cuota diaria (~15 peticiones) se agota, se pierden las de abajo.
+# Arriba van las que Glassnode usa HOY para decidir (medido sobre sus conclusiones 2025-26,
+# ver agentes/glassnode_tactico/catalogo_indicadores.md).
 METRICS = {
-    "mvrv_zscore":    "mvrv-zscore",
-    "realized_price": "realized-price",
-    "sopr":           "sopr",
-    # STH = short-term holders (compradores de <155 días). Para la estrategia de vol:
-    # sth_realized_price = su precio medio de compra (el "DÓNDE" de Glassnode: resistencia
-    # en bear / soporte en bull, hoy ~$69K); sth_sopr = si venden con ganancia o pérdida.
-    # Si el slug no existe en BGeometrics el script lo salta e informa (ver --probe).
-    "sth_realized_price": "sth-realized-price",
-    "sth_sopr":           "sth-sopr",
+    # --- la escalera de cost basis: los NIVELES que anclan sus decisiones ---
+    "true_market_mean":   "true-market-mean",    # línea divisoria bull/bear (50% de conclusiones en 2026)
+    "sth_realized_price": "sth-realized-price",  # STH cost basis: techo en bear, suelo en bull (32%)
+    "realized_price":     "realized-price",      # suelo estructural del ciclo (17%)
+    # --- flujos: el driver nº1 de sus conclusiones (67% en 2026) ---
+    "realized_profit":    "realized-profit",
+    "realized_loss":      "realized-loss",       # su condición de suelo: enfriar bajo $25M/día
+    # --- osciladores de confirmación de régimen ---
+    "sth_mvrv":           "sth-mvrv",            # reclamar 1,0 = condición de transición pre-bull
+    "sth_sopr":           "sth-sopr",            # <1 sostenido = bear de manual
+    "lth_sopr":           "lth-sopr",
+    # --- contexto (ya no deciden en su método, pero los usan otros analistas/páginas) ---
+    "mvrv_zscore":        "mvrv-zscore",         # OJO: métrica de Cowen/retail, NO de Glassnode
+    "sopr":               "sopr",
 }
+
+# Pendiente: el % de supply en profit (umbrales 54,2 / 60 / 75 / 90 que marcan techos de
+# rally de bear y confirmación de bull). El slug `supply-in-profit` da 404 — probar variantes
+# con: python ingesta/descubrir_metricas.py --slugs percent-supply-in-profit,supply-profit,...
 
 DATE_KEYS = ("d", "date", "theday", "day", "t")
 IGNORE_KEYS = ("unixts",)  # columnas auxiliares que NO son el valor de la métrica

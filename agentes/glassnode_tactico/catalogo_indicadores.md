@@ -21,22 +21,28 @@ Dos pasadas automáticas sobre los **272 artículos completos** (los 56 stubs se
 
 ## 🎯 Lo que decide HOY (% de conclusiones que lo citan, 2025-26)
 
+**Columna de datos verificada el 30-jul-2026** (`data/onchain/_disponibilidad.json`).
+
 | # | Indicador | Vigencia | 2026 | Tipo | ¿Tenemos el dato? |
 |---|---|---|---|---|---|
-| 1 | **Realized Profit/Loss ($)** | 53% | 67% | Flujo | ❓ sin verificar |
-| 2 | **ETF flows** | 42% | **67%** | Flujo | ❌ **no tenemos** |
-| 3 | **IV / DVOL** | 42% | **82%** | Vol | ✅ **ya construido** |
-| 4 | **Open Interest** | 30% | 17% | Posicionam. | ✅ ya construido |
-| 5 | **True Market Mean** | 28% | **50%** | Nivel | ❓ probablemente de pago |
-| 6 | **STH Cost Basis** | 28% | 32% | Nivel | ❓ sin verificar |
-| 7 | **Dealer Gamma / GEX** | 18% | 42% | Vol | 🟡 parcial (max pain sí) |
+| 1 | **Realized Profit/Loss ($)** | 53% | 67% | Flujo | ✅ **`realized-profit` / `realized-loss`** |
+| 2 | **ETF flows** | 42% | **67%** | Flujo | ❌ **hueco** (fuente gratis: Farside) |
+| 3 | **IV / DVOL** | 42% | **82%** | Vol | ✅ ya construido (Deribit) |
+| 4 | **Open Interest** | 30% | 17% | Posicionam. | ✅ ya construido (Bybit) |
+| 5 | **True Market Mean** | 28% | **50%** | Nivel | ✅ **`true-market-mean`** |
+| 6 | **STH Cost Basis** | 28% | 32% | Nivel | ✅ **`sth-realized-price`** |
+| 7 | **Dealer Gamma / GEX** | 18% | 42% | Vol | 🟡 parcial (max pain sí, GEX no) |
 | 8 | **Funding rate** | 16% | 10% | Posicionam. | ✅ ya construido |
-| 9 | **Realized Price** | 14% | 17% | Nivel | ✅ **confirmado** (4 años) |
-| 10 | **Realized Cap** | 13% | 10% | Flujo | 🟡 vía Coin Metrics |
-| 11 | **Spot CVD** | 13% | 32% | Flujo | ❌ no tenemos |
-| 12 | **Realized P/L Ratio** | 12% | 25% | Oscilador | ❓ derivable de #1 |
-| 13 | **LTH/STH Supply** | 12% | 14% | Cohorte | ❓ sin verificar |
-| 14 | **% Supply in Profit** | 10% | 17% | Oscilador | ❓ sin verificar |
+| 9 | **Realized Price** | 14% | 17% | Nivel | ✅ `realized-price` |
+| 10 | **Realized Cap** | 13% | 10% | Flujo | 🟡 derivable |
+| 11 | **Spot CVD** | 13% | 32% | Flujo | ❌ hueco |
+| 12 | **Realized P/L Ratio** | 12% | 25% | Oscilador | ✅ **derivable de #1** |
+| 13 | **LTH/STH Supply** | 12% | 14% | Cohorte | 🟡 `lth-sopr` sí, supply no |
+| 14 | **% Supply in Profit** | 10% | 17% | Oscilador | ⏳ slug 404, buscando variante |
+
+**Resultado: 9 de los 14 drivers cubiertos, 2 parciales, 3 huecos.** La escalera de cost basis completa
+(True Market Mean + STH Cost Basis + Realized Price) y los flujos de beneficio/pérdida realizados —el
+driver nº1— **están disponibles gratis** en BGeometrics, con 1.461 puntos (ventana móvil de 4 años).
 
 ## ☠️ Lo que MURIÓ (aparece en ≤5% de las conclusiones recientes)
 
@@ -89,16 +95,20 @@ estructural. **Candidato serio a añadir.**
 
 ---
 
-## ⏳ Lo que falta para cerrar el análisis
+## ⏳ Lo que queda abierto
 
-La columna "¿tenemos el dato?" tiene **7 interrogantes**. No se pueden resolver desde el sandbox (sin
-salida de red a los hosts de datos). Se resuelve corriendo:
+1. **`% supply in profit`** — el slug `supply-in-profit` da 404. Es el oscilador con los umbrales
+   **54,2% (techo de rally de bear) / 60% / 75% / 90%**, de los más citables del corpus. Buscar variante:
+   `Actions → Descubrir métricas → slugs: supply`.
+2. **ETF flows** — 2º driver de 2026 (67%) y sin cobertura. Fuente gratis: Farside Investors (netflows
+   diarios por emisor). Requiere un ingestor nuevo.
+3. **Spot CVD** — 32% en 2026. Derivable de trades de Binance, pero es pesado de reconstruir.
+4. **Coin Metrics** — el catálogo devolvió HTTP 400 (endpoint cambiado); ya se prueban 4 variantes en el
+   script. No es bloqueante: BGeometrics cubre la escalera.
 
-```
-Actions → "Descubrir métricas on-chain disponibles" → Run workflow
-```
-(o en local: `python ingesta/descubrir_metricas.py`)
+## 🧾 El techo de datos que condiciona TODO backtest
 
-Prueba los slugs prioritarios en BGeometrics **y** el catálogo entero de Coin Metrics Community (gratis,
-sin key) y escribe `data/onchain/_disponibilidad.json`. Con ese informe, la tabla de arriba se cierra y
-**ahí sí** se decide qué se backtestea.
+BGeometrics gratis devuelve **1.461 puntos = 4 años exactos en ventana móvil** (hoy jul-2022 → jul-2026).
+El backtest cubre **~1 ciclo**: suelo 2022 → bull 2024-25 → techo oct-2025 → bear 2026. Es suficiente para
+validar la *mecánica* de una regla y ver cómo se comportó en un bear, un bull y un techo — pero **no** para
+afirmar que funciona "en todos los ciclos". Cada resultado debe llevar esa etiqueta.
