@@ -13,6 +13,10 @@ literales y sus propias advertencias.
 > ### ⚠️ Cobertura honesta del corpus
 > **272 de 328 artículos están completos. 56 son stubs** (solo intro, el cuerpo no se archivó):
 > **78% de 2022** (39/50) y **26% de 2021** (14/52). **2023→2026 está completo al 100%.**
+> **Mitigado (30-jul-2026):** se bajaron 214 transcripts del canal de YouTube y **67 son de 2022**,
+> las mismas ediciones del WoC en vídeo. Cubren el hueco, pero como auto-subs: valen para el
+> razonamiento, no para citar cifras exactas. Ver `README.md`.
+>
 > Consecuencia: el método aquí descrito es **sólido para 2023-2026** (que es además el método que usan HOY,
 > mucho más formalizado) y **flojo en el bear de 2022** — justo el análogo del régimen actual. Para cerrar
 > ese hueco hay que re-ingestar 2022 (ver `README.md §Re-ingesta`).

@@ -23,7 +23,31 @@ Barrido de los **328 Week On-Chain** archivados (2019→jul-2026) en `research/g
 repo **privado DeFi-Tracker**, leídos íntegros por 12 extractores en paralelo (jul-2026). Los informes
 crudos por lote no se versionan aquí (son intermedios); lo que queda es la destilación.
 
-## ⚠️ Hueco conocido: el corpus de 2022
+## ✅ El hueco de 2022, CUBIERTO por los vídeos (30-jul-2026)
+
+Se bajaron **214 transcripts** del canal oficial (`yt-transcripts/`, 2021-06 → 2026-06, todos con
+fecha). Reparto por año: 2021 (37) · **2022 (67)** · 2023 (62) · 2024 (18) · 2025 (6) · 2026 (24).
+
+**Lo importante:** esos 67 vídeos de 2022 son **las mismas ediciones del Week On-Chain** en formato
+vídeo (`the-week-on-chain-…-week-N-2022`) — justo donde los artículos están 78% truncados. Las dos
+fuentes se **complementan**:
+
+| Periodo | Artículos | Vídeos |
+|---|---|---|
+| 2021 | 26% stubs | 37 vídeos |
+| **2022** | **78% stubs** ❌ | **67 vídeos** ✅ |
+| 2023 | completo ✅ | 62 vídeos |
+| 2024-25 | completo ✅ | pocos (24) |
+| 2026 | completo ✅ | 24 vídeos |
+
+⚠️ **Pero pesan menos:** son auto-subs (speech-to-text) con erratas y sin las cifras de los gráficos.
+El agente debe marcarlos como **fuente VÍDEO** al citarlos. Sirven para el *razonamiento y el marco*,
+no como fuente de un número exacto.
+
+Cobertura de indicadores en los vídeos: cost basis (113) · realized price (76) · MVRV (58) ·
+SOPR (17) · true market mean (9).
+
+## ⚠️ Hueco original: el corpus de 2022 (ya mitigado, ver arriba)
 
 **56 de 328 artículos son stubs** (solo intro; el cuerpo no se archivó): **78% de 2022** y **26% de 2021**.
 2023→2026 está completo. El método actual (la escalera de cost basis) es de 2023+, así que el framework es
