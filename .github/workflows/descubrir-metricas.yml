@@ -1,0 +1,49 @@
+name: Descubrir métricas on-chain disponibles
+
+# Manual. Comprueba QUÉ métricas on-chain gratis existen y con cuánto histórico,
+# en BGeometrics (necesita BGAPI_TOKEN) y Coin Metrics Community (sin key).
+# Existe porque el sandbox de Claude Code no tiene salida a esos hosts.
+#
+# Resultado: data/onchain/_disponibilidad.json (se commitea) + el log del run.
+
+on:
+  workflow_dispatch:
+    inputs:
+      todos:
+        description: "Probar también los slugs EXTRA (gasta más cuota de BGeometrics)"
+        type: boolean
+        default: false
+      solo_cm:
+        description: "Solo Coin Metrics (no gasta cuota de BGeometrics)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: onchain
+  cancel-in-progress: false
+
+jobs:
+  descubrir:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Descubrir disponibilidad
+        env:
+          BGAPI_TOKEN: ${{ secrets.BGAPI_TOKEN }}
+        run: |
+          python ingesta/descubrir_metricas.py \
+            ${{ inputs.todos && '--todos' || '' }} \
+            ${{ inputs.solo_cm && '--solo-cm' || '' }}
+      - name: Commit del informe
+        run: |
+          git config user.name "onchain-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/onchain/_disponibilidad.json
+          git diff --cached --quiet || git commit -m "onchain: informe de disponibilidad de métricas [skip ci]"
+          git push
