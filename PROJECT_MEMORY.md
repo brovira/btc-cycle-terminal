@@ -329,3 +329,13 @@ Cadena ahora completa: `semanal.py` en DeFi-Tracker (jueves 13:00 UTC) → **`in
   `cambios_de_fiabilidad` → los calibra el agente `glassnode_tactico` contra `track_record.md`.
 - Gotcha corregido: la heurística de fiabilidad usa **regex con `\b`**, no substring — `"iv"` hacía
   match dentro de "decis**iv**o" y clasificaba un reclaim de nivel como «IV baja» (1/4 en vez de 8/10).
+
+## 🔴 PENDIENTE URGENTÍSIMO — Evaluador adversarial de agentes (pedido 30-jul-2026)
+Ver **`agentes/PENDIENTE_evaluador_adversarial.md`** (diseño completo).
+**Secuencia:** (1) terminar `glassnode_tactico` con los transcripts de YouTube → (2) construir el
+evaluador → (3) auditar con él al agente de Glassnode y **encontrarle los fallos**.
+Es el *checker* de un maker≠checker aplicado a los AGENTES: verifica cada cita contra el corpus real,
+detecta umbrales interpolados, citas descontextualizadas (método de 2021 dado como vigente),
+conocimiento general disfrazado de Glassnode, derivaciones no declaradas y niveles sin fecha.
+Los auto-subs de YouTube son su prueba de fuego (erratas de speech-to-text).
+Después, ampliarlo a `lmec` y `cowen`, que llevan más tiempo en producción y nunca se auditaron así.
