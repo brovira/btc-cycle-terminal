@@ -58,3 +58,17 @@ cd .. && python run.py
 **Advertencia:** puede que no funcione. Los stubs contienen intro + índice y cortan justo donde empieza el
 cuerpo, lo que sugiere que **las ediciones antiguas están cerradas a miembros**. Si tras re-ingestar siguen
 en <3KB, el texto no es recuperable por esta vía y el hueco se queda.
+
+## Archivos (actualizado 30-jul-2026)
+
+| Archivo | Qué es |
+|---|---|
+| `framework_direccion.md` | El marco: escalera de cost basis, 4 regímenes, asimetría, osciladores con umbrales literales, guardarraíles |
+| `catalogo_indicadores.md` | Qué indicadores **deciden** hoy (medido sobre sus conclusiones 2025-26) vs cuáles murieron |
+| `backtest_repertorio.md` | Qué se puede backtestear, en tiers, por disponibilidad de datos |
+| **`especificacion_backtest.md`** | **La traducción a código**: cada regla → serie exacta + archivo, decisiones de diseño abiertas, y qué NO se puede testear |
+| `extraccion_woc/informe_g*.md` | Los 12 informes crudos del barrido (2019→2026), con las ~100 reglas literales y sus citas |
+| `extraccion_woc/_frecuencia.py` | El script que mide el uso real de cada indicador por año |
+
+> **Los informes crudos son la materia prima.** Si hace falta una regla exacta con su cita, están ahí;
+> el framework es la destilación, no el original.
