@@ -44,11 +44,30 @@ def encontrar_stubs(carpeta):
     return out
 
 
+def comprobar_dependencias():
+    """run.py necesita requests + trafilatura, y trafilatura arrastra lxml_html_clean (que se
+    separó de lxml en 2024). Se comprueba ANTES de borrar nada: si falta algo, el script abortaba
+    después de haber borrado los stubs y había que restaurar la copia. Mejor fallar pronto."""
+    faltan = []
+    for mod, paquete in [("requests", "requests"), ("trafilatura", "trafilatura"),
+                         ("lxml_html_clean", "lxml_html_clean")]:
+        try:
+            __import__(mod)
+        except ImportError:
+            faltan.append(paquete)
+    if faltan:
+        print("Faltan librerías. Instálalas con:\n")
+        print(f"  {sys.executable} -m pip install -U " + " ".join(faltan) + "\n")
+        sys.exit(1)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--kb", required=True, help="ruta al clon del repo DeFi-Tracker")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
+    if not a.dry_run:
+        comprobar_dependencias()
 
     raiz = os.path.expanduser(a.kb)
     base = os.path.join(raiz, "research", "glassnode-kb")
