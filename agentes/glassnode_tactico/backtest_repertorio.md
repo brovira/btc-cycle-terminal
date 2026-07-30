@@ -78,9 +78,3 @@ No pasa nada: son el "criterio", igual que la rotación de skew en derivados.
 Cada backtest debe decir: ventana real de datos · nº de señales (si son <10, decirlo) · si el umbral es
 **de ellos** o **optimizado por nosotros** (¡lo segundo es sospechoso de overfit!) · y qué pata quedó fuera
 por falta de datos. Sin eso, un backtest bonito es una trampa.
-
-## Cómo se reporta (regla de honestidad)
-
-Cada backtest debe decir: ventana real de datos · nº de señales (si son <10, decirlo) · si el umbral es
-**de ellos** o **optimizado por nosotros** (¡lo segundo es sospechoso de overfit!) · y qué pata quedó fuera
-por falta de datos. Sin eso, un backtest bonito es una trampa.
