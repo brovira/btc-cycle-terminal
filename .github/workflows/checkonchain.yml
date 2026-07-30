@@ -1,0 +1,54 @@
+name: Checkonchain — catálogo y extracción
+
+# Manual. Checkonchain publica gratis cientos de charts (on-chain, técnico, derivados, ETFs,
+# treasury). Sus páginas públicas son cáscaras que apuntan a charts-cdn.checkonchain.com,
+# donde el chart real es un export de Plotly con los datos embebidos.
+#
+# Este workflow: lista el catálogo, inspecciona el formato y extrae series de prueba.
+# Uso PERSONAL (lectura para validar/extender backtests), no redistribución.
+#
+# Resultado: data/checkonchain/ (informe + series extraídas), commiteado.
+
+on:
+  workflow_dispatch:
+    inputs:
+      modo:
+        description: "auto (catálogo+inspección+prueba) · catalogo · inspeccionar · extraer"
+        type: choice
+        options: [auto, catalogo, inspeccionar, extraer]
+        default: auto
+      ruta:
+        description: "Ruta del chart (solo para inspeccionar/extraer). Ej: btconchain/pricing/pricing_realisedprice/pricing_realisedprice_light.html"
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: checkonchain
+  cancel-in-progress: false
+
+jobs:
+  extraer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Ejecutar
+        run: |
+          case "${{ inputs.modo }}" in
+            catalogo)     python ingesta/checkonchain.py --catalogo ;;
+            inspeccionar) python ingesta/checkonchain.py --inspeccionar "${{ inputs.ruta }}" ;;
+            extraer)      python ingesta/checkonchain.py --extraer "${{ inputs.ruta }}" ;;
+            *)            python ingesta/checkonchain.py --auto ;;
+          esac
+      - name: Commit
+        run: |
+          git config user.name "onchain-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/checkonchain/ || true
+          git diff --cached --quiet || git commit -m "checkonchain: catálogo/extracción [skip ci]"
+          git push
