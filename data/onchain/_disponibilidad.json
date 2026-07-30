@@ -1,0 +1,88 @@
+{
+  "bgeometrics": {
+    "sth-realized-price": {
+      "http": 200,
+      "puntos": 1461,
+      "campos": [
+        "d",
+        "unixTs",
+        "sthRealizedPrice"
+      ],
+      "desde": "2022-07-30",
+      "hasta": "2026-07-29"
+    },
+    "sth-sopr": {
+      "http": 200,
+      "puntos": 1461,
+      "campos": [
+        "d",
+        "unixTs",
+        "sthSopr"
+      ],
+      "desde": "2022-07-30",
+      "hasta": "2026-07-29"
+    },
+    "sth-mvrv": {
+      "http": 200,
+      "puntos": 1461,
+      "campos": [
+        "d",
+        "unixTs",
+        "sthMvrv"
+      ],
+      "desde": "2022-07-30",
+      "hasta": "2026-07-29"
+    },
+    "true-market-mean": {
+      "http": 200,
+      "puntos": 1461,
+      "campos": [
+        "d",
+        "unixTs",
+        "trueMarketMean"
+      ],
+      "desde": "2022-07-30",
+      "hasta": "2026-07-29"
+    },
+    "realized-profit": {
+      "http": 200,
+      "puntos": 1461,
+      "campos": [
+        "d",
+        "unixTs",
+        "realizedProfit"
+      ],
+      "desde": "2022-07-30",
+      "hasta": "2026-07-29"
+    },
+    "realized-loss": {
+      "http": 200,
+      "puntos": 1461,
+      "campos": [
+        "d",
+        "unixTs",
+        "realizedLoss"
+      ],
+      "desde": "2022-07-30",
+      "hasta": "2026-07-29"
+    },
+    "supply-in-profit": {
+      "http": 404,
+      "respuesta": "{\"timestamp\":\"2026-07-30T08:39:14.950+00:00\",\"status\":404,\"error\":\"Not Found\",\"path\":\"/v1/supply-in-profit\"}"
+    },
+    "lth-sopr": {
+      "http": 200,
+      "puntos": 1460,
+      "campos": [
+        "d",
+        "unixTs",
+        "lthSopr"
+      ],
+      "desde": "2022-07-30",
+      "hasta": "2026-07-29"
+    }
+  },
+  "coinmetrics": {
+    "http": 400
+  }
+}
