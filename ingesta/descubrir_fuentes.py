@@ -72,27 +72,57 @@ def coinmetrics():
         r["metricas_totales"] = len(nombres)
         r["relevantes"] = sorted(n for n in nombres
                                  if re.search(r"real|prof|loss|mvrv|sply|cap", n, re.I))[:60]
-    # Probar de verdad las métricas clave y ver desde cuándo hay datos
-    clave = "CapRealUSD,SplyCur,CapMrktCurUSD,PriceUSD"
+    # `CapRealUSD` dio 403 (es de pago). PERO el catálogo gratis incluye CapMVRVCur, CapMrktCurUSD
+    # y SplyCur → se puede DERIVAR:  realized cap = market cap / MVRV  ·  realized price = rcap / supply.
+    # Probamos cada métrica por separado para ver cuáles pasan y desde cuándo.
+    r["prueba_individual"] = {}
+    for m in ["CapMVRVCur", "CapMrktCurUSD", "SplyCur", "PriceUSD", "CapRealUSD"]:
+        st, raw = get("https://community-api.coinmetrics.io/v4/timeseries/asset-metrics"
+                      f"?assets=btc&metrics={m}&frequency=1d&page_size=5&start_time=2010-01-01")
+        info = {"http": st}
+        if st == 200:
+            try:
+                d = json.loads(raw)["data"]
+                info["primer_dato"] = d[0].get("time", "")[:10] if d else None
+                info["valor"] = d[0].get(m) if d else None
+            except Exception as e:
+                info["error"] = str(e)
+        else:
+            info["motivo"] = raw[:110]
+        r["prueba_individual"][m] = info
+
+    # ¿La derivación funciona? Pedimos las 3 juntas y calculamos realized price a mano.
     st, raw = get("https://community-api.coinmetrics.io/v4/timeseries/asset-metrics"
-                  f"?assets=btc&metrics={clave}&frequency=1d&page_size=10&start_time=2010-01-01")
-    r["prueba_http"] = st
+                  "?assets=btc&metrics=CapMVRVCur,CapMrktCurUSD,SplyCur&frequency=1d"
+                  "&page_size=5&start_time=2015-01-01")
     if st == 200:
         try:
             d = json.loads(raw)["data"]
-            r["primer_dato"] = d[0].get("time", "")[:10] if d else None
-            r["campos_devueltos"] = [k for k in (d[0] if d else {}) if k not in ("asset", "time")]
+            if d:
+                x = d[0]
+                mv, mc, sp = x.get("CapMVRVCur"), x.get("CapMrktCurUSD"), x.get("SplyCur")
+                if mv and mc and sp:
+                    rcap = float(mc) / float(mv)
+                    r["derivacion"] = {
+                        "fecha": x.get("time", "")[:10],
+                        "realized_cap_derivado": round(rcap),
+                        "realized_price_derivado": round(rcap / float(sp), 2),
+                        "veredicto": "FUNCIONA — realized price reconstruible con histórico largo",
+                    }
+                else:
+                    r["derivacion"] = {"veredicto": "faltan campos", "muestra": x}
         except Exception as e:
-            r["error"] = str(e)
+            r["derivacion"] = {"error": str(e)}
     else:
-        r["respuesta"] = raw[:200]
-    # ¿hasta hoy?
-    st2, raw2 = get("https://community-api.coinmetrics.io/v4/timeseries/asset-metrics"
-                    f"?assets=btc&metrics={clave}&frequency=1d&page_size=3&start_time=2026-01-01")
-    if st2 == 200:
+        r["derivacion"] = {"http": st, "respuesta": raw[:160]}
+
+    # ¿Hasta dónde llega el histórico de la derivación?
+    st, raw = get("https://community-api.coinmetrics.io/v4/timeseries/asset-metrics"
+                  "?assets=btc&metrics=CapMVRVCur&frequency=1d&page_size=1&start_time=2010-01-01")
+    if st == 200:
         try:
-            d2 = json.loads(raw2)["data"]
-            r["ultimo_dato_2026"] = d2[-1].get("time", "")[:10] if d2 else None
+            d = json.loads(raw)["data"]
+            r["mvrv_primer_dato"] = d[0].get("time", "")[:10] if d else None
         except Exception:
             pass
     return r
@@ -156,7 +186,6 @@ def otras():
         "CoinGecko (precio/mcap)":      "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=max&interval=daily",
         "Blockchair (stats)":           "https://api.blockchair.com/bitcoin/stats",
         "bitcoin-data.com (raíz API)":  "https://bitcoin-data.com/v1",
-        "Checkonchain (charts JSON)":   "https://charts.checkonchain.com/",
     }
     out = {}
     for nombre, u in pruebas.items():
@@ -166,8 +195,43 @@ def otras():
     return out
 
 
+# ─────────────────────────── 6. Checkonchain (la pista fuerte) ───────────────────────────
+def checkonchain():
+    """checkonchain.com publica GRATIS gráficos estilo Glassnode (incl. cost basis de cohortes,
+    que es justo lo que BGeometrics no da con histórico largo). Sus charts son HTML con el JSON
+    de Plotly embebido → si están accesibles, los datos se pueden extraer.
+
+    Ojo legal/ético: es material de un tercero. Uso PERSONAL de lectura, sin redistribuir."""
+    r = {"fuente": "Checkonchain", "url": "charts.checkonchain.com", "key": "no", "formato": "HTML+Plotly JSON"}
+    st, raw = get("https://charts.checkonchain.com/", {"Accept": "text/html"})
+    r["indice_http"] = st
+    if st == 200:
+        # sacar rutas de charts del índice
+        rutas = sorted(set(re.findall(r'href="([^"]+\.html)"', raw)))[:400]
+        r["rutas_encontradas"] = len(rutas)
+        interesantes = [x for x in rutas if re.search(
+            r"realis|realiz|cost.?basis|sth|short.?term|mvrv|sopr|profit|true.?market", x, re.I)]
+        r["rutas_interesantes"] = interesantes[:30]
+        # probar una y ver si trae datos embebidos
+        objetivo = next((x for x in interesantes if re.search(r"realis|realiz", x, re.I)), None) \
+                   or (rutas[0] if rutas else None)
+        if objetivo:
+            u = objetivo if objetivo.startswith("http") else "https://charts.checkonchain.com/" + objetivo.lstrip("/")
+            st2, raw2 = get(u, {"Accept": "text/html"}, timeout=40)
+            r["prueba_chart"] = {"url": u, "http": st2, "bytes": len(raw2) if st2 == 200 else 0}
+            if st2 == 200:
+                r["prueba_chart"]["tiene_plotly_json"] = ('"x":' in raw2 and '"y":' in raw2)
+                fechas = re.findall(r"20[0-2]\d-\d\d-\d\d", raw2)
+                if fechas:
+                    r["prueba_chart"]["rango_fechas"] = [min(fechas), max(fechas), len(set(fechas))]
+    else:
+        r["respuesta"] = raw[:160]
+    return r
+
+
 FUENTES = {
     "coinmetrics": coinmetrics,
+    "checkonchain": checkonchain,
     "blockchain": blockchain_com,
     "glassnode": glassnode_free,
     "farside": farside_etf,
