@@ -339,3 +339,43 @@ detecta umbrales interpolados, citas descontextualizadas (método de 2021 dado c
 conocimiento general disfrazado de Glassnode, derivaciones no declaradas y niveles sin fecha.
 Los auto-subs de YouTube son su prueba de fuego (erratas de speech-to-text).
 Después, ampliarlo a `lmec` y `cowen`, que llevan más tiempo en producción y nunca se auditaron así.
+
+---
+
+# 📌 CIERRE DE SESIÓN — 30-jul-2026 (36 commits)
+
+## Lo que se hizo, en orden
+
+1. **`vol.html` rediseñada estrategia-first** (como la señal del ciclo): mercado + asunciones → 4 fases →
+   señal ahora con triggers → tabla en vivo → track record → instrumentos agrupados por decisión.
+   Sección **"🗞️ Qué hacemos esta semana"** con las llamadas de Glassnode **como tests evaluables**.
+2. **Agente `glassnode_tactico` (NUEVO)** — barrido de los 328 WoC con 12 extractores → la **escalera de
+   cost basis**, 4 regímenes, la asimetría (en bear el STH CB es techo; en bull, suelo), osciladores con
+   umbrales literales. Más `catalogo_indicadores.md` (qué decide HOY vs qué murió, medido) y
+   `especificacion_backtest.md` (22 reglas → serie exacta + 7 decisiones de diseño).
+3. **Checkonchain reverse-engineered** → 539 charts gratis, **17 años** de la escalera completa.
+   Sustituye a BGeometrics (que solo daba 4 años en ventana móvil).
+4. **214 transcripts de YouTube** (2021→2026, con fecha) — cubren el hueco de 2022.
+5. **Agente `glassnode_strategy` completado** con 5 Strategy Watch (flujos institucionales, n=6).
+6. **Puente WoC → dashboard arreglado** (`sync_woc.py`): `woc_semana.json` estaba escrito a mano y
+   **nada lo actualizaba**.
+
+## ▶️ SIGUIENTE PASO (acordado, sin empezar)
+
+**El evaluador adversarial.** Diseño completo en `agentes/PENDIENTE_evaluador_adversarial.md`:
+auditar a los 3 agentes de Glassnode buscándoles fallos (10 modos, veredicto por afirmación,
+batería de 7 preguntas trampa). El usuario lo marcó **urgentísimo** y es lo primero al retomar.
+
+Después: el **paso 1 del backtest** — *caracterizar* los niveles (cada toque del STH CB y del TMM en
+17 años: ¿reclamó y aguantó o rebotó? ¿qué hizo a +2/+4/+8 semanas?). **Validar la premisa antes de
+optimizar nada.**
+
+## ⚠️ Abierto / a vigilar
+
+- **Skew de Checkonchain con la escala mal** (rango [−3, +0,4] vs [−30%, +60%] de su chart). Se
+  arreglaron dos bugs (NaN y selección de figura) pero **el lote no se ha relanzado desde entonces**.
+  **No usar para P1/P4 hasta verificarlo.**
+- **Falta el Strategy Watch #5** (mayo 2026).
+- **2020-2022 de los artículos: irrecuperable** (cerrado a miembros, probado 0/56). No reintentar.
+- `sync-woc.yml` corre los jueves 14:00 UTC — pendiente confirmar que llegó al dashboard.
+- 3 clones de DeFi-Tracker en el Mac del usuario (`~/DeFi-Tracker` es el bueno).
