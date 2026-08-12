@@ -3,7 +3,7 @@
   "source": "coinmetrics-community",
   "formula": "MVRV ratio (CapMVRVCur) directo de Coin Metrics",
   "validado_vs_bgeometrics": null,
-  "points": 5701,
+  "points": 5702,
   "series": [
     {
       "date": "2011-01-01",
@@ -22808,6 +22808,10 @@
     {
       "date": "2026-08-10",
       "value": 1.212214
+    },
+    {
+      "date": "2026-08-11",
+      "value": 1.205667
     }
   ]
 }
