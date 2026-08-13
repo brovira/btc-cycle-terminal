@@ -4,11 +4,20 @@
 Descarga los subtítulos de vídeos/playlists/canales y los guarda como transcript
 `.md` en `agentes/<persona>/yt-transcripts/` (fuente = vídeo).
 
+Se ejecuta **en local**: YouTube bloquea las IPs de los runners de CI **y las del
+sandbox de Claude Code** (el proxy devuelve 403). En macOS es `python3`, no
+`python`. Y hay que estar **dentro del repo** (`cd` al clon antes de lanzarlo).
+
 ```bash
-pip install yt-dlp
+python3 -m pip install -U yt-dlp
 # un vídeo, una playlist o un canal entero:
-python agentes/tools/fetch_captions.py --persona lmec  --lang es "https://www.youtube.com/watch?v=XXXX"
-python agentes/tools/fetch_captions.py --persona cowen --lang en "https://www.youtube.com/@IntoTheCryptoverse/videos"
+python3 agentes/tools/fetch_captions.py --persona lmec  --lang es "https://www.youtube.com/watch?v=XXXX"
+
+# los dos canales que alimentan a los agentes. Handles CORRECTOS (los de cada
+# README de persona): la ingesta de cowen va por su canal propio, NO por
+# @IntoTheCryptoverse.
+python3 agentes/tools/fetch_captions.py --persona cowen --lang en "https://www.youtube.com/@benjaminjcowen/videos"
+python3 agentes/tools/fetch_captions.py --persona lmec  --lang es "https://www.youtube.com/@LaMejorEstrategiaCriptomonedas/videos"
 ```
 
 - No sobreescribe lo ya bajado (idempotente); `--force` para rehacer.
