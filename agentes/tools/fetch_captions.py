@@ -65,8 +65,14 @@ def list_videos(url, limit=0, since=None):
         return out
     # OJO: --flat-playlist es rapido pero NO devuelve upload_date -> los archivos salian como
     # "0000-titulo.md". La fecha importa: el metodo de los analistas cambia con los anos y el agente
-    # necesita saber si una cita es vigente o vieja. Por eso se pide el print con la fecha.
-    cmd = YTDLP + CLIENT + ["--flat-playlist", "--ignore-errors", "--no-warnings",
+    # necesita saber si una cita es vigente o vieja.
+    #
+    # 13-ago-2026: pedir el upload_date en el --print NO basta; con --flat-playlist yt-dlp
+    # devuelve "NA" y TODO el canal salia como 0000- (1758 archivos en cowen, ademas duplicando
+    # los que ya estaban bien fechados, porque el chequeo de "ya existe" compara por nombre).
+    # Se quita --flat-playlist: extraer cada video es mas lento pero es la unica forma de tener
+    # la fecha, igual que ya hacia la rama --since de arriba.
+    cmd = YTDLP + CLIENT + ["--ignore-errors", "--no-warnings", "--skip-download",
                             "--print", "%(id)s|||%(title)s|||%(upload_date)s"]
     if limit:
         cmd += ["--playlist-end", str(limit)]
