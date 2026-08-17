@@ -25,12 +25,40 @@ El agente (.claude/agents/<persona>.md) ya cubre esa carpeta: grepea y cita.
 Nota: los auto-subs son speech-to-text, tienen erratas y muletillas. Por eso se
 marcan como fuente "vídeo". Un pase posterior de LLM puede limpiarlos si quieres.
 """
-import argparse, json, os, re, subprocess, sys, tempfile, glob
+import argparse, glob, json, os, re, shutil, subprocess, sys, tempfile
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-# Llamamos a yt-dlp como MÓDULO del mismo Python que ejecuta este script,
-# así funciona aunque el binario 'yt-dlp' no esté en el PATH.
-YTDLP = [sys.executable, "-m", "yt_dlp"]
+
+
+def _localizar_ytdlp():
+    """Elige con qué yt-dlp trabajar, prefiriendo el BINARIO autónomo.
+
+    Antes esto llamaba siempre a `sys.executable -m yt_dlp`, y en macOS eso ata la
+    version de yt-dlp a la del Python del sistema. En un Mac con el Python 3.9 de
+    Xcode (17-ago-2026) pip se quedaba en yt-dlp 2025.10.14 —diez meses viejo— porque
+    las versiones nuevas ya no soportan 3.9. Contra el antibot de YouTube, que se
+    parchea cada pocas semanas, eso no sirve: falla y encima el error despista.
+
+    El binario autónomo trae su propio interprete, se actualiza solo con `yt-dlp -U`
+    y no depende del Python del sistema. Orden de preferencia:
+      1. $YTDLP_BIN            (escotilla de escape explicita)
+      2. `yt-dlp` en el PATH   (brew, pipx, o instalado a mano)
+      3. ~/.local/bin/yt-dlp   (nuestra ubicacion recomendada, aunque no este en PATH)
+      4. python -m yt_dlp      (ultimo recurso; puede estar viejo)
+    """
+    env = os.environ.get("YTDLP_BIN", "").strip()
+    if env and os.path.isfile(env) and os.access(env, os.X_OK):
+        return [env]
+    hallado = shutil.which("yt-dlp")
+    if hallado:
+        return [hallado]
+    local = os.path.expanduser("~/.local/bin/yt-dlp")
+    if os.path.isfile(local) and os.access(local, os.X_OK):
+        return [local]
+    return [sys.executable, "-m", "yt_dlp"]
+
+
+YTDLP = _localizar_ytdlp()
 # YouTube bloquea el cliente "web" (SABR / "page needs to be reloaded", issue #12482).
 # Forzamos clientes que sí funcionan para extraer + subtítulos.
 CLIENT = ["--extractor-args", "youtube:player_client=web_safari,mweb,tv,android"]
@@ -39,8 +67,23 @@ def run(cmd):
     return subprocess.run(cmd, capture_output=True, text=True)
 
 def check_ytdlp():
-    if run(YTDLP + ["--version"]).returncode != 0:
-        sys.exit("ERROR: yt-dlp no está instalado para este Python. Instálalo con:  python3 -m pip install yt-dlp")
+    r = run(YTDLP + ["--version"])
+    if r.returncode != 0:
+        sys.exit("ERROR: no encuentro yt-dlp. Instala el binario autónomo:\n"
+                 "  mkdir -p ~/.local/bin && curl -L "
+                 "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos "
+                 "-o ~/.local/bin/yt-dlp && chmod +x ~/.local/bin/yt-dlp")
+    version = (r.stdout or "").strip().splitlines()[0] if r.stdout else "??"
+    print(f"yt-dlp {version}  ({' '.join(YTDLP)})")
+    # Un yt-dlp viejo contra el antibot de YouTube falla con errores que despistan
+    # (parecen bloqueo de IP). Mejor decirlo aquí que deducirlo del log tres pasos después.
+    m = re.match(r"(\d{4})\.(\d{2})\.(\d{2})", version)
+    if m:
+        from datetime import date
+        edad = (date.today() - date(*map(int, m.groups()))).days
+        if edad > 120:
+            print(f"  ⚠ esa versión tiene {edad} días. yt-dlp persigue al antibot de YouTube\n"
+                  f"    con parches cada pocas semanas; actualízalo antes de fiarte de un fallo.")
 
 def slug(s):
     s = re.sub(r"[^A-Za-z0-9]+", "-", s or "").strip("-").lower()

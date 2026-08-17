@@ -81,10 +81,30 @@ if ! git pull --rebase --quiet origin main 2>>"$LOG"; then
   exit 1
 fi
 
-# yt-dlp cambia cada pocas semanas persiguiendo a YouTube. Actualizar siempre antes.
-python3 -m pip install --quiet --upgrade yt-dlp 2>>"$LOG" \
-  || log "AVISO: no pude actualizar yt-dlp; sigo con la versión instalada"
-log "yt-dlp $(python3 -m yt_dlp --version 2>/dev/null || echo '??')"
+# yt-dlp cambia cada pocas semanas persiguiendo al antibot de YouTube: actualizar SIEMPRE.
+#
+# Se prefiere el binario autónomo antes que `pip install`. En macOS el python3 del
+# sistema es el 3.9 de Xcode, y pip ahí se queda clavado en la última versión que aún
+# soportaba 3.9 (2025.10.14 a 17-ago-2026, diez meses vieja) diciendo "Requirement
+# already satisfied". Silenciosamente inútil, que es el patrón que llevamos todo el día
+# eliminando. El binario trae su propio intérprete y se actualiza con `-U`.
+YTDLP_BIN="${YTDLP_BIN:-}"
+if [ -z "$YTDLP_BIN" ]; then
+  if command -v yt-dlp >/dev/null 2>&1;      then YTDLP_BIN="$(command -v yt-dlp)"
+  elif [ -x "$HOME/.local/bin/yt-dlp" ];     then YTDLP_BIN="$HOME/.local/bin/yt-dlp"
+  fi
+fi
+
+if [ -n "$YTDLP_BIN" ]; then
+  export YTDLP_BIN                     # fetch_captions.py lo lee y usa el mismo
+  "$YTDLP_BIN" -U >>"$LOG" 2>&1 || log "AVISO: 'yt-dlp -U' falló; sigo con la instalada"
+  log "yt-dlp $("$YTDLP_BIN" --version 2>/dev/null || echo '??')  ($YTDLP_BIN)"
+else
+  log "AVISO: no hay binario de yt-dlp; tiro del módulo de python3, que puede estar viejo."
+  log "       Instálalo:  mkdir -p ~/.local/bin && curl -L \\"
+  log "       https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos \\"
+  log "       -o ~/.local/bin/yt-dlp && chmod +x ~/.local/bin/yt-dlp"
+fi
 
 fallos=0
 # fetch_captions.py devuelve 1 si NO PUDO LEER un canal. Cero vídeos leyendo bien
