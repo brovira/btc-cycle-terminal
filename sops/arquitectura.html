@@ -1,0 +1,406 @@
+<title>Arquitectura del Terminal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --ground:#EFF1F3; --panel:#FBFCFD; --sunk:#E4E8EC;
+    --ink:#14181D; --muted:#616B78; --rule:#CDD4DC; --rule-hard:#9AA5B2;
+    --accent:#0E6E72; --accent-soft:rgba(14,110,114,.09);
+    --ok:#2C7048; --warn:#9A6512; --bad:#9E3226;
+    --ok-bg:rgba(44,112,72,.10); --warn-bg:rgba(154,101,18,.11); --bad-bg:rgba(158,50,38,.10);
+    --sans:"IBM Plex Sans",ui-sans-serif,-apple-system,"Segoe UI",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --ground:#0F1216; --panel:#171B21; --sunk:#12161B;
+      --ink:#E3E7EC; --muted:#8B95A2; --rule:#2A303A; --rule-hard:#4A525E;
+      --accent:#4FB6BB; --accent-soft:rgba(79,182,187,.11);
+      --ok:#63BE8A; --warn:#D9A356; --bad:#DE7A6C;
+      --ok-bg:rgba(99,190,138,.12); --warn-bg:rgba(217,163,86,.12); --bad-bg:rgba(222,122,108,.12);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#0F1216; --panel:#171B21; --sunk:#12161B;
+    --ink:#E3E7EC; --muted:#8B95A2; --rule:#2A303A; --rule-hard:#4A525E;
+    --accent:#4FB6BB; --accent-soft:rgba(79,182,187,.11);
+    --ok:#63BE8A; --warn:#D9A356; --bad:#DE7A6C;
+    --ok-bg:rgba(99,190,138,.12); --warn-bg:rgba(217,163,86,.12); --bad-bg:rgba(222,122,108,.12);
+  }
+
+  *{box-sizing:border-box}
+  body{background:var(--ground); color:var(--ink); font-family:var(--sans);
+       font-size:15.5px; line-height:1.6; margin:0; padding:38px 20px 80px;
+       -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1000px; margin:0 auto; display:flex; flex-direction:column; gap:46px}
+
+  h1{font-size:2.1rem; font-weight:600; letter-spacing:-.02em; margin:0; text-wrap:balance}
+  h2{font-size:1.28rem; font-weight:600; letter-spacing:-.01em; margin:0; text-wrap:balance}
+  h3{font-size:.95rem; font-weight:600; margin:0}
+  p{margin:0; max-width:68ch}
+  .lede{color:var(--muted); font-size:1.02rem; max-width:66ch}
+  .eyebrow{font-family:var(--mono); font-size:.7rem; letter-spacing:.16em;
+           text-transform:uppercase; color:var(--accent); font-weight:500}
+  code{font-family:var(--mono); font-size:.86em; background:var(--sunk);
+       padding:.1em .38em; border:1px solid var(--rule); border-radius:2px}
+
+  header.top{display:flex; flex-direction:column; gap:12px;
+             border-bottom:2px solid var(--ink); padding-bottom:20px}
+  section{display:flex; flex-direction:column; gap:18px}
+  .shead{display:flex; flex-direction:column; gap:6px}
+
+  /* ── Diagrama de flujo: bandas apiladas ───────────────────────────── */
+  .flow{display:flex; flex-direction:column; gap:0}
+  .band{background:var(--panel); border:1px solid var(--rule-hard);
+        display:grid; grid-template-columns:minmax(120px,150px) 1fr; align-items:stretch}
+  .band + .band{border-top:none}
+  .band-label{background:var(--accent-soft); border-right:1px solid var(--rule-hard);
+              padding:16px 14px; display:flex; flex-direction:column; gap:4px; justify-content:center}
+  .band-label .n{font-family:var(--mono); font-size:.68rem; letter-spacing:.13em;
+                 text-transform:uppercase; color:var(--accent); font-weight:600}
+  .band-label .t{font-weight:600; font-size:.98rem; line-height:1.25}
+  .band-body{padding:16px; display:flex; flex-wrap:wrap; gap:9px; align-content:center}
+
+  .node{background:var(--ground); border:1px solid var(--rule);
+        padding:8px 11px; display:flex; flex-direction:column; gap:2px; min-width:0}
+  .node .nm{font-family:var(--mono); font-size:.79rem; font-weight:500; word-break:break-word}
+  .node .sub{font-size:.72rem; color:var(--muted)}
+  .node.local{border-color:var(--warn); background:var(--warn-bg)}
+  .node.watch{border-color:var(--accent); background:var(--accent-soft)}
+
+  .arrow{display:flex; justify-content:center; align-items:center; height:22px;
+         color:var(--rule-hard); font-family:var(--mono); font-size:.9rem; line-height:1}
+
+  /* ── Tablas ───────────────────────────────────────────────────────── */
+  .tw{overflow-x:auto; border:1px solid var(--rule-hard); background:var(--panel)}
+  table{border-collapse:collapse; width:100%; font-size:.87rem; min-width:600px}
+  th{background:var(--accent-soft); text-align:left; padding:9px 12px; font-size:.68rem;
+     letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:600;
+     border-bottom:1px solid var(--rule-hard); white-space:nowrap}
+  td{padding:9px 12px; border-bottom:1px solid var(--rule); vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td.m,th.m{font-family:var(--mono); font-size:.79rem; font-variant-numeric:tabular-nums}
+
+  .pill{display:inline-block; font-family:var(--mono); font-size:.68rem; padding:2px 7px;
+        border:1px solid currentColor; white-space:nowrap; font-weight:500}
+  .pill.ok{color:var(--ok); background:var(--ok-bg)}
+  .pill.local{color:var(--warn); background:var(--warn-bg)}
+  .pill.no{color:var(--bad); background:var(--bad-bg)}
+
+  /* ── Fichas ───────────────────────────────────────────────────────── */
+  .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px}
+  .card{background:var(--panel); border:1px solid var(--rule-hard); padding:15px;
+        display:flex; flex-direction:column; gap:8px}
+  .card h3{display:flex; align-items:baseline; gap:8px}
+  .card p{font-size:.87rem; color:var(--muted)}
+  .card p strong{color:var(--ink); font-weight:600}
+
+  .note{border-left:3px solid var(--accent); background:var(--accent-soft);
+        padding:12px 15px; font-size:.9rem}
+  .note.warn{border-left-color:var(--warn); background:var(--warn-bg)}
+  .note strong{font-weight:600}
+
+  ol.steps{margin:0; padding-left:0; list-style:none; counter-reset:s;
+           display:flex; flex-direction:column; gap:11px}
+  ol.steps li{counter-increment:s; display:grid; grid-template-columns:26px 1fr; gap:11px;
+              font-size:.9rem; align-items:start}
+  ol.steps li::before{content:counter(s); font-family:var(--mono); font-size:.75rem;
+                      color:var(--accent); border:1px solid var(--accent); width:22px; height:22px;
+                      display:flex; align-items:center; justify-content:center; font-weight:600}
+
+  footer{border-top:1px solid var(--rule); padding-top:16px; font-size:.82rem; color:var(--muted)}
+
+  @media (max-width:640px){
+    .band{grid-template-columns:1fr}
+    .band-label{border-right:none; border-bottom:1px solid var(--rule-hard)}
+  }
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <div class="eyebrow">BTC Cycle Terminal · 17-ago-2026</div>
+  <h1>Cómo está montado el sistema</h1>
+  <p class="lede">Seis fuentes de datos, nueve tuberías y seis analistas artificiales, conectados
+     por un repositorio de Git y vigilados por un proceso que solo sabe hacer una cosa: mirar la
+     fecha del dato y negarse a decir que todo va bien cuando no lo va.</p>
+</header>
+
+<!-- ══ FLUJO ══════════════════════════════════════════════════════════ -->
+<section>
+  <div class="shead">
+    <div class="eyebrow">El recorrido de un dato</div>
+    <h2>De la fuente a la decisión</h2>
+    <p class="lede">Cuatro capas. Todo lo que entra sigue este camino, sin excepciones.</p>
+  </div>
+
+  <div class="flow">
+    <div class="band">
+      <div class="band-label"><span class="n">Capa 1</span><span class="t">Fuentes</span></div>
+      <div class="band-body">
+        <div class="node"><span class="nm">YouTube</span><span class="sub">Cowen · LMEC</span></div>
+        <div class="node"><span class="nm">Glassnode</span><span class="sub">Week On-Chain</span></div>
+        <div class="node"><span class="nm">checkonchain</span><span class="sub">~27 series</span></div>
+        <div class="node"><span class="nm">BGeometrics</span><span class="sub">14 series</span></div>
+        <div class="node"><span class="nm">Crypto.com</span><span class="sub">precio</span></div>
+        <div class="node"><span class="nm">Solana · Orca</span><span class="sub">posiciones LP</span></div>
+      </div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="band">
+      <div class="band-label"><span class="n">Capa 2</span><span class="t">Ingesta</span></div>
+      <div class="band-body">
+        <div class="node local"><span class="nm">ingesta_local.sh</span><span class="sub">tu Mac · 8:30</span></div>
+        <div class="node"><span class="nm">sync_woc.py</span><span class="sub">jueves 14:00</span></div>
+        <div class="node"><span class="nm">sync_woc_reports.py</span><span class="sub">jueves 14:00</span></div>
+        <div class="node"><span class="nm">checkonchain.py</span><span class="sub">diario 7:30</span></div>
+        <div class="node"><span class="nm">fetch_onchain.py</span><span class="sub">diario 7:00</span></div>
+        <div class="node"><span class="nm">personas_forward.py</span><span class="sub">viernes 14:00</span></div>
+      </div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="band">
+      <div class="band-label"><span class="n">Capa 3</span><span class="t">Almacén</span></div>
+      <div class="band-body">
+        <div class="node"><span class="nm">data/onchain/</span><span class="sub">series diarias</span></div>
+        <div class="node"><span class="nm">data/checkonchain/</span><span class="sub">derivados · URPD</span></div>
+        <div class="node"><span class="nm">data/woc_semana.json</span><span class="sub">llamadas vivas</span></div>
+        <div class="node"><span class="nm">agentes/*/yt-transcripts/</span><span class="sub">verbatim</span></div>
+        <div class="node"><span class="nm">glassnode_woc/reports/</span><span class="sub">destilados</span></div>
+        <div class="node local"><span class="nm">DeFi-Tracker</span><span class="sub">privado · cartera</span></div>
+      </div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="band">
+      <div class="band-label"><span class="n">Capa 4</span><span class="t">Consumo</span></div>
+      <div class="band-body">
+        <div class="node"><span class="nm">6 agentes</span><span class="sub">citan con fuente</span></div>
+        <div class="node"><span class="nm">17 páginas</span><span class="sub">el dashboard</span></div>
+        <div class="node"><span class="nm">alerts/</span><span class="sub">señales de ciclo</span></div>
+        <div class="node"><span class="nm">sops/</span><span class="sub">método y hojas</span></div>
+        <div class="node watch"><span class="nm">frescura.py</span><span class="sub">el vigilante · 20:00</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>El vigilante está en la capa 4 a propósito.</strong> No comprueba que las tuberías
+    hayan corrido: comprueba la <em>fecha del dato que hay en el almacén</em>. Es la única pieza
+    que habría detectado el fallo de agosto, cuando cinco tuberías distintas salían en verde sin
+    traer nada.
+  </div>
+</section>
+
+<!-- ══ FUENTES ════════════════════════════════════════════════════════ -->
+<section>
+  <div class="shead">
+    <div class="eyebrow">Capas 1 y 2</div>
+    <h2>Qué se ingiere y de dónde viene</h2>
+  </div>
+
+  <div class="tw"><table>
+    <thead><tr>
+      <th>Dato</th><th>Origen</th><th class="m">Cadencia</th><th>Dónde corre</th><th>Para qué se usa</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td>Transcripts de vídeo</td>
+        <td>YouTube — Cowen, LMEC</td>
+        <td class="m">diaria 8:30</td>
+        <td><span class="pill local">tu Mac</span></td>
+        <td>Material verbatim de los agentes <code>cowen</code> y <code>lmec</code></td>
+      </tr>
+      <tr>
+        <td>Week On-Chain — texto</td>
+        <td>Glassnode, vía el KB privado</td>
+        <td class="m">jueves 14:00</td>
+        <td><span class="pill ok">Actions</span></td>
+        <td>Los informes que cita el agente <code>glassnode_woc</code></td>
+      </tr>
+      <tr>
+        <td>Week On-Chain — recomendación</td>
+        <td>Pipeline del KB privado</td>
+        <td class="m">jueves 14:00</td>
+        <td><span class="pill ok">Actions</span></td>
+        <td>La tarjeta «Qué hacemos esta semana» de <code>vol.html</code></td>
+      </tr>
+      <tr>
+        <td>Derivados, URPD, cost basis</td>
+        <td>checkonchain.com</td>
+        <td class="m">diaria 7:30</td>
+        <td><span class="pill ok">Actions</span></td>
+        <td>Semáforo de LP: IV, skew, funding, OI, VRP</td>
+      </tr>
+      <tr>
+        <td>MVRV, realized price, SOPR</td>
+        <td>BGeometrics</td>
+        <td class="m">diaria 7:00</td>
+        <td><span class="pill ok">Actions</span></td>
+        <td>Escalera de cost basis y señales de ciclo</td>
+      </tr>
+      <tr>
+        <td>Llamadas de analistas</td>
+        <td>Derivadas de los transcripts</td>
+        <td class="m">viernes 14:00</td>
+        <td><span class="pill ok">Actions</span></td>
+        <td>Track record: cada consejo es un test puntuable</td>
+      </tr>
+      <tr>
+        <td>Posiciones y diario</td>
+        <td>Solana/Orca + entradas a mano</td>
+        <td class="m">manual</td>
+        <td><span class="pill local">repo privado</span></td>
+        <td>Clasificar operaciones en los cuatro tipos</td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <div class="note warn">
+    <strong>Dos huecos conocidos.</strong> HyperEVM y Hyperliquid no están en ningún pipeline: lo
+    que pase ahí no se reconstruye solo y necesita entrada manual en el diario. Y las series de
+    BGeometrics tienen ventana móvil de 4 años, así que cualquier backtest cubre un ciclo — sirve
+    para validar la mecánica de una regla, no para generalizarla.
+  </div>
+</section>
+
+<!-- ══ CÓMO SE USA ════════════════════════════════════════════════════ -->
+<section>
+  <div class="shead">
+    <div class="eyebrow">Capa 4</div>
+    <h2>Cómo se convierte en decisión</h2>
+    <p class="lede">Tres consumidores distintos, con papeles que no se solapan.</p>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <h3>Los agentes</h3>
+      <p>Seis analistas, cada uno encerrado en su propio material. Responden citando
+         <strong>archivo y sección</strong>, y si algo no está en su corpus lo dicen en vez de
+         rellenarlo. Están para reproducir <em>el método de cada analista</em>, no para dar una
+         opinión media.</p>
+    </div>
+    <div class="card">
+      <h3>El dashboard</h3>
+      <p>Diecisiete páginas que leen los JSON del almacén. Ninguna recalcula nada por su cuenta —
+         si un número aparece en dos sitios, viene del mismo archivo. El motor de decisión cuenta
+         señales encendidas y propone acción.</p>
+    </div>
+    <div class="card">
+      <h3>Los SOP</h3>
+      <p>El método escrito: gestión de caja, psicología de inversión y las hojas de decisión.
+         Es la capa que convierte una lectura de mercado en <strong>una regla que autoriza o
+         prohíbe</strong> mover capital.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>El circuito completo, en una frase:</strong> las fuentes dan el dato, los agentes lo
+    interpretan con el método de su analista, los SOP dicen si eso autoriza una operación, y las
+    hojas la clasifican después para que el track record del mes se pueda contar.
+  </div>
+</section>
+
+<!-- ══ DÓNDE TRABAJAR ═════════════════════════════════════════════════ -->
+<section>
+  <div class="shead">
+    <div class="eyebrow">Tu pregunta 5</div>
+    <h2>Los tres sitios donde puedes trabajar</h2>
+    <p class="lede">No son intercambiables, y la diferencia no es de potencia sino de acceso.</p>
+  </div>
+
+  <div class="tw"><table>
+    <thead><tr>
+      <th>Entorno</th><th>Qué ve</th><th>Qué puede hacer</th><th>Qué NO puede</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Chat normal</strong><br><span style="color:var(--muted);font-size:.85em">claude.ai</span></td>
+        <td>Nada del repo</td>
+        <td>Razonar sobre lo que le pegues</td>
+        <td>Leer archivos, ejecutar nada, recordar el estado</td>
+      </tr>
+      <tr>
+        <td><strong>Claude Code web</strong><br><span style="color:var(--muted);font-size:.85em">donde hablas conmigo</span></td>
+        <td>Un clon en la nube</td>
+        <td>Leer y escribir código, commitear, lanzar workflows, consultar a los agentes</td>
+        <td>Tocar tu Mac. Y YouTube le bloquea la IP</td>
+      </tr>
+      <tr>
+        <td><strong>Claude Code local</strong><br><span style="color:var(--muted);font-size:.85em">la terminal</span></td>
+        <td>Tu carpeta real</td>
+        <td>Todo lo anterior, más ejecutar en tu máquina</td>
+        <td>Nada, dentro del repo</td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <p><strong>Por qué hace falta el local:</strong> hay exactamente tres cosas que no se pueden
+     hacer desde ningún otro sitio.</p>
+
+  <ol class="steps">
+    <li><strong>Los transcripts.</strong> YouTube bloquea las IP de datacenter de GitHub con
+        <em>«Sign in to confirm you're not a bot»</em>. Desde tu conexión doméstica funciona.</li>
+    <li><strong>El launchd.</strong> El programador vive en tu Mac; nadie puede cargarlo ni
+        comprobarlo desde fuera.</li>
+    <li><strong>Las wallets fuera del pipeline.</strong> Lo que esté en HyperEVM o Hyperliquid
+        solo lo puedes mirar tú.</li>
+  </ol>
+
+  <div class="note">
+    <strong>El reparto que funciona:</strong> el local para ejecutar y tocar ficheros; el web
+    para razonar sobre el mercado, interrogar a los agentes y escribir código. Y el chat normal,
+    para esto, no sirve — no ve el repo.
+  </div>
+</section>
+
+<!-- ══ SINCRONIZACIÓN ═════════════════════════════════════════════════ -->
+<section>
+  <div class="shead">
+    <div class="eyebrow">Tu pregunta 6</div>
+    <h2>Cómo se mantienen sincronizados</h2>
+  </div>
+
+  <p>No hay un mecanismo de sincronización en la aplicación de Claude, y no hace falta:
+     <strong>Git ya es exactamente eso</strong>. La rama <code>main</code> de GitHub es la única
+     fuente de verdad, y los tres entornos escriben ahí.</p>
+
+  <div class="cards">
+    <div class="card">
+      <h3>Ya automático</h3>
+      <p><code>ingesta_local.sh</code> hace <code>pull --rebase</code> antes de empezar y
+         <code>push</code> al terminar. Aborta si el árbol está sucio o no estás en
+         <code>main</code>, así que <strong>no puede pisar trabajo a medias</strong>.</p>
+    </div>
+    <div class="card">
+      <h3>Los workflows</h3>
+      <p>Actions siempre trabaja sobre un clon fresco, así que nunca está desactualizado.
+         Commitea con <code>[skip ci]</code> para no encadenar ejecuciones.</p>
+    </div>
+    <div class="card">
+      <h3>La disciplina que falta</h3>
+      <p>Cuando tú abres una sesión local: <code>git pull</code> antes de nada.
+         <strong>Es lo único manual</strong>, y es lo que falló dos veces hoy.</p>
+    </div>
+  </div>
+
+  <div class="note warn">
+    <strong>Por qué chocan.</strong> Hay bots commiteando a <code>main</code> varias veces al día
+    y tú trabajando desde dos sitios. Si empujas sin traer antes, Git rechaza con
+    <code>fetch first</code> — que no es un error, es la protección funcionando. Se arregla
+    siempre igual: <code>git pull --rebase origin main</code> y volver a empujar.
+  </div>
+
+  <p>Y si aun así algo se descuadra, hay una red debajo: <strong>frescura.py</strong> corre todos
+     los días a las 20:00 UTC y compara la fecha de las ocho fuentes contra su límite. Si una se
+     queda atrás —sea por un choque de Git, por un cron muerto o por un motivo que todavía no
+     hemos imaginado— el workflow se pone rojo. No arregla nada; solo se niega a decir que todo
+     va bien.</p>
+</section>
+
+<footer>
+  Este documento describe la estructura, que es estable. Cualquier cifra de mercado caduca en
+  días: para el estado real, <code>python3 ingesta/frescura.py</code> y preguntar a los agentes.
+</footer>
+
+</div>
