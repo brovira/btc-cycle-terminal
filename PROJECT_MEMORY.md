@@ -36,6 +36,13 @@ cuánto/cuándo comprar.
 > **Lección transversal:** todo pipeline de ingesta necesita distinguir *"no hay nada nuevo"*
 > de *"no pude leer la fuente"*. Los tres fallos son la misma clase de bug.
 >
+> **Nuevo SOP:** `sops/psicologia_trading.md` — psicología de inversión y buenas prácticas. Crece por
+> fuentes (fuente 01: Dr. Andrew Menaker). Lo útil de verdad son las dos últimas secciones: la
+> traducción de sus cuatro tipos de operación a decisiones de ESTE terminal (tramos de DCA, rango de LP,
+> no hacer nada) y la checklist operativa. Regla nueva que sale del incidente de hoy: **antes de mover
+> capital, comprobar la fecha del dato en el que te apoyas** — un dato caducado se siente igual de
+> convincente que uno fresco.
+>
 > **Pendiente (elegido por el usuario, en este orden):** auditar el framework de Glassnode.
 > Ya existe ~70% del material: `glassnode_tactico/catalogo_indicadores.md` (qué indicadores
 > deciden HOY, medido sobre 272 artículos), `framework_direccion.md`, y los 12 lotes de
