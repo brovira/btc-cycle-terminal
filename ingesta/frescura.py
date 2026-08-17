@@ -74,8 +74,12 @@ def _fecha_woc():
 COMPROBACIONES = [
     ("Transcripts · Cowen", lambda: _fecha_max_por_nombre("agentes/cowen/yt-transcripts/*.md"),
      7, "publica casi a diario"),
+    # 25 y no 14: el 17-ago-2026 esto dio FALSO POSITIVO. La ingesta había corrido bien y
+    # LMEC simplemente llevaba 17 días sin publicar (comprobado en su canal). Un monitor que
+    # llora sin motivo enseña a ignorar el rojo, que es justo lo que este workflow existe para
+    # evitar. Límite holgado: solo salta si de verdad hay un mes sin nada.
     ("Transcripts · LMEC", lambda: _fecha_max_por_nombre("agentes/lmec/yt-transcripts/*.md"),
-     14, "publica cada pocos días"),
+     25, "publica de forma irregular"),
     ("WoC · informes del agente", lambda: _fecha_max_por_nombre("agentes/glassnode_woc/reports/*.md"),
      14, "semanal; hoy es MANUAL, nada lo escribe"),
     ("WoC · resumen del dashboard", _fecha_woc,
