@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  launchd · ingesta local de transcripts de YouTube.
+
+  ANTES DE CARGARLO: cambia las dos rutas marcadas con RUTA_AL_REPO por la ruta real
+  del clon (p.ej. /Users/brovira/dev/btc-cycle-terminal).
+
+    cp ingesta/local/com.brovira.btc-ingesta.plist ~/Library/LaunchAgents/
+    launchctl load  ~/Library/LaunchAgents/com.brovira.btc-ingesta.plist
+    launchctl start com.brovira.btc-ingesta
+
+  Se usa launchd y no cron a propósito: con StartCalendarInterval, si la máquina está
+  dormida a la hora prevista, el trabajo se lanza EN CUANTO DESPIERTA. cron se saltaría
+  el turno, que es exactamente el fallo silencioso que estamos intentando eliminar.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.brovira.btc-ingesta</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>RUTA_AL_REPO/ingesta/local/ingesta_local.sh</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>RUTA_AL_REPO</string>
+
+    <!-- Diario a las 08:30 hora local. -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>8</integer>
+        <key>Minute</key>
+        <integer>30</integer>
+    </dict>
+
+    <!-- El script ya escribe su propio .local/ingesta.log; esto captura lo que se
+         escape antes de que arranque (python ausente, ruta mal, permisos). -->
+    <key>StandardOutPath</key>
+    <string>RUTA_AL_REPO/.local/launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>RUTA_AL_REPO/.local/launchd.err.log</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>

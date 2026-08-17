@@ -1,0 +1,43 @@
+name: Frescura del material de los agentes
+
+# EL WORKFLOW QUE FALTABA.
+#
+# El 16-ago-2026 los cinco agentes respondieron con material de 4 a 7 semanas mientras
+# TODOS los workflows salían en verde. Cada uno informaba de su propia ejecución ("he
+# corrido, no he petado") y ninguno de lo único que importa: si el dato sigue sirviendo.
+#
+# Este NO comprueba pipelines, comprueba FECHAS DE DATOS. Se pone rojo cuando el material
+# está viejo, sea cual sea la causa — bug, token que falta, cron inexistente, fuente
+# caída, o YouTube bloqueando. Es la red que atrapa los fallos que aún no hemos imaginado.
+#
+# Se ejecuta al final del día, después de todas las ingestas, para juzgar el resultado
+# del día completo.
+
+on:
+  schedule:
+    - cron: "0 20 * * *"      # diario 20:00 UTC, tras onchain (07:00) y checkonchain (07:30)
+  workflow_dispatch: {}
+  push:
+    paths:                     # también al tocar la propia comprobación, para validarla
+      - "ingesta/frescura.py"
+      - ".github/workflows/frescura.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frescura
+  cancel-in-progress: true
+
+jobs:
+  comprobar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Comprobar frescura
+        run: python ingesta/frescura.py
+      # Sin `continue-on-error`, a propósito: si esto se pudiera ignorar no serviría de nada.
+      # Que salga rojo ES el producto. Rojo aquí = no decidas capital con este material.

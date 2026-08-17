@@ -1,10 +1,20 @@
 name: Ingesta diaria de transcripts (YouTube)
 
+# ⚠️ SIN CRON A PROPÓSITO — la ingesta de transcripts vive AHORA EN LOCAL.
+#
+# YouTube bloquea las IPs de datacenter de los runners de GitHub:
+#   ERROR: [youtube] Sign in to confirm you're not a bot.
+# Comprobado el 17-ago-2026 en ambos canales. No es yt-dlp desactualizado ni los
+# player_client caducados: es la IP. Desde una IP doméstica funciona.
+#
+# La ingesta real la hace `ingesta/local/ingesta_local.sh` en la máquina del usuario
+# (ver ingesta/local/README.md). Este workflow se queda solo como disparador manual,
+# por si algún día YouTube deja de bloquear o se añaden cookies en un secret.
+#
+# Se le quitó el cron para que no salga en rojo cada día: un workflow permanentemente
+# rojo enseña a ignorar el rojo, y eso es justo lo que queremos evitar. Quien vigila
+# ahora que los transcripts no se queden viejos es `frescura.yml`, que mira el DATO.
 on:
-  schedule:
-    # Diario a las 06:30 UTC — baja los subtítulos de los vídeos NUEVOS (últimos 5
-    # por canal, --dateafter 10 días) de LMEC y Cowen y los commitea.
-    - cron: "30 6 * * *"
   workflow_dispatch: {}
 
 permissions:
