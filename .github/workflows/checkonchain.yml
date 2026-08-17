@@ -10,6 +10,12 @@ name: Checkonchain — catálogo y extracción
 # Resultado: data/checkonchain/ (informe + series extraídas), commiteado.
 
 on:
+  schedule:
+    # Diario 07:30 UTC, media hora después de onchain.yml para no solapar los dos commits.
+    # Antes esto era SOLO workflow_dispatch: no fallaba, es que nadie lo lanzaba. La última
+    # extracción manual fue el 30-jul-2026 y data/checkonchain/ se quedó congelado 17 días
+    # mientras el resto del pipeline seguía en verde. El modo por defecto del cron es 'lote'.
+    - cron: "30 7 * * *"
   workflow_dispatch:
     inputs:
       modo:
@@ -39,7 +45,9 @@ jobs:
           python-version: "3.12"
       - name: Ejecutar
         run: |
-          case "${{ inputs.modo }}" in
+          # En el cron no hay inputs: por defecto 'lote' (la extracción completa que
+          # alimenta data/checkonchain/), no 'auto' (que es catálogo + inspección de prueba).
+          case "${{ inputs.modo || 'lote' }}" in
             catalogo)     python ingesta/checkonchain.py --catalogo ;;
             inspeccionar) python ingesta/checkonchain.py --inspeccionar "${{ inputs.ruta }}" ;;
             extraer)      python ingesta/checkonchain.py --extraer "${{ inputs.ruta }}" ;;

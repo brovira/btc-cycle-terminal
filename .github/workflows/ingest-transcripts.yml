@@ -24,19 +24,25 @@ jobs:
           python-version: "3.12"
       - name: Instalar yt-dlp
         run: python -m pip install --quiet yt-dlp
+      # OJO: NO poner continue-on-error aquí. Lo tuvo, y con el swallow de errores de
+      # list_videos() el job salió VERDE 4 semanas seguidas sin traer un solo transcript
+      # (16-jul → 16-ago-2026). Un canal ilegible tiene que romper el job y avisar.
+      # Cada canal usa `id` para poder commitear lo que sí se haya bajado aunque el otro falle.
       - name: LMEC (es)
-        continue-on-error: true
+        id: lmec
         run: |
           python agentes/tools/fetch_captions.py --persona lmec --lang es --max 5 \
             --since $(date -u -d '10 days ago' +%Y%m%d) \
             "https://www.youtube.com/@LaMejorEstrategiaCriptomonedas/videos"
       - name: Cowen (en)
-        continue-on-error: true
+        id: cowen
+        if: always()
         run: |
           python agentes/tools/fetch_captions.py --persona cowen --lang en --max 5 \
             --since $(date -u -d '10 days ago' +%Y%m%d) \
             "https://www.youtube.com/@benjaminjcowen/videos"
       - name: Commit de transcripts nuevos
+        if: always()
         run: |
           git config user.name "transcript-bot"
           git config user.email "actions@users.noreply.github.com"
