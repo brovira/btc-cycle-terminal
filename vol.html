@@ -268,6 +268,35 @@ const PHASE_HERO={
     }
   }catch(e){}
 
+  // ── Frescura del archivo de los agentes (data/agentes_frescura.json) ──
+  // Lo genera agentes/tools/frescura.py en cada ingesta. Existe porque el workflow de
+  // transcripts estuvo 26 días dando "success" sin bajar un solo vídeo (23-jul→17-ago-2026)
+  // y no había ningún sitio donde se viera. Si algo está rancio, se ve AQUÍ.
+  try{
+    const rf=await fetch("data/agentes_frescura.json",{cache:"no-store"});
+    if(rf.ok){
+      const fr=await rf.json(), ps=(fr.personas||[]);
+      const malos=ps.filter(p=>p.estado!=="ok");
+      if(ps.length){
+        const chip=p=>{
+          const c=p.estado==="ok"?"var(--bull)":"var(--bear)";
+          const d=p.dias==null?"sin datos":p.dias+"d";
+          return `<span class="st" style="color:${c};background:color-mix(in oklab,${c} 14%,transparent)">`
+               + `${p.estado==="ok"?"✅":"⚠️"} ${p.persona} · ${d}</span>`;
+        };
+        const aviso=malos.length
+          ? `<div class="cmeta" style="margin-top:6px;color:var(--bear)"><b>El archivo de ${malos.map(p=>p.persona).join(", ")} está rancio.</b> `
+            + `Sus citas NO reflejan lo último que han dicho. La ingesta corre en el runner self-hosted (Mac); `
+            + `si lleva días parada, revisa Actions → «Ingesta diaria de transcripts».</div>`
+          : "";
+        const el=$("#semana");
+        el.innerHTML += `<h3 style="margin-top:14px">🗄️ Frescura del archivo de los agentes</h3>`
+          + `<div>${ps.map(chip).join(" ")}</div>${aviso}`;
+        el.style.display="";
+      }
+    }
+  }catch(e){}
+
   // ── Fases (resaltar la actual) ──
   $("#fases").innerHTML=FASES.map(f=>`<div class="fase${f.id===phase?" now":""}" style="--fc:${f.c}"><h4>${f.n}${f.id===phase?'<span class="nowtag">HOY</span>':""}</h4>${f.que}<div class="firma">Firma: ${f.firma}</div><div class="act">${f.act}</div></div>`).join("");
 

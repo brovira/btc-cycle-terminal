@@ -1,10 +1,25 @@
 name: Ingesta diaria de transcripts (YouTube)
 
+# CORRE EN UN RUNNER SELF-HOSTED (el Mac de Beltrán), NO en los runners de GitHub.
+#
+# Por qué: YouTube bloquea las IPs de los runners de GitHub. Entre el 23-jul y el 17-ago-2026
+# este workflow se ejecutó 26 veces, dio "success" las 26, y no ingirió NI UN SOLO vídeo:
+# yt-dlp devolvía la lista vacía, el script lo trataba como "no hay nada nuevo" y encima los
+# pasos llevaban continue-on-error. Verde absoluto, cero salida.
+#
+# Ahora:
+#   · runs-on: self-hosted    → sale por la IP de casa, que YouTube no bloquea
+#   · sin continue-on-error   → si falla, falla
+#   · fetch_captions.py sale con código 2 si un canal devuelve 0 vídeos
+#   · frescura.py publica la antigüedad del archivo para que se vea en el dashboard
+#
+# Montar el runner (una vez): GitHub → repo → Settings → Actions → Runners → New self-hosted
+# runner → macOS. Seguir los comandos que da la web y luego `./svc.sh install && ./svc.sh start`
+# para que arranque solo al encender el Mac.
+
 on:
   schedule:
-    # Diario a las 06:30 UTC — baja los subtítulos de los vídeos NUEVOS (últimos 5
-    # por canal, --dateafter 10 días) de LMEC y Cowen y los commitea.
-    - cron: "30 6 * * *"
+    - cron: "30 6 * * *" # diario 06:30 UTC
   workflow_dispatch: {}
 
 permissions:
@@ -16,30 +31,56 @@ concurrency:
 
 jobs:
   ingest:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macOS]
+    timeout-minutes: 45 # que un yt-dlp colgado no bloquee el Mac indefinidamente
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Instalar yt-dlp
-        run: python -m pip install --quiet yt-dlp
+
+      - name: Preparar entorno
+        # venv propio en el workspace del runner: no toca el Python del sistema del Mac
+        # y usa el MISMO intérprete para yt-dlp y para los scripts (fetch_captions lo llama
+        # como módulo, `python -m yt_dlp`, así que tienen que ser el mismo).
+        run: |
+          python3 -m venv .venv
+          .venv/bin/python -m pip install --quiet --upgrade pip yt-dlp
+
+      - name: Ventana de ingesta
+        # OJO: `date -d` es de GNU y NO existe en macOS (allí sería `date -v-10d`).
+        # Se calcula con Python para que dé igual el sistema operativo del runner.
+        run: |
+          echo "DESDE=$(.venv/bin/python -c "import datetime;print((datetime.date.today()-datetime.timedelta(days=10)).strftime('%Y%m%d'))")" >> "$GITHUB_ENV"
+
       - name: LMEC (es)
-        continue-on-error: true
         run: |
-          python agentes/tools/fetch_captions.py --persona lmec --lang es --max 5 \
-            --since $(date -u -d '10 days ago' +%Y%m%d) \
+          .venv/bin/python agentes/tools/fetch_captions.py --persona lmec --lang es --max 5 \
+            --since "$DESDE" \
             "https://www.youtube.com/@LaMejorEstrategiaCriptomonedas/videos"
+
       - name: Cowen (en)
-        continue-on-error: true
         run: |
-          python agentes/tools/fetch_captions.py --persona cowen --lang en --max 5 \
-            --since $(date -u -d '10 days ago' +%Y%m%d) \
+          .venv/bin/python agentes/tools/fetch_captions.py --persona cowen --lang en --max 5 \
+            --since "$DESDE" \
             "https://www.youtube.com/@benjaminjcowen/videos"
-      - name: Commit de transcripts nuevos
+
+      - name: Reparar fechas (lmec)
+        if: always()
+        run: .venv/bin/python agentes/tools/fechar_transcripts.py --persona lmec
+
+      - name: Reparar fechas (cowen)
+        if: always()
+        run: .venv/bin/python agentes/tools/fechar_transcripts.py --persona cowen
+
+      - name: Frescura del archivo
+        # Se ejecuta SIEMPRE, incluso si la ingesta ha fallado arriba: precisamente cuando
+        # falla es cuando hace falta que el dashboard enseñe que el archivo se está pudriendo.
+        if: always()
+        run: .venv/bin/python agentes/tools/frescura.py
+
+      - name: Commit
+        if: always()
         run: |
           git config user.name "transcript-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add agentes/*/yt-transcripts/
+          git add agentes/*/yt-transcripts/ data/agentes_frescura.json
           git diff --cached --quiet || git commit -m "transcripts: ingesta diaria [skip ci]"
           git push

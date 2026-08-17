@@ -209,17 +209,33 @@ def main():
     ap.add_argument("--force", action="store_true", help="rehacer aunque ya exista")
     ap.add_argument("--max", type=int, default=0, help="limitar a los N vídeos más recientes por URL (0 = todos)")
     ap.add_argument("--since", default=None, help="solo vídeos desde esta fecha YYYYMMDD (p.ej. 20210101)")
+    ap.add_argument("--permitir-vacio", action="store_true",
+                    help="no fallar si un CANAL devuelve 0 vídeos (solo para pruebas)")
     ap.add_argument("urls", nargs="+", help="vídeo(s), playlist(s) o canal(es)")
     a = ap.parse_args()
     check_ytdlp()
     total = 0
+    vacios = []
     for url in a.urls:
         vids = list_videos(url, a.max, a.since)
         print(f"{url} → {len(vids)} vídeo(s)")
+        # Un CANAL que devuelve 0 videos NO es "no hay nada nuevo": es que YouTube no nos ha
+        # dejado listar (bloquea las IPs de los runners de CI). Antes esto se tragaba en
+        # silencio y el workflow salia verde 26 dias seguidos sin ingerir nada.
+        # Una URL de VIDEO suelto si puede legitimamente dar 0 (borrado/privado) -> no cuenta.
+        if not vids and ("/videos" in url or "@" in url or "list=" in url):
+            vacios.append(url)
         for v in (vids[:a.max] if a.max else vids):
             if fetch_one(v, a.persona, a.lang, a.force):
                 total += 1
     print(f"\nListo. {total} transcript(s) nuevos en agentes/{a.persona}/yt-transcripts/")
+    if vacios and not a.permitir_vacio:
+        print("\nERROR: estos canales han devuelto 0 vídeos:", file=sys.stderr)
+        for u in vacios:
+            print(f"  · {u}", file=sys.stderr)
+        print("Causa habitual: YouTube bloquea la IP (runner de CI). NO es 'no hay nada nuevo'.\n"
+              "Ejecuta en local, o usa --permitir-vacio si de verdad esperabas 0.", file=sys.stderr)
+        sys.exit(2)
 
 if __name__ == "__main__":
     main()

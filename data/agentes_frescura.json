@@ -1,0 +1,36 @@
+{
+ "_que_es": "Frescura del archivo de transcripts por agente. Lo genera agentes/tools/frescura.py; el workflow ingest-transcripts.yml lo regenera tras cada ingesta. Si 'estado' es 'rancio', la ingesta lleva rota más días de los normales para ese canal.",
+ "generado": "2026-08-17T11:46:39+00:00",
+ "personas": [
+  {
+   "persona": "cowen",
+   "ultimo": "2026-07-20",
+   "ultimo_archivo": "20260720-ethereum-dubious-speculation.md",
+   "dias": 28,
+   "umbral_dias": 10,
+   "estado": "rancio",
+   "n_transcripts": 457,
+   "sin_fecha": 20
+  },
+  {
+   "persona": "glassnode_tactico",
+   "ultimo": "2026-06-26",
+   "ultimo_archivo": "20260626-analyzing-spot-etf-volumes-chart-of-the-week.md",
+   "dias": 52,
+   "umbral_dias": 45,
+   "estado": "rancio",
+   "n_transcripts": 214,
+   "sin_fecha": 0
+  },
+  {
+   "persona": "lmec",
+   "ultimo": "2026-07-11",
+   "ultimo_archivo": "20260711-algo-muy-gordo-est-llegando-a-cripto-aprov-chalo.md",
+   "dias": 37,
+   "umbral_dias": 30,
+   "estado": "rancio",
+   "n_transcripts": 233,
+   "sin_fecha": 0
+  }
+ ]
+}
