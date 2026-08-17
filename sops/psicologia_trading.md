@@ -301,30 +301,159 @@ próximo ciclo alcista y el terminal dice reducir, el mismo músculo.
 
 ---
 
-## Checklist operativa
+## Las hojas de trabajo
 
-Lo único de este documento pensado para releerse a menudo.
+Lo único de este documento pensado para usarse, no para leerse. **A mano y en papel**: no es un
+capricho estético — poner el bolígrafo sobre el papel es lo que obliga a implicarse al córtex prefrontal
+en vez de dejar el mando al sistema límbico (§10). Escribirlo en el móvil no produce el mismo efecto.
 
-### Antes de mover capital
+> **Versión imprimible (A4):** las tres hojas están maquetadas para imprimir en
+> `sops/hojas_psicologia.html`. Imprime unas cuantas y ten un taco al lado del sitio donde decides.
 
-- [ ] **¿Qué fecha tiene el dato en el que me apoyo?** Si el WoC tiene tres semanas, no describe esta semana.
-- [ ] ¿Esto está en el plan, o lo estoy justificando a posteriori?
-- [ ] ¿Respondo al **riesgo** (un nivel definible cambió) o a la **incertidumbre** (no sé qué va a pasar y estoy incómodo)?
-- [ ] ¿Cómo me voy a sentir con esta decisión **dentro de una semana**, salga como salga?
-- [ ] Estado interno: ¿he dormido? ¿cuánto café llevo? ¿vengo de una discusión? ¿estoy operando después de un día malo que no tiene nada que ver con esto?
-- [ ] Si la respuesta a cualquiera de las anteriores incomoda: **no hacer nada hoy también es una decisión**, y normalmente la barata.
+---
 
-### Después de cada decisión
+### HOJA 1 — Análisis interno · ANTES de mover capital
 
-- [ ] Clasificarla: **tipo 1, 2, 3 o 4**. Antes de saber si salió bien.
-- [ ] Una línea de por qué. A mano si es posible.
+Se rellena **entera antes** de ejecutar nada. Si en algún punto aparece un PARAR, se cierra el portátil.
 
-### Revisión mensual
+**0 · El dato**
 
-- [ ] Contar tipos. **La métrica no es cuánto gané: es cuántos tipo 3 y tipo 4 hubo.**
-- [ ] ¿Algún tipo 4 (salió bien estando fuera de plan)? Es la señal más valiosa del mes — mírala más que a los tipo 3.
-- [ ] Objetivo del mes siguiente en tipos, no en euros.
-- [ ] ¿Estoy cerca de un máximo de cartera? Entonces estoy en el sitio delicado del ~80%: decidir **ahora**, en frío, qué se hace ahí.
+```
+Decisión que estoy considerando: ______________________________________________
+
+¿En qué dato me apoyo?: _______________________________________________________
+
+FECHA de ese dato: ____________     Antigüedad: ______ días
+```
+→ **Más de 10 días en un dato semanal: PARAR.** Búscalo fresco o no decidas hoy.
+
+**1 · Cuerpo** *(30 segundos, ojos cerrados, respiración lenta y profunda)*
+
+```
+Horas de sueño anoche: ______     Cafés hoy: ______     ¿He comido? SÍ / NO
+
+¿Dónde noto tensión?   [ ] mandíbula  [ ] hombros  [ ] pecho  [ ] estómago  [ ] manos  [ ] nada
+
+Respiración:   [ ] corta y alta       [ ] lenta y profunda
+
+¿Estoy inclinado hacia la pantalla?   SÍ / NO
+```
+
+**2 · Emoción — nómbrala** *(no la juzgues; es un dato, no un defecto)*
+
+```
+Ahora mismo siento: ___________________________________________________________
+
+Intensidad (1-10): ______
+
+¿Viene del mercado o de fuera (trabajo, casa, salud, sueño)?: _________________
+
+¿Vengo de una pérdida reciente?  SÍ / NO      ¿De una ganancia reciente?  SÍ / NO
+```
+
+**3 · Pensamiento**
+
+```
+Qué espero que pase: __________________________________________________________
+
+Qué temo que pase: ____________________________________________________________
+
+Qué me estoy diciendo a mí mismo: _____________________________________________
+```
+
+**4 · Las tres preguntas**
+
+```
+¿Esto es mi plan, o es una emoción?              [ ] PLAN          [ ] EMOCIÓN
+
+¿Estoy siendo preciso, o intentando ganar dinero? [ ] PRECISO      [ ] DINERO
+
+¿Respondo al riesgo o a la incertidumbre?         [ ] RIESGO       [ ] INCERTIDUMBRE
+   RIESGO = un nivel definible ha cambiado, el cálculo es otro
+   INCERTIDUMBRE = no sé qué va a pasar y llevo días incómodo
+```
+→ **Cualquier casilla en la columna derecha: PARAR.**
+
+**5 · El plan**
+
+```
+¿Qué regla ESCRITA autoriza esta decisión?: ___________________________________
+
+_______________________________________________________________________________
+```
+→ **Si no hay una regla escrita que la autorice: PARAR.** No vale «tiene sentido».
+
+**6 · Proyección a una semana**
+
+```
+Si lo hago y sale mal, dentro de una semana pensaré: __________________________
+
+Si NO lo hago y sale bien sin mí, pensaré: ____________________________________
+
+¿Qué arrepentimiento prefiero?   [ ] por ACCIÓN        [ ] por INACCIÓN
+```
+
+**Decisión**
+
+```
+[ ] EJECUTAR        [ ] NO HACER NADA        [ ] ESPERAR A: ______________________
+```
+Recuerda: **no hacer nada es una decisión**, se registra igual, y suele ser la barata.
+
+---
+
+### HOJA 2 — Clasificación · DESPUÉS de cada decisión
+
+Se clasifica por el **proceso**, no por el resultado. Rellena las dos primeras columnas el mismo día;
+el resultado y el tipo, cuando se sepa.
+
+```
+              │  Seguí el plan        │  Fuera de plan
+──────────────┼───────────────────────┼──────────────────────
+  Gané        │       TIPO 1          │       TIPO 4  ⚠
+              │   repetir esto        │   el peligroso
+──────────────┼───────────────────────┼──────────────────────
+  Perdí       │       TIPO 2          │       TIPO 3
+              │   el plan funcionando │   castigado, y bien
+```
+
+**Tipo 2 no es un error.** Comprar un tramo en $63K por plan y ver $55K es el DCA por tramos haciendo
+exactamente su trabajo. Marcarlo como tipo 3 es la vía rápida a abandonar un plan que estaba bien.
+
+**Tipo 4 es el que hay que cazar.** Ganar fuera de plan enseña la lección equivocada y no es sostenible.
+
+| Fecha | Decisión | ¿Plan? | Resultado | Tipo | Una línea de por qué |
+|---|---|---|---|---|---|
+|  |  | S / N |  |  |  |
+|  |  | S / N |  |  |  |
+|  |  | S / N |  |  |  |
+|  |  | S / N |  |  |  |
+|  |  | S / N |  |  |  |
+
+---
+
+### HOJA 3 — Revisión mensual
+
+```
+Mes: ____________
+
+  Tipo 1: ______      Tipo 2: ______      Tipo 3: ______      Tipo 4: ______
+
+  Decisiones en proceso (1+2) / total:  ______ / ______  =  ______ %
+```
+
+- [ ] **La métrica del mes no es cuánto gané: es cuántos tipo 3 y 4 hubo.**
+- [ ] ¿Hubo algún **tipo 4**? Analízalo más que los tipo 3 — es la señal más valiosa del mes.
+- [ ] ¿Algún tipo 2 que me tentó reclasificar como error? ¿Por qué?
+- [ ] ¿Estoy cerca de un **máximo de cartera**? Entonces estoy en el sitio delicado del ~80% (§7):
+      decidir **ahora, en frío**, qué se hace ahí.
+- [ ] ¿Hay algo fuera del mercado (sueño, salud, casa, trabajo) que esté empujando mis decisiones?
+
+```
+Objetivo del mes que viene, EN TIPOS y no en euros:
+
+  Bajar tipo 3 + tipo 4 de ______ a ______
+```
 
 ---
 
