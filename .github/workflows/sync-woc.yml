@@ -42,10 +42,23 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           python ingesta/sync_woc.py ${{ inputs.forzar && '--forzar' || '' }}
+      # El paso de arriba trae la RECOMENDACIÓN al dashboard. Este trae los INFORMES que lee
+      # el agente `glassnode_woc` para citar, que hasta el 17-ago-2026 no los escribía nadie.
+      # Se paga con la suscripción (CLAUDE_CODE_OAUTH_TOKEN), no con la API.
+      - name: Instalar Claude Code
+        run: curl -fsSL https://claude.ai/install.sh | bash
+      - name: Destilar los informes que falten
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          python ingesta/sync_woc_reports.py
       - name: Commit
+        if: always()          # sube lo que haya entrado aunque el destilado falle
         run: |
           git config user.name "woc-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/woc_semana.json
+          git add data/woc_semana.json agentes/glassnode_woc/reports/
           git diff --cached --quiet || git commit -m "woc: sincronizar semana desde el KB [skip ci]"
           git push
