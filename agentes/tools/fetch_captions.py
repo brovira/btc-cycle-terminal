@@ -46,23 +46,51 @@ def slug(s):
     s = re.sub(r"[^A-Za-z0-9]+", "-", s or "").strip("-").lower()
     return (s or "video")[:70]
 
+class CanalIlegible(Exception):
+    """No se pudo LEER el canal/playlist.
+
+    Es un estado DISTINTO de "el canal no tiene vídeos nuevos", y confundirlos fue
+    exactamente el bug que tuvo la ingesta parada 4 semanas en verde: la rama --dateafter
+    se tragaba el error de yt-dlp, devolvía [] y el workflow imprimía "0 vídeo(s)" como si
+    fuera un día tranquilo. Cowen publica casi a diario; 0 vídeos nunca fue creíble.
+    """
+
+def _err_tail(r, n=3):
+    errln = [x for x in (r.stderr or "").splitlines() if x.strip()]
+    return " | ".join(errln[-n:])[:400] if errln else "(yt-dlp no reportó nada en stderr)"
+
+def _parse_filas(stdout):
+    filas = []
+    for ln in (stdout or "").splitlines():
+        p = ln.strip().split("|||")
+        if p and p[0].strip() and not p[0].startswith("{"):
+            vid = p[0].strip()
+            fecha = p[2].strip() if len(p) > 2 else ""
+            filas.append({"id": vid, "title": (p[1] if len(p) > 1 else vid),
+                          "url": f"https://www.youtube.com/watch?v={vid}",
+                          "date": fecha if re.fullmatch(r"\d{8}", fecha) else ""})
+    return filas
+
 def list_videos(url, limit=0, since=None):
-    """Expande vídeo/playlist/canal a una lista de {id,title,url,date}."""
+    """Expande vídeo/playlist/canal a una lista de {id,title,url,date}.
+
+    Lanza CanalIlegible si no se pudo leer la URL. Devolver [] significa SIEMPRE
+    "leído correctamente, cero vídeos que cumplan el filtro".
+    """
     if since:  # filtra por fecha (más lento: extrae cada vídeo, pero respeta --dateafter)
         cmd = YTDLP + CLIENT + ["--dateafter", since, "--skip-download", "--ignore-errors",
                        "--print", "%(id)s|||%(title)s|||%(upload_date)s"]
         if limit:
             cmd += ["--playlist-end", str(limit)]
         r = run(cmd + [url])
-        out = []
-        for ln in (r.stdout or "").splitlines():
-            p = ln.split("|||")
-            if p and p[0].strip():
-                vid = p[0].strip()
-                out.append({"id": vid, "title": (p[1] if len(p) > 1 else vid),
-                            "url": f"https://www.youtube.com/watch?v={vid}",
-                            "date": (p[2] if len(p) > 2 else "")})
-        return out
+        filas = _parse_filas(r.stdout)
+        if not filas:
+            if r.returncode != 0:
+                raise CanalIlegible(_err_tail(r))
+            # returncode 0 y 0 filas: probablemente legítimo, pero volcamos stderr igualmente
+            # para que el log diga POR QUÉ y no haya que adivinarlo desde fuera.
+            print(f"  · 0 vídeos tras --dateafter {since} → {_err_tail(r)}")
+        return filas
     # OJO: --flat-playlist es rapido pero NO devuelve upload_date -> los archivos salian como
     # "0000-titulo.md". La fecha importa: el metodo de los analistas cambia con los anos y el agente
     # necesita saber si una cita es vigente o vieja. Por eso se pide el print con la fecha.
@@ -72,21 +100,16 @@ def list_videos(url, limit=0, since=None):
         cmd += ["--playlist-end", str(limit)]
     r = run(cmd + [url])
     if r.returncode != 0 and not r.stdout.strip():
-        print(f"  ! no pude leer {url}: {r.stderr.strip()[:200]}"); return []
-    filas = []
-    for ln in (r.stdout or "").splitlines():
-        p = ln.strip().split("|||")
-        if p and p[0].strip() and not p[0].startswith("{"):
-            vid = p[0].strip()
-            fecha = p[2].strip() if len(p) > 2 else ""
-            filas.append({"id": vid, "title": (p[1] if len(p) > 1 else vid),
-                          "url": f"https://www.youtube.com/watch?v={vid}",
-                          "date": fecha if re.fullmatch(r"\d{8}", fecha) else ""})
+        raise CanalIlegible(_err_tail(r))
+    filas = _parse_filas(r.stdout)
     if filas:
         return filas
     try:
         data = json.loads(r.stdout)
     except Exception:
+        if r.returncode != 0:
+            raise CanalIlegible(_err_tail(r))
+        print(f"  · 0 vídeos legibles en {url} → {_err_tail(r)}")
         return []
     entries = data.get("entries")
     if entries is None and limit:
@@ -207,13 +230,23 @@ def main():
     a = ap.parse_args()
     check_ytdlp()
     total = 0
+    ilegibles = []
     for url in a.urls:
-        vids = list_videos(url, a.max, a.since)
+        try:
+            vids = list_videos(url, a.max, a.since)
+        except CanalIlegible as e:
+            print(f"  ! NO PUDE LEER {url} → {e}")
+            ilegibles.append(url)
+            continue
         print(f"{url} → {len(vids)} vídeo(s)")
         for v in (vids[:a.max] if a.max else vids):
             if fetch_one(v, a.persona, a.lang, a.force):
                 total += 1
     print(f"\nListo. {total} transcript(s) nuevos en agentes/{a.persona}/yt-transcripts/")
+    # Salir en rojo: un canal ilegible NO es "no hay vídeos nuevos". Si esto se traga,
+    # la ingesta se para en silencio y los agentes responden con material caducado.
+    if ilegibles:
+        sys.exit(f"ERROR: {len(ilegibles)} canal(es) ilegibles: {', '.join(ilegibles)}")
 
 if __name__ == "__main__":
     main()

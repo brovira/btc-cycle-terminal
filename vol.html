@@ -254,8 +254,15 @@ const PHASE_HERO={
       const s2=await rs.json();
       const est=e=>e==="pendiente"?'<span class="st" style="color:var(--accent);background:color-mix(in oklab,var(--accent) 14%,transparent)">⏳ en test</span>':e;
       const ver=v=>v==="HIT"?'<span class="st" style="color:var(--bull);background:color-mix(in oklab,var(--bull) 14%,transparent)">✅ HIT</span>':v==="MISS"?'<span class="st" style="color:var(--bear);background:color-mix(in oklab,var(--bear) 14%,transparent)">❌ MISS</span>':'<span class="st" style="color:var(--accent);background:color-mix(in oklab,var(--accent) 14%,transparent)">🟡 PARCIAL</span>';
+      // El WoC es SEMANAL: si pasan >10 días sin uno nuevo, la sección deja de describir
+      // "esta semana" y pasa a ser material caducado. Como el sync puede fallar en silencio
+      // (y lo hizo: 3 runs seguidos sin GH_TOKEN), la antigüedad se calcula aquí, en el cliente,
+      // a partir del propio dato — así el aviso no depende de que el pipeline funcione.
+      const dias=Math.floor((Date.now()-Date.parse(s2.woc_fecha+"T00:00:00Z"))/864e5);
+      const rancio=Number.isFinite(dias)&&dias>10;
       $("#semana").innerHTML=
-        `<h3>📰 WoC ${s2.woc_fecha} — «${s2.woc_titulo}» <span style="font-weight:400;color:var(--muted);font-size:12px">· evaluado a ${s2.updated}</span></h3>`
+        (rancio?`<div class="call" style="border-color:var(--bear);color:var(--bear);margin-bottom:12px"><b>⚠️ Material caducado — ${dias} días desde este WoC.</b> El Week On-Chain es semanal, así que esto ya NO describe "esta semana": los niveles y las llamadas de abajo son de ${s2.woc_fecha} y pueden haberse resuelto. Revisa que la ingesta del WoC esté viva antes de operar con esto.</div>`:"")
+        +`<h3>📰 WoC ${s2.woc_fecha} — «${s2.woc_titulo}» <span style="font-weight:400;color:var(--muted);font-size:12px">· evaluado a ${s2.updated}</span></h3>`
         +`<div>${s2.resumen}</div>`
         +(s2.niveles&&s2.niveles.length?`<div style="margin-top:8px">${s2.niveles.map(l=>`<span class="lvl">${l.k}: <b>${l.v}</b></span>`).join("")}</div>`:"")
         +`<h3 style="margin-top:14px">🎯 Qué hacemos</h3><div>${s2.que_hacemos}</div>`

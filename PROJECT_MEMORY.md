@@ -5,7 +5,52 @@ Cowen) + investigación propia (Patrón temporal) con citas verbatim de sus tran
 agrega señales, y gestiona el capital real (personal + BELROGAM SL) para decidir
 cuánto/cuándo comprar.
 
-> ## Estado a 23-jul-2026 (última sesión) — léelo primero
+> ## Estado a 16-ago-2026 — LA INGESTA ESTABA PARADA EN VERDE, léelo primero
+>
+> Los agentes respondían con material de hace 4-7 semanas. Tres causas **distintas**, todas
+> invisibles porque ningún pipeline fallaba de forma ruidosa:
+>
+> 1. **Transcripts (Cowen + LMEC) — bug de swallow. ARREGLADO.** `ingest-transcripts.yml`
+>    corría a diario y salía verde imprimiendo `→ 0 vídeo(s)` desde el 16-jul. La rama
+>    `--dateafter` de `list_videos()` (la única que usa el CI) nunca miraba `returncode` ni
+>    `stderr`: cualquier fallo de yt-dlp devolvía `[]`, indistinguible de "no hay vídeos
+>    nuevos". Y encima los dos pasos tenían `continue-on-error: true`. Cowen publica casi a
+>    diario, así que 0 vídeos nunca fue creíble. Ahora `list_videos` lanza `CanalIlegible`,
+>    el script sale con código 1 y el workflow rompe. **Falta ver el primer run real**: el
+>    error de fondo puede ser bloqueo de IP de los runners o `player_client` caducado — el
+>    log del próximo run lo dirá, que es justo lo que antes no se podía saber.
+> 2. **Week On-Chain — dos fallos.** (a) `sync-woc.yml` ha corrido 3 veces (30-jul, 6-ago,
+>    13-ago) y **las 3 fallaron** con `ERROR: falta GH_TOKEN`: el secreto está vacío en
+>    *Settings → Secrets → Actions* (en Vercel sí está; son sitios distintos). **Solo lo
+>    puede poner el usuario.** (b) Aunque funcionara, `sync_woc.py` escribe únicamente
+>    `data/woc_semana.json` — **nada en el repo escribe `agentes/glassnode_woc/reports/`**.
+>    Los informes markdown del WoC son 100% manuales; por eso solo hay uno (22-jul).
+> 3. **checkonchain — sin cron. ARREGLADO.** `checkonchain.yml` era `workflow_dispatch` puro:
+>    no fallaba, es que nadie lo lanzaba. Última extracción manual el 30-jul → 17 días
+>    congelado. Añadido `cron: 30 7 * * *` con modo `lote` por defecto.
+>
+> **Mitigación mientras tanto:** `vol.html` calcula la antigüedad del WoC en cliente y pinta
+> un aviso de "material caducado" pasados 10 días, para que la sección "Qué hacemos esta
+> semana" no presente niveles de hace un mes como si fueran de ahora.
+>
+> **Lección transversal:** todo pipeline de ingesta necesita distinguir *"no hay nada nuevo"*
+> de *"no pude leer la fuente"*. Los tres fallos son la misma clase de bug.
+>
+> **Nuevo SOP:** `sops/psicologia_trading.md` — psicología de inversión y buenas prácticas. Crece por
+> fuentes (fuente 01: Dr. Andrew Menaker). Lo útil de verdad son las dos últimas secciones: la
+> traducción de sus cuatro tipos de operación a decisiones de ESTE terminal (tramos de DCA, rango de LP,
+> no hacer nada) y la checklist operativa. Regla nueva que sale del incidente de hoy: **antes de mover
+> capital, comprobar la fecha del dato en el que te apoyas** — un dato caducado se siente igual de
+> convincente que uno fresco.
+>
+> **Pendiente (elegido por el usuario, en este orden):** auditar el framework de Glassnode.
+> Ya existe ~70% del material: `glassnode_tactico/catalogo_indicadores.md` (qué indicadores
+> deciden HOY, medido sobre 272 artículos), `framework_direccion.md`, y los 12 lotes de
+> `extraccion_woc/` (328 WoC, jun-2019 → jul-2026). Lo que falta de verdad es el
+> **evaluador adversarial** de `agentes/PENDIENTE_evaluador_adversarial.md` (pedido el
+> 30-jul, nunca construido) y correr los backtests Tier 1 de `backtest_repertorio.md`.
+
+> ## Estado a 23-jul-2026 — léelo primero
 > - **Trabajamos en paralelo con "codex"** (otra IA). Codex hizo el sistema de diseño
 >   `dashboard.css` (scoped bajo `.dashboard-page` + `.page-<name>`). Su rama
 >   `codex/fix-cashflow-supabase` está **mergeada en main** (cero commits sin integrar).
