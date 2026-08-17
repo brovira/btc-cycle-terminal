@@ -115,8 +115,15 @@ def destilar(fecha, nombre, texto):
     if not os.environ.get("CLAUDE_CODE_OAUTH_TOKEN", "").strip():
         sys.exit("ERROR: falta CLAUDE_CODE_OAUTH_TOKEN. Genéralo con `claude setup-token` "
                  "y guárdalo como secret del repo.")
-    slug = re.sub(r"[^a-z0-9]+", "-",
-                  re.sub(r"^\d{4}-\d{2}-\d{2}-", "", nombre[:-3]).lower()).strip("-")[:60]
+    # El slug sale del TÍTULO del artículo, no del nombre del archivo del KB. El agente cita
+    # por nombre de archivo, y "trigger-happy" le dice algo al leerlo mientras
+    # "the-week-onchain-week-32-2026" no. Si el artículo no trae encabezado, se usa el nombre
+    # del KB como red de seguridad.
+    m = re.search(r"^#\s+(.+)$", texto, re.M)
+    crudo = m.group(1) if m else re.sub(r"^\d{4}-\d{2}-\d{2}-", "", nombre[:-3])
+    crudo = re.sub(r"^the week[- ]on-?chain\s*[—–-]?\s*", "", crudo.strip(), flags=re.I)
+    crudo = re.sub(r"\s*[·|]\s*week\s*\d+.*$", "", crudo, flags=re.I)
+    slug = re.sub(r"[^a-z0-9]+", "-", crudo.lower()).strip("-")[:60] or "week-on-chain"
     salida = os.path.join(DESTINO, f"{fecha.replace('-','')}-{slug}.md")
 
     with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False, encoding="utf-8") as fh:

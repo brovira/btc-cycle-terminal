@@ -2,7 +2,7 @@
 
 **Fuente:** Glassnode Research · *The Week On-Chain* — https://research.glassnode.com/the-week-onchain-week-32-2026/
 **Autor:** Glassnode Research Team · **Fecha:** 2026-08-12
-**Tipo:** newsletter semanal (texto). Cita como `[reports/20260812-the-week-onchain-week-32-2026.md]`.
+**Tipo:** newsletter semanal (texto). Cita como `[reports/20260812-trigger-happy.md]`.
 
 ---
 
