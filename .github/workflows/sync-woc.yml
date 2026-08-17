@@ -31,6 +31,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      # Antes de sincronizar, comprobar que el clasificador de fiabilidad no está roto.
+      # Si clasifica mal, el dashboard muestra la nota del track record equivocada y NADA
+      # se pone rojo: devolver una etiqueta incorrecta es indistinguible de la correcta.
+      # Mejor no sincronizar que sincronizar con las notas mal atribuidas.
+      - name: Test del clasificador de fiabilidad
+        run: python ingesta/test_fiabilidad.py
       - name: Sincronizar
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}

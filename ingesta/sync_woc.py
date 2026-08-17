@@ -46,7 +46,12 @@ RUTA_JSONL = "research/glassnode-kb/recomendaciones/recomendaciones.jsonl"
 FIABILIDAD = [
     (r"reset de funding|funding reset",
      "«reset de funding → constructivo» — 1/3 (falla cerca de techos de ciclo)"),
-    (r"backwardation|\bbasis\b",
+    # OJO 2 (17-ago-2026): `\bbasis\b` a secas hacía match dentro de "STH Cost Basis" y le
+    # colgaba el 3/3 de backwardation a TODA llamada de nivel on-chain, que es un tipo
+    # distinto (8/10, patrón de más abajo). Mismo bicho que el `iv` dentro de "decisIVo"
+    # avisado arriba: una palabra corta de derivados que también vive en el vocabulario
+    # on-chain. Aquí "basis" solo cuenta si es el basis de futuros, no un cost basis.
+    (r"backwardation|contango|(?<!cost )(?<!coste )\bbasis\b(?!\s*(?:de\s+coste|cost))",
      "backwardation/funding extremo → squeeze — 3/3 histórico"),
     (r"\bfunding\b|leverage|apiñad|crowded|\bflush\b|squeeze|open interest|\bOI\b",
      "posicionamiento/leverage — 8/10 histórico (su punto fuerte)"),
