@@ -86,7 +86,36 @@
         "fng": 30,
         "halv_week": 120.4
       }
+    },
+    {
+      "date": "2026-08-17",
+      "price": 63326.41,
+      "lit": 4,
+      "tot": 4,
+      "action": "Comprar por niveles",
+      "stances": {
+        "lmec": "in",
+        "cowen": "in",
+        "ocm": "dca"
+      },
+      "signals": {
+        "price_le_200w": true,
+        "rsi_34_50": true,
+        "mvrv_green": null,
+        "price_le_realized": null,
+        "fear": true,
+        "cycle_window": true
+      },
+      "metrics": {
+        "bmsb": 68805.08,
+        "ma200": 64219.44,
+        "realized": null,
+        "mvrv_z": null,
+        "rsi": 39.5,
+        "fng": 31,
+        "halv_week": 121.4
+      }
     }
   ],
-  "updated_at": "2026-08-10T10:14:49.268813Z"
+  "updated_at": "2026-08-17T09:38:53.669481Z"
 }
