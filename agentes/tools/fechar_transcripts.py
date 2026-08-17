@@ -23,7 +23,15 @@ Uso (desde la raíz del repo):
 import argparse, os, re, subprocess, sys
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-YTDLP = [sys.executable, "-m", "yt_dlp"]
+
+# Reutiliza la resolución de fetch_captions (binario autónomo antes que módulo de Python).
+# Sin esto, en un Mac con el Python 3.9 de Xcode esto llamaría a un yt-dlp de hace meses:
+# yt-dlp ya no publica para 3.9, así que pip se queda clavado en la última compatible y
+# falla contra el antibot de YouTube con errores que parecen otra cosa.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from fetch_captions import _localizar_ytdlp  # noqa: E402
+
+YTDLP = _localizar_ytdlp()
 CLIENT = ["--extractor-args", "youtube:player_client=web_safari,mweb,tv,android"]
 LOTE = 40      # vídeos por llamada: una sola petición para muchos, mucho más rápido
 
