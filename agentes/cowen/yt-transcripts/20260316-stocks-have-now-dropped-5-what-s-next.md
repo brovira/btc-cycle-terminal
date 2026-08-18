@@ -9,7 +9,7 @@
 Hey everyone and thanks for jumping back
 into the equity verse.
 Today, we're going to talk about the
-stock market and how it is already
+stock market and how it has already
 dropped about 5%
 of the 10% drop that we were sort of
 speculating about. If you guys like the
@@ -20,7 +20,7 @@ if you want to get access to the macro
 memo that we just published today on
 March 15th. So, make sure you guys check
 that out. Link is in the description
-below, benjamincowen.com.
+below. benjamincowen.com
 Let's go ahead and jump in. So, the
 first thing I'll say is for a few weeks,
 a lot of people have been pointing out
@@ -36,7 +36,8 @@ uh the the index that I'm looking at.
 It's not blocking the candles. You can
 see what candles I'm looking at. You can
 see the dates. You can see the Y axis.
-Um let me know. Let me know.
+Um
+let me know. Let me know.
 So,
 with that said, I I put out a video a
 few weeks ago. And title of the video
@@ -81,7 +82,7 @@ saw back then. And what's also similar
 is if you look at the Dow Jones, you'll
 see that the Dow Jones back in 2021 and
 2022 put a high in October and then a
-higher high in the fall in the midterm
+higher high in the follow in the midterm
 year. Same thing this time, right? You
 had a high, but then you had higher
 highs going into the midterm year. So,
@@ -96,25 +97,25 @@ um you can see there was a high put in
 and then it kind of just trended down
 and same thing in 2025.
 How you sort of top at the end of the
-election or the pre uh post-election
-year, you get a big drop, you come back
-up to the the bear market resistance
-band, and I almost wonder if that's
-where we are right now before we
-potentially get another drop. Now, when
-it comes to the S&amp;P 500, while I do
-expect a 10% correction, it doesn't mean
-it has to always happen right away. Um
-the S&amp;P is coming down to some levels
+election or the pre post election year,
+you get a big drop, you come back up to
+the the bear market resistance band, and
+I almost wonder if that's where we are
+right now before we potentially get
+another drop. Now, when it comes to the
+S&amp;P 500, while I do expect a 10%
+correction, it doesn't mean it has to
+always happen right away.
+Um the S&amp;P is coming down to some levels
 that it might like to try and bounce off
 of. So, we could have a scenario where
-it does something like this, maybe it
+it does something like this. Maybe it
 drops, back test the bull market support
 band, and then goes down. Could play out
 any number of ways, but I still do think
 the most likely outcome is that there
-will be a 10% correction. Now, listen,
-whenever there is a 10% correction, that
+will be a 10% correction. Now, listen.
+Whenever there is a 10% correction, that
 does not necessarily mean it has to
 immediately lead into a recession,
 right? We have to be aware of what the
@@ -128,24 +129,24 @@ If you look at layoffs and discharges,
 they also remain relatively low, right?
 They're still below the pre-pandemic
 average. So, you cannot look at that and
-then and it be clear that it has to be a
-recession. The way you get recessions
-are with stock market drops that then
-prove to be durable, right? So, it's the
-durable drop of stocks that then lead
-into the negative feedback loop where
-companies lay work lay workers off.
-Those workers then have a hard time
-finding jobs. The reason they have a
-hard time finding jobs is because, you
-know, job openings and and hiring is
-just down, right? If you look at job
-openings, you can see the job openings
-have been falling. If you look at hires,
-they have been falling. And this is why
-layoffs are kind of the last part of the
-business cycle, because when layoffs
-start,
+then it and it be clear that it has to
+be a recession. The way you get
+recessions are with stock market drops
+that then prove to be durable, right?
+So, it's the durable drop of stocks that
+then lead into the negative feedback
+loop where companies lay work lay
+workers off. Those workers then have a
+hard time finding jobs. The reason they
+have a hard time finding jobs is
+because, you know, job openings and and
+hiring is just down, right? If you look
+at job openings, you can see the job
+openings have been falling. If you look
+at hires, they have been falling. And
+this is why layoffs are kind of the last
+part of the business cycle because when
+layoffs start,
 then the people that getting laid are
 getting laid off, they can't really find
 a new job. But, we're not in that
@@ -185,10 +186,10 @@ follow it the entire way. Maybe it
 drops, comes back to a lower high, then
 goes down, but maybe it doesn't go all
 the way back down here. Maybe it just
-finds support right here, and then goes
+find support right here, and then goes
 back up to new highs. It could play out
 any number of ways. Any number of ways.
-But the point is, the window of weakness
+But, the point is the window of weakness
 for the stock market that it has to get
 through, and and and the period that we
 have to hope that a recession doesn't
@@ -205,8 +206,7 @@ on. Right, you're already kind of
 getting that distribution phase up here.
 And it could play out like this. Maybe
 it comes down, rallies, and then drops,
-or or something like that.
-Um
+or or something like that. Um
 but I still do think that correction by
 stocks is underway. And because of that,
 we'll need to keep a close eye on the on
@@ -249,8 +249,8 @@ think and continue to think that we are
 sort of at the end sort of the later
 part of the business cycle is when you
 look at things like the liquidity risk
-dashboard that we've developed,
-um it just seems like liquidity has been
+dashboard that we've developed, um it
+just seems like liquidity has been
 really tight for a while, and with the
 dollar rallying, it's probably going to
 tighten liquidity even further and lead
@@ -300,13 +300,13 @@ you do trend down, you trend down very,
 very quickly, and people it catches
 people off guard.
 Usually that next area of weakness,
-window of weakness, is early April
+window of weakness, is early April,
 historically. Sometimes late March,
-early April where that next window of
+early April, where that next window of
 weakness often historically occurs. So,
 I'm just calling it as I see it. I just
 I'm not trying to It's not all doom and
-gloom. It's just guys, Bitcoin doesn't
+gloom, it's just guys, Bitcoin doesn't
 normally do that well in mid-term years.
 At this point, we cannot say that the
 drawdown by Bitcoin necessarily is
@@ -375,7 +375,7 @@ of the crypto space, but opportunity
 cost is a thing and the reality for
 Bitcoin, unfortunately, is that it's
 down this year against the US dollar
-about 18%. But not only that, it's down
+about 18%, but not only that, it's down
 against gold this year about 29%. Not
 only that, it's down against the stock
 market this year about 15% and not only
@@ -385,7 +385,7 @@ Bitcoin can't have rallies, it can and
 it will likely have tactical rallies,
 but the problem is it's not where the
 bull market is, right? Like it's a it's
-a tough battle fight because you're
+a tough battle to fight because you're
 basically just trying to time lows and
 and highs and it's not it's likely not a
 durable rally to new all-time highs, at
@@ -417,7 +417,7 @@ market. So, it all plays out in the end,
 but when you're going through the sort
 of the meat of the bear market, it can
 certainly catch people
-um off-sides. But, those are my views
+um off sides. But, those are my views
 and and we'll see if this correction in
 the stock market continues to play out
 over the next few weeks. If you guys

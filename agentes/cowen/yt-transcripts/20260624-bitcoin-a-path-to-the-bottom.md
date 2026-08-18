@@ -28,12 +28,11 @@ just crypto, right? And and this is what
 I've talked about for years, and
 hopefully this conference can bring
 together a lot of like-minded people who
-want more rational analysis. It's not
+want more rational analysis that's not
 based on hype. Not to say that it's
 always correct, right? Everyone gets
-things wrong,
-but to say, "Look, we're going to try to
-compile
+things wrong, but to say, "Look, we're
+going to try to compile
 people together who can look at these
 markets in a in a rational in a non-hype
 way, talk about assets that provide
@@ -64,8 +63,7 @@ that it's the first of many. I know this
 year isn't like the best year cuz price
 action for for Bitcoin
 really kind of sucks.
-But,
-one of the reasons I'm doing it in
+But, one of the reasons I'm doing it in
 November is because I think the market
 cycle bottom for Bitcoin will likely be
 around that time. I could see it
@@ -77,12 +75,11 @@ market cycle low for Bitcoin could occur
 in October.
 So, what I want to do in this video is
 just talk about a potential path
-to get to a market cycle bottom.
-Before we do that, I I want us to think
-for a minute.
-Is what is happening now for Bitcoin, is
-it very different than what you see
-going on
+to get to a market cycle bottom. Before
+we do that, I I want us to think for a
+minute. Is what is happening now for
+Bitcoin, is it very different than what
+you see going on
 in prior midterm years?
 Not really. If you look at the
 year-to-date ROI of Bitcoin in 2026 and
@@ -94,7 +91,7 @@ the average, and you guys know that you
 know, taking the average kind of gives
 you it doesn't give you the path, it
 just gives you a path to help guide
-expectations. Okay?
+expectations, okay?
 That's all it does. So, we're looking at
 at
 a midterm year, the current midterm
@@ -109,8 +106,8 @@ We're currently only down about what?
 31%
 from the yearly open or so. Like you can
 see it's
-.69 .689 is where we currently are.
-Normally we're at .554.
+0.69 0.689 is where we currently are.
+Normally we're at 0.554.
 So, look at yearly candles and and you
 can really quickly see this. If you look
 at yearly candles, you can see that this
@@ -124,28 +121,28 @@ So, as of right now, Bitcoin is
 outperforming
 the average. All right?
 Now, when we think about how Bitcoin
-bottoms out, right? Like in the What is
-the path to get there? We know and we
-guys, we cannot time it perfectly and
-this is why I said it at the end of last
-year, I said, "Look, don't even try to
-time the countertrend rallies.
-Everything that I do on here for the
-bear market countertrends is an academic
-exercise. I haven't traded any of these
-rallies and and the reason is because
-I've I've tried to do it in the past and
-didn't really have a lot of luck with
-it, right? Like in 2022, I I timed this
+bottoms out, right? Like in what is the
+path to get there? We know and we guys,
+we cannot time it perfectly and this is
+why I said it at the end of last year, I
+said, "Look, don't even try to time the
+counter trend rallies. Everything that I
+do on here for the bear market counter
+trend is just an academic exercise. I
+haven't traded any of these rallies and
+and the reason is because I've I've
+tried to do it in the past and didn't
+really have a lot of luck with it,
+right? Like in 2022, I I timed this
 rally pretty well, but then this one
 I missed. Right? Like I it was a little
 early on the rally and so it's so hard
 to know, right? Like it is impossible to
-know exactly when those countertrend
+know exactly when those counter trend
 rallies can start and end. And what I
 would say though is generally speaking,
 you get your first drop at the end of
-the post-halving year. That's your first
+the post having year. That's your first
 initial drop. That's when the bear
 market starts, but like no one believes
 it. Okay? That's where it starts. No one
@@ -156,9 +153,9 @@ very beginning of the midterm year. I
 mean, this was you you had another drop
 earlier on. So, I guess maybe I should
 point to this first one first, right?
-So, you first had And I know that
+So, you first had and I know that
 doesn't look like much, but look, that
-was about a 50% drop. Which, when you
+was about a 50% drop. Which when you
 compare to these other ones, you can see
 you also get about 50% drops on that
 initial drop, maybe a little bit less,
@@ -216,10 +213,10 @@ Just like they cut three times in 2025.
 The third thing is when you look at the
 balance sheet of the Federal Reserve,
 Bitcoin topped in June of 2019, two
-months before quantitative tightening
-ended in August. And in this cycle,
-Bitcoin topped in October, two months
-before quantitative tightening ended in
+months for quantitative tightening ended
+in August. And in this cycle, Bitcoin
+topped in October, two months for
+quantitative tightening ended in
 December.
 What do you notice that happened back
 then? Bitcoin bled out, just like it's
@@ -245,7 +242,7 @@ need.
 But we're not getting that. Yeah, the
 balance sheet's going up, but so what?
 It did back then, too. It just wasn't
-fast enough. Once it really went up,
+fast enough. Once they really went up,
 that's where things changed. The problem
 is that it didn't really go up until the
 stock market started to correct. So,
@@ -256,7 +253,7 @@ have a big correction, or sorry, it
 won't have a major market cycle bottom
 until after the stock market corrects.
 So, here's the thing about the stock
-market, okay? And And this is where it
+market, okay? And and this is where it
 all makes sense, it all comes together,
 all right?
 Every midterm year since Bitcoin has
@@ -283,25 +280,25 @@ the midterm year, but the second
 correction.
 You see that? So, look at this.
 Bitcoin bottomed out here near the end
-of 2014, early 2015, and it was It was
-after the second midterm year correction
-at the end of the year. When you look at
-2018, Bitcoin bottomed out
+of 2014, early 2015, and it was at It
+was after the second midterm year
+correction at the end of the year. When
+you look at 2018, Bitcoin bottomed out
 after the second correction, kind of in
 that second correction. And then last
 midterm year, Bitcoin bottomed out again
 in that last correction by the stock
 market in the midterm year.
 So,
-when we talk about, you know, like when
+when we talk about, you know, like, when
 can Bitcoin bottom,
 it all makes sense if you if you think
 about it through the narrative of
 monetary policy because
 what would cause the Fed to potentially
 pivot some on their hawkish monetary
-policy stance,
-which I know they're not necessarily
+policy stance?
+Which I know they're not necessarily
 saying it, but the markets just don't
 believe them. When you look at market
 expectations, we might be getting rate
@@ -322,11 +319,10 @@ in, which would probably be a tailwind
 for crypto. Now, at the end of the day,
 I don't really think you need a macro
 narrative to support it. I mean, Bitcoin
-just has been following the four-year
-cycle for for its entire existence, and
-I hope that it continues to do so. But,
-that is the one that you could you could
-say.
+just has been following the 4-year cycle
+for for its entire existence, and I hope
+that it continues to do so. But, that is
+the one that you could you could say.
 The other view,
 and this is why
 and I'll be I'll be clear about this.
@@ -343,12 +339,12 @@ economy's not falling apart. And if the
 economy is not falling apart when
 they're hiking rates, and Bitcoin
 bottoms out in Q4, we're going to be
-looking around and being like, well,
+looking around and being like, "Well,
 what's going on? If the economy's not
 falling apart, and we're getting rate
 hikes,
 then maybe Bitcoin's mispriced at that
-point.
+point."
 So, that is my view on how this will
 likely play out for Bitcoin. So, let's
 talk about the path, because the path, I
@@ -357,7 +353,7 @@ right, and and you guys have seen me
 through the years try to time some of
 these countertrend rallies, and of
 course, this time I've basically just
-said, all right, it's all an academic
+said, "All right, it's all an academic
 exercise. I don't know exactly when the
 countertrend rallies are going to occur,
 but I would expect Bitcoin to find a low
@@ -378,20 +374,20 @@ You had the Q4 low.
 You didn't really have a June low. Um it
 ended up being
 an October low.
-And then, you also had a low in
+And then you also had a low in
 January.
 You see that?
 So,
 for me,
 my guess,
-by the way it normally plays out,
+on the way it normally plays out,
 is Bitcoin stays weak.
 Usually in the late June, sometimes that
 weakness will persist into early July.
 So, what normally happens is Bitcoin
 sets a low
-at the beginning of the summer,
-and then we'll get a counter trend rally
+at the beginning of the summer.
+And then we'll get a counter trend rally
 kind of in the back half of the summer.
 And then that'll set up the final drop
 into the bottom in the fourth quarter of
@@ -399,7 +395,7 @@ the year. That is what normally happens
 for Bitcoin.
 The difficult thing about talking about
 this stuff, and I've been talking about
-it for like eight months now, the
+it for like eight months now. The
 difficult thing is that every time we
 have a counter trend rally, you know,
 the general consensus that I see online
@@ -412,18 +408,18 @@ there's a good chance you will have a a
 final low in the market. And I don't I'm
 not saying it has to be October. I would
 say it will be around October. If you
-made me guess a month, I would guess
+made me guess the month, I would guess
 October, but that doesn't mean that it
 has to be then, okay?
 If Bitcoin were to get a big
 capitulation tomorrow
-and drop to like 40K or something, do
+and drop to like 40k or something, do
 you think I'm going to sit here and and
 keep screaming October?
 No. I would pivot, just like any good
 investor should.
 But if Bitcoin continues to follow
-the average of prime midterm years
+the average of prime mid term years
 then I'm just going to assume the status
 quo remains unchanged. Let me show you
 an example of something that would make
@@ -431,8 +427,8 @@ me pivot.
 You know how if we look at the 2019
 comparison, you see that big
 capitulation we had thanks to the
-pandemic? I'm not calling for a pandemic
-crash. I want to be clear.
+pandemic. I'm not calling for a pandemic
+crash, I want to be clear.
 But
 look at the look at this chart.
 Compare the orange line, which is the
@@ -440,12 +436,12 @@ current bear market, to the blue one.
 That's 2019 going into 2020. If you were
 to get a big capitulation like that,
 where you just kind of front run the
-rest of the bear market,
+rest of the bear market
 that's when you pivot, right? You don't
 You don't just marry a date in time and
 say, "Oh, no, it has to be now." You say
-I'm willing to pivot
-if the charts allow me to.
+"I'm willing to pivot
+if the charts allow me to."
 That's my thought process here.
 Okay?
 So
@@ -462,8 +458,8 @@ in the very beginning of the summer
 a bounce
 and then a final drop into Q4.
 And then from that low in Q4
-assuming everything else in the macro
-economy is holding up fine
+assuming everything else in the
+macroeconomy is holding up fine
 then that is where I would assume the
 market cycle bottom would be.
 And that is my assumption.
@@ -516,20 +512,20 @@ hope to see a lot of you guys there.
 I've met a lot of people at at prior
 conferences before. I've spoken a lot at
 other conferences.
-Uh, but this one I'd like to
+Uh but this one I'd like to
 to just run ourselves and and and
 just try to have some good discussions.
 So, I hope to see a lot of you guys
 there.
-Uh, the path to the lows for Bitcoin
+Uh the path to the lows for Bitcoin
 I think involves a low in the early
 summer, a bounce, and then a final drop
 in the Q4.
 I want to say one thing about altcoins,
-okay? Because I know despite my best
+okay? Because I know, despite my best
 efforts over the last five or six years,
 I know a lot of people still hold a lot
-of altcoins and I've I've tried to tell
+of alt coins and I've I've tried to tell
 you, you know, in a lot of ways, like
 look, these things are are a lot of them
 are going to bleed out and go
@@ -539,7 +535,7 @@ the path for alts
 is is could be quite different than for
 Bitcoin, okay? So, when I talk about
 this analysis, like I'm not talking
-about altcoins.
+about alt coins.
 As I said, I'm not talking about your
 alt.
 For alts, you know, it it it's a
@@ -554,7 +550,7 @@ You know, I mean, it just it just bled
 out, right? It did not find that low.
 So,
 and I'm not saying that has to happen.
-Obviously, altcoins have been getting
+Obviously, alt coins have been getting
 annihilated for a long time, but
 I just want to draw your attention to
 that and to say, look, like if you're if
@@ -576,7 +572,7 @@ million views a day.
 Now, it's literally 300 Like you're
 talking about an order of magnitude
 less. So, if you're sitting there
-wondering like why altcoins keep
+wondering like why alt coins keep
 bleeding, it's because people keep
 leaving. That's the reason. Why do
 people keep leaving? Well, there's
@@ -587,7 +583,7 @@ scammed by meme coins and rug pulls and
 they're just tired of the grift. They
 want to see
 a real investment thesis. They're tired
-of just all these altcoins that get
+of just all these alt coins that get
 shilled by a lot of influencers that
 were paid to shill them.
 That's not an investment. That's just
@@ -607,7 +603,7 @@ it's not just, you know, random, you
 know,
 it's not just like moon stuff, like moon
 boy predictions, like oh, like it's not
-a circular economy, it's not any of that
+a circular economy. It's not any of that
 stuff.
 That is what the industry should reward.
 If you're curious why all the developers

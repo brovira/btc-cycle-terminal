@@ -13,29 +13,28 @@ Jerome Powell is stepping down as chair
 of the Federal Reserve. If you guys like
 the content, make sure you subscribe to
 the channel, give the video a thumbs up,
-and also check out the sale on Into The
-Cryptoverse Premium at
+and also check out the sale on into the
+cryptoverse premium at
 intothecryptoverse.com.
 Before we jump in, I'm going to try
-something a little bit new this year,
-uh kind of coming out of left field, but
-I'm going to try to have a conference,
-um
+something a little bit new this year. Uh
+kind of coming out of left field, but
+I'm going to try to have a conference.
+Um
 and probably in Miami. It's not set in
 stone yet. Probably in Q4.
 And if you're interested, just go to
 benjaminCowen.com/conference.
 I'll put the link down in the pinned
-comment as well, and in the description.
+comment as well and in the description.
 And if you're interested, you can always
 fill out the form, and that way you can
-get on the email list to get updates, if
+get on the email list to get updates. If
 you're interested in in potentially
-going.
-And I will say, it it's not you know,
-the the focus of this is not just going
-to be a crypto conference. We're the
-idea is to talk about markets in
+going, and I will say it it's not you
+know, the the focus of this is not just
+going to be a crypto conference. We're
+the idea is to talk about markets in
 general,
 and to do so from a very rational point
 of view. That that's the goal, okay? And
@@ -77,10 +76,10 @@ And then it did go higher, right? But
 there was a correction.
 And
 so I I wonder this isn't the same level
-as that in my in in in my opinion like
+as that in my in in in my opinion, like
 Jerome Powell stepping down and and
 Kevin Warsh going in. I mean, Kevin
-Warsh
+Warsh,
 he's he's only one vote, right? Like
 he's not going to just be able to
 unilaterally lower rates just because he
@@ -88,8 +87,8 @@ wants to. He has to get consensus from
 everyone else. And I got to be honest
 with you guys, I do not envy
 his job.
-It is going to be a very difficult job
-in my opinion because there is a
+It is going to be a very difficult job,
+in my opinion, because there is a
 tremendous amount of pressure to lower
 interest rates.
 But
@@ -97,14 +96,15 @@ how are you going to lower rates
 when you have inflation shooting back
 up?
 We just got the the PPI data
-a few days ago. That came in at well,
+a few days ago. That came in at, well,
 like 6% or something.
-I don't even know I we might have
+I don't even know I we might have that
+on the um
 on the website. I can't even remember if
 we do. I know we have the CPI stuff. You
-look at inflation year-over-year,
+look at inflation year over year,
 that's starting to move back up, right?
-So you can see that it headline
+So, you can see that it headline
 inflation is starting to move back up.
 Here we have the producer price
 inflation month-over-month
@@ -163,7 +163,7 @@ you're not,
 you should get familiar with it
 relatively soon because essentially
 Bitcoin does this thing where it bottoms
-approximately every 4 years.
+approximately every four years.
 Right? The end of 2014, early 2015, the
 end of 2018, the end of 2022.
 And that's one of the reasons why I keep
@@ -172,41 +172,42 @@ it's hard in the short term. It's going
 to be even harder if if Bitcoin rallies
 up into the mid-80s. But
 I think there's a good chance that
-Bitcoin will go lower into Q4 of 2026.
+Bitcoin will go lower in to Q4 of 2026.
 And so a lot of people think that
-Bitcoin has this monopoly on the 4-year
-cycle. But that's not true at all,
-right? I mean, the stock market does the
-same exact thing. It bottoms
-approximately every 4 years. We'll look
-at recently, but again, look at the
+Bitcoin has this monopoly on the
+four-year cycle. But that's not true at
+all, right? I mean, the stock market
+does the same exact thing. It bottoms
+approximately every four years. We'll
+look at recently, but again, look at the
 '50s, '60s, '70s, and '80s.
 Look at this.
 And have an open mind.
 1962, 1966, 1970, 1974, 1978.
 Guess what?
 1982.
-Approximately every 4 years. And then
+Approximately every four years. And then
 occasionally it breaks. Occasionally it
 breaks, and you don't get it. Because if
 you go from '82 to '86, you don't really
 get a low in '86. But then you end up
 sweeping that low in '87.
 So
-the 4-year cycle exists outside of
+the four-year cycle exists outside of
 Bitcoin, which is why I don't think the
-reason for Bitcoin's cycles, 4-year
+reason for Bitcoin's cycles, four-year
 cycles, is not because of the halving.
 If it was because of the halving, why
 does the stock market like to bottom
-approximately every 4 years?
+approximately every four years?
 It's not like there's a halving over
 there.
 And even recently, you can see that
-there's every 4 years, right? Look at
+there's every four years, right? Look at
 this. The end of uh the end of 2014, the
 end of 2018, the end of 2022.
-What causes the 4-year cycle to break?
+What causes the four-year cycle to
+break?
 A lot of times it breaks for the wrong
 reasons, right? It breaks to the
 downside, like how you had a low in 20
@@ -215,8 +216,8 @@ but you didn't really get a major low in
 2006, but it was because we had already
 had a 2 and 1/2 year bear market, right?
 So, get off the back of of that with the
-bull market when you go down 2 and 1/2
-years,
+bull market when you had go down 2 and
+1/2 years,
 that would be a reason for maybe the
 4-year cycle to break is because there
 was such a long downturn that all the
@@ -230,7 +231,7 @@ It's when you get recessions. Like look
 at what happened in 2020. You also sort
 of swept it actually in 2016,
 which is kind of crazy to think about.
-Why is that crazy thing about? In
+Why is that crazy to think about? In
 2015-2016, there was also some recession
 fears. I don't think a lot of people
 remember that, but there were some
@@ -250,9 +251,9 @@ how the stock market keeps finding lows
 at very key times, either March or
 October.
 You've got March of 2025, March-April.
-You got March 2026,
-and then you have October 2023 and
-October 2022.
+You got March 2026, and then you have
+October 2023,
+and October 2022.
 I don't know what it is, but March and
 October
 are some of the weakest moments in in
@@ -263,7 +264,7 @@ October, but when you're in the bear
 market, that's usually when the selling
 sort of climax is around that point, is
 around that October time frame. Go back
-to the dot-com era. Look at when the
+to the dot com era. Look at when the
 major lows occurred. Even on the way up,
 right? October of '98.
 October of '99. March of 2001.
@@ -278,10 +279,10 @@ October and March seemed to sort of pop
 back up. Look at this.
 October of 2014.
 This one in 2018 was a little bit later.
-It was December. So, it kind of broke
-that. But, what if that's the way it
+It was December. So it kind of broke
+that. But what if that's the way it
 plays out is
-in 2018,
+in 2018
 the stock market had two corrections.
 And then a final correction in 2020 with
 the recession.
@@ -292,7 +293,7 @@ in the back half of the year. Just like
 Bitcoin had two corrections last year.
 You had your early correction in Q1.
 And then you had another correction in
-Q4. So, you had one in Q1 and one in Q4.
+Q4. So you had one in Q1, and one in Q4.
 I'm suggesting we've already got one
 under our belt in Q1. We'll likely have
 the another big correction either in Q3
@@ -308,7 +309,8 @@ when I was briefly looking at it, but it
 certainly will introduce some
 uncertainty. And look at when Powell, or
 so I look at when Gensler left
-in uh in 2025 and when the new
+in
+uh in 2025, and when the new
 administration sort of took over in
 January, the market still held on for a
 couple of months before the correction
@@ -353,13 +355,13 @@ The reason why it's fair is because in
 the bull market,
 Bitcoin outperformed the stock market a
 ton. I mean, from October November 2022
-to uh October 25, Bitcoin went up 700%.
-Now, there are some officials that do
-not understand percentages, but a 700%
-increase is an 8x move, not a 7x move.
-It's an 8x move. Because if you think
-about it, it it it actually makes a lot
-of sense. If 100%, this is the way
+to uh October 25th, Bitcoin went up
+700%. Now, there are some officials that
+do not understand percentages, but a
+700% increase is an 8x move, not a 7x
+move. It's an 8x move. Because if you
+think about it, it it it actually makes
+a lot of sense. If 100%, this is the way
 everyone can understand it pretty well.
 If 100%
 is 2x move,
@@ -373,16 +375,15 @@ is 8x. So if Bitcoin can go up 8x in the
 bull market while the stock market
 essentially doubles,
 then of course Bitcoin can seem unfair
-in the bear market. Well, the S&amp;P puts
-in
+in the bear market while the S&amp;P puts in
 a higher high in 2018 while Bitcoin put
 in a lower high. And then when the stock
-market got a correction, then Bitcoin
-got annihilated again.
+market got a correction then Bitcoin got
+annihilated again.
 But then guess what? After Bitcoin got
 annihilated
-and went to $3,100 or whatever went to
-in late 2018,
+and went to $3100 or whatever went to in
+late 2018,
 it then ran up
 20x in the next bull market. So it is
 fair when you think about it.
@@ -395,9 +396,9 @@ I'll give you both.
 The primary way that I see at this
 moment is he comes in
 and there's pressure to cut.
-But he's looking
-at the energy market and he's like,
-"How How the hell do I cut?"
+But he's looking at the energy market
+and he's like,
+"How how the hell do I cut?"
 And if even if he wants to cut,
 the other members probably won't.
 Look at the prediction markets.
@@ -468,7 +469,7 @@ And then they just start lowering rates.
 And then Kevin Warsh can basically just
 do what he was put in office to do, and
 that was lower rates. But the problem is
-if he's is lowering rates
+if he's just lowering rates
 and he's getting consensus to lower
 rates, maybe there's a reason he's
 finding consensus is because the markets
@@ -485,12 +486,12 @@ going on? Like why is it is it not? But
 remember, like every every bear market
 you can see that after after getting
 these corrections
-Bitcoin likes to rally back up, you
-know? Like I look at this after early
+Bitcoin likes to rally back up. You
+know, like I look at this after early
 year correction in February-April,
 rallied back up to the 0.382, and then
 it went lower.
-Right? It went lower. Look at it in
+Right, it went lower. Look at it in
 2018, same thing, right? You get the
 correction into February, rallied up to
 the 0.382, eventually it went lower.
@@ -519,8 +520,8 @@ manufacturing, and in in international
 stocks, and in emerging markets, and
 they're all destroying Bitcoin right
 now. So, if you only care about Bitcoin,
-obviously these counter-trend rallies
-are going to draw you back in.
+obviously these countertrend rallies are
+going to draw you back in.
 But, if you can have a sort of a mindset
 around, "Hey, Bitcoin is one asset
 in a basket of a lot of different
@@ -567,8 +568,8 @@ a big part of the fault does blame does
 lie on the Fed for allowing it to get as
 bad as it did.
 What I also have a hard time
-accepting, right, is if the inflation
-target
+accepting, right, is
+if the inflation target
 is 2%.
 We haven't been at 2% in 5 years.
 So, what are we doing? You know, what
@@ -586,9 +587,9 @@ plane was coming in for a soft landing.
 But now, this thing's spiking back up
 because inflation is going up.
 So, imagine after all this time
-after all the work that was put in the
+after all the work that was put in, the
 slow methodical rate hikes followed by
-small rate cuts
+small rate cuts,
 if it all was if it's all for naught
 because we end up getting a hard landing
 anyways because of the spike in
@@ -611,7 +612,7 @@ My guess is he's not going to be able to
 cut rates anytime soon unless there's
 something that breaks that we're not
 seeing right now.
-But, it looks like rates are probably
+But it looks like rates are probably
 going to hold steady through the summer.
 And there's a risk of them starting to
 go up
@@ -629,16 +630,16 @@ the biggest stages doesn't mean you're
 immune to making mistakes. Everyone's
 going to make mistakes. We do the best,
 we learn from them, we move on. I get
-things wrong, you know, I mean, I've
-been wrong about a thousand things since
-I started this YouTube channel and I try
-to learn from them, right? Sometimes I
-get it right, sometimes I get it wrong
-and you know, some years are better than
-others. I did pretty well in 2024 and
-2025.
+things wrong, you know, I mean
+I've been wrong about a thousand things
+since I started this YouTube channel and
+I try to learn from them, right?
+Sometimes I get it right, sometimes I
+get it wrong and you know, some years
+are better than others. I did pretty
+well in 2024 and 2025.
 2023 not as much.
-It just depends like some years are
+It It just depends like some years are
 good, some years are bad. We do the best
 we can, we learn from our mistakes, we
 move on.

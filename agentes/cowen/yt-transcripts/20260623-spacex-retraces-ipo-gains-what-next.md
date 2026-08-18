@@ -13,7 +13,7 @@ and how it has retraced the IPO gains.
 If you guys like the content, make sure
 you subscribe to the channel, give the
 video a thumbs up, and also check out
-the sale on Into the Cryptoverse Premium
+the sale on IntoTheCryptoverse Premium
 at intothecryptoverse.com.
 We put out a video
 last week when SpaceX launched, and one
@@ -43,7 +43,7 @@ what's remarkable is just how frequently
 IPOs do this, right? They go up, there's
 the initial surge and hype,
 we give it all back, and then we figure
-out like what the actual so,
+out like what the actual, so,
 quote-unquote fair value is of of the
 company.
 Now,
@@ -60,55 +60,55 @@ SpaceX could be just as disruptive
 disruptive as Tesla if not more so
 eventually.
 When we were looking at the Tesla
-launch, we said, "Well, why why compare?
-Why make the comparison at all?"
+launch, we said well why why compare?
+Why make the comparison at all?
 Well, they're both run they're both the
 the CEO of both companies
-um founder Well, I guess not
-of SpaceX, but the person who runs both
+um founder well I guess not
+of SpaceX but the person who runs both
 companies
 Elon Musk.
 When did the IPOs launch?
-June. Right? You have June 12th of 2026
-for SpaceX and for Tesla, it was
+June, right? You have June 12th of 2026
+for SpaceX and for Tesla it was
 June 29th of 2010.
-So, both run by Elon Musk. IPOs that
-both launched in June.
+So, both run by Elon Musk IPOs that both
+launched in June.
 Also, the IPOs were launched in June of
 a midterm year. So, 2026 for SpaceX
 for
 Tesla.
-So, a lot of up similarities. And and
-the similarities continue in the sense
-that after Tesla launched
+So, a lot of of similarities and and the
+similarities continue in the sense that
+after Tesla launched
 um
 after we had the the the launch here by
 by Tesla, what happened is we got this
 move up
-to the tune from the launch, it went up
+to the tune from the launch it went up
 about 60%.
 Okay, about 60%. Now, what's interesting
 is from the launch of SpaceX
-so, if you look at SpaceX, how far did
-it go up?
-About 50%. But again,
+so if you look at SpaceX, how far did it
+go up?
+About 50%. But again
 the market cap's different. It takes
 exponentially more money to move the
 market cap of SpaceX than Tesla when
 they were launched because the market
 cap of Tesla was just so much lower.
 A counterpoint to that is the money
-supply is up a lot from from back then.
-So, while the market cap's maybe
+supply is up a lot from from back then
+so while the market cap's maybe
 different and they still are different
 when you adjust for inflation
-you know, things do trend up over time.
+you know, things do trend up over time
 At least good assets trend up over time.
 So, you have SpaceX going up 50% at
 launch.
 Tesla going up 60.
 And then
-the similarities continue. And And we'll
+the similarities continue. And and we'll
 talk about where they may eventually
 differ.
 After
@@ -128,7 +128,7 @@ took six bars, I guess.
 But there are a lot of similarities
 between these two launches. Now,
 here's where it could start to differ.
-And And you know, depending on what IPOs
+And and you know, depending on what IPOs
 you're looking at, they they play out in
 a very different
 format or they they play out in a very
@@ -138,14 +138,14 @@ know,
 to expect the first pop in SpaceX to
 fade back down to the IPO lows.
 And then from there, you'll likely see
-SpaceX try to form a low. Now, when you
-think about every stock, you have to
-think about the idiosyncratic risk of
-that stock and the market risk. Let's go
-see what What was
+SpaceX try to form a low.
+Now, when you think about every stock,
+you have to think about the
+idiosyncratic risk of that stock and the
+market risk. Let's go see what what was
 uh the S&amp;P doing?
 Um
-Let's go see what the S&amp;P 500 was doing
+let's go see what the S&amp;P 500 was doing
 back in 2010. Okay, because we've
 obviously made some sort of
 provided some thoughts about what the
@@ -199,7 +199,7 @@ there, but the market risk is a little
 bit different, right? Because often
 times there is a larger correction at
 some point kind of going into the back
-half of the year.
+half of the mid-term year.
 In 2010, that correction actually
 occurred uh starting in in late April,
 early May. Right? That's when we had
@@ -261,10 +261,10 @@ this might take a while. And also, you
 know, we're likely going to see
 prices stay somewhat suppressed for the
 rest of the year in alignment with the
-second half of the year midterm
+second half of the year mid-term
 weakness. Now, if the S&amp;P 500 were to
 drop and say take out the March low, or
-if it were to get even bigger drop and
+if it were to get even a bigger drop and
 say drop like 20% from that level, I
 could see SpaceX forming a low that then
 holds for a a, you know, for a really
@@ -274,7 +274,7 @@ yet, it's not yet clear if that is the
 case. Uh but, I would say this, over the
 long haul, I do not recommend bet
 betting against against Elon Musk.
-I just the the first video I put out my
+I just the the first video I put out on
 SpaceX,
 I just wanted to caution people that
 were FOMOing into this rally and to say,
@@ -283,13 +283,13 @@ these IPO gains."
 Okay? And this is what happens a lot of
 times. And and we've done it again. Now,
 there are some IPOs that continue to
-bleed for a while. Like, they don't
-Like, we compare to Tesla, if you look
-at and I'm just looking at successful
+bleed for a while. Like, they don't like
+we compare to Tesla, if you look at and
+I'm just looking at successful
 companies, right? Like, if you're just
-looking at at some of these successful
+looking at some of these successful
 companies that have existed
-and still do. Like, Apple is a good
+and still do, like Apple is a good
 example of an IPO where obviously
 Apple has been incredibly successful.
 You had a surge after the IPO, you had a
@@ -298,10 +298,10 @@ because we ended up getting a recession.
 But, it didn't it didn't really matter
 as time went on. You could argue that in
 in this case, uh
-Apple launched at the very end of 1980.
-Let's just call it early 1981 cuz it was
-essentially early It was a very, very
-end of 1980.
+Apple launched at the very end of 1980,
+let's just call it early 1981 cuz it was
+essentially early it was a very very end
+of 1980.
 And then it bottomed
 um about 18 months later.
 Okay? But again, with Apple, you would
@@ -320,7 +320,7 @@ recession, and then the rest is history.
 For Tesla,
 for Tesla, it was rally up, sweep the
 low, rally up again, and then it was a
-higher low, but there was also no
+higher low. But there was also no
 recession, right? So, you see the
 difference. So, what I would argue here
 with SpaceX is, you know, you're
@@ -334,7 +334,7 @@ higher high or lower high, will will
 probably help us figure out if maybe the
 low at the end of the year is a higher
 low or a lower low.
-And again, I I don't have the answer for
+And again, I don't have the answer for
 you on that. I'm just looking at at like
 how these trends tend to play out, and
 usually with IPOs, you rally, you give
@@ -375,7 +375,7 @@ right side of this sort of FOMO rally.
 Um but those are my thoughts about
 SpaceX. If you guys like the content,
 make sure you subscribe, give the video
-a thumbs up and again, check out the
-sale on ITCPREMIUM at
-intothecryptoverse.com. I'll see you
-guys next time. Bye.
+a thumbs up, and again, check out the
+sale on
+itcpremium@intothecryptoverse.com.
+I'll see you guys next time. Bye.
