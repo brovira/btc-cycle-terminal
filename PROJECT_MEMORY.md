@@ -5,6 +5,32 @@ Cowen) + investigación propia (Patrón temporal) con citas verbatim de sus tran
 agrega señales, y gestiona el capital real (personal + BELROGAM SL) para decidir
 cuánto/cuándo comprar.
 
+> ## Estado a 18-ago-2026 — el archivo de Cowen, recuperado
+>
+> Un clon viejo del Desktop tenía **1778 transcripts de Cowen sin trackear**, bajados con
+> `--flat-playlist` y por tanto sin fecha (`0000-`), que es por lo que nunca se commitearon.
+> Fechados con `fechar_transcripts.py`: **1771 de 1771, cero fallos**.
+>
+> El corpus pasa de **465 a 1887** transcripts, con **cobertura mensual completa: 84 de 84
+> meses** desde sep-2019. Lo que importaba no era el total sino dónde estaban los huecos —
+> 2022 pasa de 6 a 217, 2023 de 15 a 124, 2024 de 11 a 108. Ese es justo el periodo con el
+> que Cowen compara el momento actual (el bear de 2022, el suelo de noviembre, la
+> recuperación) y hasta ahora no había con qué verificarle nada.
+>
+> Desaparecen también los 20 archivos `0000-` que ya estaban commiteados: sin fecha el agente
+> no puede aplicar su regla de que lo más reciente manda.
+>
+> Actualizada la descripción del agente `cowen`, que estaba definida solo para ciclo de BTC.
+> El corpus real cubre además ETH/BTC, Cardano, Chainlink, Polkadot, XRP, Solana, metales,
+> S&P 500, Nasdaq, Tesla, Nvidia y macro. Si no lo declara, no lo busca.
+>
+> **Lo que esto habilita y antes no:** auditar sus llamadas históricas de verdad. Con tres
+> ciclos enteros se le puede preguntar qué dijo EN SU MOMENTO, no solo qué opina hoy.
+>
+> ⚠️ El clon viejo de `~/Desktop/btc-cycle-terminal` ya no tiene nada único, pero **está en
+> una carpeta sincronizada con iCloud** y los repos de git ahí se corrompen. No trabajar
+> nunca en él. El bueno es `~/dev/btc-cycle-terminal`.
+
 > ## Estado a 16-ago-2026 — LA INGESTA ESTABA PARADA EN VERDE, léelo primero
 >
 > Los agentes respondían con material de hace 4-7 semanas. Tres causas **distintas**, todas
