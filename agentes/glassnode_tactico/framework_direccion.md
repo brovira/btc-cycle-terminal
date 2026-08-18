@@ -24,6 +24,19 @@ literales y sus propias advertencias.
 
 ---
 
+> ### ⚠️ N1 corrido (18-ago-2026): la asimetría de la §D no se sostiene como nivel
+> El STH cost basis **no rechaza** el precio: en bear, 11 de 14 recuperaciones del nivel
+> aguantaron (mediana **+19,1%** a 8 semanas) — lo contrario de una resistencia; y en bull, el
+> 47% de las pérdidas del nivel se recuperan, que es una moneda al aire. Lo que **sí** funciona,
+> con muestra grande, es el mismo dato usado como **brújula de estado** (de qué lado está el
+> precio), no como soporte. Resultados, método y salvedades en
+> [`backtests/N1_resultado.md`](backtests/N1_resultado.md).
+>
+> Se deja el texto original intacto abajo: es la destilación fiel de lo que ELLOS escriben. Lo
+> que cambia es cuánto peso se le da al operar.
+
+---
+
 ## A) LA IDEA CENTRAL: el mercado es una escalera de *cost basis*
 
 Todo su análisis de nivel se apoya en una sola pregunta: **¿a qué precio compró cada grupo de holders?**
@@ -39,7 +52,7 @@ escalera **es** el régimen de mercado. No hay más magia que eso.
 |---|---|---|
 | **Realized Price** | Coste medio de **todo** el supply circulante | **Suelo estructural del ciclo.** Perderlo requiere "una dislocación sistémica tipo LUNA o FTX" [wk06-2026]. En 2026 ≈ $54-55k |
 | **True Market Mean (TMM)** / *Active Investor Price* | Coste medio del supply **activo** (excluye monedas perdidas/dormidas y mineros) | **La línea divisoria bull/bear.** "Historically marking the dividing line between bear and bull market regimes" [wk21-2026]. ~50% de días históricos a cada lado [WoC09-2025] |
-| **STH Cost Basis** | Coste medio de los holders **<155 días** (los más sensibles al precio) | **La frontera táctica.** Soporte en tendencia alcista, **resistencia en bajista** (ver §D) |
+| **STH Cost Basis** | Coste medio de los holders **<155 días** (los más sensibles al precio) | **La frontera táctica.** Soporte en tendencia alcista, **resistencia en bajista** (ver §D) — ⚠️ **probado y NO replica como nivel**: ver `backtests/N1_resultado.md` |
 | **Bandas ±σ del STH CB** | Desviación estándar sobre el STH CB | **El rango operativo local.** −1σ = zona de sobreventa · +1σ/+2σ = techo local. Solo ~17,5% de la historia cotiza sobre +1σ [WoC21-2025] |
 | **Supply Quantiles 0,75 / 0,85 / 0,95** | Niveles donde el 25% / 15% / 5% del supply queda en pérdida | Bandas de régimen: euforia sobre q0,95; bull lateral entre 0,85–0,95; **bajo q0,75 = risk-off** [WoC22-2025] |
 | **URPD / Cost Basis Distribution** | Cuánto supply cambió de manos a cada precio | **Estantes** (cluster denso) = soporte/resistencia real · **air gaps** (zona vacía) = el precio la cruza rápido |
