@@ -5,6 +5,38 @@ Cowen) + investigación propia (Patrón temporal) con citas verbatim de sus tran
 agrega señales, y gestiona el capital real (personal + BELROGAM SL) para decidir
 cuánto/cuándo comprar.
 
+> ## Estado a 18-ago-2026 (b) — el registro de posiciones, cuadrado con la cadena
+>
+> El repo privado tenía **tres posiciones de Orca marcadas `abierta` que la cadena dice
+> cerradas**, y una anotada con el par equivocado. Cotejado contra `normalized/orca_positions.json`
+> y `orca_pnl.json` — los datos estaban bien desde el principio; lo que fallaba era la libreta.
+>
+> - `7dr1M3W9` y `6BtNv8qo`: **cerradas el 3-ago**, no abiertas. +4,86% (59 días) y +3,57%
+>   (55 días). Lo relevante no es el %, es que **las dos baten a HOLD** (+$63,48 y +$32,50) y
+>   **estuvieron en rango de principio a fin**. Vender volatilidad funcionó.
+> - `CNuoBMmr` estaba anotada como cbBTC/USDC y es **cbBTC/WBTC**, un par de *peg* (rango
+>   1,0008–1,0033). No es la posición de «acumular BTC en la bajada» que decía la nota: es
+>   delta 100% BTC de principio a fin. Llevaba meses describiendo algo que no existía.
+> - **La sospecha sobre ProjectX era falsa y era mía.** La retirada del 21-jul era `6moFSGpH`
+>   (techo $74.850), no ProjectX ($74.001). Dos techos parecidos, una conclusión inventada.
+> - ProjectX y HYPE quedan como **no verificables**: no hay lector de HyperEVM en el repo,
+>   `data/raw/` solo tiene `solana/`. Lo que no se puede reconstruir no se puede puntuar.
+>
+> **La regla que faltaba, ahora escrita** (`lp_positions.json` → `regla_precedencia`, y
+> `thesis.json`): el **calendario manda, pero solo para el plan del ciclo de 4 años** — en qué
+> fase estoy. Dentro de la fase, qué hago esta semana lo deciden los agentes (lmec, cowen, woc)
+> más la lectura propia. Se escribe porque el cierre del 3-ago fue **por calendario** y el único
+> disparador escrito en `thesis.json` era **de precio** (~$68K BMSB), que nunca llegó.
+>
+> Por eso ese cierre queda clasificado **tipo 4** (salió bien, fuera de lo escrito) y no tipo 1,
+> aun siendo una buena decisión: lo que falló fue el plan, no la ejecución. Contarlo como tipo 1
+> sería justo el autoengaño que la clasificación existe para cazar.
+>
+> Cerrado también el pendiente de conectar las hojas de psicología: `tipo` (1-4) y
+> `estado_interno` viajan ya por `journal.json` → `api/journal.js` → formulario de `lp.html`, y
+> el diario muestra un **% de disciplina** (tipo 1 + tipo 2 sobre las clasificadas) con el
+> contador de tipo 4 destacado.
+
 > ## Estado a 18-ago-2026 — el archivo de Cowen, recuperado
 >
 > Un clon viejo del Desktop tenía **1778 transcripts de Cowen sin trackear**, bajados con

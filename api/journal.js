@@ -82,6 +82,11 @@ module.exports = async (req, res) => {
         agents: Array.isArray(body.agents) ? body.agents : [],
         levels: body.levels && typeof body.levels === "object" ? body.levels : {},
         tags: Array.isArray(body.tags) ? body.tags : [],
+        // Clasificación de sops/psicologia_trading.md. `tipo` se deja null al abrir: sólo se
+        // puede clasificar cuando hay resultado, y forzarlo antes invita a inventárselo.
+        tipo: [1, 2, 3, 4].includes(Number(body.tipo)) ? Number(body.tipo) : null,
+        tipo_nota: body.tipo_nota || "",
+        estado_interno: body.estado_interno || "",
       };
       if (!entry.rationale && !entry.action) { res.statusCode = 400; return res.end(JSON.stringify({ error: "empty", message: "Escribe al menos acción o razonamiento." })); }
 

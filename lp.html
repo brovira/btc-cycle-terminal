@@ -256,9 +256,17 @@
         <label class="jl">Activo<input id="jAsset" placeholder="BTC / USDC"></label>
         <label class="jl">Sitio<input id="jVenue" placeholder="Orca (Solana)"></label>
         <label class="jl">Resultado<input id="jResult" placeholder="+~5% en ~1 mes"></label>
+        <label class="jl">Clasificación<select id="jTipo">
+          <option value="">— sin clasificar (aún no hay resultado) —</option>
+          <option value="1">Tipo 1 · seguí el plan y ganó</option>
+          <option value="2">Tipo 2 · seguí el plan y perdió</option>
+          <option value="3">Tipo 3 · fuera de plan y perdió</option>
+          <option value="4">Tipo 4 · fuera de plan y ganó</option>
+        </select></label>
       </div>
       <label class="jl" style="margin-top:8px">Razonamiento (¿por qué?)<textarea id="jRationale" rows="4" placeholder="Tu tesis: qué esperas del precio, por qué entras/sales ahora, qué dicen tus agentes…"></textarea></label>
       <label class="jl" style="margin-top:8px">Plan / siguiente paso<textarea id="jPlan" rows="2" placeholder="Cuándo actuarás de nuevo y con qué condición"></textarea></label>
+      <label class="jl" style="margin-top:8px">Estado interno (hoja 1 en papel)<textarea id="jEstado" rows="2" placeholder="Cuerpo, emoción y las 3 preguntas antes de pulsar el botón. Si estás con prisa o revancha, escríbelo — es el dato más útil de todos."></textarea></label>
       <div style="display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap">
         <button class="btn pri" id="jSave">Guardar en mi diario</button>
         <button class="btn" id="jCancel">Cancelar</button>
@@ -1057,14 +1065,37 @@ $("#privBtn").addEventListener("click",()=>loadPlotly().then(loadPrivate));
 /* ---------- diario de operativa (privado, /api/journal) ---------- */
 const TYPE_ICON={LP:"💧",Compra:"🟢",Venta:"🔴",Loop:"🔁",Nota:"📝"};
 function jfmt(t){return esc(t).replace(/\n/g,"<br>");}
-function levelsLine(lv){if(!lv||typeof lv!=="object")return"";const map={ma_200w:"200W MA",bmsb:"BMSB",position_top:"Techo posición",sth:"STH cost basis",target:"Objetivo"};
+function levelsLine(lv){if(!lv||typeof lv!=="object")return"";const map={ma_200w:"200W MA",bmsb:"BMSB",position_top:"Techo posición",sth:"STH cost basis",target:"Objetivo",
+    realized:"Realized price",buy_trigger_pre_sep:"Compra pre-sep",precio_cierre_aprox:"Precio al cerrar",
+    trigger_corto_prueba:"Trigger corto prueba",suelo_lp_siguiente:"Suelo LP siguiente"};
   const parts=Object.keys(lv).map(k=>`${map[k]||k}: <b>${typeof lv[k]==="number"?fmtUSD(lv[k],0):esc(lv[k])}</b>`);
   return parts.length?`<div class="jchips">${parts.map(p=>`<span class="jchip">${p}</span>`).join("")}</div>`:"";}
+const TIPOS={
+  1:{et:"Tipo 1 · plan + ganó",   col:"var(--bull)"},
+  2:{et:"Tipo 2 · plan + perdió", col:"var(--muted)"},
+  3:{et:"Tipo 3 · fuera + perdió",col:"var(--bear)"},
+  4:{et:"Tipo 4 · fuera + ganó",  col:"#e8a33d"}};
+function tipoChip(e){
+  if(e.tipo==null)return"";
+  const t=TIPOS[e.tipo];if(!t)return"";
+  const nota=e.tipo_nota?` title="${esc(e.tipo_nota)}"`:"";
+  return `<span class="jchip"${nota} style="border-color:${t.col};color:${t.col}">${t.et}${e.tipo_nota?" ⓘ":""}</span>`;}
+function tipoResumen(list){
+  const c={1:0,2:0,3:0,4:0};let sin=0;
+  list.forEach(e=>{if(e.tipo==null)sin++;else if(c[e.tipo]!=null)c[e.tipo]++;});
+  const hechos=c[1]+c[2]+c[3]+c[4];
+  if(!hechos)return"";
+  // Lo que importa no es ganar: es que el resultado venga del plan. 1+2 = disciplina.
+  const disc=Math.round((c[1]+c[2])/hechos*100);
+  return `<div class="note" style="margin-bottom:10px">Disciplina: <b>${disc}%</b> de las ${hechos} operativas con resultado siguieron el plan `+
+    `(T1 ${c[1]} · T2 ${c[2]} · T3 ${c[3]} · <b style="color:#e8a33d">T4 ${c[4]}</b>)`+
+    (sin?` · ${sin} sin clasificar`:"")+
+    `. El <b style="color:#e8a33d">tipo 4</b> —ganar saltándose el plan— es el que hay que vigilar: refuerza el hábito equivocado.</div>`;}
 function renderJournal(doc){
   const list=(doc&&Array.isArray(doc.entries))?doc.entries:[];
   const el=$("#journalList");
   if(!list.length){el.innerHTML=`<div class="note">Aún no hay entradas. Pulsa «＋ Nueva entrada» para registrar tu primera operativa y su razonamiento.</div>`;return;}
-  el.innerHTML=list.map(e=>{
+  el.innerHTML=tipoResumen(list)+list.map(e=>{
     const ic=TYPE_ICON[e.type]||"•";
     const meta=[e.asset,e.venue].filter(Boolean).join(" · ");
     return `<div class="jcard">
@@ -1078,7 +1109,8 @@ function renderJournal(doc){
       ${e.rationale?`<div class="jlabel">Razonamiento</div><p>${jfmt(e.rationale)}</p>`:""}
       ${e.plan?`<div class="jlabel">Plan</div><p>${jfmt(e.plan)}</p>`:""}
       ${levelsLine(e.levels)}
-      ${(e.agents&&e.agents.length)?`<div class="jchips">${e.agents.map(a=>`<span class="jchip">🧠 ${esc(a)}</span>`).join("")}</div>`:""}
+      ${e.estado_interno?`<div class="jlabel">Estado interno</div><p class="note">${jfmt(e.estado_interno)}</p>`:""}
+      ${(e.agents&&e.agents.length||e.tipo!=null)?`<div class="jchips">${tipoChip(e)}${(e.agents||[]).map(a=>`<span class="jchip">🧠 ${esc(a)}</span>`).join("")}</div>`:""}
       ${(e.tags&&e.tags.length)?`<div class="jchips">${e.tags.map(t=>`<span class="jchip">#${esc(t)}</span>`).join("")}</div>`:""}
     </div>`;
   }).join("");
@@ -1095,13 +1127,14 @@ $("#journalNew").addEventListener("click",()=>{const w=$("#journalFormWrap");w.s
 $("#jCancel").addEventListener("click",()=>{$("#journalFormWrap").style.display="none";});
 $("#jSave").addEventListener("click",async()=>{
   const body={date:$("#jDate").value,type:$("#jType").value,action:$("#jAction").value.trim(),asset:$("#jAsset").value.trim(),
-    venue:$("#jVenue").value.trim(),result:$("#jResult").value.trim(),rationale:$("#jRationale").value.trim(),plan:$("#jPlan").value.trim()};
+    venue:$("#jVenue").value.trim(),result:$("#jResult").value.trim(),rationale:$("#jRationale").value.trim(),plan:$("#jPlan").value.trim(),
+    tipo:$("#jTipo").value?Number($("#jTipo").value):null,estado_interno:$("#jEstado").value.trim()};
   if(!body.action&&!body.rationale){$("#jMsg").textContent="Escribe al menos la acción o el razonamiento.";$("#jMsg").style.color="var(--bear)";return;}
   $("#jSave").disabled=true;$("#jMsg").style.color="var(--muted)";$("#jMsg").textContent="Guardando…";
   try{const r=await fetch("/api/journal",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
     const j=await r.json().catch(()=>({}));
     if(!r.ok){$("#jMsg").style.color="var(--bear)";$("#jMsg").textContent="No se pudo guardar: "+esc(j.message||j.error||r.status);return;}
-    $("#jMsg").textContent="✓ Guardado.";["jAction","jAsset","jVenue","jResult","jRationale","jPlan"].forEach(id=>$("#"+id).value="");
+    $("#jMsg").textContent="✓ Guardado.";["jAction","jAsset","jVenue","jResult","jRationale","jPlan","jEstado","jTipo"].forEach(id=>$("#"+id).value="");
     $("#journalFormWrap").style.display="none";loadJournal();
   }catch(e){$("#jMsg").style.color="var(--bear)";$("#jMsg").textContent="Error de red.";}
   finally{$("#jSave").disabled=false;}

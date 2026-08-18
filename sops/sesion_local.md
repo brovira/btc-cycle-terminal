@@ -14,7 +14,7 @@ Hay tareas que **solo se pueden hacer aquí** —YouTube bloquea las IPs de los 
 launchd vive en este Mac, y algunas wallets no están en ningún pipeline—. Este documento es la
 lista de esas tareas con sus comandos exactos.
 
-> **Última actualización:** 17-ago-2026, al final de la sesión que arregló toda la ingesta.
+> **Última actualización:** 18-ago-2026, tras cuadrar el registro de posiciones con la cadena.
 
 ---
 
@@ -101,29 +101,40 @@ Si nunca llegó a ejecutarse, lo más probable es un problema de entorno: launch
 `PATH` mucho más pelado que la terminal. El script ya localiza yt-dlp por rutas absolutas
 (`~/.local/bin/yt-dlp`), así que ese caso está cubierto, pero conviene mirarlo ahí.
 
-### 3.2 · Cuadrar el registro de posiciones (repo privado)
+### 3.2 · Cuadrar el registro de posiciones (repo privado) — ✅ *hecho el 18-ago, salvo HyperEVM*
 
-Dos huecos en `DeFi-Tracker/data/`:
+Todo lo de **Orca** ya cuadra con la cadena (`data/normalized/orca_positions.json` + `orca_pnl.json`).
+Lo que se arregló:
 
-- **ProjectX no cuadra.** `journal.json` dice que el 21-jul se retiró la posición de rango más
-  alto (techo ~$74K), pero en `lp_positions.json` la única marcada `cerrada` es `6moFSGpH`, y la
-  de rango hasta 74.001 (ProjectX, HyperEVM) sigue como `abierta`.
-- **La posición de HYPE se cerró y no está registrada** en ningún sitio.
+- `7dr1M3W9` y `6BtNv8qo` seguían como `abierta`: la cadena dice que se **cerraron el 3-ago-2026**.
+  Ya están marcadas, con cifras, y con entrada en el `journal.json`.
+- `CNuoBMmr` estaba anotada como **cbBTC/USDC** y es **cbBTC/WBTC** — un par de *peg* entre dos
+  wrappers de BTC (rango 1,0008–1,0033). No es «acumular BTC en la bajada»: es delta 100% BTC de
+  principio a fin. La nota vieja describía una posición que no existe.
+- **La sospecha sobre ProjectX era mía y era falsa.** La retirada del 21-jul del journal es
+  `6moFSGpH` (Orca, techo $74.850), no la de ProjectX (techo $74.001). Que las dos tuvieran un
+  techo cerca de $74K era coincidencia. El journal siempre estuvo bien.
 
-Ninguna de las dos está en el pipeline de Orca, así que **no se van a reconstruir solas**. Sin
-esto no se pueden clasificar esas operaciones — y no se puede puntuar lo que no se puede
-reconstruir.
+Sigue abierto solo lo de **HyperEVM**, y por una razón de fondo: *no hay lector de HyperEVM*.
+`data/raw/` solo tiene `solana/`. Así que:
 
-### 3.3 · Conectar las hojas de decisión con el terminal
+- **ProjectX (UBTC/USD0)** — marcada `abierta-SIN-VERIFICAR`. Sin fecha, sin fees, sin PnL.
+- **HYPE** — marcada `cerrada-SIN-REGISTRAR`. No aparece en `normalized/`, ni en
+  `manual_assets.json`, ni en el journal: solo consta de palabra.
 
-`sops/psicologia_trading.md` define cuatro tipos de operación y `sops/hojas_psicologia.html` son
-las hojas imprimibles. Falta que el terminal los cuente solo. Añadir a cada entrada de
-`journal.json`:
+O se meten a mano con capturas del explorador, o se escribe un lector de HyperEVM. **Lo que no se
+puede reconstruir no se puede puntuar**, así que hasta entonces esas dos no entran en el recuento
+del ciclo.
 
-```json
-"tipo": null,              // 1-4, se rellena cuando hay resultado
-"estado_interno": ""       // salida de la hoja 1: cuerpo, emoción, las 3 preguntas
-```
+### 3.3 · Conectar las hojas de decisión con el terminal — ✅ *hecho el 18-ago*
+
+Los campos `tipo` (1-4) y `estado_interno` ya están en cada entrada de `journal.json`, en el
+formulario de `lp.html` y en el whitelist de `api/journal.js`. El diario ahora enseña arriba una
+línea de **disciplina**: qué % de las operativas con resultado siguieron el plan (tipo 1 + tipo 2),
+con el contador de tipo 4 destacado en ámbar.
+
+`tipo` se deja en `null` al abrir a propósito: solo se puede clasificar cuando hay resultado, y
+obligar a ponerlo antes invita a inventárselo.
 
 Los cuatro tipos, en corto:
 
@@ -214,6 +225,10 @@ tipo de llamada es el que peor timing tiene en el track record (1/4).
 **Relevante para el LP:** el usuario es vendedor de volatilidad (LP concentrado = corto de
 gamma). El WoC del 12-ago recomienda **ensanchar el rango y reducir tamaño**, con el suelo por
 debajo de $58,5K en vez de en el estante de $62K.
+
+**Estado real del LP a 18-ago: no hay ninguna posición de Orca abierta.** Las tres se cerraron
+(21-jul y 3-ago) y las tres batieron a HOLD. Queda `CNuoBMmr`, que no es una LP direccional sino
+un par de *peg* cbBTC/WBTC, y las dos de HyperEVM sin verificar.
 
 ---
 
