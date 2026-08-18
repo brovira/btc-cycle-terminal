@@ -87,8 +87,18 @@ module.exports = async (req, res) => {
         tipo: [1, 2, 3, 4].includes(Number(body.tipo)) ? Number(body.tipo) : null,
         tipo_nota: body.tipo_nota || "",
         estado_interno: body.estado_interno || "",
+        // SELLO DE TIEMPO DEL SERVIDOR — no se acepta del cliente ni se puede editar.
+        // Es lo único que hace falsable la métrica "% de decisiones con su porqué escrito ANTES
+        // de conocer el resultado": `date` dice cuándo se decidió y lo pone el usuario;
+        // `registrado` dice cuándo se escribió de verdad. Si se pudiera enviar desde el
+        // formulario, el número mediría intención en vez de conducta y no valdría nada.
+        registrado: new Date().toISOString(),
       };
       if (!entry.rationale && !entry.action) { res.statusCode = 400; return res.end(JSON.stringify({ error: "empty", message: "Escribe al menos acción o razonamiento." })); }
+
+      // Reconstrucción declarada: se marca explícitamente y NUNCA cuenta como registro en
+      // plazo, aunque el hueco entre `date` y `registrado` fuese pequeño.
+      if (body.reconstruido) entry.reconstruido = String(body.reconstruido).slice(0, 300);
 
       const { sha, doc } = await loadCurrent();
       doc.entries.unshift(entry); // más reciente primero

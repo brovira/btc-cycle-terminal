@@ -20,6 +20,7 @@ on:
   push:
     paths:                     # también al tocar la propia comprobación, para validarla
       - "ingesta/frescura.py"
+      - "ingesta/decisiones.py"
       - ".github/workflows/frescura.yml"
 
 permissions:
@@ -39,5 +40,11 @@ jobs:
           python-version: "3.12"
       - name: Comprobar frescura
         run: python ingesta/frescura.py
+        env:
+          # Para leer journal.json y las posiciones del repo privado y comprobar que cada
+          # decisión de capital tiene su porqué escrito. Sin el token la comprobación se
+          # declara SIN DATO y el job sale rojo igual: un "no pude mirar" nunca debe
+          # parecerse a un "todo bien".
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
       # Sin `continue-on-error`, a propósito: si esto se pudiera ignorar no serviría de nada.
       # Que salga rojo ES el producto. Rojo aquí = no decidas capital con este material.

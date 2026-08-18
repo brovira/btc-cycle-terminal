@@ -27,6 +27,11 @@ cd ~/dev/btc-cycle-terminal && git pull --rebase origin main && python3 ingesta/
 `frescura.py` es el juez: mira **fechas de datos**, no procesos. Si sale verde, el material
 está al día. Si sale rojo, dice qué fuente y desde cuándo.
 
+Desde el 18-ago también vigila **el registro propio**: cuántas decisiones de capital de este
+ciclo tienen su porqué escrito. Va en el mismo sitio a propósito — el material de terceros y
+el diario fallan igual de callados, y el diario es el único dato que no se puede volver a
+bajar de ninguna parte. Detalle con `python3 ingesta/decisiones.py`.
+
 **Ojo con los clones.** Hay tres copias del repo en este Mac:
 
 | Ruta | Estado |
@@ -125,6 +130,32 @@ Sigue abierto solo lo de **HyperEVM**, y por una razón de fondo: *no hay lector
 O se meten a mano con capturas del explorador, o se escribe un lector de HyperEVM. **Lo que no se
 puede reconstruir no se puede puntuar**, así que hasta entonces esas dos no entran en el recuento
 del ciclo.
+
+### 3.2b · Llegar al 10 de 10 — ⏳ *lo único que hace falta de ti*
+
+La métrica que gobierna el resto: **% de decisiones de capital con su porqué escrito ANTES de
+conocer el resultado.** No es PnL — todavía no hay muestra para que el PnL signifique nada.
+
+Estado a 18-ago: **cobertura 7/10 · en plazo 0/10.**
+
+Son dos números distintos y conviene no confundirlos:
+
+| | Qué mide | Cómo sube |
+|---|---|---|
+| **Cobertura** | ¿existe la entrada? | reconstruyendo, hoy mismo |
+| **En plazo** | ¿se escribió sin saber el resultado? | solo hacia adelante, decisión a decisión |
+
+Las 4 aperturas de Orca se reconstruyeron el 18-ago y **están marcadas como tales**: suben la
+cobertura y NO el «en plazo», a propósito. Si una reconstrucción contase, el número mediría
+memoria en vez de disciplina.
+
+**Lo que falta para cerrar la cobertura (necesita al usuario, no se puede sacar de la cadena):**
+las 3 decisiones de HyperEVM — abrir ProjectX, abrir HYPE, cerrar HYPE. Hacen falta fecha y,
+si se puede, importe. Con capturas del explorador vale.
+
+**Cómo funciona el candado:** `api/journal.js` sella cada entrada con `registrado` (hora del
+servidor, que el formulario **no** puede enviar). El diario de `lp.html` avisa al guardar algo
+de hace más de un día y lo marca como reconstruida. Sin ese sello la métrica mediría intención.
 
 ### 3.3 · Conectar las hojas de decisión con el terminal — ✅ *hecho el 18-ago*
 

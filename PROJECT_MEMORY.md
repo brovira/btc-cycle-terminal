@@ -5,6 +5,45 @@ Cowen) + investigación propia (Patrón temporal) con citas verbatim de sus tran
 agrega señales, y gestiona el capital real (personal + BELROGAM SL) para decidir
 cuánto/cuándo comprar.
 
+> ## Estado a 18-ago-2026 (c) — la métrica que gobierna el resto
+>
+> Se midió el sistema con el número que importa y salió feo: de **10 decisiones de capital**
+> de este ciclo (6 aperturas, 4 cierres), **3 tenían entrada en el diario y 0 se escribieron
+> en el momento**. Mientras tanto el repo tenía 84 meses de Cowen sin un solo hueco.
+>
+> Está al revés. Lo que dicen Cowen o Glassnode se puede volver a bajar siempre. **El porqué
+> de una decisión propia eres la única fuente del mundo, y se evapora en horas.**
+>
+> **La métrica:** *% de decisiones de capital con su porqué escrito ANTES de conocer el
+> resultado.* No PnL — todavía no hay muestra para que el PnL signifique nada. Son dos
+> números y no se pueden confundir: **cobertura** (¿existe la entrada?) sube reconstruyendo;
+> **en plazo** (¿se escribió sin saber el resultado?) solo sube hacia adelante.
+>
+> **Lo construido, deliberadamente pequeño:**
+> - `api/journal.js` sella cada entrada con `registrado`, hora del **servidor**, que el
+>   formulario no puede enviar. Sin ese sello la métrica mediría intención, no conducta —
+>   sería tan infalsable como todo lo que critica este repo.
+> - `ingesta/decisiones.py` cruza las posiciones de la cadena contra el diario y dice qué
+>   falta. Es `frescura.py` aplicado a uno mismo.
+> - **No lleva workflow propio**: se engancha dentro de `frescura.py`. El problema de este
+>   repo nunca fue tener pocas herramientas. Y si no puede leer el repo privado se declara
+>   **SIN DATO** y sale rojo igual — un «no pude mirar» no puede parecerse a un «todo bien».
+> - `lp.html` enseña el número, marca las reconstruidas en ámbar y avisa al guardar algo de
+>   hace más de un día.
+>
+> **Estado: cobertura 7/10 · en plazo 0/10.** Las 4 aperturas de Orca se reconstruyeron y van
+> marcadas: suben la cobertura y **no** el «en plazo», a propósito.
+>
+> **Lo que falta y no lo puede sacar ninguna máquina:** las 3 decisiones de HyperEVM (abrir
+> ProjectX, abrir y cerrar HYPE). Sin lector de esa cadena, hacen falta las fechas a mano.
+>
+> ⚠️ **El patrón que esto intenta romper**, dicho sin adornos: en este repo todo lo que
+> *agrega* información se construyó rápido y automatizado (1.887 transcripts, 328 WoC, 539
+> charts, 5 agentes, 6 workflows), y todo lo que *falsaría* algo lleva semanas parado — el
+> evaluador adversarial (pedido el 30-jul, «urgentísimo»), los backtests (el primero se corrió
+> el 18-ago y **contradijo el framework**), el patrón temporal (n=3, in-sample, salvedad
+> escrita y nunca resuelta). No es pereza: la parte falsadora duele más.
+
 > ## Estado a 18-ago-2026 (b) — el registro de posiciones, cuadrado con la cadena
 >
 > El repo privado tenía **tres posiciones de Orca marcadas `abierta` que la cadena dice

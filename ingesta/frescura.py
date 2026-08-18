@@ -81,7 +81,7 @@ COMPROBACIONES = [
     ("Transcripts · LMEC", lambda: _fecha_max_por_nombre("agentes/lmec/yt-transcripts/*.md"),
      25, "publica de forma irregular"),
     ("WoC · informes del agente", lambda: _fecha_max_por_nombre("agentes/glassnode_woc/reports/*.md"),
-     14, "semanal; hoy es MANUAL, nada lo escribe"),
+     14, "semanal (sync_woc_reports.py, jueves)"),
     ("WoC · resumen del dashboard", _fecha_woc,
      14, "semanal, jueves (sync-woc.yml)"),
     ("On-chain · BGeometrics", lambda: _fecha_json_series("data/onchain/mvrv_zscore.json"),
@@ -96,6 +96,30 @@ COMPROBACIONES = [
     # no "fechas"), así que no puede declarar su propia edad. Se refresca en el mismo lote
     # que el resto de checkonchain, de modo que la fila de "cost basis" ya lo cubre.
 ]
+
+
+
+def _decisiones_sin_registrar():
+    """Decisiones de capital de este ciclo que no tienen su porqué escrito.
+
+    Va aquí y no en un workflow propio a propósito. El material de terceros y el registro
+    propio fallan igual —en silencio y en verde— y merecen la misma alarma. Además evita
+    otra pieza de infraestructura: el problema de este repo nunca fue tener pocas
+    herramientas.
+
+    Devuelve (cubiertas, total, [huérfanas]) o None si no se puede leer el repo privado
+    (no se penaliza: sin GH_TOKEN esto no es un fallo del registro, es falta de acceso).
+    """
+    try:
+        import decisiones                                  # mismo directorio
+        decs = decisiones.decisiones()
+        entradas = decisiones.leer("data/journal.json").get("entries", [])
+    except SystemExit:
+        return None
+    except Exception:
+        return None
+    huerfanas = [d["que"] for d in decs if not decisiones.casa(d, entradas)]
+    return len(decs) - len(huerfanas), len(decs), huerfanas
 
 
 def main():
@@ -120,8 +144,25 @@ def main():
     for estado, etiqueta, fecha, edad, nota in filas:
         print(f"{estado} │ {etiqueta.ljust(ancho)} │ {fecha:<12} {edad:<16} {nota}")
 
+    # --- registro propio ---------------------------------------------------------------
+    # El material de terceros es recuperable: si se pierde, se vuelve a bajar. El porqué de
+    # una decisión propia no lo es. Por eso se mira aquí, junto a lo demás.
+    reg = _decisiones_sin_registrar()
+    sin_registrar = []
+    if reg is None:
+        # NO se pasa por alto en silencio. Un "no pude mirar" que se ve igual que un "todo
+        # bien" es el fallo exacto que llevó a construir este archivo. Cuenta como ausente.
+        ausentes.append("decisiones registradas (sin acceso al repo privado)")
+        print(f"SIN DATO │ {'decisiones registradas'.ljust(ancho)} │ {'—':<12} "
+              f"{'':<16} falta GH_TOKEN o LOCAL_DATA_DIR")
+    else:
+        cub, tot, sin_registrar = reg
+        marca = "      ok" if not sin_registrar else "  RANCIO"
+        print(f"{marca} │ {'decisiones registradas'.ljust(ancho)} │ {f'{cub}/{tot}':<12} "
+              f"{f'{cub/tot*100:.0f}% cobertura':<16} el único dato del que eres la única fuente")
+
     print()
-    if not caducados and not ausentes:
+    if not caducados and not ausentes and not sin_registrar:
         print("Todo al día.")
         return 0
 
@@ -129,6 +170,12 @@ def main():
         print(f"CADUCADO: {etiqueta} — última fecha {fecha}, {dias} días (máx {limite}).")
     for etiqueta in ausentes:
         print(f"SIN DATO: {etiqueta} — el archivo no existe o no se pudo leer.")
+
+    if sin_registrar:
+        print(f"SIN REGISTRAR: {len(sin_registrar)} decisión(es) de capital sin su porqué escrito:")
+        for q in sin_registrar:
+            print(f"    · {q}")
+        print("  (detalle: python3 ingesta/decisiones.py)")
 
     print("\nUn dato caducado se siente igual de convincente que uno fresco.")
     print("No decidas capital con esto hasta arreglarlo.")

@@ -1080,6 +1080,21 @@ function tipoChip(e){
   const t=TIPOS[e.tipo];if(!t)return"";
   const nota=e.tipo_nota?` title="${esc(e.tipo_nota)}"`:"";
   return `<span class="jchip"${nota} style="border-color:${t.col};color:${t.col}">${t.et}${e.tipo_nota?" ⓘ":""}</span>`;}
+function registroResumen(list){
+  // Una entrada cuenta como "en plazo" solo si el sello del SERVIDOR (`registrado`, que el
+  // formulario no puede enviar) cae dentro de las 24h de la fecha de la decisión. Las
+  // reconstruidas nunca cuentan, aunque el hueco sea corto: miden memoria, no disciplina.
+  const ops=list.filter(e=>["LP","Compra","Venta","Loop"].includes(e.type));
+  if(!ops.length)return"";
+  const plazo=ops.filter(e=>{
+    if(e.reconstruido||!e.registrado)return false;
+    const h=(new Date(e.registrado)-new Date(e.date+"T00:00:00Z"))/36e5;
+    return h>=0&&h<=24;}).length;
+  const rec=ops.filter(e=>e.reconstruido).length;
+  const col=plazo===ops.length?"var(--bull)":plazo===0?"var(--bear)":"#e8a33d";
+  return `<div class="note" style="margin-bottom:10px">Porqué escrito <b>antes</b> de conocer el resultado: `+
+    `<b style="color:${col}">${plazo} de ${ops.length}</b>`+(rec?` · ${rec} reconstruida${rec>1?"s":""} a posteriori`:"")+
+    `. Es la única métrica del sistema que solo depende de ti — todo lo demás se puede volver a bajar.</div>`;}
 function tipoResumen(list){
   const c={1:0,2:0,3:0,4:0};let sin=0;
   list.forEach(e=>{if(e.tipo==null)sin++;else if(c[e.tipo]!=null)c[e.tipo]++;});
@@ -1095,7 +1110,7 @@ function renderJournal(doc){
   const list=(doc&&Array.isArray(doc.entries))?doc.entries:[];
   const el=$("#journalList");
   if(!list.length){el.innerHTML=`<div class="note">Aún no hay entradas. Pulsa «＋ Nueva entrada» para registrar tu primera operativa y su razonamiento.</div>`;return;}
-  el.innerHTML=tipoResumen(list)+list.map(e=>{
+  el.innerHTML=registroResumen(list)+tipoResumen(list)+list.map(e=>{
     const ic=TYPE_ICON[e.type]||"•";
     const meta=[e.asset,e.venue].filter(Boolean).join(" · ");
     return `<div class="jcard">
@@ -1104,6 +1119,7 @@ function renderJournal(doc){
         <h3>${esc(e.action||e.type||"Entrada")}</h3>
         <span class="rule" style="flex:1"></span>
         <span class="note">${esc((e.date||"").slice(0,10))}</span>
+        ${e.reconstruido?`<span class="jchip" title="${esc(e.reconstruido)}" style="border-color:#e8a33d;color:#e8a33d">reconstruida ⓘ</span>`:""}
       </div>
       ${meta?`<div class="note">${esc(meta)}${e.position?` — ${esc(e.position)}`:""}${e.result?` · <b style="color:var(--bull)">${esc(e.result)}</b>`:""}</div>`:""}
       ${e.rationale?`<div class="jlabel">Razonamiento</div><p>${jfmt(e.rationale)}</p>`:""}
@@ -1130,6 +1146,13 @@ $("#jSave").addEventListener("click",async()=>{
     venue:$("#jVenue").value.trim(),result:$("#jResult").value.trim(),rationale:$("#jRationale").value.trim(),plan:$("#jPlan").value.trim(),
     tipo:$("#jTipo").value?Number($("#jTipo").value):null,estado_interno:$("#jEstado").value.trim()};
   if(!body.action&&!body.rationale){$("#jMsg").textContent="Escribe al menos la acción o el razonamiento.";$("#jMsg").style.color="var(--bear)";return;}
+  // Registrar tarde no se bloquea —a veces no queda otra— pero sí se dice en voz alta y se
+  // marca en el dato. Lo que arruina la métrica no es llegar tarde: es no saber que llegaste.
+  const dias=Math.floor((Date.now()-new Date(body.date+"T00:00:00Z"))/864e5);
+  if(dias>1&&!body.reconstruido){
+    if(!confirm(`Esta decisión es de hace ${dias} días.\n\nSe va a marcar como RECONSTRUIDA: cuenta para la cobertura, pero no como «porqué escrito antes de conocer el resultado».\n\n¿Guardar así?`))return;
+    body.reconstruido=`Registrada ${dias} días después de la decisión.`;
+  }
   $("#jSave").disabled=true;$("#jMsg").style.color="var(--muted)";$("#jMsg").textContent="Guardando…";
   try{const r=await fetch("/api/journal",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
     const j=await r.json().catch(()=>({}));
