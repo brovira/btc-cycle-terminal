@@ -1,13 +1,13 @@
 {
   "date": "2026-08-17",
-  "phase": "Bajista",
+  "phase": "Alcista",
   "signals": {
     "strong_buy": false,
     "macd_bull_cross_neg": false,
     "rsi_reclaim_34": false,
     "mvrv_z_out_of_green": false,
-    "reclaim_bmsb": false
+    "reclaim_bmsb": true
   },
-  "price": 64372.5,
-  "checked_at": "2026-08-19T08:35:55.460407Z"
+  "price": 71270.96,
+  "checked_at": "2026-08-20T08:36:48.482069Z"
 }
