@@ -1,49 +1,26 @@
 {
   "_como_se_actualiza": "AUTOMÁTICO desde jul-2026: ingesta/sync_woc.py lee la recomendación del pipeline semanal del repo privado (DeFi-Tracker) y la traduce a este formato. Workflow: sync-woc.yml, jueves 14:00 UTC (1h después del pipeline).",
   "_pendiente_agente": "`fiabilidad_tipo` se asigna por heurística de palabras clave y `cambios_de_fiabilidad` queda vacío: eso lo calibra el agente glassnode_tactico contra track_record.md.",
-  "updated": "2026-08-12",
-  "woc_fecha": "2026-08-12",
-  "woc_titulo": "Trigger Happy",
+  "updated": "2026-08-19",
+  "woc_fecha": "2026-08-19",
+  "woc_titulo": "Yields Anchor, Capitulation Grinds",
   "fuentes": [
-    "2026-08-12-the-week-onchain-week-32-2026.md",
+    "2026-08-19-the-week-onchain-week-33-2026.md",
     "recomendaciones.jsonl (pipeline semanal, DeFi-Tracker)"
   ],
-  "resumen": "Compresion de bear tardio con un añadido inusual: LA MULTITUD SE HA POSICIONADO PARA LA RECUPERACION ANTES DE QUE LLEGUE LA DEMANDA. El lado vendedor se inclina constructivo (supply en beneficio cerca de suelos previos, agotamiento vendedor en minimos de ciclo, inflows a exchanges desvaneciendose). El lado comprador sigue VACIO (ETF minimo, la cinta spot mas fina desde 2019, y BTC quedandose atras de unas acciones en records). El riesgo es MECANICO, no narrativo: cuando el OI se alza sobre el volumen diario, las liquidaciones encuentran poco flujo en reposo que las absorba y los movimientos adversos se extienden mas de lo que deberian. Suyo, literal: 'Thin bids, heavy leverage and record-low volume leave downside moves prone to overshoot.' Y si el rango se rompe, un viaje al minimo de junio cerca de $58,5k aterrizaria sobre un libro MAS BLANDO que el que lo cogio hace seis semanas, con los largos apiñados de arriba aportando el combustible.",
-  "que_hacemos": "<b>Acción de LP: ENSANCHAR + REDUCIR TAMAÑO</b> · régimen de leverage: <b>apiñado</b> · confianza: alta.<br>Primera semana desde la semilla del 22-jul en que el leverage deja de estar limpio. Eso cambia el calculo: el escenario que hasta ahora era improbable (cascada de liquidaciones) ahora tiene combustible identificado (ballenas netas largas ininterrumpidas desde marzo, OI > 1 dia de volumen) y poco que lo frene (bids -1/3, volumen minimo de 7 años). No es razon para SALIR: la mitad vendedora del cuadro sigue siendo constructiva y ellos mismos señalan que un reclaim de $68,7k confirmaria mejora. Es razon para que el rango sobreviva un overshoot: suelo del rango POR DEBAJO de $58,5k (el minimo de junio) en vez de en el shelf de $62k, y tamaño mas pequeño para que un pinchazo no convierta toda la posicion en BTC en el peor punto. El techo operativo sigue siendo $68,7k: nueve rechazos.",
-  "niveles": [
-    {
-      "k": "STH cost basis (resistencia/soporte)",
-      "v": "$68.700"
-    },
-    {
-      "k": "Realized Price (suelo del ciclo)",
-      "v": "$52.800"
-    },
-    {
-      "k": "Estante de demanda (soporte)",
-      "v": "$63.000"
-    },
-    {
-      "k": "Muro de oferta (resistencia)",
-      "v": "$68.700"
-    }
-  ],
-  "metricas": "CAMBIO DE REGIMEN EN EL LEVERAGE, y es lo mas importante de la edicion. (1) En Hyperliquid el libro de ballenas ha cerrado NETO LARGO todos los dias desde mediados de marzo, una racha sin precedente en el año de historia de la serie, con el pico a mediados de julio y el precio en el techo del rango local; el mismo grupo estuvo persistentemente corto a finales de 2025 y giro en marzo. (2) El Open Interest de futuros ya SUPERA un dia entero de volumen de futuros, cerca del record de septiembre pasado; en 2019-2020 el mismo libro rotaba unas 3 veces al dia. (3) La banda de bids en reposo que enmarcaba el rango del verano hizo pico a principios de julio y se ha adelgazado ~UN TERCIO desde entonces. Ademas: volumen spot en coins, el mas bajo desde que arranca la serie en 2019 (y sin Binance, raspando los minimos del bear de 2023). Supply en beneficio apenas por encima de la mitad del circulante, cerca de territorio de suelo de bears previos pero sin llegar. Seller Exhaustion Constant en minimo de ciclo, de los mas debiles desde 2013, aun por encima de todos los suelos previos. Realized Profit/Loss Ratio: 9 veces desde el techo de octubre la media 7d ha vuelto a 1,0 y 9 veces los vendedores han usado el toque como salida. ETF: flujos netos positivos a finales de julio por primera vez en meses, pero una fraccion minima de cualquier ola de acumulacion pasada. Exchange Net Position Change sigue en territorio de ENTRADA la mayoria de dias del año.",
+  "resumen": "Pendiente de análisis (sin API key o error de API).",
+  "que_hacemos": "<b>Acción de LP: PENDIENTE</b> · régimen de leverage: <b>?</b> · confianza: baja.<br>—",
+  "niveles": [],
+  "metricas": "—",
   "llamadas_abiertas": [
     {
-      "llamada": "Reclaim sostenido de $68,7k (STH Cost Basis) CON volumen en aumento y ETF inflows detras -> confirma mejora, estrechar al alza. Las dos invalidaciones que ellos mismos nombran: (a) fallar en rallar con el dato benigno de inflacion de esta semana, (b) perdida de $58,5k hacia bids finos con los largos apiñados. Cualquiera de las dos tumba el caso de suelo. Su cierre textual: 'We remain cautious, and patient.'",
+      "llamada": "—",
       "tipo": "señal a vigilar (del WoC)",
-      "fiabilidad_tipo": "posicionamiento/leverage — 8/10 histórico (su punto fuerte)",
+      "fiabilidad_tipo": "sin clasificar — pendiente de que el agente lo calibre",
       "criterio_exito": "se evalúa el jueves siguiente: narrativa del WoC nuevo + movimiento real de precio",
       "estado": "pendiente"
     }
   ],
-  "evaluadas_recientes": [
-    {
-      "llamada": "Vuelta SOSTENIDA de entradas netas por el canal ETF, o la volatilidad expandiendo AL ALZA fuera del squeeze -> confirma mejora, estrechar rango al alza. Empuje del Seller Exhaustion Constant hasta la zona que alcanzo cada bear previo (~un tercio por debajo de donde esta) -> completa la plantilla clasica de suelo, y eso llega con capitulacion: salir o rango muy ancho.",
-      "veredicto": "ACIERTO",
-      "nota": "La reco del 5-ago (MANTENER, shelf $62k-$68k) aguanto con holgura: el precio no se acerco a ninguno de los dos bordes en toda la ventana (minimo 63.225, maximo 65.513). La lectura de 'compresion que casi siempre resuelve al alza PERO sin motor de demanda' quedo bien calibrada: hubo intento al alza hasta 65,5k el 9-ago y se deshizo, sin aparecer el motor. Y el corolario del experimento Coldcard se confirmo: el shock de noticia no movio el precio."
-    }
-  ],
+  "evaluadas_recientes": [],
   "cambios_de_fiabilidad": ""
 }
