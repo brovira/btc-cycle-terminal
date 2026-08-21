@@ -191,6 +191,25 @@ su trabajo. Confundirlo con tipo 3 es la vía rápida a abandonar un plan que es
 
 ---
 
+## 3.5 · El punto ciego del monitor — arreglado el 21-ago
+
+`frescura.py` daba **VERDE** el 21-ago con LMEC en rojo de verdad: sus transcripts tenían 21
+días y el límite eran 25. Pero LMEC **sí había publicado** — lo que había fallado era la
+ingesta local (Mac apagado, o launchd sin disparar).
+
+**El fallo de fondo no era el número.** Un límite de cadencia no puede distinguir *«no ha
+publicado»* de *«no lo hemos leído»*: las dos cosas se ven igual desde fuera, un archivo con
+fecha vieja. Es la lección de agosto repetida un piso más arriba — el vigilante tenía su propio
+punto ciego.
+
+**La solución:** `ingesta_local.sh` escribe ahora `ingesta/local/estado.json` en cada
+ejecución (fecha, canales ilegibles, máquina) y lo commitea **incluso cuando no hay transcripts
+nuevos** — sobre todo entonces. `frescura.py` lo lee: si el latido tiene más de 2 días, sale
+rojo aunque las fechas de los datos parezcan aceptables.
+
+De paso el límite de LMEC baja de 25 a 20 días (su cadencia real es de 12 a 22), pero eso es
+secundario: **el que tiene que cazar los fallos es el latido, no el umbral.**
+
 ## 4. Comandos útiles
 
 ```bash

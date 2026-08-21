@@ -19,7 +19,7 @@ USO
   python ingesta/frescura.py --aviso    # solo avisa, siempre sale 0
 """
 import json, os, re, sys, glob
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date, timedelta
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HOY = datetime.now(timezone.utc).date()
@@ -74,12 +74,15 @@ def _fecha_woc():
 COMPROBACIONES = [
     ("Transcripts · Cowen", lambda: _fecha_max_por_nombre("agentes/cowen/yt-transcripts/*.md"),
      7, "publica casi a diario"),
-    # 25 y no 14: el 17-ago-2026 esto dio FALSO POSITIVO. La ingesta había corrido bien y
-    # LMEC simplemente llevaba 17 días sin publicar (comprobado en su canal). Un monitor que
-    # llora sin motivo enseña a ignorar el rojo, que es justo lo que este workflow existe para
-    # evitar. Límite holgado: solo salta si de verdad hay un mes sin nada.
+    # Historia de este número. Era 14 y dio FALSO POSITIVO el 17-ago (LMEC llevaba 17 días
+    # sin publicar, sin más), así que se subió a 25. El 21-ago pasó lo contrario: LMEC SÍ
+    # publicó, la ingesta local no lo trajo, y con 21 días de retraso esta fila salió VERDE.
+    # Un límite de cadencia no puede distinguir "no ha publicado" de "no lo hemos leído", así
+    # que perseguir el número era la solución equivocada. Lo que lo resuelve de verdad es el
+    # LATIDO de la ingesta local (ver _latido_ingesta_local). 20 es un punto medio razonable
+    # para su cadencia real (12-22 días); el latido es quien tiene que cazar los fallos.
     ("Transcripts · LMEC", lambda: _fecha_max_por_nombre("agentes/lmec/yt-transcripts/*.md"),
-     25, "publica de forma irregular"),
+     20, "publica de forma irregular"),
     ("WoC · informes del agente", lambda: _fecha_max_por_nombre("agentes/glassnode_woc/reports/*.md"),
      14, "semanal (sync_woc_reports.py, jueves)"),
     ("WoC · resumen del dashboard", _fecha_woc,
@@ -97,6 +100,31 @@ COMPROBACIONES = [
     # que el resto de checkonchain, de modo que la fila de "cost basis" ya lo cubre.
 ]
 
+
+
+
+def _latido_ingesta_local():
+    """(dias_desde_la_ultima_ejecucion, canales_ilegibles) del script del Mac, o None.
+
+    POR QUE. El 21-ago-2026 LMEC publicó y `frescura.py` salió VERDE: los transcripts tenían
+    21 días y el límite eran 25, así que la fila decía "ok". Pero el límite mide la CADENCIA
+    del canal, y con eso es imposible separar "no ha publicado" de "el Mac estaba apagado y
+    esto no se ejecutó". Las dos cosas se ven igual desde fuera: un archivo con fecha vieja.
+    Es exactamente el fallo de agosto, un piso más arriba — el monitor tenía su propio punto
+    ciego.
+
+    Con el latido sí se distingue: si la última ejecución es vieja, el problema no es el
+    canal, es que nadie ha mirado.
+    """
+    ruta = os.path.join(ROOT, "ingesta", "local", "estado.json")
+    if not os.path.exists(ruta):
+        return None
+    try:
+        d = json.load(open(ruta, encoding="utf-8"))
+        cuando = date.fromisoformat(d["ultima_ejecucion"][:10])
+    except (ValueError, KeyError, TypeError):
+        return None
+    return (HOY - cuando).days, int(d.get("canales_ilegibles") or 0)
 
 
 def _decisiones_sin_registrar():
@@ -147,6 +175,26 @@ def main():
     # --- registro propio ---------------------------------------------------------------
     # El material de terceros es recuperable: si se pierde, se vuelve a bajar. El porqué de
     # una decisión propia no lo es. Por eso se mira aquí, junto a lo demás.
+    # --- ¿se está ejecutando siquiera la ingesta local? -----------------------------------
+    lat = _latido_ingesta_local()
+    latido_mal = False
+    if lat is None:
+        latido_mal = True
+        ausentes.append("ingesta local (sin latido)")
+        print(f"SIN DATO │ {'ingesta local · último latido'.ljust(ancho)} │ {'—':<12} "
+              f"{'':<16} nunca ha escrito estado.json")
+    else:
+        dias, ilegibles = lat
+        latido_mal = dias > 2 or ilegibles > 0
+        detalle = (f"{ilegibles} canal(es) ilegibles" if ilegibles
+                   else ("hace mucho" if dias > 2 else "corriendo"))
+        print(f"{'  RANCIO' if latido_mal else '      ok'} │ "
+              f"{'ingesta local · último latido'.ljust(ancho)} │ "
+              f"{(HOY - timedelta(days=dias)).isoformat():<12} "
+              f"{f'{dias}d / máx 2d':<16} {detalle}")
+        if latido_mal:
+            caducados.append(("ingesta local", HOY - timedelta(days=dias), dias, 2))
+
     reg = _decisiones_sin_registrar()
     sin_registrar = []
     if reg is None:

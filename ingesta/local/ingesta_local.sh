@@ -117,10 +117,25 @@ python3 agentes/tools/fetch_captions.py --persona cowen --lang en --max 8 --sinc
   "https://www.youtube.com/@benjaminjcowen/videos" 2>&1 | tee -a "$LOG"
 [ "${PIPESTATUS[0]}" -ne 0 ] && { fallos=$((fallos+1)); log "FALLO leyendo el canal de Cowen"; }
 
-# Se commitea lo que haya entrado aunque el otro canal fallara.
-if [ -n "$(git status --porcelain agentes/*/yt-transcripts/)" ]; then
+# LATIDO. Sin esto, el repo no puede distinguir "LMEC no ha publicado" de "el Mac
+# llevaba cuatro dias apagado y esto no se ejecuto". Las dos cosas se ven identicas desde
+# fuera: un archivo con fecha vieja. Es la misma trampa de agosto, un piso mas arriba.
+mkdir -p ingesta/local
+cat > ingesta/local/estado.json <<JSON
+{
+  "_": "Lo escribe ingesta_local.sh en cada ejecucion. Lo lee ingesta/frescura.py. Si esta viejo, la ingesta local NO se esta ejecutando -- da igual lo que digan las fechas de los transcripts.",
+  "ultima_ejecucion": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "desde": "$SINCE",
+  "canales_ilegibles": $fallos,
+  "maquina": "$(hostname -s 2>/dev/null || echo desconocida)"
+}
+JSON
+
+# Se commitea lo que haya entrado aunque el otro canal fallara. El latido va siempre,
+# incluso cuando no hay transcripts nuevos: sobre todo cuando no hay transcripts nuevos.
+if [ -n "$(git status --porcelain agentes/*/yt-transcripts/ ingesta/local/estado.json)" ]; then
   n=$(git status --porcelain agentes/*/yt-transcripts/ | wc -l | tr -d ' ')
-  git add agentes/*/yt-transcripts/
+  git add agentes/*/yt-transcripts/ ingesta/local/estado.json
   git commit --quiet -m "transcripts: ingesta local ($n nuevos)"
   if git push --quiet origin main 2>>"$LOG"; then
     log "OK: $n transcript(s) nuevos subidos"
