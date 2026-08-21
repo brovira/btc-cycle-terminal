@@ -1,0 +1,908 @@
+# Bitcoin: Dubious Speculation
+
+**Fuente (VÍDEO):** cowen · YouTube — https://www.youtube.com/watch?v=mnCn7NzuzKA
+**Publicado:** 20260821 · **Subtítulos:** en (pueden ser auto-generados)
+**Tipo:** transcript de vídeo (speech-to-text; posibles erratas/muletillas). Cita como `[yt-transcripts/20260821-bitcoin-dubious-speculation.md]`.
+
+---
+
+Hey everyone and thanks for jumping back
+into the cryptoverse.
+Today we're going to talk about Bitcoin
+dubious speculation. If you guys like
+the content, make sure you subscribe to
+the channel, give the video a thumbs up,
+and also check out the sale on into the
+cryptoverse premium at into the
+cryptoverse.com.
+And hopefully you've already gotten your
+ticket for the ITC conference. But if
+you have not, I would encourage you to
+do so before September 1st. Prices will
+go up then. uh you can find a link to
+that in the description below. Now, in
+this video, we're going to sort of take
+in what's happened and and talk about it
+in the context of history. Now, one of
+the things that I've said probably about
+every week in the second half of the
+midterm year is that the correct
+approach in my opinion is to DCA Bitcoin
+in the second half of the midterm year.
+And I put out a video a couple of months
+ago around the low called Bitcoin
+Dynamic DCA, how I navigate crypto. I
+would encourage you to go watch that
+video. But in that video, I talk about
+how I this cycle am planning on buying
+Bitcoin under.3 risk starting in the
+second half of the midterm year. And if
+you go check in with that risk metric,
+you can see we actually did go below.3
+risk in the second half of midterm year
+in early July, late June, early July. So
+fortunately
+that strategy of DCAing worked but
+admittedly right admittedly I would not
+have fully deployed everything I would
+theoretically want to for a full-on bull
+market that would hopefully last a
+number of years. So, I want to talk
+about that and I I sort of just want to
+talk about the way I'm thinking of it
+and then strategies and kind of like
+looking at the past to see if what's
+happening now is confirmation that the
+low is in or if there's still a reason
+to to think otherwise. So, let's go
+ahead and jump in. Um,
+so far Bitcoin has spent very limited
+time below.3 risk, which is kind of my
+ideal zone. If you're not familiar with
+how I've operated the last several
+cycles and all this stuff is, you know,
+pub been published before on YouTube and
+you can go find it. But in the 2018,
+2019, 2020 cycle, I DCA Bitcoin below
+0.5 risk. And then last cycle I chose to
+buy it below 0.4 risk. And then I said
+this cycle my plan is to buy it below.3
+risk. Now you don't have to copy me,
+right? You could buy it at whatever
+levels you want to. I'm just being open
+and communicating the levels that I am
+interested in purchasing Bitcoin. And
+for me, for this cycle, it's below.3
+risk starting in the second half of the
+midterm year. So far, this is all we
+got, right? I mean, basically, starting
+on July 1st, we only had
+like three, four, about four, maybe
+five, five days below.3 risk. Five days.
+So, then the question is is, you know,
+what's going to happen from here? And
+and is what we're seeing indicative of a
+low? Have we seen it before? and and it
+is somewhat confusing admittedly. There
+are indicators that would support that
+would be more in support of the low
+being in and then others that would
+still leave it somewhat up in the air.
+Now, the argument to make for a low
+being in despite the onchain indicators
+not all fully having reset is that we
+topped on apathy rather than euphoria.
+So then the question becomes, do we have
+to fully reset? Right? If we didn't go
+all the way to the highs, do we have to
+go all the way to the lows? It's a
+reasonable question to ask.
+At this point, we only have one example
+where Bitcoin topped on apathy, and that
+was 2019. So, we're going to look a
+little bit at 2019 in this video. So,
+every time I make a video for the last
+several years comparing, you know, the
+the type of cycle that we were in back
+to the 2019 move, there's always been a
+lot of push back, right? It was because
+why are you comparing 2019 to, you know,
+to 2023? Why are you comparing it to
+2024? Why are you comparing it to 2025?
+Why do you compare it? And and so before
+we get into the video, I have to at
+least spend a couple of minutes making
+the case for why we should compare it.
+Okay, for why? And there's there's
+multiple reasons. Okay, number one is
+Bitcoin when it topped there was not a
+euphoric rally. There was not a euphoric
+rally, meaning there was no rotation
+after the euphoric rally into altcoins.
+One way to visualize
+there there not being a euphoric rally
+is look at the MVRVZ score in 2019 and
+in 2024 2025. You see how it didn't
+really go all the way up to where it
+would normally go. Another example is
+the terminal price. If you look at the
+terminal price for instance, what you'll
+notice is that Bitcoin did not reach the
+terminal price during this last bull
+market. It also did not reach it in
+2019.
+Okay? So you you can see what I'm
+talking about. But on all the other bull
+markets, it did reach the terminal
+price. It just didn't reach it in 2019.
+And also it did not reach it in 2025.
+The other comparison to make for 2025
+compared to 2019 is that quantitative
+tightening ended in 2025,
+2 months after Bitcoin topped. So
+Bitcoin topped in October, QT ended in
+December. In 2019, Bitcoin topped in
+June. QT ended in August. So about two
+months. I think back in 2019, it was
+closer to like five or six weeks. But
+again, two calendar months apart is when
+that happened. And when Bitcoin did top
+in 2019, like 2025, there was no
+rotation into into higher risk assets.
+And also another comparison to make is
+that in 2019, the Fed cut three separate
+times.
+And in 2025, the Fed cut three separate
+times.
+So
+there's plenty of comparisons that we
+can make to say, look, there is some
+reason to make the comparison. And when
+you zoom out on the weekly,
+when you zoom out on the weekly, what
+you'll notice is that this
+like what you see here in uh 2018 2019
+and then the bounce up and then interest
+rates coming down after a major rate
+hiking cycle that back there is just a
+smaller version of of this cycle, right?
+I mean, you can see QT and all that
+stuff's doing basically the same thing.
+Bitcoin is, you know, had this nice
+sell-off right after an apathetic top.
+It's more or less following the script,
+right? It's more or less following the
+same script. It's just a larger version
+of it. So, that's a reason to make the
+comparison to 2019. But there's other
+comparisons to make as well, right? This
+is a midterm year, so it makes sense to
+also compare to prior midterm years. And
+in prior midterm years, did we have
+similar rallies like this one? And
+that's something that I have to ask
+myself. In 2022, was there a rally that
+was, you know, upwards of a 20% rally
+that happened in a week before the low
+was in? Uh, did that happen? Right? And
+it's hard to remember that kind of stuff
+all these years later. So, we can go
+take a look. All right. So, what we're
+going to do is we're going to start with
+the midterm year comparison and then
+we're going to look at the 2019
+comparison. Before I go too much
+further, you know, I even said this and
+if you guys watch these videos, you'll
+probably remember me saying it back in
+May. I remember telling you guys and and
+you know going into June I remember
+saying look I've received a lot of hate
+in the in the May rally as as in the
+January rally and if we go down what I'm
+going to say is that that's the that's
+the time to start accumulating right
+that's the accumulation window doesn't
+mean you can't go lower in Q4 and then I
+sort of snidly remarked but knowing
+myself I'm going to continue to beat
+that drum that it just well might
+because unfortunately
+I can't help myself, right? I I feel
+like it's like I'm I'm fixated on on
+these things and I I can't help but but
+let you guys know, right? And and to say
+like you can go buy Bitcoin uh and hope
+that it doesn't drop in Q4, but that
+doesn't mean I will just conveniently
+ignore
+what I've seen happen every single
+midterm year. Okay? I can't I can't just
+pretend like it hasn't happened because
+it would make me feel better and and for
+people to like me. I I will continue to
+at least communicate it. And if it
+doesn't play out, life will go on,
+right? Life will go on and and you know,
+I'll cross that bridge when I get to it.
+And I would probably pick up more
+Bitcoin at the time regardless of of
+whether it actually plays out or not.
+So, let's go through and and try to
+figure out, you know, has this kind of
+stuff happened before? I think the the
+first place to start would be 2018
+because in 2018 the market structure has
+been remarkably similar. And what's
+really different about this move
+compared to 2018 is that in 2018 we
+never really had a major rally above the
+200 day moving average. It has happened
+in prior bare markets. But in 2018, by
+the time we passed through the 200 day
+moving average, the bare market was
+over, right? Like that was that was it.
+And and so the question is is is this
+here, right? Is that the same as this?
+And then now this move right here is
+akin to the move we had in the preh
+havinging year.
+I I think it's worth some consideration,
+right? Like I can't sit here with a
+straight face and say that you can at
+least consider it. Um which again sort
+of affirms why the DCA approach is is
+the best approach. That way if it is it
+you're at least not just sitting on the
+sidelines for the entirety of the next
+bull market. Um but with that said with
+that said I I want to talk a little bit
+about before we get to that I want to
+talk a little bit about uh the the 2018
+move. Okay. So in 2018, if you ignore
+the moving averages, right? If we just
+ignore the moving averages and say let's
+not worry so much about them and let's
+just look at the chart and where the
+lows occurred and where the lower highs
+occurred. So in 2018, you'll see that we
+kept finding support around 6,000 around
+6,000 just like this time it was been
+it's been around 60,000
+very similar. Okay. Now, what what
+happened in 2018 is we had a lot of
+rallies, but we had three key rallies
+that I want that I want us to focus on
+here. The first bounce bounced back up
+to 116,000. But the reason why that
+bounce was so large, then we didn't get
+a bounce like this like that this time
+is that 11 sorry 11,600. We didn't get
+that because we didn't have a euphoric
+top, right? We didn't rally all the way
+up to 200K to then allow for, you know,
+11.6K
+or, you know, $116,000
+Bitcoin be a dead cat bounce. Okay, it
+was more of an apathetic top. But what
+you can look at is these three lower
+highs. You had one
+in the 90s, and if we zoom in, you can
+see what I'm talking about, right? So,
+we had one there
+at basically 10K. Okay.
+You had one at
+8,500
+and then you had one at 7,400.
+So what you'll notice is that throughout
+the bare market
+after this first bounce, right, but just
+looking at the nature of the next three,
+you had
+a top that occurred in the upper 9,000s,
+a top that occurred in the mid 8000s,
+and a top that occurred in the
+mid7,000s.
+And I remember that very vividly because
+what I was doing back then was I was
+buying Bitcoin. I was actually in 2018
+in the back half of 2018 that was when I
+was defending my uh my thesis my I was
+writing my dissertation and defending my
+dissertation. I defended my dissertation
+in September of 2018 and then I started
+my posttock you know shortly thereafter.
+Um, but I I despite all that, I still
+was watching the markets and what I did
+was I I bought Bitcoin and like an
+idiot, I bought a lot of altcoins and
+because I was I was so convinced, right?
+I mean, every single rally just drew me
+back in, right? And I I fortunately I
+was able to to avoid sort of the first
+half of the midterm year, but the second
+half these rallies were just they were
+so convincing to me and I was like,
+"Yeah, like like 6K is probably the
+bottom." and and I hope it is and if
+it's not then so be it. And so I, you
+know, I bought Bitcoin. I bought a lot
+of altcoins and I remember thinking, you
+know, a year or two later, like while
+the Fed did bail bail me out with the
+altcoins that I bought, I remember
+thinking like I probably just been
+better off sticking with Bitcoin because
+if you if you look at Bitcoin dominance
+um from the levels, you know, when I was
+buying altcoins, Bitcoin dominance was
+at around, you know, around I mean it's
+basically around the same level that
+it's at now. It was around like 60%. And
+then a couple of years later, you know,
+Bitcoin dominance was way higher, right?
+I mean, it was way higher. And I
+remember thinking back then like, I
+probably should have just stuck with
+Bitcoin. Now, I did get lucky with some
+of the altcoins. They did do, you know,
+some of them did well, but some of them
+did well after dropping another 70 or
+80% and then they did well. Uh, and then
+the Fed bailed me out. So,
+I I you know, I I like to think we're a
+product product of our experiences. Now
+listen, I mean there's always a chance
+that this bare market is like 2018 but
+without instead of breaking down at the
+end, maybe you break up. Okay, that's
+always a possibility. But the thing to
+kind of consider here is or at least one
+of the things to consider is that you
+had these three rallies,
+upper 9,000s, mid 8,000s, mid7,000s. And
+then if you go look at at this bare
+market, you can see there's also three
+similar rallies, right? One that went
+all the way up to near 100k, right?
+Upper 90s. The next one that took us to
+like the lower to mid 80s, and then the
+one that we're currently in, which is in
+the mid70s. And so
+if I were not looking at the 200 day
+moving average, if I were not looking at
+the bare market resistance band, I would
+simply look at something like this and
+say, well, as much as I know everyone
+wants the low to be in, there's always a
+chance that it's not, right? There's
+there's always a chance that it's not
+because to say that it couldn't go lower
+would be to basically be living through
+2018 and saying the same thing. And and
+we know that it did go lower a few
+months later. And if it feels like we're
+too far out in the year for that to play
+out, one of the things to consider is
+that in 2018, the rally that took us up
+to the mid7000s,
+that didn't even top until early
+September, right? I mean, we're not even
+in September yet. And that did not top
+until early September.
+And then we came back down to 6,000. we
+went sideways and then we finally
+dropped to the market cycle bottom by
+the end of the year. So that's what I
+mean when I say there's there's mixed
+signals because on one hand I can look
+at the 200 day moving average and say
+well look I mean you know normally when
+we blast through the 200 day moving
+average like in 2019 and in 2023
+the bare market was behind us but it's
+also true that when we did that in those
+years those were preh having years that
+that happened not midterm years and so
+then the question becomes well have we
+ever rallied through the 200 day moving
+average and the bare market continued
+and actually I got into uh I was in a
+Twitter space a few months ago and there
+were these guys talking about well if
+Bitcoin goes above the 200 day moving
+average at that point it never goes
+below it again in bare markets and back
+then I pointed out I was like look
+there's always a chance that we go above
+the 200 day and we go right back below
+it and there is some precedent for it
+right it happened in 2014 and it also
+happened in 2019 and I know you're
+saying well why the hell are you
+bringing up 2019 2019. We covered that
+at the very beginning of the video. So,
+if you skipped ahead, go watch the
+reason why to compare to 2019. And then
+we're going to look at 2019 as well.
+Okay. So, in 2014, honestly, this is not
+going to be my favorite comparison
+because when the rally above the 200 day
+moving average occurred, it occurred a
+little earlier in the year and we did
+not extend above it as much as we're
+extending above it now. So, I'm not a
+huge fan of this comparison. back then
+we got above the 200 day in May and and
+we got back above it in July and then we
+were still above it a little bit above
+it in in mid August but frankly
+this doesn't really look like the
+current rally to me I mean it only
+barely got above the 200 day moving
+average now what's interesting is it is
+objectively true that in 2014 we were
+above the 200 day moving average in mid
+August and it's also true that then
+Bitcoin still dropped down to below by
+October okay So, we do know that, but it
+doesn't look like the same thing to me
+because in that case, Bitcoin had been
+trending down for a while, whereas we're
+still in the, you know, sort of the uh
+the up move. Like, we don't know how
+high this is going to go before it
+retraces some. We don't know. I mean,
+maybe we're there now. Maybe it happens
+tomorrow uh with the Jackson Hole speech
+by, you know, by Kevin Walsh. Maybe it
+happens in a week. I I don't know. None
+of us know. we're just kind of sitting
+here wondering how high this is going to
+go before, you know, before it it takes
+a breather. Um, so I I wouldn't put a
+lot of faith here in the 2014 comparison
+because it doesn't really seem like the
+best comparison to me. Um, because it
+happened much earlier in the midterm
+year, the the the rally to the 200 day
+to above it and it's already we're
+already almost in September. So, it
+doesn't feel like the the most
+reasonable comparison. And so the only
+other example that you have where you
+got above the 200 day moving average in
+such a short period of time happens to
+be October of 2019.
+And there there's a couple of
+interesting things surrounding it. And I
+I just want to show you this move. Okay?
+I want to show you this move because we
+haven't had a move like this in this
+bare market yet. We haven't. um in that
+move
+and I'll show you why we're looking at
+that move from a news standpoint as well
+rather than just a price standpoint. So
+in that move, if we just look at the
+first green candle here, Bitcoin rallied
+40%
+in 2 days
+and
+it still somehow managed to go to a new
+low 31 days later. And then it set the
+floor
+54 days later before the rally that led
+us out of that bare market. And then of
+course the pandemic hit and it reset
+everything. But let's suppose the
+pandemic didn't happen. Perhaps that
+would have been it and we would have
+been well on our way to new highs
+already. Like we can't know. But it took
+about 54 days from the high and you'll
+see that Bitcoin rallied well above the
+200 day moving average. Okay.
+In fact, it rallied about 18% above the
+200 day
+and then it retraced back to
+You see that? Now, what's similar
+between October of 2019? I know that the
+the comments are going to be absolutely
+brutal. You know, they're going to drag
+my name through the mud on Twitter for
+even talking about this, but why should
+today be any different? What's
+interesting about October of 2019 and
+August of 2026? Well, what's interesting
+is that this is this was an apathetic
+top. Okay, it was an apathetic top. No
+rotation to altcoins. QT had just ended
+and it's it was the first rally above
+the 200 day moving average. Now, if
+you're having a hard time sort of buying
+into this idea, the thing to consider is
+if the uptrend can take longer than the
+2019 uptrend, why can't the downtrend
+take a little bit longer than the 2019
+downtrend? And so if you think about it
+through that lens, this is the first
+rally above the 200 day moving average
+after falling below it after an
+apathetic top. And again, Bitcoin
+rallied about 17 to 18% above the 200
+day moving average. Let's go see where
+we are now. And then we're going to get
+into your favorite part of this video,
+which will be the news that accompanied
+both rallies.
+Currently about 10% above it. Now,
+obviously, one of the big pieces, one of
+the big news stories that happened was
+Treasury Secretary Bessant and and their
+willingness to try to control the long
+end of the yield curve. Okay, so that's
+obviously one thing, but another thing
+that happened
+is that
+look at this article on CNBC.
+Bitcoin surges 12% in two days as Trump
+crypto execs lead last ditch effort for
+the Clarity Act. So, President Trump
+just came out and they were talking up
+crypto, right? Obviously, because the
+midterms are coming up, right? I mean,
+let's not be let's let's be real. Uh,
+but that was the news story that's
+accompanying a lot of this is that
+there's this pro- crypto, you know, sort
+of stance that's taking place and that
+is what's being attributed to a lot of
+this rally. Now, also you could
+attribute other things as well. You
+could attribute the the recent drop by
+the dollar. You could attribute, you
+know, what what um they're trying to do
+with the long end of the yield curve. I
+mean, even now the long end doesn't
+really seem to be responding that much
+to it. I mean, the 10-year yield still
+at 4.7%. The 30-year yield didn't even
+drop that much. I mean, maybe it will,
+but it hasn't done that yet. And so,
+then the question becomes, well, what
+what could we say? Is there a similar
+article in October of 2019? Well, it's a
+great question and I'm glad you asked it
+because in October of 2019, I remember
+it distinctly, the 40% rally from the
+low that occurred over just a few days
+occurred on this headline. Bitcoin, and
+this is a CNBC article, same, you know,
+same website. Bitcoin had a wild weekend
+briefly topping 10,000 um after the
+Chinese president uh said that they
+should seize the opportunity offered by
+blockchain.
+China's central bank, the people's bank
+of China had been working on its own
+digital currency. So basically in 2019
+you had China talking up Bitcoin and
+then Bitcoin rallied like 40%. And look
+at the date, right? Look at the date.
+This was October 28th, 2019. And if you
+look here, October 28th, that's shortly
+after we had this massive rally, right?
+And so that was the the main news story
+that was attributed to it. And when
+Bitcoin had that rally, it it basically
+r you see where it broke down from right
+here. Bitcoin rallied and it kind of
+swept above that high. So then the
+question is is like if we're going to
+repeat that, that's something to be
+mindful of, especially given that it's
+the midterm year because you can see
+that we just sort of broke down here and
+now we've just sort of swept above that
+high. Okay, so that is the consideration
+to make in terms of the 2019 move. Now,
+if you were to take that 2019 move and
+say, how long from that high did it take
+for the low to occur, excluding the
+pandemic, right? We're not here to
+speculate on pandemic stuff. It took 53
+days. Now, I can't tell you when this
+local top's going to occur. I can't. But
+let's just suppose it's today. Probably
+not, right? I mean, I have no idea. I
+can assure you I'm the last person to
+ask. Um, but 53 days from August 21st
+would coincidentally be
+midocctober.
+So, it's just u
+it's just to try to keep people seeing
+both sides of the story here. Okay. Uh,
+and you know, maybe you would say it's
+like it's a form of coping, but I mean,
+I'm not Look, guys, I don't honestly
+care so much. I mean, I I've I've bought
+a little bit of Bitcoin. Not enough,
+right? I mean, arguably not enough for
+what I would want for the next bull
+market. I'm not going to like lie to
+you. Uh I'd like to buy some more before
+the next bull market, but you know, this
+is this is the sort of the the thing to
+to consider is that like what if what if
+this is a a sort of a a similar type of
+of move here where you're I mean, spread
+out, I guess, over a longer period of
+time, right? But what if it's a sort of
+a similar type of move and you just
+simply get one final sell-off into Q4,
+the midterm year, bare market, four-year
+cycle completes, and the low that ended
+up occurring in um you know, in
+November, December of 2019 just ends up
+being maybe the final low over here.
+Again, is it a stretch? Yeah. But if you
+watch the whole video, I think you could
+at least see how I made that comparison.
+Now again,
+if you're just looking at the midterm
+years, breaking above the 200 day moving
+average in the way that we're breaking
+above it now historically is a really
+bullish thing. So, I'm not here to tell
+you that
+it it can't be a bullish thing. What I'm
+here to say is that
+despite
+the type of move that we've seen,
+if you were to ignore
+the moving averages and just look at the
+type of move we had in 2019 and the
+lower high structure in 2018 where we
+went into the 9,000s and then the 8,000s
+and the 7,000s and then this time it's
+been the 90,000s, the 80,000s and now
+the 70,000s, right? To to see it like
+that sort of changes the perspective a
+bit. I mean, you can look at the chart
+and be like, "All right, well, maybe the
+low's in." But there is at least some
+evidence to consider, hey, it's not like
+this is so clear-cut, right? It's not
+like it's such a clear-cut thing. Again,
+this is all an academic exercise. It's
+much simpler. Just buy Bitcoin every
+week and and go live your life rather
+than concern yourself with this too
+much. But I keep making the videos. You
+guys keep tuning in. So, I will I will
+be here, right? I I'll still be here to
+provide this opinion uh whether people
+like it or not. But that's something to
+see. And I mean sometime look you have
+to go up to go up but sometimes you got
+to go up to go down as silly as that
+sounds. And then the the other question
+is is well did this happen last cycle at
+all? Right? I mean was there a time
+ignoring the moving averages because
+again if you include the moving averages
+the answer is no. Right? The answer is
+no. When when we were breaking out like
+this the low was in ignoring the moving
+averages. Was there ever a time where
+Bitcoin rallied this amount in such a
+short period of time and the low was not
+in? And again, this rally from this
+green candle here, we just rallied 20%
+over 4 days. Did that happen in 2022
+before the low was in? Let's go take a
+look.
+You can see right here
+in early September, we had a sizable
+rally. How big was it from the low to
+the high?
+23% over 6 days. So,
+it has happened. I bet most of you don't
+even remember that rally from 2022.
+Honestly, I don't really remember that
+rally from 2022. And I was making videos
+every day, but I still can't tell you
+exactly what I was feeling during that
+rally. I remember saying that I think we
+were going to go lower in Q4 and I
+remember people making videos mocking me
+for it. Uh and we had this huge rally
+and and then it came right back down.
+And what's interesting is if you take
+the start of that rally to the actual
+low that was 76 day or was it 75
+75 days, right? So that'd be a bit
+further out. But to the first
+capitulation low, it was just 2 months,
+63 days, right? About about 63 days from
+the start of that rally to essentially
+the low of the bare market. We just
+swept the low a couple of weeks later.
+63 days. Now 63 days from the start of
+this rally
+puts you in mid-occtober, right?
+Midocctober.
+Now, if you were to take a bar pattern
+onto this chart
+and just kind of like overlay it like
+that and say, "All right, well, we saw
+this big pop by Bitcoin." Let's just try
+to match it up exactly. See this big
+pop? and you you sort of bring it to the
+current cycle
+here. You can see that the type of rally
+that it was, right? Like it was just
+this massive rally up and then it came
+right back down. What I what I think
+happens when you get those types of
+rallies is you got you have a lot of
+people that are all you have a lot of
+people that are that are looking at it
+saying all right
+things seem bearish probably going to
+get a low in Q4 right everyone was right
+if you anyone in anyone in 2018 who
+thought we were going to get a low in Q4
+they were right anyone in 2020 2022 who
+thought we were going to get low in Q4
+they were right I don't talk about
+shorting the market. I don't ever short
+the market.
+I just don't. I mean, think about it.
+How many people on the wealthiest people
+in the world, they're they're not people
+that they're not short sellers. They're
+people that are are bullish on their
+businesses, right? They're not out there
+shorting businesses. Those are the
+people that are getting the wealthiest.
+I think it's insane to short this stuff.
+And this is why I don't talk about it.
+But imagine you have a lot of people
+thinking that sometimes in order to go
+down, you have to go up because the
+market will go up. It'll liquidate all
+the shorts, get people to FOMO in and
+then it goes down. So the counterpoint
+is that in order to go up, you also have
+to go up. It's just hard to know, you
+know, how does it reconcile after going
+up? you go up to go down or you just
+starting to go up and then you leave
+people kind of waiting forever that are
+thinking it's it has to go to a new low.
+But it's just to show you that even in
+2022,
+you know, just a month or two before the
+final drop, we had a similar type of
+rally where we rallied over 20% in just
+a few days and and then we gave it all
+back very quickly.
+So,
+the thing is, you know, as much as I'd
+like to just sit here uh for the next
+several months and and try to find every
+reason and whatnot to to be concerned,
+you guys see the reasons, right? I mean,
+you see the reasons and if by the end of
+the year it it nothing like that
+happens, life goes on and I will I will
+flip bullish and I won't care, right? I
+mean, I've already got a little bit of
+Bitcoin from when we went below it in
+July, when we went below.3 risk in July,
+in early July. And, you know, I I
+probably would just simply be forced to
+add more if we don't get that that drop
+in Q4 because I I don't really feel like
+I I have what I would want for the next
+bull market. I have some that kind of
+helps control the emotions in the rally,
+but I can I it's like it's it reminds me
+of, you know, these other rallies where
+in the moment it just feels like there's
+no way you could ever go lower, you
+know, like in 2018, you know, it just it
+feels like there's just no way you can
+go lower. And then somehow you fast
+forward to Q4 of every midterm year and
+somehow it always ended up happening.
+Who knows how it happened, but it always
+ended up happening. Um, and and in in a
+lot of these cases, before you got the
+final drop,
+you had to go up first. You had to go
+up. You had to liquidate people and then
+you went down. So that that would be the
+concern I think to sort of express about
+definitively saying that the low has to
+be in. And you know there's obviously
+the onchain indicators and there's like
+the MVRVZ score and you know the
+terminal or the the balance price and
+the realized price. There's all these
+things that haven't fully reset.
+Obviously you can maybe try to make the
+case that they don't have to reset
+because we didn't have a euphoria phase.
+The counterpoint is that in 2019 2020
+they still fully reset. Yes it was due
+to the pandemic but that's the only
+example we have right. the only example
+we have. And who's to say they wouldn't
+have reset without the pandemic? Who's
+to say something else wouldn't have
+happened that would have caused a a a
+similar outcome. So that is, you know,
+the the dubious speculation I have for
+you today. I, you know, I hope that
+these videos this year have been useful.
+I know right now it it might feel like,
+you know, I know there's certainly a lot
+of hate directed directed my way, and
+I'm I'm kind of used to that honestly at
+this point. Uh but just know that we
+have seen these rallies in the past and
+there are times where it wasn't over
+yet.
+When looking at moving averages, it was
+okay. like when looking at uh things
+like the 200 day moving average, it was
+um
+but in 2019, which we've made the case
+for a comparison, you know, you can see
+that we we had this big spike up only to
+come right back down. So, I think what I
+would be looking for in order to like
+try to pivot one way or the other is at
+some point, you know, Bitcoin will
+retrace something, right? And you can
+see that when it retraced in 2019, it
+was unable to hold the 200 day as
+support. It tried to hold it for a
+couple of weeks, but it was unable to in
+2023.
+In 2023, we did hold the 200 day as
+support. You see that we can we clearly
+held it as support. Um, so that's that's
+arguably what I would be sort of looking
+at here is whenever you do get the
+retrace, are we able to stay above the
+200 day moving average over the next
+couple of weeks? In one week, anything
+can happen, right? I mean, we saw that
+in 2019. We saw it in 2022. Bitcoin
+rallying up 20% basically in a single in
+three or four days. We've seen that
+before. What's important is what happens
+over the next say two weeks. And if
+Bitcoin is still holding above the 200
+day moving average in say a couple more
+weeks, then I would argue at that point
+the odds really start to go up that that
+the low would be in. But at this point,
+it's just too early to know. Like it's
+too early to know for sure given the
+context of what we've seen previously.
+But those are my thoughts. If you guys
+like the content, make sure you
+subscribe, give the video a thumbs up.
+Again, check out the sale on into the
+cryptoverse premium. And if you want to
+go to the conference, uh again, check it
+out. Ticket prices are going to go up on
+September 1st and the conference will be
+November 20th through the 22nd. Thank
+you guys for tuning in. Subscribe. I'll
+see you guys next time.
