@@ -103,3 +103,30 @@ N1 está hecho. Lo que hace falta ahora **no es otro backtest, es replicar este 
 definición de régimen** (p. ej. 200W MA, o la clasificación de 4 regímenes de
 `framework_direccion.md §C`) para ver si el resultado aguanta o era un artefacto de usar la TMM.
 Un resultado que solo existe con una definición no es un resultado.
+
+
+---
+
+## Ampliación (21-ago-2026) — qué separa los 3 fallos de los 11 aciertos
+
+Pregunta que surgió operando: si recuperar el STH cost basis en bear aguantó 11 de 14 veces,
+**¿hay algo que distinga las 3 que fallaron?** Sí, y es limpio: **si además recupera la True
+Market Mean.**
+
+| Recuperación del STH CB en bear | n | Aguantó | Mediana +8 sem |
+|---|---:|---:|---:|
+| **También tomó la TMM** (≤4 semanas) | 7 | **7 de 7** | **+34,1%** |
+| **Se quedó bajo la TMM** | 7 | 4 de 7 | +8,0% |
+
+**Los 3 fallos —2015-03, 2018-09, 2022-11— están todos en la segunda fila.** Ninguno tomó la TMM.
+
+(Se excluye del recuento el evento del 19-ago-2026, que es el actual y aún no tiene 8 semanas
+por delante. Contarlo inflaría la fila de abajo con un resultado que todavía no existe.)
+
+**Cómo se usa:** la TMM es la línea. Mientras el precio se quede debajo, la base histórica de
+una recuperación del STH CB es 4 de 7 — floja, y con todos los fracasos dentro. En cuanto la
+toma **en cierre**, la muestra dice 7 de 7 y hay que dejar de pelearse con el movimiento.
+
+⚠️ n=7 y n=7. Es un indicio para colocar una invalidación, **no** una probabilidad. Y ojo con la
+precisión: el test mide **cierres diarios**, no toques intradía. Estar por encima unas horas no
+es haberla tomado.
