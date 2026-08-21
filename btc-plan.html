@@ -157,6 +157,7 @@
   <div class="sechead"><h2 id="hPh"></h2><span class="h2sub" id="hPhSub"></span></div>
   <div class="card phcard">
     <div class="phbtns" id="phBtns"></div>
+    <div class="phbtns" id="phModelBtns"></div>
     <div id="phaseChart"></div>
     <div class="phnote" id="phaseNote"></div>
   </div>
@@ -350,7 +351,23 @@ const ROAD0=ROAD[0].s; // el roadmap arranca en el DCA (el techo anterior ya pas
 function roadPhaseNow(){for(const r of ROAD)if(now>=r.s&&now<r.e)return r.key;return now<ROAD0?"accum":"sell";}
 
 let dcaStartTs=null, ladderTouch={}; // rellenado tras cargar precios
-let PH_MODE="todos", PH_D=null, PH_XS=null,PH_YS=null,PH_BM=null,PH_M2=null,PH_BOUND=false,PH_YLOCK=false;
+let PH_MODE="todos", PH_D=null, PH_XS=null,PH_YS=null,PH_BM=null,PH_M2=null,PH_BOUND=false,PH_YLOCK=false,PH_MODEL_EXTRA=[];
+let PH_MODEL_ON=new Set(), PH_MODEL_DATA=null, PH_MODEL_CARGANDO=false;
+try{const g=localStorage.getItem("phModels");if(g)PH_MODEL_ON=new Set(JSON.parse(g));}catch(e){}
+const PH_MODELS=[
+  {k:"True Mean Price", id:"tmm",  es:"True Market Mean", en:"True Market Mean", c:"#9b8cff",
+   ayuda:{es:"Coste medio del supply ACTIVO. Glassnode la usa como la línea divisoria bull/bear.",
+          en:"Cost basis of ACTIVE supply. Glassnode uses it as the bull/bear dividing line."}},
+  {k:"STH Cost Basis",  id:"sth",  es:"STH cost basis",   en:"STH cost basis",   c:"#f2a33f",
+   ayuda:{es:"Coste medio de los holders de <155 días. La frontera táctica.",
+          en:"Cost basis of holders under 155 days. The tactical frontier."}},
+  {k:"LTH Cost Basis",  id:"lth",  es:"LTH cost basis",   en:"LTH cost basis",   c:"#2fc39b",
+   ayuda:{es:"Coste medio de los holders de largo plazo.",
+          en:"Cost basis of long-term holders."}},
+  {k:"Realised Price",  id:"rp",   es:"Realized price",   en:"Realized price",   c:"#f87171",
+   ayuda:{es:"Coste medio de TODO el supply. Suelo estructural del ciclo.",
+          en:"Cost basis of ALL supply. Structural cycle floor."}},
+];
 
 function render(){
   const t=T[LANG];
@@ -579,9 +596,61 @@ function bandShapes(mode){const L=lmecIntervals(),C=cowenIntervals(),P=patronInt
     ...rectsFromIv(ivSubtract(lmecSell,sellOverlap),"rgba(242,163,63,0.11)"),...rectsFromIv(ivSubtract(cowenSell,sellOverlap),"rgba(242,163,63,0.11)"),
     ...rectsFromIv(buy.twoOnly,"rgba(34,211,153,0.32)"),...rectsFromIv(buy.abc,"rgba(250,204,21,0.45)"),...rectsFromIv(sellOverlap,"rgba(248,113,113,0.34)")];}
 function weeklyResample(prices){const t=[],c=[];let bs=null,bc,bt;for(const[ms,p]of prices){if(bs==null){bs=ms;bc=p;bt=ms;continue;}if(ms-bs>=WK){t.push(bt);c.push(bc);bs=ms;bc=p;bt=ms;}else{bc=p;bt=ms;}}if(bs!=null){t.push(bt);c.push(bc);}return{t,c};}
+/* ── modelos on-chain sobre el precio (escalera de cost basis) ─────────────────────────────
+   La serie viene de data/checkonchain/pricing__pricing_costbasisoriginals.json, que son 17
+   años de datos DIARIOS y ~820 KB. Por eso se carga PEREZOSAMENTE: solo la primera vez que
+   se enciende un modelo. Quien no los use no paga el peso.
+   Se guarda qué modelos están encendidos en localStorage: la elección sobrevive al recargar. */
+async function phCargarModelos(){
+  if(PH_MODEL_DATA||PH_MODEL_CARGANDO)return PH_MODEL_DATA;
+  PH_MODEL_CARGANDO=true;
+  try{
+    const r=await fetch("data/checkonchain/pricing__pricing_costbasisoriginals.json",{cache:"force-cache"});
+    if(!r.ok)throw new Error(r.status);
+    const j=await r.json();
+    // Se pasa a milisegundos una sola vez: alinear con el eje del gráfico se hace muchas veces.
+    PH_MODEL_DATA={ms:j.fechas.map(f=>Date.parse(f)),series:j.series};
+  }catch(e){PH_MODEL_DATA={ms:[],series:{}};}   // sin datos, los botones se desactivan solos
+  PH_MODEL_CARGANDO=false;
+  return PH_MODEL_DATA;
+}
+
+/* Alinea una serie DIARIA al eje SEMANAL del gráfico: para cada x, el último valor conocido
+   en esa fecha o antes. Sin esto las dos rejillas no casan y Plotly dibuja escalones. */
+function phAlinear(clave,xs){
+  const D=PH_MODEL_DATA; if(!D||!D.series[clave])return null;
+  const v=D.series[clave],out=new Array(xs.length).fill(null);
+  let j=0,ultimo=null;
+  for(let i=0;i<xs.length;i++){
+    const t=Date.parse(xs[i]);
+    while(j<D.ms.length&&D.ms[j]<=t){const x=v[j];if(x!=null&&x>0)ultimo=x;j++;}
+    out[i]=ultimo;
+  }
+  return out;
+}
+
+function renderPhModelBtns(){
+  const box=$("#phModelBtns"); if(!box)return;
+  const hay=PH_MODEL_DATA&&PH_MODEL_DATA.ms.length;
+  box.innerHTML=`<span class="phbtn" style="border:0;cursor:default;color:var(--muted);font-weight:600">`+
+    (LANG==="es"?"modelos on-chain:":"on-chain models:")+`</span>`+
+    PH_MODELS.map(m=>{
+      const off=(PH_MODEL_DATA&&!hay)?" disabled style=\"opacity:.35;cursor:not-allowed\"":"";
+      return `<button class="phbtn ${PH_MODEL_ON.has(m.id)?"on":""}" data-mdl="${m.id}"`+
+        ` title="${m.ayuda[LANG]||m.ayuda.es}"${off}>`+
+        `<span style="color:${m.c}">■</span> ${m[LANG]||m.es}</button>`;}).join("");
+  box.querySelectorAll("[data-mdl]").forEach(b=>b.addEventListener("click",async()=>{
+    const id=b.dataset.mdl;
+    PH_MODEL_ON.has(id)?PH_MODEL_ON.delete(id):PH_MODEL_ON.add(id);
+    try{localStorage.setItem("phModels",JSON.stringify([...PH_MODEL_ON]));}catch(e){}
+    if(PH_MODEL_ON.size&&!PH_MODEL_DATA){b.textContent="…";await phCargarModelos();}
+    renderPhModelBtns(); if(PH_D)renderPhaseChart(PH_D);
+  }));
+}
 function renderPhBtns(){const t=T[LANG],modes=["lmec","cowen","patron","todos"];const box=$("#phBtns");if(!box)return;
   box.innerHTML=modes.map(m=>`<button class="phbtn ${m===PH_MODE?"on":""}" data-ph="${m}">${t.phBtns[m]}</button>`).join("");
-  box.querySelectorAll(".phbtn").forEach(b=>b.addEventListener("click",()=>{PH_MODE=b.dataset.ph;renderPhBtns();if(PH_D)renderPhaseChart(PH_D);}));}
+  box.querySelectorAll(".phbtn").forEach(b=>b.addEventListener("click",()=>{PH_MODE=b.dataset.ph;renderPhBtns();if(PH_D)renderPhaseChart(PH_D);}));
+  renderPhModelBtns();}
 function renderPhaseChart(D){
   if(!window.Plotly||!D||!D.c.length){const el=$("#phaseChart");if(el)el.style.display="none";return;}
   const t=T[LANG],xs=D.t.map(iso),s20=sma(D.c,20),e21=ema(D.c,21),s200=sma(D.c,200);
@@ -593,6 +662,16 @@ function renderPhaseChart(D){
     {x:xs,y:bm,type:"scatter",mode:"lines",name:"BMSB",line:{color:"#e8a13a",width:1,dash:"dot"}},
     {x:xs,y:m2,type:"scatter",mode:"lines",name:"200W MA",line:{color:"#3fa9f5",width:1,dash:"dash"}},
   ];
+  // Modelos on-chain encendidos. PH_MODEL_EXTRA guarda sus series para que el autoescalado
+  // del eje Y (phAutoY) las tenga en cuenta: si no, al hacer zoom se salen del cuadro.
+  PH_MODEL_EXTRA=[];
+  if(PH_MODEL_DATA)for(const m of PH_MODELS){
+    if(!PH_MODEL_ON.has(m.id))continue;
+    const y=phAlinear(m.k,xs); if(!y)continue;
+    PH_MODEL_EXTRA.push(y);
+    traces.push({x:xs,y,type:"scatter",mode:"lines",name:m[LANG]||m.es,
+      line:{color:m.c,width:1.2},hovertemplate:"%{x}<br>$%{y:,.0f}<extra>"+(m[LANG]||m.es)+"</extra>"});
+  }
   const xEnd=iso(Math.max(D.t[D.t.length-1],Date.parse("2027-07-01")));
   const shapes=bandShapes(PH_MODE);
   LADDER.forEach(o=>shapes.push({type:"line",xref:"paper",x0:0,x1:1,y0:o.lvl,y1:o.lvl,line:{color:"#e8a13a",width:1,dash:"dot"},opacity:.35,layer:"below"})); // órdenes 55/50/45k
@@ -611,7 +690,7 @@ function phAutoY(ev){
   const r0=ev["xaxis.range[0]"],r1=ev["xaxis.range[1]"];if(r0==null||r1==null)return;
   const t0=Date.parse(r0),t1=Date.parse(r1);let lo=Infinity,hi=-Infinity;
   for(let i=0;i<PH_XS.length;i++){const tt=Date.parse(PH_XS[i]);if(tt<t0||tt>t1)continue;
-    for(const arr of[PH_YS,PH_BM,PH_M2]){const v=arr[i];if(v!=null&&v>0){if(v<lo)lo=v;if(v>hi)hi=v;}}}
+    for(const arr of[PH_YS,PH_BM,PH_M2,...PH_MODEL_EXTRA]){const v=arr[i];if(v!=null&&v>0){if(v<lo)lo=v;if(v>hi)hi=v;}}}
   if(!isFinite(lo)||!isFinite(hi)||hi<=0)return;
   PH_YLOCK=true;window.Plotly.relayout(gd,{"yaxis.range":[Math.log10(lo*0.85),Math.log10(hi*1.15)]}).then(()=>{PH_YLOCK=false;});
 }
@@ -654,6 +733,11 @@ async function fetchFullHistory(D){
 function loadScript(u){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=u;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("plotly");}
 (async function(){
+  // Si en la visita anterior quedaron modelos encendidos, se traen EN PARALELO con el precio.
+  // Encadenarlo detrás sumaría su latencia a la del gráfico, y colgarlo del `return` de abajo
+  // haría que una caída de la fuente de precio se llevase también los modelos por delante.
+  const modelosPrecargados = PH_MODEL_ON.size ? phCargarModelos() : null;
+
   // 1) datos — independiente de Plotly
   let W=null;
   try{ W=await fetchWeekly(); W=await fetchFullHistory(W); }catch(e){ W=null; }
@@ -667,6 +751,7 @@ async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.
 
   // 2) Plotly — aparte: si falla, las tablas se ven igual y los gráficos se ocultan solos
   try{await loadPlotly();}catch(e){}
+  if(modelosPrecargados)await modelosPrecargados;
   render(); // órdenes + backtest + gráfica de precio/confluencia (si hay Plotly)
   if(!window.__btResult){const bl=$("#btBody");if(bl)bl.innerHTML=`<div class="btload">${LANG==="es"?"No hay suficientes datos para el backtest.":"Not enough data for the backtest."}</div>`;}
 })();
