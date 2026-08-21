@@ -38,3 +38,25 @@ pesa menos que un report escrito.
 
 Opciones útiles: `--since 20240101` (solo desde una fecha) · `--max N` · `--force` (rehacer).
 Si YouTube da error de cliente, actualiza yt-dlp: es la causa habitual.
+
+## `extraer_senales.py` — prefiltro para auditar a los analistas
+
+Auditar «letra a letra» todo lo que han dicho Cowen, LMEC y Glassnode desde jun-2025 son 397
+documentos y ~6,3M de caracteres: unos 2M de tokens si se leen enteros. Y la mayor parte de un
+transcript de YouTube es saludo, publicidad y despedida.
+
+Este script **lee todos los caracteres de todos los documentos** —por eso sigue siendo letra a
+letra— y conserva solo las frases que llevan **un número Y un término de indicador o de acción**,
+con una frase de contexto a cada lado. Esa es la parte auditable: un umbral sin número no es
+falsable, y un número sin indicador no dice nada.
+
+Reducción medida el 21-ago-2026: **6,3M → 1,33M caracteres (21%)**. Por analista: Cowen 21%,
+LMEC 9%, WoC 45% — el WoC conserva mucho más porque es texto escrito y denso, sin relleno.
+
+```bash
+python3 agentes/tools/extraer_senales.py \
+  --carpeta agentes/cowen/yt-transcripts --desde 20250601 --salida /tmp/cowen.json
+```
+
+Sale un JSON `[{doc, pasajes[]}]` listo para repartir entre agentes por ventanas temporales.
+**No sustituye al criterio**: decide qué merece leerse, no qué significa.
