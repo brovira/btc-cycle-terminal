@@ -95,7 +95,27 @@ def decisiones():
                 continue
             out.append({"id": f"{m}-{verbo}", "fecha": f if f and f != "?" else None,
                         "que": f"{verbo} {m}", "fuente": "declarada"})
+    # Operativa que no deja posición en ningún fichero de LP —perps, spot, coberturas—.
+    # Se declara en el propio diario, así que la decisión y su registro son la misma cosa:
+    # cuenta para el total y se cubre a sí misma. Sin esto, todo lo que no sea un LP de Orca
+    # quedaba fuera del recuento, que era un agujero grande.
+    conocidas = {d["id"] for d in out}
+    for e in leer("data/journal.json").get("entries", []):
+        if str(e.get("type", "")).lower() not in ("venta", "compra", "loop"):
+            continue
+        f = str(e.get("date", ""))[:10]
+        if f < CICLO or any(abs_dias(f, d["fecha"]) <= 3 for d in out if d["fecha"]):
+            continue                       # ya cubierta por una posición conocida
+        out.append({"id": e["id"], "fecha": f, "que": e.get("action", "operativa")[:40],
+                    "fuente": "diario"})
     return sorted(out, key=lambda d: (d["fecha"] or "9999"))
+
+
+def abs_dias(a, b):
+    try:
+        return abs((datetime.date.fromisoformat(a) - datetime.date.fromisoformat(b)).days)
+    except (ValueError, TypeError):
+        return 999
 
 
 def casa(dec, entradas):
@@ -118,7 +138,14 @@ def casa(dec, entradas):
 
 
 def en_plazo(entrada):
-    """¿Se escribió ANTES de conocer el resultado? Sin sello, no cuenta."""
+    """¿Se escribió ANTES de conocer el resultado? Sin sello, no cuenta.
+
+    Un sello puesto por algo que no sea `api/journal.js` (p. ej. una sesión de Claude
+    escribiendo directa al repo) lleva `registrado_por` y SÍ cuenta —el testigo entonces es
+    la marca de tiempo del commit de git, que es de un tercero— pero se contabiliza aparte.
+    Si la métrica mezclara los dos orígenes dejaría de ser auditable, que es justo lo que
+    hace inútil a un número.
+    """
     if not entrada or entrada.get("reconstruido"):
         return False
     reg = entrada.get("registrado")
@@ -171,8 +198,14 @@ def main():
         print(f"  {(f['fecha'] or '?'):11s} {f['que'][:28]:28s} {f['fuente']:10s} "
               f"{'sí' if f['cubierta'] else 'NO':8s} {'sí' if f['en_plazo'] else '—':9s}")
 
+    agente = sum(1 for f in filas if f["en_plazo"]
+                 and (casa(f, entradas) or {}).get("registrado_por"))
     print(f"\n  COBERTURA          {cub}/{n}  ({cub/n*100:.0f}%)   ← se arregla reconstruyendo")
-    print(f"  REGISTRO EN PLAZO  {plazo}/{n}  ({plazo/n*100:.0f}%)   ← solo se arregla hacia adelante\n")
+    print(f"  REGISTRO EN PLAZO  {plazo}/{n}  ({plazo/n*100:.0f}%)   ← solo se arregla hacia adelante")
+    if agente:
+        print(f"                     de esos, {agente} con sello de agente y no del servidor "
+              f"(testigo: el commit de git)")
+    print()
     if plazo < n:
         print("  El objetivo es 10 de 10 en la SEGUNDA. La primera solo dice que no se ha perdido")
         print("  el rastro; la segunda dice que el porqué se escribió sin saber el resultado.")
