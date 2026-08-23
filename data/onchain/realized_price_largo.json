@@ -3,7 +3,7 @@
   "source": "coinmetrics-community (derivado)",
   "formula": "realized price DERIVADO: (CapMrktCurUSD/CapMVRVCur)/SplyCur",
   "validado_vs_bgeometrics": "2025-01-01: 41.014 vs 41.014 (desv\u00edo 0,0%)",
-  "points": 5712,
+  "points": 5713,
   "series": [
     {
       "date": "2011-01-01",
@@ -22852,6 +22852,10 @@
     {
       "date": "2026-08-21",
       "value": 52812.5613
+    },
+    {
+      "date": "2026-08-22",
+      "value": 52833.5157
     }
   ]
 }
