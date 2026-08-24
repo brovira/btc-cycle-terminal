@@ -115,7 +115,36 @@
         "fng": 31,
         "halv_week": 121.4
       }
+    },
+    {
+      "date": "2026-08-24",
+      "price": 77477.03,
+      "lit": 1,
+      "tot": 4,
+      "action": "Esperar dip a nivel",
+      "stances": {
+        "lmec": "in",
+        "cowen": "in",
+        "ocm": "dca"
+      },
+      "signals": {
+        "price_le_200w": false,
+        "rsi_34_50": false,
+        "mvrv_green": null,
+        "price_le_realized": null,
+        "fear": false,
+        "cycle_window": true
+      },
+      "metrics": {
+        "bmsb": 70314.76,
+        "ma200": 64575.71,
+        "realized": null,
+        "mvrv_z": null,
+        "rsi": 56.3,
+        "fng": 73,
+        "halv_week": 122.4
+      }
     }
   ],
-  "updated_at": "2026-08-17T09:38:53.669481Z"
+  "updated_at": "2026-08-24T09:44:44.558278Z"
 }
