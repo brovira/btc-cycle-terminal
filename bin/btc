@@ -1,0 +1,347 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+btc — CLI de la terminal de ciclo.
+
+NO es el "Glassnode CLI": ese no existe (ni oficial, ni en npm, ni en PyPI).
+Esto lee los datos que YA ingiere este repo (bitcoin-data.com, checkonchain,
+coinmetrics) y los presenta con los umbrales que salieron de la auditoria de
+agentes/auditoria/. Sin dependencias: solo stdlib.
+
+Uso:  bin/btc [comando]
+"""
+import json, os, sys, argparse
+from datetime import date, datetime
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CO   = os.path.join(ROOT, "data", "checkonchain")
+ON   = os.path.join(ROOT, "data", "onchain")
+
+# ─── color, solo si hay tty ───────────────────────────────────────────────────
+_tty = sys.stdout.isatty() and os.environ.get("NO_COLOR") is None
+def c(s, code): return f"\033[{code}m{s}\033[0m" if _tty else str(s)
+def bold(s):  return c(s, "1")
+def dim(s):   return c(s, "2")
+def red(s):   return c(s, "31")
+def green(s): return c(s, "32")
+def yell(s):  return c(s, "33")
+def cyan(s):  return c(s, "36")
+
+# ─── UMBRALES AUDITADOS ───────────────────────────────────────────────────────
+# Cada uno con su origen. Si no esta citado, no esta aqui.
+UMBRALES_RATIO = [
+    (0.5, "agotamiento vendedor ciclico (historicamente se toca ANTES del suelo)",
+     "woc_2026-05_a_2026-08.md · 19-ago-2026"),
+    (1.0, "linea de equilibrio: >1 domina toma de beneficios, <1 domina realizacion de perdidas",
+     "woc_2026-05_a_2026-08.md · 20-may-2026"),
+    (2.0, "cambio de regimen. Por debajo, cualquier subida es RALLY LOCAL",
+     "woc_2026-05_a_2026-08.md · reafirmado 5 veces"),
+]
+FUNDING_NEUTRAL = 0.1095   # 0,01% / 8h = 10,95% anualizado (linea neutral de intercambio)
+
+MAX_EDAD_DIAS = 3
+
+# ─── carga ────────────────────────────────────────────────────────────────────
+def _load(path):
+    if not os.path.exists(path):
+        sys.exit(red(f"falta {os.path.relpath(path, ROOT)} — corre primero: bin/btc actualizar"))
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+def escalera():
+    """Serie con toda la escalera de cost basis en un solo fichero."""
+    return _load(os.path.join(CO, "pricing__pricing_costbasisoriginals.json"))
+
+def edad(fecha_str):
+    try:
+        d = datetime.strptime(fecha_str, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+    return (date.today() - d).days
+
+def sello(fecha_str):
+    """Frescura visible SIEMPRE. Un 'no pude mirar' no puede parecerse a un 'todo bien'."""
+    n = edad(fecha_str)
+    if n is None:  return dim(f"dato de {fecha_str}")
+    if n <= 1:     return dim(f"dato de {fecha_str}")
+    if n <= MAX_EDAD_DIAS: return yell(f"dato de {fecha_str} ({n}d de retraso)")
+    return red(bold(f"!! DATO VIEJO: {fecha_str} ({n} dias) — corre bin/btc actualizar"))
+
+def eur(x, dec=0):
+    """Formato es-ES: punto para miles, coma para decimales."""
+    return f"{x:,.{dec}f}".replace(",", "\x00").replace(".", ",").replace("\x00", ".")
+
+def spot():
+    """Precio en vivo, opcional. Si no hay red, devolvemos None y seguimos."""
+    try:
+        import urllib.request
+        u = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
+        with urllib.request.urlopen(u, timeout=8) as r:
+            return json.load(r)["bitcoin"]["usd"]
+    except Exception:
+        return None
+
+# ─── comandos ─────────────────────────────────────────────────────────────────
+def cmd_niveles(args):
+    d = escalera()
+    f = d["fechas"][-1]
+    s = {k: v[-1] for k, v in d["series"].items() if v and v[-1] is not None}
+
+    orden = ["Vaulted Price", "MVRV Mean+2sd", "MVRV Mean+1sd", "True Mean Price",
+             "200DMA", "128DMA", "STH Cost Basis", "Realised Price",
+             "Cointime Price", "LTH Cost Basis"]
+    px = args.spot
+    manual = px is not None
+    if px is None: px = spot()
+
+    print()
+    print(bold("  ESCALERA DE COST BASIS") + "   " + sello(f))
+    if px: print(dim(f"  spot {eur(px)} $ ({'fijado a mano' if manual else 'CoinGecko, en vivo'})"))
+    print()
+
+    filas = sorted(((k, s[k]) for k in orden if k in s), key=lambda t: -t[1])
+    puesto = False
+    for nombre, val in filas:
+        if px and not puesto and val < px:
+            print(f"  {'':>18}  {bold(green('◀── SPOT  ' + eur(px) + ' $'))}")
+            puesto = True
+        marca = ""
+        if nombre == "True Mean Price":
+            marca = cyan("  ← linea bear/bull del marco WoC")
+        elif nombre == "STH Cost Basis":
+            marca = cyan("  ← breakeven compradores <155d")
+        elif nombre == "Realised Price":
+            marca = cyan("  ← suelo natural del bear")
+        print(f"  {nombre:>18}  {eur(val):>10} $" + marca)
+    if px and not puesto:
+        print(f"  {'':>18}  {bold(green('◀── SPOT  ' + eur(px) + ' $'))}")
+
+    if not px:
+        print()
+        print("  " + yell("Sin precio en vivo (sin red o CoinGecko caido)."))
+        print("  " + dim("La escalera es valida; solo falta situar el spot. Pasa --spot N para fijarlo."))
+    if px:
+        tmm = s.get("True Mean Price"); sth = s.get("STH Cost Basis")
+        print()
+        if tmm and sth:
+            if px < sth and px < tmm:
+                print("  " + red(bold("REGIMEN: capitulacion")) +
+                      dim(" — spot y STH CB por debajo de la TMM"))
+            elif px < tmm:
+                print("  " + yell(bold("REGIMEN: bajista")) + dim(" — por debajo de la TMM"))
+            else:
+                print("  " + green(bold("REGIMEN: por encima de la TMM")) +
+                      dim(" — el marco exige semanas/meses de consolidacion para confirmarlo"))
+            print(dim(f"  distancia a TMM {(px/tmm-1)*100:+.1f}%   ·   a STH CB {(px/sth-1)*100:+.1f}%"))
+    print()
+
+def _ratio_series():
+    """checkonchain publica ESTA serie como ln(ratio), partida en trazas +ve/-ve.
+    Validado: SMA90 del 19-ago-2026 = 0,762 contra el 0,75 que publico Glassnode
+    ese mismo dia (woc_2026-05_a_2026-08.md). log10 daria 0,598 — descartado."""
+    import math
+    d = _load(os.path.join(CO, "realised__realisedpnl_ratio_all.json"))
+    pos = d["series"].get("Realised Profit/Loss Ratio (+ve)", [])
+    neg = d["series"].get("Realised Profit/Loss Ratio (-ve)", [])
+    ln  = [(p or 0) + (n or 0) for p, n in zip(pos, neg)]
+    return d["fechas"], [math.e ** x for x in ln]
+
+def _sma(serie, w):
+    if len(serie) < w: return None
+    return sum(serie[-w:]) / w
+
+def cmd_ratio(args):
+    fechas, r = _ratio_series()
+    f = fechas[-1]
+    sma90, sma30, hoy = _sma(r, 90), _sma(r, 30), r[-1]
+
+    print()
+    print(bold("  REALIZED PROFIT/LOSS RATIO") + "   " + sello(f))
+    print(dim("  Los umbrales del marco son sobre SMA, no sobre la lectura diaria."))
+    print()
+    print(f"    diario           {hoy:>6.2f}   {dim('(ruido; no se compara con los umbrales)')}")
+    print(f"    SMA 30d          {sma30:>6.2f}")
+    print(f"    {bold('SMA 90d')}          {bold(cyan(f'{sma90:>6.2f}'))}   {dim('← la que mandan los umbrales')}")
+    print()
+    for u, sig, src in UMBRALES_RATIO:
+        estado = green("✓ POR ENCIMA") if sma90 >= u else red("✗ por debajo")
+        print(f"    {u:>4}   {estado}   {sig}")
+        print(dim(f"           fuente: {src}"))
+    print()
+    if sma90 < 0.5:
+        print("  " + green(bold("SMA90 por debajo de 0,5: la condicion de agotamiento vendedor SE CUMPLE.")))
+    elif sma90 < 2.0:
+        print("  " + yell(f"SMA90 en {sma90:.2f}: ni agotamiento vendedor (<0,5) ni cambio de regimen (>2)."))
+        print("  " + dim("Segun el marco, cualquier subida es rally local dentro del proceso de suelo."))
+    else:
+        print("  " + green(bold("SMA90 por encima de 2: el marco admitiria cambio de regimen.")))
+    print()
+
+def cmd_funding(args):
+    d = _load(os.path.join(CO, "derivatives__derivatives_futures_fundingrate.json"))
+    f = d["fechas"][-1]
+    pos = d["series"].get("Funding Rate (+ve)", [])
+    neg = d["series"].get("Funding Rate (-ve)", [])
+    val = (pos[-1] or 0) + (neg[-1] or 0)
+    anual = val * 100
+
+    print()
+    print(bold("  FUNDING (agregado checkonchain)") + "   " + sello(f))
+    print()
+    print(f"    anualizado       {bold(cyan(f'{anual:+.2f}%'))}")
+    print(dim(f"    linea neutral    {FUNDING_NEUTRAL*100:.2f}%   (0,01% / 8h)"))
+    print()
+    if anual > FUNDING_NEUTRAL * 100:
+        print("  " + yell(f"Por ENCIMA de neutro: los largos pagan. Mercado inclinado en largo."))
+        print("  " + dim("Si vas corto, cobras. Lecturas >25-30% = largos apinados y rebote fragil."))
+    elif anual < 0:
+        print("  " + yell("NEGATIVO: los cortos pagan a los largos. Mercado inclinado en corto."))
+    else:
+        print("  " + dim("Por debajo de neutro: el libro esta desapalancado."))
+
+    if args.size:
+        lev = args.lev or 1.0
+        margen = args.size / lev
+        meses = args.meses
+        coste = args.size * (anual/100) * (meses/12)
+        print()
+        print(bold(f"  TU POSICION  ·  nocional {eur(args.size)} $  ·  {lev:g}x  ·  {meses:g} meses"))
+        print(f"    margen                {eur(margen)} $")
+        print(f"    funding {meses:g} meses    {eur(abs(coste),2)} $  "
+              f"({'cobras' if anual>0 else 'pagas'} si vas corto / "
+              f"{'pagas' if anual>0 else 'cobras'} si vas largo)")
+        print(f"    sobre tu margen       {abs(coste)/margen*100:.1f}%")
+        print()
+        print("    " + bold(f"breakeven = funding x tiempo = {abs(anual)*(meses/12):.2f}% de movimiento"))
+        print("    " + dim("(independiente del apalancamiento: el 3x multiplica coste Y ganancia)"))
+    print()
+
+def cmd_urpd(args):
+    """Los buckets de $1.000-1.500 son monedas de la era Satoshi (perdidas, no negociables)
+    y aplastan la escala. Por defecto acotamos a una banda alrededor del precio."""
+    d = _load(os.path.join(CO, "urpd__urpd.json"))
+    dist = d.get("distribuciones", {})
+    k = next((x for x in dist if "Profit" in x or "Total" in x), None)
+    if not k: sys.exit(red("no encuentro la distribucion"))
+
+    ancla = args.spot or spot()
+    if ancla is None:
+        try: ancla = escalera()["series"]["STH Cost Basis"][-1]
+        except Exception: ancla = None
+    lo = args.min if args.min is not None else (ancla * 0.45 if ancla else 20000)
+    hi = args.max if args.max is not None else (ancla * 1.60 if ancla else 200000)
+
+    pares = [(x, y) for x, y in zip(dist[k]["x"], dist[k]["y"]) if y and lo <= x <= hi]
+    if not pares: sys.exit(red(f"nada entre {eur(lo)} y {eur(hi)} $"))
+    top = sorted(pares, key=lambda t: -t[1])[:args.n]
+    top.sort(key=lambda t: -t[0])
+
+    print()
+    print(bold("  URPD — donde esta la oferta") + dim(f"   ({k})"))
+    print(dim(f"  banda {eur(lo)}–{eur(hi)} $ · top {args.n} buckets · "
+              f"excluida la oferta antigua que aplasta la escala"))
+    print()
+    mx = max(y for _, y in top)
+    for x, y in top:
+        lado = ""
+        if ancla: lado = dim("  resistencia") if x > ancla else dim("  soporte")
+        barra = "█" * max(1, int(y / mx * 30))
+        print(f"    {eur(x):>9} $  {cyan(barra):<30} {eur(y):>10}" + lado)
+    if ancla: print(dim(f"\n  referencia: {eur(ancla)} $"))
+    print()
+
+def cmd_serie(args):
+    nombre = args.nombre
+    p1 = os.path.join(ON, f"{nombre}.json")
+    if os.path.exists(p1):
+        d = _load(p1); s = d["series"]
+        print(); print(bold(f"  {d['metric']}") + "   " + sello(s[-1]["date"]))
+        print(dim(f"  {d['source']}")); print()
+        for pt in s[-args.n:]:
+            print(f"    {pt['date']}   {eur(pt['value'], 2):>16}")
+        print(); return
+    cands = [f for f in os.listdir(CO) if nombre.lower() in f.lower() and not f.startswith("_")]
+    if not cands: sys.exit(red(f"no encuentro '{nombre}'. Prueba: bin/btc ls"))
+    d = _load(os.path.join(CO, cands[0]))
+    print(); print(bold(f"  {cands[0]}") + "   " + sello(d["fechas"][-1])); print()
+    for k, v in d.get("series", {}).items():
+        ult = next((x for x in reversed(v) if x is not None), None)
+        if ult is not None: print(f"    {k:<42} {eur(ult, 4):>18}")
+    print()
+
+def cmd_ls(args):
+    print(); print(bold("  bitcoin-data.com  (serie diaria limpia)")); print()
+    for f in sorted(os.listdir(ON)):
+        if f.endswith(".json") and not f.startswith("_"):
+            print(f"    {f[:-5]}")
+    print(); print(bold("  checkonchain  (mas ancho, incluye derivados/ETF/URPD)")); print()
+    for f in sorted(os.listdir(CO)):
+        if f.endswith(".json") and not f.startswith("_"):
+            print(f"    {f[:-5]}")
+    print(); print(dim("  bin/btc serie <nombre>  para cualquiera de estos")); print()
+
+def cmd_frescura(args):
+    print(); print(bold("  FRESCURA DE LOS DATOS")); print()
+    peor = 0
+    for carpeta, etiqueta in ((ON, "onchain"), (CO, "checkonchain")):
+        for fn in sorted(os.listdir(carpeta)):
+            if not fn.endswith(".json") or fn.startswith("_"): continue
+            try:
+                d = json.load(open(os.path.join(carpeta, fn), encoding="utf-8"))
+            except Exception:
+                print(f"    {red('ILEGIBLE')}  {etiqueta}/{fn}"); peor = 99; continue
+            f = d["series"][-1]["date"] if "series" in d and isinstance(d["series"], list) \
+                else (d.get("fechas") or [None])[-1]
+            if not f:
+                print(f"    {dim('snapshot')}  {etiqueta}/{fn[:-5]}"); continue
+            n = edad(f) or 0; peor = max(peor, n)
+            col = green if n <= 1 else (yell if n <= MAX_EDAD_DIAS else red)
+            print(f"    {col(f'{n:>3}d'):<14} {etiqueta}/{fn[:-5]}")
+    print()
+    if peor > MAX_EDAD_DIAS:
+        print("  " + red(bold(f"El dato mas viejo tiene {peor} dias. Corre: bin/btc actualizar")))
+        sys.exit(1)
+    print("  " + green("Todo dentro de plazo.")); print()
+
+def cmd_actualizar(args):
+    import subprocess
+    for script in ("ingesta/fetch_onchain.py", "ingesta/checkonchain.py"):
+        print(bold(f"\n→ {script}"))
+        r = subprocess.run([sys.executable, os.path.join(ROOT, script)], cwd=ROOT)
+        if r.returncode != 0:
+            print(red(f"  {script} salio con codigo {r.returncode}"))
+    print()
+
+# ─── entrada ──────────────────────────────────────────────────────────────────
+def main():
+    p = argparse.ArgumentParser(prog="btc", description="Terminal de ciclo BTC — datos locales del repo.")
+    sub = p.add_subparsers(dest="cmd")
+
+    ni = sub.add_parser("niveles", help="escalera de cost basis y donde cae el spot (por defecto)")
+    ni.add_argument("--spot", type=float, help="fija el precio a mano si no hay red")
+    sub.add_parser("ratio",   help="Realized P/L Ratio contra los umbrales auditados 0,5 / 1 / 2")
+    fu = sub.add_parser("funding", help="funding anualizado; con --size calcula coste y breakeven")
+    fu.add_argument("--size",  type=float, help="nocional en $ (no tu margen)")
+    fu.add_argument("--lev",   type=float, default=1.0, help="apalancamiento (def. 1)")
+    fu.add_argument("--meses", type=float, default=6.0, help="horizonte en meses (def. 6)")
+    ur = sub.add_parser("urpd", help="distribucion de oferta: donde estan los muros")
+    ur.add_argument("--spot", type=float, help="precio de referencia")
+    ur.add_argument("--min",  type=float, help="limite inferior de la banda")
+    ur.add_argument("--max",  type=float, help="limite superior de la banda")
+    ur.add_argument("-n",     type=int, default=14, help="cuantos buckets (def. 14)")
+    se = sub.add_parser("serie", help="cualquier metrica por nombre")
+    se.add_argument("nombre"); se.add_argument("-n", type=int, default=12, help="ultimos N puntos")
+    sub.add_parser("ls",         help="lista todas las metricas disponibles")
+    sub.add_parser("frescura",   help="edad de cada fichero; sale con 1 si algo esta viejo")
+    sub.add_parser("actualizar", help="re-ingesta desde las fuentes")
+
+    a = p.parse_args()
+    if not hasattr(a, "spot"): a.spot = None
+    {None: cmd_niveles, "niveles": cmd_niveles, "ratio": cmd_ratio, "funding": cmd_funding,
+     "urpd": cmd_urpd, "serie": cmd_serie, "ls": cmd_ls, "frescura": cmd_frescura,
+     "actualizar": cmd_actualizar}[a.cmd](a)
+
+if __name__ == "__main__":
+    try: main()
+    except KeyboardInterrupt: sys.exit(130)
+    except BrokenPipeError: sys.exit(0)
