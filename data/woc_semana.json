@@ -1,11 +1,11 @@
 {
   "_como_se_actualiza": "AUTOMÁTICO desde jul-2026: ingesta/sync_woc.py lee la recomendación del pipeline semanal del repo privado (DeFi-Tracker) y la traduce a este formato. Workflow: sync-woc.yml, jueves 14:00 UTC (1h después del pipeline).",
   "_pendiente_agente": "`fiabilidad_tipo` se asigna por heurística de palabras clave y `cambios_de_fiabilidad` queda vacío: eso lo calibra el agente glassnode_tactico contra track_record.md.",
-  "updated": "2026-08-19",
-  "woc_fecha": "2026-08-19",
-  "woc_titulo": "Yields Anchor, Capitulation Grinds",
+  "updated": "2026-08-26",
+  "woc_fecha": "2026-08-26",
+  "woc_titulo": "Squeeze into Supply",
   "fuentes": [
-    "2026-08-19-the-week-onchain-week-33-2026.md",
+    "2026-08-26-the-week-onchain-week-34-2026.md",
     "recomendaciones.jsonl (pipeline semanal, DeFi-Tracker)"
   ],
   "resumen": "Pendiente de análisis (sin API key o error de API).",
