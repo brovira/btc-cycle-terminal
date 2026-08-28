@@ -2,6 +2,16 @@
 
 > Postura direccional/de ciclo extraída de sus vídeos, evaluada por precio real (CoinGecko) a 7/30/90d. Lo último arriba. No es asesoramiento financiero.
 
+## 2026-08-20 · 🔥 Este Vídeo Debería SER DE PAGO 🔥
+
+**Sesgo:** pendiente  ·  **Fase:** incierto  ·  **Acción:** —  ·  **Confianza:** baja
+
+- **Tesis:** Pendiente de análisis (sin API key). Rellenar en chat.
+- **Niveles:** —
+- **Resultado (precio real):** sin horizonte cumplido aún
+
+---
+
 ## 2026-07-31 · ✅ Aquí Estoy Invirtiendo MUY FUERTE (Oportunidad Muy Clara) ✅
 
 **Sesgo:** pendiente  ·  **Fase:** incierto  ·  **Acción:** —  ·  **Confianza:** baja
