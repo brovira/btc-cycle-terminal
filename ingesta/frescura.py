@@ -227,7 +227,17 @@ def main():
 
     print("\nUn dato caducado se siente igual de convincente que uno fresco.")
     print("No decidas capital con esto hasta arreglarlo.")
-    return 0 if solo_aviso else 1
+
+    if solo_aviso:
+        return 0
+    # DOS códigos distintos a propósito. Si "se rompió la ingesta" y "te faltan deberes"
+    # dan la misma X roja, a la sexta notificación idéntica dejas de mirarlas -- y es
+    # justo entonces cuando un fallo real de datos se cuela sin que nadie lo vea.
+    #   1 = los DATOS están rotos o caducados. Lo arregla la máquina.
+    #   2 = los datos están bien; falta registrar decisiones. Lo arreglas tú.
+    if caducados or ausentes:
+        return 1
+    return 2
 
 
 if __name__ == "__main__":

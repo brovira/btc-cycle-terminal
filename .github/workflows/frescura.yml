@@ -39,7 +39,20 @@ jobs:
         with:
           python-version: "3.12"
       - name: Comprobar frescura
-        run: python ingesta/frescura.py
+        run: |
+          set +e
+          python ingesta/frescura.py
+          codigo=$?
+          set -e
+          # 1 = datos rotos o caducados  -> el workflow FALLA y GitHub avisa.
+          # 2 = datos bien, faltan decisiones por registrar -> queda anotado, NO falla.
+          # Si las dos cosas dieran el mismo rojo, a la sexta notificacion identica
+          # dejarias de mirarlas, y ahi es donde se cuela un fallo real de datos.
+          if [ $codigo -eq 2 ]; then
+            echo "::warning title=Decisiones sin registrar::Los datos estan al dia. Faltan decisiones de capital por registrar (detalle arriba)."
+            exit 0
+          fi
+          exit $codigo
         env:
           # Para leer journal.json y las posiciones del repo privado y comprobar que cada
           # decisión de capital tiene su porqué escrito. Sin el token la comprobación se
