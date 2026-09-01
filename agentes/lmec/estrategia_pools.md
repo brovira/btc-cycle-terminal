@@ -123,3 +123,65 @@ laterales es exactamente el que se rompe cuando vuelve la tendencia.
 **4. La rentabilidad declarada baja al contacto con la realidad:** 83 % y 55 % de APR
 nominal contra *«de media me viene pagando entre un 20 y 30 anual»* por trabajar con rangos
 anchos. La cifra que enseña no es la que cobra.
+
+---
+
+# Filtro propio — antes de entrar en cualquier pool
+
+Nace del caso cbBTC/SOL del 1-sep-2026: dos pools del **mismo par**, una con 64,6 % y
+otra con 31,9 %. La buena era la segunda.
+
+| | A (0,05 %) | B (0,16 %) |
+|---|---|---|
+| Yield/TVL | **64,6 %** | 31,9 % |
+| TVL | $10.608 | $6.877.251 |
+| Volumen 24h | $37.567 | $3.751.077 |
+| Volumen/TVL | 3,54 | **0,545** |
+
+## 1. Test de dilución — ¿ese número sigue siendo tuyo al entrar?
+
+```
+yield_real ≈ yield_mostrado × TVL / (TVL + tu_aporte)
+```
+
+Un yield alto sobre un TVL diminuto **no es tuyo**: es de quien ya está dentro. Si el
+número se hunde al meter tu tamaño, nunca existió para ti.
+
+## 2. Test de enrutamiento — el que de verdad decidió el caso
+
+**Compara los distintos fee tiers del MISMO par.** Si el tier más BARATO mueve MENOS
+volumen, ese pool **no lo está enrutando nadie**: los agregadores calculan impacto de
+precio y mandan el flujo al pool profundo aunque cobre el triple.
+
+Es una trampa de liquidez: no lo enrutan porque es fino, y sigue fino porque no lo
+enrutan. **Añadir capital no lo arregla** — solo te hace dueño de un pool que nadie usa.
+
+## 3. Selección adversa — de quién viene ese volumen
+
+En un pool fino, buena parte del volumen son **arbitrajistas corrigiendo tu precio
+desfasado**. Las comisiones que cobras son la compensación por una pérdida que ya te
+hicieron. Volumen no es lo mismo que demanda.
+
+## 4. Suelo de TVL
+
+LMEC llamaba *«totalmente desconocida»* a una pool de **$91.000**. Por debajo de eso,
+el yield mostrado es ruido. Y cuidado con la fila que delata una tabla rota: en la misma
+lista, `SCP/cbBTC` con **$221** de TVL y **$0** de comisiones aparecía al **46 %**.
+
+## 5. Anchura del rango según el par, no fija
+
+La correlación en dólares **no** predice la estabilidad del ratio, que es lo único que
+saca una posición de rango:
+
+```
+σ²(ratio) = σ²a + σ²b − 2·ρ·σa·σb
+```
+
+| Par | ρ (1a) | σ del ratio | Rango sugerido |
+|---|---|---|---|
+| cbBTC/ETH | 0,90 | ~33 % | ~130 % ✓ |
+| cbBTC/SOL | 0,86 | ~45-50 % | **180-200 %** |
+| BTC/HYPE | 0,50 | mucho mayor | el más divergente de todos |
+
+**Regla:** ρ más baja y/o el segundo activo más volátil ⇒ rango más ancho. Copiar el mismo
+rango de un par a otro es el error.
