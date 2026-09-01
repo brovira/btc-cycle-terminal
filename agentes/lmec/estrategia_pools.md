@@ -168,20 +168,48 @@ LMEC llamaba *«totalmente desconocida»* a una pool de **$91.000**. Por debajo 
 el yield mostrado es ruido. Y cuidado con la fila que delata una tabla rota: en la misma
 lista, `SCP/cbBTC` con **$221** de TVL y **$0** de comisiones aparecía al **46 %**.
 
-## 5. Anchura del rango según el par, no fija
+## 5. Deriva contra volatilidad — la que decide si el par sirve
 
-La correlación en dólares **no** predice la estabilidad del ratio, que es lo único que
-saca una posición de rango:
+La correlación en dólares **no** predice si te sales de rango. Pero la volatilidad tampoco basta:
+son dos fuerzas distintas y solo una es recuperable.
+
+- **Volatilidad = ruido.** Te saca del rango y te devuelve.
+- **Deriva = tendencia.** Te saca por un lado y **no vuelve**.
+
+Para una posición de meses o años manda la segunda. La métrica es el cociente:
 
 ```
-σ²(ratio) = σ²a + σ²b − 2·ρ·σa·σb
+|deriva anualizada| / volatilidad anualizada     ambas sobre la serie del RATIO
 ```
 
-| Par | ρ (1a) | σ del ratio | Rango sugerido |
-|---|---|---|---|
-| cbBTC/ETH | 0,90 | ~33 % | ~130 % ✓ |
-| cbBTC/SOL | 0,86 | ~45-50 % | **180-200 %** |
-| BTC/HYPE | 0,50 | mucho mayor | el más divergente de todos |
+Medido el 1-sep-2026 (`data/ratios/`, ventana de 1 año salvo indicación):
 
-**Regla:** ρ más baja y/o el segundo activo más volátil ⇒ rango más ancho. Copiar el mismo
-rango de un par a otro es el error.
+| Par | Deriva 1a | Vol 1a | Cociente | Lectura |
+|---|---|---|---|---|
+| **BNB/BTC** | +14,1 % | 33,5 % | **0,01 – 0,42** | plano en las 3 ventanas → **el mejor** |
+| ETH/BTC | −22,0 % | 30,9 % | 0,39 – 0,71 | deriva negativa persistente |
+| SOL/BTC | −37,9 % | 37,6 % | 0,32 – 1,01 | la deriva ya iguala al ruido |
+| **HYPE/BTC** | +124,1 % | 82,3 % | **1,51** | tendencia pura → **no emparejar** |
+
+**Regla:** cociente cerca de 0 ⇒ el par oscila y vuelve, buen candidato. Por encima de 1 ⇒ la
+tendencia pesa más que el ruido, la posición se va a un extremo y se queda. **Un activo que sube
+un 124 % anualizado contra BTC no se empareja: se holdea.**
+
+## 6. Anchura del rango, medida por supervivencia
+
+No por percentiles de la serie completa —que incluyen la era en que SOL valía un dólar— sino por
+**cuántos días aguanta el rango entrando en un día cualquiera**:
+
+| Par | Rango | Mediana de días en rango |
+|---|---|---|
+| ETH/BTC | −43 % / +30 % | 111 |
+| ETH/BTC | −50 % / +100 % | 150 |
+| SOL/BTC | −43 % / +30 % | 164 |
+| **SOL/BTC** | **−50 % / +100 %** | **479** |
+| SOL/BTC | −65 % / +185 % | no salió en 2 años |
+| HYPE/BTC | −50 % / +100 % | 83 |
+
+Copiar el rango de un par a otro es el error: el mismo −43 %/+30 % dura 111 días en ETH/BTC y 164
+en SOL/BTC, y ninguno se acerca a dos años.
+
+**Datos:** `data/ratios/` — se actualiza solo cada día (`.github/workflows/ratios.yml`).
