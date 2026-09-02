@@ -452,7 +452,10 @@ function build(rows){
 }
 
 /* ========== MODO JSON: orca_pnl.json del DeFi-Tracker (histórico completo on-chain) ========== */
-function primaryPair(tokens){const s=(tokens||[]).map(t=>t.symbol).filter(Boolean);
+function primaryPair(tokens,ls){let s=(tokens||[]).map(t=>t.symbol).filter(Boolean);
+  // Una posición recién abierta aún no tiene 'tokens' en la analítica (sin cashflows valorados):
+  // el par sale de liquidityState (label0/label1). Sin esto la cbBTC/USDC 65-85k de Orca no aparecía.
+  if(s.length<2&&ls&&ls.label0&&ls.label1)s=[ls.label0,ls.label1];
   if(s.includes("cbBTC")&&s.includes("USDC"))return"cbBTC / USDC";
   if(s.includes("WBTC")&&s.includes("cbBTC"))return"WBTC / cbBTC";
   return s.slice(0,2).join(" / ")||"Orca";}
@@ -467,9 +470,9 @@ function shortNft(mint){const s=String(mint||"");return s.length>15?s.slice(0,6)
 function buildPnl(data){
   const all=Array.isArray(data)?data:(data.pnl||data.positions||[]);
   const conf=all.filter(p=>p&&p.isConfirmedPosition!==false&&p.status!=="non_position"&&(p.positionKind==="confirmed_position"||p.status==="open"||p.status==="closed"))
-    .filter(p=>["cbBTC / USDC","WBTC / cbBTC"].includes(primaryPair(p.tokens)));  // solo tus pares BTC (como Orca)
+    .filter(p=>["cbBTC / USDC","WBTC / cbBTC"].includes(primaryPair(p.tokens,p.liquidityState)));  // solo tus pares BTC (como Orca)
   const P=conf.map(p=>{const pf=p.performance||{};const vs=(p.benchmarks||{}).vsHold||{};
-    return{mint:p.positionMint,pair:primaryPair(p.tokens),status:p.status||"?",computed:(p.analyticsStatus||{}).pnl==="computed",
+    return{mint:p.positionMint,pair:primaryPair(p.tokens,p.liquidityState),status:p.status||"?",computed:(p.analyticsStatus||{}).pnl==="computed",
       first:(p.firstSeen||0)*1000,last:(p.lastSeen||0)*1000,days:Math.max(1,((p.lastSeen-p.firstSeen)||0)/86400),
       invested:pf.investedValueUsd,withdrawn:pf.withdrawnValueUsd,fees:pf.feeLikeValueUsd,gas:pf.gasValueUsd,
       pnl:pf.netPnlUsd,pnlPct:pf.netPnlPct,vsHold:(vs.complete?vs.pnlUsd:null),current:pf.currentValueUsd,range:p.priceRange||null,
@@ -508,7 +511,7 @@ async function fetchLiveLps(){
     const r=await fetch("/api/portfolio",{cache:"no-store"});
     if(!r.ok){LIVE_LPS=[];LIVE_LP_WARNING="LPs EVM no disponibles ("+r.status+")";return;}
     const j=await r.json();
-    const sources=[j.uniswap,j.projectx].filter(Boolean);
+    const sources=[j.uniswap,j.projectx,j.hyperswap,j.uniswapBase].filter(Boolean);
     LIVE_LPS=sources.flatMap(src=>(src.positions||[]).map(p=>({...p,protocol:p.protocol||src.protocol||"V3"})));
     LIVE_LP_WARNING=sources.map(src=>src.warning).filter(Boolean).join(" · ");
   }catch(e){LIVE_LPS=[];LIVE_LP_WARNING="LPs EVM no disponibles";}

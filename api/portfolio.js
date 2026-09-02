@@ -153,9 +153,15 @@ async function fetchEvmChain(base, chain, addr) {
    Para forks desconocidos se usa la lista paginada de ERC-721 de Blockscout y se prueba
    positions(tokenId). El pool sale de factory()+getPool() y el precio actual de slot0(). */
 const ETH_RPCS = ["https://eth.blockscout.com/api/eth-rpc", "https://eth.llamarpc.com", "https://cloudflare-eth.com", "https://rpc.ankr.com/eth"];
-const HYPE_RPCS = ["https://rpc.hyperliquid.xyz/evm"];
+const HYPE_RPCS = ["https://rpc.hyperliquid.xyz/evm", "https://hyperliquid.drpc.org"];
+const BASE_RPCS = ["https://base.blockscout.com/api/eth-rpc", "https://base.drpc.org", "https://mainnet.base.org", "https://base-rpc.publicnode.com"];
 const UNISWAP_V3_POSITION_MANAGER = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
 const PROJECTX_POSITION_MANAGER = "0xeaD19AE861c29bBb2101E834922B2FEee69B9091";
+// HyperSwap (HyperEVM) y Uniswap V3 en Base: gestores de posiciones vistos en la wallet
+// (data/raw/evm/liquidez_nft.json del DeFi-Tracker). Sin ellos, la pool HYPE/UBTC de
+// HyperSwap y la cbBTC/WETH de Base no salian en el panel aunque estuvieran vivas.
+const HYPERSWAP_POSITION_MANAGER = "0x6eDA206207c09e5428F281761DdC0D300851fBC8";
+const UNISWAP_V3_BASE_POSITION_MANAGER = "0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1";
 const TOPIC_INCREASE = "0x3067048beee31b25b2f1681f88dac838c8bba36af25bfb2b7cf7473a5847e35f";
 const TOPIC_DECREASE = "0x26f6a048ee9138f2c0ce266f322cb99228e8d619ae2bff30c67f8dcf9d2377b4";
 const TOPIC_COLLECT = "0x40d0efd1a53d60ecbf40971b9daf7dc90178c3aadc7aab1765632738fa8b8f01";
@@ -636,7 +642,7 @@ module.exports = async (req, res) => {
       return res.end(JSON.stringify({ error: "no_wallets", message: "Rellena data/wallets.json en el repo privado: {\"solana\":\"...\",\"evm\":\"...\"}" }));
     }
     const px = await fetchPrices();
-    const [sol, eth, base, hyperevm, polygon, arbitrum, optimism, hl, uni, prjx, kamino] = await Promise.all([
+    const [sol, eth, base, hyperevm, polygon, arbitrum, optimism, hl, uni, prjx, kamino, hyperswap, uniBase] = await Promise.all([
       wallets.solana ? fetchSolana(wallets.solana, px).catch(e => ({ error: String(e.message || e) })) : null,
       wallets.evm ? fetchEvmChain("https://eth.blockscout.com", "ethereum", wallets.evm).catch(e => ({ error: String(e.message || e) })) : null,
       wallets.evm ? fetchEvmChain("https://base.blockscout.com", "base", wallets.evm).catch(e => ({ error: String(e.message || e) })) : null,
@@ -648,9 +654,11 @@ module.exports = async (req, res) => {
       wallets.evm ? fetchV3Positions("https://eth.blockscout.com", ETH_RPCS, wallets.evm, "Uniswap V3", [UNISWAP_V3_POSITION_MANAGER], "Ethereum").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
       wallets.evm ? fetchV3Positions("https://hyperliquid.cloud.blockscout.com", HYPE_RPCS, wallets.evm, "ProjectX", [PROJECTX_POSITION_MANAGER], "HyperEVM").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
       wallets.solana ? fetchKamino(wallets.solana).catch(e => ({ usd: 0, ok: false, warning: String(e.message || e) })) : null,
+      wallets.evm ? fetchV3Positions("https://hyperliquid.cloud.blockscout.com", HYPE_RPCS, wallets.evm, "HyperSwap", [HYPERSWAP_POSITION_MANAGER], "HyperEVM").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
+      wallets.evm ? fetchV3Positions("https://base.blockscout.com", BASE_RPCS, wallets.evm, "Uniswap V3", [UNISWAP_V3_BASE_POSITION_MANAGER], "Base").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
     ]);
     res.setHeader("Cache-Control", "private, max-age=120");
-    return res.end(JSON.stringify({ prices: px, solana: sol, evm: { ethereum: eth, base, hyperevm, polygon, arbitrum, optimism }, hyperliquid: hl, uniswap: uni, projectx: prjx, kamino }));
+    return res.end(JSON.stringify({ prices: px, solana: sol, evm: { ethereum: eth, base, hyperevm, polygon, arbitrum, optimism }, hyperliquid: hl, uniswap: uni, projectx: prjx, hyperswap, uniswapBase: uniBase, kamino }));
   } catch (e) {
     res.statusCode = 502; return res.end(JSON.stringify({ error: "fetch_error", message: String((e && e.message) || e) }));
   }
