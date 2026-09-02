@@ -418,7 +418,7 @@ function parseCSV(text){
 const num=v=>{const n=parseFloat(v);return isNaN(n)?0:n;};
 
 /* ---------- agregación por posición ---------- */
-let MODEL=null, MODE="csv", PNL=null, LIVE_LPS=[], LIVE_LP_WARNING="", ORCA_PENDING={}, ORCA_PENDING_WARNING="";
+let MODEL=null, MODE="csv", PNL=null, LIVE_LPS=[], LIVE_LP_WARNING="", LIVE_LP_SOURCES="", ORCA_PENDING={}, ORCA_PENDING_WARNING="";
 function build(rows){
   const pos={};const collects=[];
   for(const r of rows){
@@ -511,8 +511,12 @@ async function fetchLiveLps(){
     const r=await fetch("/api/portfolio",{cache:"no-store"});
     if(!r.ok){LIVE_LPS=[];LIVE_LP_WARNING="LPs EVM no disponibles ("+r.status+")";return;}
     const j=await r.json();
-    const sources=[j.uniswap,j.projectx,j.hyperswap,j.uniswapBase].filter(Boolean);
+    const named=[["Uniswap ETH",j.uniswap],["ProjectX",j.projectx],["HyperSwap",j.hyperswap],["Uniswap Base",j.uniswapBase]];
+    const sources=named.map(x=>x[1]).filter(Boolean);
     LIVE_LPS=sources.flatMap(src=>(src.positions||[]).map(p=>({...p,protocol:p.protocol||src.protocol||"V3"})));
+    // Por fuente: cuántas vivas y, si la hay, la advertencia. Una fuente ausente en la
+    // respuesta (API antigua en caché del navegador) se dice, no se calla.
+    LIVE_LP_SOURCES=named.map(([n,src])=>src?`${n} ${(src.positions||[]).length}${src.warning?" ⚠":""}`:`${n} —`).join(" · ");
     LIVE_LP_WARNING=sources.map(src=>src.warning).filter(Boolean).join(" · ");
   }catch(e){LIVE_LPS=[];LIVE_LP_WARNING="LPs EVM no disponibles";}
 }
@@ -866,7 +870,7 @@ function renderPnl(){
     {l:"PnL realizado (cerradas)",n:fmtUSD(M.realized,0),s:M.closed.length+" cerradas",cl:M.realized>=0?"up":"down",tip:[{label:"Posiciones cerradas",value:String(M.closed.length)},{label:"PnL realizado",value:fmtUSD(M.realized,2),tone:M.realized>=0?"up":"down",total:true}]},
     {l:"Fees / rewards total",n:fmtUSD(M.fees+orcaPendingFees+liveFees,0),s:"cobradas + pendientes",tip:[{label:"Orca cobradas",value:fmtUSD(M.fees,2),tone:"up"},{label:"Orca pendientes",value:fmtUSD(orcaPendingFees,2),tone:"up"},{label:"EVM cobradas",value:fmtUSD(liveClaimedFees,2),tone:"up"},{label:"EVM pendientes",value:fmtUSD(livePendingFees,2),tone:"up"},{label:"Total",value:fmtUSD(M.fees+orcaPendingFees+liveFees,2),tone:"up",total:true}]},
   ].map(x=>`<div class="stat"><div class="l">${x.l}</div><div class="n ${x.cl||""}">${metricTip(x.n,x.l,x.tip,"","left")}</div><div class="s">${x.s}</div></div>`).join("");
-  $("#sumNote").innerHTML="<b>Todas las pools:</b> fees cobradas reconstruidas desde el histórico y fees pendientes consultadas on-chain en vivo."+([LIVE_LP_WARNING,ORCA_PENDING_WARNING].filter(Boolean).length?` <span style="color:var(--hot)">${esc([LIVE_LP_WARNING,ORCA_PENDING_WARNING].filter(Boolean).join(" · "))}</span>`:"");
+  $("#sumNote").innerHTML="<b>Todas las pools:</b> fees cobradas reconstruidas desde el histórico y fees pendientes consultadas on-chain en vivo."+(LIVE_LP_SOURCES?` <span class="note">Lectura en vivo: ${esc(LIVE_LP_SOURCES)}.</span>`:"")+([LIVE_LP_WARNING,ORCA_PENDING_WARNING].filter(Boolean).length?` <span style="color:var(--hot)">${esc([LIVE_LP_WARNING,ORCA_PENDING_WARNING].filter(Boolean).join(" · "))}</span>`:"");
   renderTabPos(M,BTC);renderTabHist(M);renderTabClosed(M,BTC);renderFresh();
 }
 function renderTabPos(M,BTC){

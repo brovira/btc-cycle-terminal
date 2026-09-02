@@ -154,7 +154,8 @@ async function fetchEvmChain(base, chain, addr) {
    positions(tokenId). El pool sale de factory()+getPool() y el precio actual de slot0(). */
 const ETH_RPCS = ["https://eth.blockscout.com/api/eth-rpc", "https://eth.llamarpc.com", "https://cloudflare-eth.com", "https://rpc.ankr.com/eth"];
 const HYPE_RPCS = ["https://rpc.hyperliquid.xyz/evm", "https://hyperliquid.drpc.org"];
-const BASE_RPCS = ["https://base.blockscout.com/api/eth-rpc", "https://base.drpc.org", "https://mainnet.base.org", "https://base-rpc.publicnode.com"];
+// base.blockscout.com/api/eth-rpc devuelve 429 a la segunda llamada (sonda del 2-sep): va el ultimo.
+const BASE_RPCS = ["https://base.drpc.org", "https://mainnet.base.org", "https://base-rpc.publicnode.com", "https://base.blockscout.com/api/eth-rpc"];
 const UNISWAP_V3_POSITION_MANAGER = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
 const PROJECTX_POSITION_MANAGER = "0xeaD19AE861c29bBb2101E834922B2FEee69B9091";
 // HyperSwap (HyperEVM) y Uniswap V3 en Base: gestores de posiciones vistos en la wallet
@@ -636,6 +637,7 @@ module.exports = async (req, res) => {
   if (!requestAuthorized(req, url)) { await new Promise(r => setTimeout(r, 600)); res.statusCode = 401; return res.end(JSON.stringify({ error: "bad_password" })); }
   if (!token && !process.env.LOCAL_DATA_DIR) { res.statusCode = 503; return res.end(JSON.stringify({ error: "no_github_token" })); }
 
+  const t0 = Date.now();
   try {
     const wallets = (await ghFile(token, "data/wallets.json")) || {};
     if (!wallets.solana && !wallets.evm) {
@@ -657,6 +659,11 @@ module.exports = async (req, res) => {
       wallets.evm ? fetchV3Positions("https://hyperliquid.cloud.blockscout.com", HYPE_RPCS, wallets.evm, "HyperSwap", [HYPERSWAP_POSITION_MANAGER], "HyperEVM").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
       wallets.evm ? fetchV3Positions("https://base.blockscout.com", BASE_RPCS, wallets.evm, "Uniswap V3", [UNISWAP_V3_BASE_POSITION_MANAGER], "Base").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
     ]);
+    // Traza por fuente V3 en los logs de Vercel: desde el panel no se ve el cuerpo de la
+    // respuesta, y "no aparece" no distingue entre 0 posiciones, error o timeout.
+    const resumenV3 = Object.entries({ uniswap: uni, projectx: prjx, hyperswap, uniswapBase: uniBase })
+      .map(([k, v]) => `${k}=${v ? (v.positions || []).length : "null"}${v && v.warning ? `(!${String(v.warning).slice(0, 60)})` : ""}`).join(" ");
+    console.log(`[portfolio] v3 ${resumenV3} · ${Date.now() - t0}ms`);
     res.setHeader("Cache-Control", "private, max-age=120");
     return res.end(JSON.stringify({ prices: px, solana: sol, evm: { ethereum: eth, base, hyperevm, polygon, arbitrum, optimism }, hyperliquid: hl, uniswap: uni, projectx: prjx, hyperswap, uniswapBase: uniBase, kamino }));
   } catch (e) {
