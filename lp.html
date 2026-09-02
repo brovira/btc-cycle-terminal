@@ -335,7 +335,7 @@
 
 <script>
 "use strict";
-const $=s=>document.querySelector(s);
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const fmtUSD=(v,d=0)=>v==null||isNaN(v)?"—":(v<0?"-$":"$")+Math.abs(Number(v)).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
 const pct=(v,d=1)=>v==null||isNaN(v)?"—":(v>=0?"+":"")+v.toFixed(d)+"%";
 const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
