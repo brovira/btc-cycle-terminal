@@ -971,26 +971,29 @@ function renderTabClosed(M,BTC){
   const cellB=v=>`<td class="${(v||0)>=0?'up':'down'}">${v!=null&&isFinite(v)?fmtUSD(v,0):'—'}</td>`;
   const rows=M.closed.slice().sort((a,b)=>(b.last||0)-(a.last||0)).map(p=>{
     const bm=benchmarks(p,BTC); const entry=(bm.invUsd&&bm.invBtc)?bm.invUsd/bm.invBtc:null;
-    return `<tr><td>${esc(p.pair)}</td><td>${p.last?new Date(p.last).toISOString().slice(0,10):'—'}</td><td>${p.days.toFixed(0)}d</td><td class="${(p.pnl||0)>=0?'up':'down'}">${p.computed?fmtUSD(p.pnl,0):'parcial'}${p.pnlPct!=null?`<div class="sub ${p.pnlPct>=0?'up':'down'}">${p.pnlPct>=0?'+':''}${p.pnlPct.toFixed(2)}%</div>`:''}</td><td class="up">${fmtUSD(p.fees,0)}</td>${cellB(bm.vsUsd)}${cellB(bm.vsTok)}${cellB(bm.vsBtc)}<td>${entry?fmtUSD(entry):'—'}</td></tr>`;
+    return `<tr><td>${esc(p.pair)}${pegBadge(p.pair)}</td><td>${p.last?new Date(p.last).toISOString().slice(0,10):'—'}</td><td>${p.days.toFixed(0)}d</td><td class="${(p.pnl||0)>=0?'up':'down'}">${p.computed?fmtUSD(p.pnl,0):'parcial'}${p.pnlPct!=null?`<div class="sub ${p.pnlPct>=0?'up':'down'}">${p.pnlPct>=0?'+':''}${p.pnlPct.toFixed(2)}%</div>`:''}</td><td class="up">${fmtUSD(p.fees,0)}</td>${cellB(bm.vsUsd)}${cellB(bm.vsTok)}${cellB(bm.vsBtc)}<td>${entry?fmtUSD(entry):'—'}</td></tr>`;
   }).join("");
   const evm=((PIPELINE_META&&PIPELINE_META.positions)||[]).filter(p=>p.chain!=="solana"&&p.status==="closed").sort((a,b)=>String(b.closedDate||b.openedDate||"").localeCompare(String(a.closedDate||a.openedDate||"")));
   const dias=(a,b)=>a&&b?Math.round((new Date(b)-new Date(a))/864e5)+"d":"—";
   const pnlCell=p=>p.pnlUsd==null?`<span class="na">${p.analyticsStatus==="unpriced"?"sin precio":p.analyticsStatus==="incomplete"?"cierre sin leer":"n/d"}</span>`:`<span class="${p.pnlUsd>=0?'up':'down'}">${fmtUSD(p.pnlUsd,0)}${p.pnlPct!=null?`<div class="sub ${p.pnlPct>=0?'up':'down'}">${p.pnlPct>=0?'+':''}${p.pnlPct.toFixed(2)}%</div>`:''}</span>`;
-  const evmRows=evm.map(p=>`<tr><td>${esc(p.pair)}<div class="sub">${esc([p.protocol,CHAIN_LABEL[p.chain]||p.chain].join(" · "))}${p.nft?" · "+esc(p.nft.replace(/.*#/,"#")):""}</div></td><td>${esc(p.openedDate||"—")}</td><td>${p.closedDate?esc(p.closedDate):'<span class="note">fecha no visible</span>'}</td><td>${p.durationDays!=null?Math.round(p.durationDays)+"d":dias(p.openedDate,p.closedDate)}</td><td>${p.investedUsd!=null?fmtUSD(p.investedUsd,0):"—"}</td><td>${pnlCell(p)}</td><td class="up">${p.feesUsd!=null?fmtUSD(p.feesUsd,0):"—"}</td><td class="${(p.vsHoldUsd||0)>=0?'up':'down'}">${p.vsHoldUsd!=null?fmtUSD(p.vsHoldUsd,0):"—"}</td><td>${p.rationaleInTime?'<span class="badge up">porqué antes</span>':p.hasRationale?'<span class="badge flat">porqué después</span>':'<span class="badge down">sin porqué</span>'}</td></tr>`).join("");
+  const priceOf=p=>p.priceEffectUsd!=null?p.priceEffectUsd:(p.pnlUsd!=null&&p.vsHoldUsd!=null?p.pnlUsd-p.vsHoldUsd:null);
+  const priceCell=p=>{const v=priceOf(p);return v==null?"—":`<span class="${v>=0?'up':'down'}">${fmtUSD(v,0)}</span>`;};
+  const evmRows=evm.map(p=>`<tr><td>${esc(p.pair)}${pegBadge(p.pair)}<div class="sub">${esc([p.protocol,CHAIN_LABEL[p.chain]||p.chain].join(" · "))}${p.nft?" · "+esc(p.nft.replace(/.*#/,"#")):""}</div></td><td>${esc(p.openedDate||"—")}</td><td>${p.closedDate?esc(p.closedDate):'<span class="note">fecha no visible</span>'}</td><td>${p.durationDays!=null?Math.round(p.durationDays)+"d":dias(p.openedDate,p.closedDate)}</td><td>${p.investedUsd!=null?fmtUSD(p.investedUsd,0):"—"}</td><td>${pnlCell(p)}</td><td>${priceCell(p)}</td><td class="up">${p.feesUsd!=null?fmtUSD(p.feesUsd,0):"—"}</td><td class="${(p.vsHoldUsd||0)>=0?'up':'down'}">${p.vsHoldUsd!=null?fmtUSD(p.vsHoldUsd,0):"—"}</td><td>${p.rationaleInTime?'<span class="badge up">porqué antes</span>':p.hasRationale?'<span class="badge flat">porqué después</span>':'<span class="badge down">sin porqué</span>'}</td></tr>`).join("");
   const conPnl=evm.filter(p=>p.pnlUsd!=null).length;
-  const evmTable=evm.length?`<div class="note" style="padding:10px 8px 4px"><b>Cerradas en EVM</b> (Ethereum · HyperEVM · Base). Fechas y PnL desde los logs del gestor de posiciones (Increase/Decrease/Collect), valorados al precio de cada hora. ${conPnl<evm.length?`${evm.length-conPnl} sin PnL (sin logs o sin precio de mercado para algún token).`:""}</div>
-    <table class="ot"><thead><tr><th>Pool</th><th>Abierta</th><th>Cerrada</th><th>Duración</th><th>Invertido</th><th>Total PnL</th><th>Fees</th><th>vs HOLD USD</th><th>Porqué</th></tr></thead><tbody>${evmRows}</tbody></table>`:"";
+  const evmTable=evm.length?`<div class="note" style="padding:10px 8px 4px"><b>Cerradas en EVM</b> (Ethereum · HyperEVM · Base). Fechas y PnL desde los logs del gestor de posiciones (Increase/Decrease/Collect), valorados al precio de cada hora. <b>Total PnL = Precio + Farming</b>: Precio es lo que habría hecho HOLD con lo depositado; Farming (vs HOLD) es lo que la pool añadió o quitó (fees − IL). En un par <b>anclado</b> el Total es casi todo precio y lo que cuenta es Farming. ${conPnl<evm.length?`${evm.length-conPnl} sin PnL (sin logs o sin precio de mercado para algún token).`:""}</div>
+    <table class="ot"><thead><tr><th>Pool</th><th>Abierta</th><th>Cerrada</th><th>Duración</th><th>Invertido</th><th>Total PnL</th><th>Precio</th><th>Fees</th><th>Farming (vs HOLD)</th><th>Porqué</th></tr></thead><tbody>${evmRows}</tbody></table>`:"";
   $("#tabClosed").innerHTML=`<table class="ot"><thead><tr><th>Pool</th><th>Cerrada</th><th>Duración</th><th>Total PnL</th><th>Fees</th><th>vs HOLD USD</th><th>vs HOLD tokens</th><th>vs HOLD BTC</th><th>Entrada media</th></tr></thead><tbody>${rows||'<tr><td colspan="9" class="note">Sin cerradas en Orca.</td></tr>'}</tbody></table>${evmTable}
     <div class="note" style="padding:14px 8px 4px"><b>Evolución</b> · PnL acumulado de TODAS las cerradas con resultado (Orca + EVM) por fecha de cierre, y las primeras frente a las últimas.</div>
     <div id="evoResumen" class="note" style="padding:0 8px 6px"></div><div id="evoChart" style="height:260px"></div>`;
-  renderEvolucion(M,evm);
+  renderEvolucion(M,evm,BTC);
 }
 /* Cronologia de cierres: cada punto es una posicion cerrada con PnL; la linea es el acumulado.
    Compara el primer tercio con el ultimo: si al principio se perdio por impaciencia, aqui se ve. */
-function renderEvolucion(M,evm){
+function renderEvolucion(M,evm,BTC){
   const pts=[];
-  for(const p of M.closed)if(p.computed&&p.last&&isFinite(p.pnl))pts.push({t:p.last,pool:p.pair+" (Orca)",pnl:p.pnl,pct:p.pnlPct,days:p.days,inv:p.invested});
-  for(const p of evm)if(p.pnlUsd!=null&&p.closedDate)pts.push({t:new Date(p.closedDate).getTime(),pool:`${p.pair} (${p.protocol} · ${CHAIN_LABEL[p.chain]||p.chain})`,pnl:p.pnlUsd,pct:p.pnlPct,days:p.durationDays,inv:p.investedUsd});
+  // lp = lo atribuible al farming (vs HOLD de los tokens depositados: fees − IL); el resto del PnL es precio.
+  for(const p of M.closed)if(p.computed&&p.last&&isFinite(p.pnl)){const bm=benchmarks(p,BTC);pts.push({t:p.last,pool:p.pair+" (Orca)",pnl:p.pnl,pct:p.pnlPct,days:p.days,inv:p.invested,lp:(bm&&isFinite(bm.vsTok))?bm.vsTok:null});}
+  for(const p of evm)if(p.pnlUsd!=null&&p.closedDate)pts.push({t:new Date(p.closedDate).getTime(),pool:`${p.pair} (${p.protocol} · ${CHAIN_LABEL[p.chain]||p.chain})`,pnl:p.pnlUsd,pct:p.pnlPct,days:p.durationDays,inv:p.investedUsd,lp:p.vsHoldUsd!=null?p.vsHoldUsd:null});
   pts.sort((a,b)=>a.t-b.t);
   const el=$("#evoResumen");
   if(pts.length<2){el.textContent="Hacen falta al menos dos cerradas con PnL.";return;}
@@ -999,7 +1002,9 @@ function renderEvolucion(M,evm){
   const media=(a,f)=>a.reduce((s,x)=>s+(f(x)||0),0)/a.length;
   const wins=a=>a.filter(x=>x.pnl>0).length;
   const fila=(nom,a)=>`<b>${nom}</b> (${a.length}): PnL medio ${fmtUSD(media(a,x=>x.pnl),0)}${a.some(x=>x.pct!=null)?` (${media(a.filter(x=>x.pct!=null),x=>x.pct).toFixed(1)}%)`:""} · duración media ${Math.round(media(a,x=>x.days))} d · ${wins(a)}/${a.length} en positivo`;
-  el.innerHTML=`${fila("Primeras "+n,ini)}<br>${fila("Últimas "+n,fin)}<br>Total: ${pts.length} cerradas · ${fmtUSD(acc,0)} · ${wins(pts)}/${pts.length} en positivo`;
+  const conLp=pts.filter(x=>x.lp!=null);const sumLp=a=>a.reduce((s,x)=>s+(x.lp||0),0);
+  const lpTxt=conLp.length?`<br><b>Solo farming</b> (vs HOLD tokens, ${conLp.length} con dato): ${fmtUSD(sumLp(conLp),0)} · primeras ${n}: ${fmtUSD(media(ini.filter(x=>x.lp!=null),x=>x.lp),0)} de media · últimas ${n}: ${fmtUSD(media(fin.filter(x=>x.lp!=null),x=>x.lp),0)} de media · ${conLp.filter(x=>x.lp>0).length}/${conLp.length} en positivo. El resto del PnL (${fmtUSD(conLp.reduce((s,x)=>s+x.pnl,0)-sumLp(conLp),0)}) es precio de los tokens, no la pool.`:"";
+  el.innerHTML=`${fila("Primeras "+n,ini)}<br>${fila("Últimas "+n,fin)}<br>Total: ${pts.length} cerradas · ${fmtUSD(acc,0)} · ${wins(pts)}/${pts.length} en positivo${lpTxt}`;
   if(!window.Plotly)return;
   const cMut=cssv("--muted"),cInk=cssv("--ink"),cGrid=cssv("--grid"),cPanel=cssv("--panel"),cAcc=cssv("--accent");
   const x=pts.map(p=>new Date(p.t).toISOString().slice(0,10));
@@ -1007,6 +1012,7 @@ function renderEvolucion(M,evm){
     {type:"bar",x,y:pts.map(p=>p.pnl),name:"PnL de cada cierre",marker:{color:pts.map(p=>p.pnl>=0?"rgba(46,204,113,.6)":"rgba(231,76,60,.6)")},
       text:pts.map(p=>`${p.pool}<br>${fmtUSD(p.pnl,0)}${p.pct!=null?" ("+p.pct.toFixed(1)+"%)":""} · ${Math.round(p.days||0)} d${p.inv?" · inv "+fmtUSD(p.inv,0):""}`),hoverinfo:"text"},
     {type:"scatter",x,y:cum,name:"acumulado",line:{color:cAcc,width:2},yaxis:"y2",hoverinfo:"y"},
+    (()=>{let a=0;return {type:"scatter",x,y:pts.map(p=>(a+=(p.lp||0))),name:"acumulado solo farming (vs HOLD)",line:{color:cMut,width:1.5,dash:"dot"},yaxis:"y2",hoverinfo:"y"};})(),
   ],{paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:cInk,family:cssv("--font")},
     margin:{l:52,r:52,t:10,b:26},hovermode:"closest",hoverlabel:{bgcolor:cPanel,bordercolor:cAcc,font:{color:cInk,size:11}},
     legend:{orientation:"h",y:1.05,x:0,font:{size:10.5},bgcolor:"rgba(0,0,0,0)"},
@@ -1214,6 +1220,11 @@ async function loadLecturas(){
 function privMsg(txt,err){const el=$("#privMsg");el.style.display="block";el.innerHTML=txt;el.style.color=err?"var(--bear)":"var(--muted)";}
 let PRIVATE_READY=false,PIPELINE_META=null,EVM_EVENTS=[];
 const CHAIN_LABEL={ethereum:"Ethereum",base:"Base",hyperevm:"HyperEVM",solana:"Solana",arbitrum:"Arbitrum",optimism:"Optimism",polygon:"Polygon"};
+/* Tipo de par: en un par ANCLADO (dos wrappers de BTC, dos estables) no hay IL que valga: el PnL en
+   dolares es el precio del subyacente y lo que hizo la pool son las fees (≈ vs HOLD tokens). */
+const PEG_SETS=[["WBTC","CBBTC","UBTC","TBTC","LBTC","SOLVBTC","BTC"],["USDC","USDT","USD₮0","USDBC","DAI","GHO","USDC.E"],["WETH","ETH","CBETH","STETH","WSTETH"]];
+function pairKind(pair){const t=String(pair||"").toUpperCase().split("/").map(x=>x.trim());if(t.length<2)return"?";const g=x=>PEG_SETS.findIndex(S=>S.includes(x));if(g(t[0])>=0&&g(t[0])===g(t[1]))return"anclado";if(g(t[0])===1||g(t[1])===1)return"estable";return"volatil";}
+const pegBadge=pair=>pairKind(pair)==="anclado"?' <span class="badge flat" title="Par anclado: sin IL que valga. El PnL en $ es el precio del subyacente; lo que hizo la pool son las fees.">anclado</span>':"";
 // Metadatos del portfolio unificado (cuándo corrió el pipeline y qué cadenas leyó). Opcional:
 // si el archivo aún no existe en el repo privado, el panel sigue funcionando sin él.
 async function loadPipelineMeta(){
