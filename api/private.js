@@ -23,6 +23,7 @@ const FILES = {                       // lista blanca de archivos que se pueden 
   orca_positions: "data/normalized/orca_positions.json",
   orca_events: "data/normalized/orca_events.json",
   lp_portfolio: "data/normalized/lp_portfolio.json", // portfolio unificado de LPs (todas las cadenas) + frescura por cadena
+  evm_events: "data/normalized/evm_events.json",     // movimientos EVM clasificados (deposito/retirada de LP, swaps) del lector on-chain
   manual_assets: "data/manual_assets.json", // activos sin API pública (Jupiter DAO, CEX…)
   btc_compras: "data/btc_compras.json",     // compras BTC del ciclo (Revolut round-up + órdenes BELROGAM)
   mc_plan: "data/mc_plan.json",             // ajustes por defecto del Monte Carlo del plan (presupuesto, DCA, órdenes…)

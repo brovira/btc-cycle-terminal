@@ -954,9 +954,17 @@ function renderTabHist(M){
     const k=(c.signature||'')+'|'+c.eventType+'|'+p.pair;
     const g=groups[k]||(groups[k]={t:c.blockTime,act:c.eventType,pair:p.pair,toks:{}});
     g.toks[c.symbol]=(g.toks[c.symbol]||0)+(c.bucket==='deposit'?1:-1)*(c.amount||0);}}
-  const list=Object.values(groups).sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,60);
-  const rows=list.map(g=>{const tc=Object.entries(g.toks).filter(([,v])=>Math.abs(v)>1e-9).map(([s,v])=>`<span class="${v>=0?'up':'down'}">${v>=0?'+':''}${v.toFixed(Math.abs(v)>1?4:6)} ${s}</span>`).join(' · ')||'—';
-    return `<tr><td>${g.t?new Date(g.t*1000).toISOString().slice(0,10):'—'}</td><td>${HIST_ACT[g.act]||g.act}</td><td>${esc(g.pair)}</td><td style="text-align:left">${tc}</td></tr>`;}).join("");
+  // EVM: un deposito de LP saca dos tokens de la wallet; una retirada los devuelve.
+  for(const e of EVM_EVENTS){
+    if(minTs&&((e.ts||0)*1000)<minTs)continue;
+    const toks={};for(const m of (e.sale||[]))toks[m.symbol]=(toks[m.symbol]||0)-(m.cantidad||0);for(const m of (e.entra||[]))toks[m.symbol]=(toks[m.symbol]||0)+(m.cantidad||0);
+    const par=e.posicion?e.posicion.replace(/.*#/,"#"):Object.keys(toks).join("/");
+    groups["evm|"+e.tx+"|"+e.tipo]={t:e.ts,act:e.tipo==="deposito_lp"?"evm_deposit":"evm_withdraw",pair:`${Object.keys(toks).join("/")} · ${CHAIN_LABEL[e.cadena]||e.cadena}${e.posicion?" · "+par:""}`,toks};
+  }
+  const list=Object.values(groups).sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,80);
+  const ACT_EVM={evm_deposit:"Depósito LP (EVM)",evm_withdraw:"Retirada LP (EVM)"};
+  const rows=list.map(g=>{const tc=Object.entries(g.toks).filter(([,v])=>Math.abs(v)>1e-9).map(([s,v])=>`<span class="${v>=0?'up':'down'}">${v>=0?'+':''}${v.toFixed(Math.abs(v)>1?4:6)} ${esc(s)}</span>`).join(' · ')||'—';
+    return `<tr><td>${g.t?new Date(g.t*1000).toISOString().slice(0,10):'—'}</td><td>${ACT_EVM[g.act]||HIST_ACT[g.act]||g.act}</td><td>${esc(g.pair)}</td><td style="text-align:left">${tc}</td></tr>`;}).join("");
   $("#tabHist").innerHTML=`<table class="ot"><thead><tr><th>Fecha</th><th>Acción</th><th>Pool</th><th>Cambio de tokens</th></tr></thead><tbody>${rows||'<tr><td colspan="4" class="note">Sin historial.</td></tr>'}</tbody></table>`;
 }
 function renderTabClosed(M,BTC){
@@ -965,7 +973,12 @@ function renderTabClosed(M,BTC){
     const bm=benchmarks(p,BTC); const entry=(bm.invUsd&&bm.invBtc)?bm.invUsd/bm.invBtc:null;
     return `<tr><td>${esc(p.pair)}</td><td>${p.last?new Date(p.last).toISOString().slice(0,10):'—'}</td><td>${p.days.toFixed(0)}d</td><td class="${(p.pnl||0)>=0?'up':'down'}">${p.computed?fmtUSD(p.pnl,0):'parcial'}${p.pnlPct!=null?`<div class="sub ${p.pnlPct>=0?'up':'down'}">${p.pnlPct>=0?'+':''}${p.pnlPct.toFixed(2)}%</div>`:''}</td><td class="up">${fmtUSD(p.fees,0)}</td>${cellB(bm.vsUsd)}${cellB(bm.vsTok)}${cellB(bm.vsBtc)}<td>${entry?fmtUSD(entry):'—'}</td></tr>`;
   }).join("");
-  $("#tabClosed").innerHTML=`<table class="ot"><thead><tr><th>Pool</th><th>Cerrada</th><th>Duración</th><th>Total PnL</th><th>Fees</th><th>vs HOLD USD</th><th>vs HOLD tokens</th><th>vs HOLD BTC</th><th>Entrada media</th></tr></thead><tbody>${rows||'<tr><td colspan="9" class="note">Sin cerradas.</td></tr>'}</tbody></table>`;
+  const evm=((PIPELINE_META&&PIPELINE_META.positions)||[]).filter(p=>p.chain!=="solana"&&p.status==="closed").sort((a,b)=>String(b.closedDate||b.openedDate||"").localeCompare(String(a.closedDate||a.openedDate||"")));
+  const dias=(a,b)=>a&&b?Math.round((new Date(b)-new Date(a))/864e5)+"d":"—";
+  const evmRows=evm.map(p=>`<tr><td>${esc(p.pair)}<div class="sub">${esc([p.protocol,CHAIN_LABEL[p.chain]||p.chain].join(" · "))}${p.nft?" · "+esc(p.nft.replace(/.*#/,"#")):""}</div></td><td>${esc(p.openedDate||"—")}</td><td>${p.closedDate?esc(p.closedDate):'<span class="note">liquidez 0 on-chain · fecha de retirada no visible</span>'}</td><td>${dias(p.openedDate,p.closedDate)}</td><td style="text-align:left">${esc(p.sourceOfTruth||"—")}</td><td>${p.rationaleInTime?'<span class="badge up">porqué antes</span>':p.hasRationale?'<span class="badge flat">porqué después</span>':'<span class="badge down">sin porqué</span>'}</td></tr>`).join("");
+  const evmTable=evm.length?`<div class="note" style="padding:10px 8px 4px"><b>Cerradas en EVM</b> (Ethereum · HyperEVM · Base), desde el lector on-chain del repo privado. Sin PnL todavía: la analítica de fees y HOLD solo existe para Orca.</div>
+    <table class="ot"><thead><tr><th>Pool</th><th>Abierta</th><th>Cerrada</th><th>Duración</th><th>Fuente de verdad</th><th>Porqué</th></tr></thead><tbody>${evmRows}</tbody></table>`:"";
+  $("#tabClosed").innerHTML=`<table class="ot"><thead><tr><th>Pool</th><th>Cerrada</th><th>Duración</th><th>Total PnL</th><th>Fees</th><th>vs HOLD USD</th><th>vs HOLD tokens</th><th>vs HOLD BTC</th><th>Entrada media</th></tr></thead><tbody>${rows||'<tr><td colspan="9" class="note">Sin cerradas en Orca.</td></tr>'}</tbody></table>${evmTable}`;
 }
 $("#tabbar").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const t=b.dataset.tab;
   $("#tabbar").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
@@ -1121,7 +1134,7 @@ function renderDecisiones(){
     const cartera=k==="lmec"&&L.cartera&&Object.values(L.cartera).some(v=>v!=null)?`<div class="kv"><b>Su cartera</b>${esc(Object.entries(L.cartera).filter(([,v])=>v!=null).map(([a,v])=>a.replace("_pct","")+" "+v+"%").join(" · "))}</div>`:"";
     const woc=k==="woc"?`${L.accion_lp?`<div class="kv"><b>Acción de LP que recomienda</b>${esc(L.accion_lp)}</div>`:""}${L.regimen_leverage?`<div class="kv"><b>Régimen de apalancamiento</b>${esc(L.regimen_leverage)}</div>`:""}`:"";
     const cowen=k==="cowen"&&L.risk_metric!=null?`<div class="kv"><b>Risk metric</b>${esc(String(L.risk_metric))}</div>`:"";
-    bloques.push(`<details class="dec" id="dec-${k}"><summary>${esc(L.nombre||corto)} ${L.tendencia?decTendencia(L.tendencia):""}${vieja?' <span class="badge stale">lectura vieja</span>':""}<span class="meta">${L.fuente_fecha?"fuente "+esc(L.fuente_fecha)+(dias!=null?" · hace "+dias+" d":""):""}${L.horizonte?" · "+esc(L.horizonte):""}${L.confianza?" · confianza "+esc(L.confianza):""}</span></summary>
+    bloques.push(`<details class="dec" id="dec-${k}" open><summary>${esc(L.nombre||corto)} ${L.tendencia?decTendencia(L.tendencia):""}${vieja?' <span class="badge stale">lectura vieja</span>':""}<span class="meta">${L.fuente_fecha?"fuente "+esc(L.fuente_fecha)+(dias!=null?" · hace "+dias+" d":""):""}${L.horizonte?" · "+esc(L.horizonte):""}${L.confianza?" · confianza "+esc(L.confianza):""}</span></summary>
       <div class="dec-in">
         ${L.titulo?`<div class="note" style="margin-bottom:6px">${esc(L.titulo)}${(L.fuentes||[]).length?` · <span style="font-family:var(--mono)">${esc((L.fuentes||[]).join(", "))}</span>`:""}</div>`:""}
         ${pend?`<div class="note" style="color:var(--hot);margin-bottom:6px">${pend}</div>`:""}
@@ -1140,7 +1153,7 @@ function renderDecisiones(){
         </div>
       </div></details>`);
   }
-  $("#decStrip").innerHTML=chips.join("");
+  $("#decStrip").innerHTML="";  // la tira duplicaba las cabeceras: los tres van abiertos
   $("#decBody").innerHTML=bloques.join("")||'<div class="note">Aún no hay lecturas. Las genera el pase diario (Actions → Lecturas diarias).</div>';
   $$("#decStrip [data-dec]").forEach(ch=>ch.addEventListener("click",()=>{const d=$("#dec-"+ch.dataset.dec);if(d){d.open=true;d.scrollIntoView({behavior:"smooth",block:"start"});}}));
   $$("[data-decidir]").forEach(b=>b.addEventListener("click",()=>registrarDecision(b.dataset.decidir)));
@@ -1164,12 +1177,16 @@ async function loadLecturas(){
 
 /* ---------- carga privada (repo privado vía /api/private, con la sesión global) ---------- */
 function privMsg(txt,err){const el=$("#privMsg");el.style.display="block";el.innerHTML=txt;el.style.color=err?"var(--bear)":"var(--muted)";}
-let PRIVATE_READY=false,PIPELINE_META=null;
+let PRIVATE_READY=false,PIPELINE_META=null,EVM_EVENTS=[];
+const CHAIN_LABEL={ethereum:"Ethereum",base:"Base",hyperevm:"HyperEVM",solana:"Solana"};
 // Metadatos del portfolio unificado (cuándo corrió el pipeline y qué cadenas leyó). Opcional:
 // si el archivo aún no existe en el repo privado, el panel sigue funcionando sin él.
 async function loadPipelineMeta(){
   try{const r=await fetch("/api/private?file=lp_portfolio",{cache:"no-store"});
-    if(r.ok){const j=await r.json();if(j&&j.generado)PIPELINE_META={generado:j.generado,cobertura:j.cobertura||null};}}catch(e){}
+    if(r.ok){const j=await r.json();if(j&&j.generado)PIPELINE_META={generado:j.generado,cobertura:j.cobertura||null,positions:Array.isArray(j.positions)?j.positions:[]};}}catch(e){}
+  // Movimientos de LP en las cadenas EVM (deposito/retirada), del lector on-chain del repo privado.
+  try{const r=await fetch("/api/private?file=evm_events",{cache:"no-store"});
+    if(r.ok){const j=await r.json();EVM_EVENTS=(j&&j.eventos||[]).filter(e=>e.tipo==="deposito_lp"||e.tipo==="retirada_lp");}}catch(e){}
 }
 async function loadPrivate(){
   $("#privBtn").disabled=true;$("#privBtn").textContent="…";
