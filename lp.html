@@ -783,8 +783,16 @@ function renderFresh(){
   $("#freshToggle").checked=SHOW_OLD;
   const body=$("#freshBody");
   const dataDate=PNL.last?new Date(PNL.last).toISOString().slice(0,10):"?";
-  const stale=PNL.last&&(Date.now()-PNL.last)>36*3600*1000;
-  const staleNote=stale?`<div class="note" style="color:var(--hot);margin-top:8px">⚠️ Datos on-chain hasta <b>${dataDate}</b> (el pipeline corre a diario a las 05:15 UTC). Si has operado hoy, corre antes la Action del DeFi-Tracker (GitHub → Actions → Daily Solana Ingestion → Run workflow) y recarga.</div>`:"";
+  // Dos fechas distintas: cuando se LEYO la cadena (pipeline) y cuando fue el ultimo MOVIMIENTO de la wallet.
+  // Antes se avisaba "datos hasta X" con la fecha del ultimo movimiento: si llevabas 10 dias sin operar en Orca,
+  // parecia un pipeline atrasado cuando en realidad habia corrido esa misma manana.
+  const ranAt=PIPELINE_META&&PIPELINE_META.generado?new Date(PIPELINE_META.generado):null;
+  const ranTxt=ranAt?ranAt.toISOString().slice(0,16).replace("T"," ")+" UTC":null;
+  const pipelineFresh=ranAt&&(Date.now()-ranAt.getTime())<36*3600*1000;
+  const stale=!pipelineFresh&&PNL.last&&(Date.now()-PNL.last)>36*3600*1000;
+  const staleNote=pipelineFresh
+    ?`<div class="note" style="margin-top:8px">Pipeline ejecutado el <b>${ranTxt}</b> (corre a diario a las 05:15 UTC). Último movimiento en Orca: <b>${dataDate}</b>; no hay operaciones posteriores en Solana. Si acabas de operar, lanza la Action «Ingesta diaria (Solana + EVM)» del DeFi-Tracker y recarga.</div>`
+    :stale?`<div class="note" style="color:var(--hot);margin-top:8px">⚠️ Último movimiento Solana registrado: <b>${dataDate}</b>${ranTxt?` · pipeline ejecutado por última vez el ${ranTxt}`:""}. El pipeline corre a diario a las 05:15 UTC; si has operado después, lanza la Action del DeFi-Tracker (GitHub → Actions → «Ingesta diaria (Solana + EVM)» → Run workflow) y recarga.</div>`:"";
   if(!BASELINE){
     body.innerHTML=`<div class="note" style="margin-bottom:10px">Marca el <b>día cero</b> de tu farming: se fotografía el valor ACTUAL de tus posiciones con estable (<b>cbBTC/USDC</b>; la de WBTC/cbBTC se ignora) y a partir de ahí el PnL se calcula solo con lo que pase después. El <b>capital fresco</b> que añadas se detecta on-chain como depósito y <b>se descuenta solo</b> — no infla el PnL.</div>
       <button class="btn pri" id="setBaseBtn">Fijar línea base hoy</button>
@@ -816,8 +824,10 @@ async function setBaseline(){
   let cur=0,nOpen=0;
   for(const p of PNL.open){if(p.pair==="cbBTC / USDC"){const v=v3Value(p.ls,BTC_PRICE);cur+=v?v.balance:0;nOpen++;}}
   const dataDate=PNL.last?new Date(PNL.last).toISOString().slice(0,10):"?";
-  const stale=PNL.last&&(Date.now()-PNL.last)>36*3600*1000;
-  const msg=`Fijar línea base HOY:\n\n· ${nOpen} posiciones cbBTC/USDC abiertas\n· Valor: ${fmtUSD(cur)} (₿ ${(cur/BTC_PRICE).toFixed(5)} a BTC ${fmtUSD(BTC_PRICE)})\n${stale?"\n⚠️ OJO: tus datos on-chain son del "+dataDate+". Si has abierto/cerrado posiciones después, corre primero la Action del DeFi-Tracker y recarga.\n":""}\n¿Confirmar?`;
+  const ranAt=PIPELINE_META&&PIPELINE_META.generado?new Date(PIPELINE_META.generado):null;
+  const pipelineFresh=ranAt&&(Date.now()-ranAt.getTime())<36*3600*1000;
+  const stale=!pipelineFresh&&PNL.last&&(Date.now()-PNL.last)>36*3600*1000;
+  const msg=`Fijar línea base HOY:\n\n· ${nOpen} posiciones cbBTC/USDC abiertas\n· Valor: ${fmtUSD(cur)} (₿ ${(cur/BTC_PRICE).toFixed(5)} a BTC ${fmtUSD(BTC_PRICE)})\n${stale?"\n⚠️ OJO: tu último movimiento Solana registrado es del "+dataDate+" y el pipeline no ha corrido en las últimas 36 h. Si has abierto/cerrado posiciones después, lanza primero la Action «Ingesta diaria (Solana + EVM)» del DeFi-Tracker y recarga.\n":""}\n¿Confirmar?`;
   if(!confirm(msg))return;
   $("#baseMsg").textContent="Guardando…";
   try{
@@ -1040,17 +1050,25 @@ async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.
 
 /* ---------- carga privada (repo privado vía /api/private, con la sesión global) ---------- */
 function privMsg(txt,err){const el=$("#privMsg");el.style.display="block";el.innerHTML=txt;el.style.color=err?"var(--bear)":"var(--muted)";}
-let PRIVATE_READY=false;
+let PRIVATE_READY=false,PIPELINE_META=null;
+// Metadatos del portfolio unificado (cuándo corrió el pipeline y qué cadenas leyó). Opcional:
+// si el archivo aún no existe en el repo privado, el panel sigue funcionando sin él.
+async function loadPipelineMeta(){
+  try{const r=await fetch("/api/private?file=lp_portfolio",{cache:"no-store"});
+    if(r.ok){const j=await r.json();if(j&&j.generado)PIPELINE_META={generado:j.generado,cobertura:j.cobertura||null};}}catch(e){}
+}
 async function loadPrivate(){
   $("#privBtn").disabled=true;$("#privBtn").textContent="…";
   try{
     const livePromise=fetchLiveLps();
+    const metaPromise=loadPipelineMeta();
     const r=await fetch("/api/private?file=orca_pnl",{cache:"no-store"});
     if(r.status===401){privMsg("La sesión ha caducado. Recarga la página para volver a entrar.",true);return false;}
     if(r.status===503){const j=await r.json().catch(()=>({}));privMsg("Falta configurar el servidor: <code>"+esc(j.error||"config")+"</code>. "+esc(j.message||""),true);return false;}
     if(!r.ok){const j=await r.json().catch(()=>({}));privMsg("No se pudo cargar ("+r.status+"): "+esc(j.message||j.error||"error"),true);return false;}
     const text=await r.text();
     await livePromise;
+    await metaPromise;
     PRIVATE_READY=true;
     privMsg("Datos Orca y posiciones EVM cargados.",false);
     await loadBaseline(); // línea base del fresh start ANTES de pintar (para filtrar desde el primer render)
