@@ -1032,7 +1032,10 @@ function renderPorTipo(M,evm,BTC){
     const sum=f=>xs.reduce((s,x)=>s+(f(x)||0),0);
     const lp=xs.every(x=>x.lp==null)?null:sum(x=>x.lp),fees=sum(x=>x.fees);
     const cel=(v,d=0)=>v==null?'<td class="na">—</td>':`<td class="${v>=0?'up':'down'}">${fmtUSD(v,d)}</td>`;
-    return `<tr><td><b>${esc(t)}</b></td><td>${xs.length}</td><td>${fmtUSD(sum(x=>x.inv),0)}</td>${cel(sum(x=>x.pnl))}${cel(lp)}<td class="up">${fmtUSD(fees,0)}</td>${cel(lp==null?null:lp-fees)}<td>${xs.filter(x=>x.pnl>0).length}/${xs.length}</td><td>${Math.round(sum(x=>x.dias)/xs.length)} d</td></tr>`;
+    // La especialidad declarada en el diario (2026-09-02) se marca: es la linea contra la que
+    // hay que juzgarse, no el total mezclado.
+    const esp=t==="BTC / estable"?' <span class="badge up" title="Declarada en el diario el 2-sep-2026: aquí va la mayor liquidez. Se juzga por el farming (fees − IL), no por el PnL total.">especialidad declarada</span>':"";
+    return `<tr><td><b>${esc(t)}</b>${esp}</td><td>${xs.length}</td><td>${fmtUSD(sum(x=>x.inv),0)}</td>${cel(sum(x=>x.pnl))}${cel(lp)}<td class="up">${fmtUSD(fees,0)}</td>${cel(lp==null?null:lp-fees)}<td>${xs.filter(x=>x.pnl>0).length}/${xs.length}</td><td>${Math.round(sum(x=>x.dias)/xs.length)} d</td></tr>`;
   }).join("");
   el.innerHTML=`<div class="note" style="padding:14px 8px 4px"><b>Por tipo de pool</b> · no son la misma actividad. <b>Farming</b> es lo que añadió la pool frente a tener los tokens quietos (fees − IL); <b>Precio</b> queda fuera de esta tabla a propósito.</div>
     <table class="ot"><thead><tr><th>Tipo</th><th>n</th><th>Capital</th><th>Total PnL</th><th>Farming</th><th>Fees</th><th>IL</th><th>En verde</th><th>Duración</th></tr></thead><tbody>${filas}</tbody></table>`;
