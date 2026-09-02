@@ -1140,7 +1140,7 @@ const DEC_ORDEN=[["cowen","Cowen"],["lmec","LMEC"],["woc","WoC"]];
    (data/lecturas/woc.json, marco on-chain) y la recomendación semanal de derivados
    (data/woc_semana.json, pipeline del repo privado). Cuando no coinciden hay que verlo,
    no elegir una en silencio. Vocabularios distintos: FARMEAR = rango estrecho. */
-const WOC_ACC={FARMEAR:"estrechar",ESTRECHAR:"estrechar",ENSANCHAR:"ensanchar",SALIR:"salir",CERRAR:"salir"};
+const WOC_ACC={FARMEAR:"estrechar",ESTRECHAR:"estrechar",ENSANCHAR:"ensanchar",SALIR:"salir",CERRAR:"salir",MANTENER:"mantener"};
 const wocAcc=a=>WOC_ACC[String(a||"").trim().toUpperCase()]||null;
 function decDias(fecha){if(!fecha)return null;return Math.round((Date.now()-new Date(fecha+"T12:00:00Z").getTime())/864e5);}
 function decTendencia(t){const m={alcista:["up","alcista"],bajista:["down","bajista"],neutral:["flat","neutral"],lateral:["flat","lateral"]}[t]||["flat",t||"—"];return `<span class="badge ${m[0]}">${esc(m[1])}</span>`;}
