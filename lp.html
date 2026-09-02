@@ -1134,8 +1134,14 @@ function loadScript(src){return new Promise((res,rej)=>{const s=document.createE
 async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("no se pudo cargar Plotly");}
 
 /* ---------- DECISIONES: lecturas diarias de los analistas (data/lecturas/*.json, público) ---------- */
-let LECTURAS={};
+let LECTURAS={},WOC_SEMANA=null;
 const DEC_ORDEN=[["cowen","Cowen"],["lmec","LMEC"],["woc","WoC"]];
+/* Dos lecturas del MISMO Week On-Chain, por caminos distintos: el pase diario
+   (data/lecturas/woc.json, marco on-chain) y la recomendación semanal de derivados
+   (data/woc_semana.json, pipeline del repo privado). Cuando no coinciden hay que verlo,
+   no elegir una en silencio. Vocabularios distintos: FARMEAR = rango estrecho. */
+const WOC_ACC={FARMEAR:"estrechar",ESTRECHAR:"estrechar",ENSANCHAR:"ensanchar",SALIR:"salir",CERRAR:"salir"};
+const wocAcc=a=>WOC_ACC[String(a||"").trim().toUpperCase()]||null;
 function decDias(fecha){if(!fecha)return null;return Math.round((Date.now()-new Date(fecha+"T12:00:00Z").getTime())/864e5);}
 function decTendencia(t){const m={alcista:["up","alcista"],bajista:["down","bajista"],neutral:["flat","neutral"],lateral:["flat","lateral"]}[t]||["flat",t||"—"];return `<span class="badge ${m[0]}">${esc(m[1])}</span>`;}
 function decNum(v){return v==null||!isFinite(+v)?null:fmtUSD(+v,0);}
@@ -1159,6 +1165,24 @@ function decPosicionesLmec(pos){
   const filas=pos.map(p=>{const k=String(p.par||"").replace(/[^A-Za-z]/g,"").toUpperCase().replace("WETH","ETH").replace("CBBTC","BTC").replace("UBTC","BTC").replace("WBTC","BTC");const rev=k.length===6?k.slice(3)+k.slice(0,3):k;const coincide=mios.has(k)||mios.has(rev);
     return `<tr><td>${esc(p.par||"?")}${coincide?' <span class="badge up">también la tengo</span>':""}</td><td>${esc([p.protocolo,p.red].filter(Boolean).join(" · "))}</td><td>${esc(p.rango||"—")}</td><td>${esc(p.peso||"—")}</td><td>${esc(p.comentario||"")}</td></tr>`;}).join("");
   return `<div class="kv" style="grid-column:1/-1"><b>Sus pools de farming</b><table class="mini"><thead><tr><th>Par</th><th>Dónde</th><th>Rango</th><th>Peso</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>`;}
+/* La recomendación semanal de derivados sobre el mismo informe, y si contradice al pase diario. */
+function decWocSemanal(L){
+  const W=WOC_SEMANA;if(!W||!W.woc_fecha)return "";
+  const m=/Acción de LP:\s*<\/?b?>?\s*([A-ZÁÉÍÓÚÑ]+)/i.exec(String(W.que_hacemos||""))||/Acción de LP:\s*([A-ZÁÉÍÓÚÑ]+)/i.exec(String(W.que_hacemos||"").replace(/<[^>]+>/g,""));
+  const acc=m?m[1].toUpperCase():null;
+  const dias=decDias(W.woc_fecha);
+  const mismaFuente=L&&L.fuente_fecha===W.woc_fecha;
+  const a1=wocAcc(L&&L.accion_lp),a2=wocAcc(acc);
+  const choca=a1&&a2&&a1!==a2;
+  const aviso=choca?`<div class="note" style="color:var(--hot);margin-top:4px">Las dos lecturas del ${mismaFuente?"MISMO informe":"informe"} NO coinciden: el pase diario dice <b>${esc(L.accion_lp)}</b> (marco on-chain) y la semanal <b>${esc(acc)}</b> (marco de derivados). Decide tú y escribe por qué; el panel no elige por ti.</div>`:"";
+  const pend=/PENDIENTE/i.test(String(W.que_hacemos||""))?` <span class="badge stale">sin analizar</span>`:"";
+  return `<div class="kv" style="grid-column:1/-1"><b>Recomendación semanal (derivados)</b>
+    <div>${W.que_hacemos||"—"}${pend}</div>
+    ${W.senal_a_vigilar_txt?"":""}
+    ${(W.llamadas_abiertas||[]).length?`<div style="margin-top:4px"><b>A vigilar:</b> ${esc(W.llamadas_abiertas[0].llamada||"")}</div>`:""}
+    <div class="note" style="margin-top:4px">WoC ${esc(W.woc_fecha)}${dias!=null?" · hace "+dias+" d":""} · «${esc(W.woc_titulo||"")}» · ${esc((W.fuentes||[]).join(" · "))}</div>
+    ${aviso}</div>`;
+}
 function renderDecisiones(){
   const sec=$("#decisionesSec");const idx=LECTURAS._indice;if(!idx&&!Object.keys(LECTURAS).some(k=>k!=="_indice")){sec.style.display="none";return;}
   sec.style.display="";
@@ -1173,7 +1197,7 @@ function renderDecisiones(){
     const niveles=decNiveles(L.niveles);
     const extra=k==="woc"?decCruceRangos(L.rango_esperado):k==="lmec"?decPosicionesLmec(L.posiciones):"";
     const cartera=k==="lmec"&&L.cartera&&Object.values(L.cartera).some(v=>v!=null)?`<div class="kv"><b>Su cartera</b>${esc(Object.entries(L.cartera).filter(([,v])=>v!=null).map(([a,v])=>a.replace("_pct","")+" "+v+"%").join(" · "))}</div>`:"";
-    const woc=k==="woc"?`${L.accion_lp?`<div class="kv"><b>Acción de LP que recomienda</b>${esc(L.accion_lp)}</div>`:""}${L.regimen_leverage?`<div class="kv"><b>Régimen de apalancamiento</b>${esc(L.regimen_leverage)}</div>`:""}`:"";
+    const woc=k==="woc"?`${L.accion_lp?`<div class="kv"><b>Acción de LP que recomienda</b>${esc(L.accion_lp)} <span class="note">(pase diario, marco on-chain)</span></div>`:""}${L.regimen_leverage?`<div class="kv"><b>Régimen de apalancamiento</b>${esc(L.regimen_leverage)}</div>`:""}${decWocSemanal(L)}`:"";
     const cowen=k==="cowen"&&L.risk_metric!=null?`<div class="kv"><b>Risk metric</b>${esc(String(L.risk_metric))}</div>`:"";
     bloques.push(`<details class="dec" id="dec-${k}" open><summary>${esc(L.nombre||corto)} ${L.tendencia?decTendencia(L.tendencia):""}${vieja?' <span class="badge stale">lectura vieja</span>':""}<span class="meta">${L.fuente_fecha?"fuente "+esc(L.fuente_fecha)+(dias!=null?" · hace "+dias+" d":""):""}${L.horizonte?" · "+esc(L.horizonte):""}${L.confianza?" · confianza "+esc(L.confianza):""}</span></summary>
       <div class="dec-in">
@@ -1213,6 +1237,7 @@ async function loadLecturas(){
     if(r.ok)LECTURAS._indice=await r.json();
     await Promise.all(DEC_ORDEN.map(async([k])=>{try{const q=await fetch(`data/lecturas/${k}.json`,{cache:"no-store"});if(q.ok)LECTURAS[k]=await q.json();}catch(e){}}));
   }catch(e){}
+  try{const w=await fetch("data/woc_semana.json",{cache:"no-store"});if(w.ok)WOC_SEMANA=await w.json();}catch(e){}
   renderDecisiones();
 }
 
