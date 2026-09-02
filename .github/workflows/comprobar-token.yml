@@ -1,0 +1,33 @@
+name: Comprobar el token de Claude
+
+# Manual, no toca ningún dato. Responde a UNA pregunta: ¿sigue valiendo
+# CLAUDE_CODE_OAUTH_TOKEN? Sin esto, la única forma de enterarse de que un token
+# caducó o se revocó era que fallara el pase diario a la mañana siguiente.
+# Se usa después de rotar el token, y cada vez que algo huela a credencial.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  comprobar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Instalar Claude Code
+        run: curl -fsSL https://claude.ai/install.sh | bash
+      - name: Preguntar algo trivial
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          if [ -z "$CLAUDE_CODE_OAUTH_TOKEN" ]; then
+            echo "::error title=Sin token::CLAUDE_CODE_OAUTH_TOKEN no está definido en este repositorio."
+            exit 1
+          fi
+          salida=$(claude -p "Responde unicamente con la palabra VIVO." --output-format text 2>&1) || true
+          echo "$salida" | head -5
+          if echo "$salida" | grep -q "VIVO"; then
+            echo "El token responde." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "::error title=Token inválido::El modelo no respondió; el token está revocado, caducado o mal copiado."
+            exit 1
+          fi
