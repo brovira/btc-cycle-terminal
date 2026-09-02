@@ -137,7 +137,10 @@ async function fetchEvmChain(base, chain, addr) {
         const symNorm = (tok.symbol || "").replace(/[^A-Za-z0-9]/g, "").toUpperCase();
         if (/^(USDT|USDC|DAI|BUSD|TUSD|USDE|FDUSD)$/.test(symNorm) && !hasMcap) { out.hidden++; continue; }
         const plausible = rate != null && (hasMcap || amt < 1e9);
-        const usd = plausible ? amt * rate : null;
+        // Un token real (con market cap) que cotiza en mercado se valora a mercado, no al
+        // exchange_rate de Blockscout, que en BNB y cbBTC iba un 13-16% por debajo.
+        const mkt = hasMcap && marketPair(tok.symbol) ? await currentMarketUsd(tok.symbol) : null;
+        const usd = mkt != null ? amt * mkt : (plausible ? amt * rate : null);
         if (usd == null) { out.hidden++; continue; } // sin precio fiable → fuera (spam/ilíquido)
         out.tokens.push({ sym: tok.symbol || "?", amount: amt, usd });
         out.totalUsd += usd;
@@ -227,6 +230,7 @@ function marketPair(symbol) {
   if (["BTC", "WBTC", "CBBTC", "UBTC"].includes(sym)) return "BTCUSDT";
   if (["ETH", "WETH"].includes(sym)) return "ETHUSDT";
   if (sym === "BNB") return "BNBUSDT";
+  if (["HYPE", "WHYPE"].includes(sym)) return "HYPEUSDT";
   return null;
 }
 
@@ -243,6 +247,9 @@ async function currentMarketUsd(symbol) {
       for (const host of ["api.binance.com", "api.binance.us"]) {
         try { const r = await fetch(`https://${host}/api/v3/ticker/price?symbol=${pair}`, { headers: { "User-Agent": "portfolio" } }); if (r.ok) { const p = +(await r.json()).price; if (p > 0) return p; } } catch (e) {}
       }
+      // Binance geobloquea (451) desde algunas regiones; OKX responde y cotiza HYPE.
+      try { const r = await fetch(`https://www.okx.com/api/v5/market/ticker?instId=${pair.replace("USDT", "-USDT")}`, { headers: { "User-Agent": "portfolio" } });
+        if (r.ok) { const j = await r.json(); const p = +(((j.data || [])[0] || {}).last); if (p > 0) return p; } } catch (e) {}
       return null;
     })());
   }
@@ -542,10 +549,11 @@ async function fetchV3Positions(baseUrl, rpcs, addr, protoLabel, knownManagers =
       const [t0, t1] = await Promise.all([tokenInfo(baseUrl, token0, call), tokenInfo(baseUrl, token1, call)]);
       const amt0 = a0 / Math.pow(10, t0.dec), amt1 = a1 / Math.pow(10, t1.dec);
       const currentRaw = sp * sp * Math.pow(10, t0.dec - t1.dec);
-      let px0 = isUsdStable(t0.sym) ? 1 : t0.px;
-      let px1 = isUsdStable(t1.sym) ? 1 : t1.px;
-      if (px0 == null) px0 = await currentMarketUsd(t0.sym); // fallback Binance (WETH/WBTC/BNB/…)
-      if (px1 == null) px1 = await currentMarketUsd(t1.sym);
+      // PRIMERO el mercado, Blockscout solo de respaldo. El exchange_rate de Blockscout iba
+      // 13% por debajo en BNB (598 vs 686) y 16% en cbBTC de Base (64.198 vs 76.894) el
+      // 2-sep-2026: el panel fabricaba una perdida que no existia.
+      let px0 = isUsdStable(t0.sym) ? 1 : ((await currentMarketUsd(t0.sym)) ?? t0.px);
+      let px1 = isUsdStable(t1.sym) ? 1 : ((await currentMarketUsd(t1.sym)) ?? t1.px);
       if (px0 == null && px1 != null) px0 = currentRaw * px1; // último recurso: ratio del pool
       if (px1 == null && px0 != null) px1 = px0 / currentRaw;
       const usd = (px0 != null ? amt0 * px0 : 0) + (px1 != null ? amt1 * px1 : 0);
@@ -625,6 +633,7 @@ async function fetchPrices() {
     for (const h of ["api.binance.com", "api.binance.us"]) {
       try { const r = await fetch(`https://${h}/api/v3/ticker/price?symbol=${pair}`); if (r.ok) { px[sym] = +(await r.json()).price; break; } } catch (e) {}
     }
+    if (!(px[sym] > 0)) { const p = await currentMarketUsd(sym); if (p > 0) px[sym] = p; }
   }
   return px;
 }
