@@ -260,8 +260,10 @@ const PHASE_HERO={
       // a partir del propio dato — así el aviso no depende de que el pipeline funcione.
       const dias=Math.floor((Date.now()-Date.parse(s2.woc_fecha+"T00:00:00Z"))/864e5);
       const rancio=Number.isFinite(dias)&&dias>10;
+      const P=s2.pendiente&&s2.pendiente.fecha>s2.woc_fecha?s2.pendiente:null;
       $("#semana").innerHTML=
-        (rancio?`<div class="call" style="border-color:var(--bear);color:var(--bear);margin-bottom:12px"><b>⚠️ Material caducado — ${dias} días desde este WoC.</b> El Week On-Chain es semanal, así que esto ya NO describe "esta semana": los niveles y las llamadas de abajo son de ${s2.woc_fecha} y pueden haberse resuelto. Revisa que la ingesta del WoC esté viva antes de operar con esto.</div>`:"")
+        (P?`<div class="call" style="border-color:var(--bear);color:var(--bear);margin-bottom:12px"><b>⚠️ Hay un Week On-Chain más nuevo que NO hemos podido leer:</b> «${P.titulo}» (${P.fecha}${P.semana?" · "+P.semana:""}). Todo lo de abajo es del ${s2.woc_fecha} y no lo recoge.${P.adelanto?`<div style="margin-top:4px;font-weight:400">Adelanto del email: ${P.adelanto}</div>`:""}${P.motivo?`<div class="cmeta" style="margin-top:4px">${P.motivo}</div>`:""}${P.como_entra?`<div class="cmeta">Cómo entra: ${P.como_entra}</div>`:""}</div>`:"")
+        +(rancio?`<div class="call" style="border-color:var(--bear);color:var(--bear);margin-bottom:12px"><b>⚠️ Material caducado — ${dias} días desde este WoC.</b> El Week On-Chain es semanal, así que esto ya NO describe "esta semana": los niveles y las llamadas de abajo son de ${s2.woc_fecha} y pueden haberse resuelto. Revisa que la ingesta del WoC esté viva antes de operar con esto.</div>`:"")
         +`<h3>📰 WoC ${s2.woc_fecha} — «${s2.woc_titulo}» <span style="font-weight:400;color:var(--muted);font-size:12px">· evaluado a ${s2.updated}</span></h3>`
         +`<div>${s2.resumen}</div>`
         +(s2.niveles&&s2.niveles.length?`<div style="margin-top:8px">${s2.niveles.map(l=>`<span class="lvl">${l.k}: <b>${l.v}</b></span>`).join("")}</div>`:"")

@@ -40,5 +40,14 @@
     }
   ],
   "evaluadas_recientes": [],
-  "cambios_de_fiabilidad": ""
+  "cambios_de_fiabilidad": "",
+  "pendiente": {
+    "fecha": "2026-09-02",
+    "titulo": "Doubt at the Boundaries",
+    "semana": "Week 35 2026",
+    "url": "https://research.glassnode.com/the-week-onchain-week-35-2026/",
+    "adelanto": "Tras el short squeeze de mediados de agosto y una breve euforia, Bitcoin se paro justo debajo de la oferta de los tenedores de largo plazo. Con los tipos soberanos en maximos de ciclo y el volumen de los ETF apagado, el mercado ha vuelto a un rango bien definido: el precio, encajonado entre la oferta de corto plazo por debajo y la de largo plazo por encima.",
+    "motivo": "Solo tenemos el adelanto del email (insights@glassnode.com, 2-sep 16:33 UTC). El informe completo esta en research.glassnode.com y en X, y los dos devuelven 403 al archivador desde el 2-sep-2026. No se ingiere medio articulo: el agente citaria niveles que no ha leido.",
+    "como_entra": "research/glassnode-kb/ingerir_manual.py (repo privado) con el texto completo pegado, y despues el workflow sync-woc."
+  }
 }

@@ -209,6 +209,12 @@ def main():
     nuevo = construir(rec, previo)
     if rec.get("generado_por"):
         nuevo["fuentes"].append(rec["generado_por"])
+    # Un WoC que SABEMOS que existe pero que no hemos podido leer (Cloudflare) se arrastra
+    # como 'pendiente' para que el panel no presente el anterior como si fuera el vigente.
+    # Se cae solo en cuanto sincronizamos uno de esa fecha o posterior.
+    pend = actual.get("pendiente")
+    if pend and str(pend.get("fecha") or "") > str(nuevo.get("woc_fecha") or ""):
+        nuevo["pendiente"] = pend
     with open(DEST, "w") as f:
         json.dump(nuevo, f, indent=2, ensure_ascii=False)
     print(f"Actualizado: {actual.get('woc_fecha','(vacío)')} → {nuevo['woc_fecha']} · «{nuevo['woc_titulo']}»")

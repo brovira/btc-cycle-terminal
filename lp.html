@@ -1176,7 +1176,10 @@ function decWocSemanal(L){
   const choca=a1&&a2&&a1!==a2;
   const aviso=choca?`<div class="note" style="color:var(--hot);margin-top:4px">Las dos lecturas del ${mismaFuente?"MISMO informe":"informe"} NO coinciden: el pase diario dice <b>${esc(L.accion_lp)}</b> (marco on-chain) y la semanal <b>${esc(acc)}</b> (marco de derivados). Decide tú y escribe por qué; el panel no elige por ti.</div>`:"";
   const pend=/PENDIENTE/i.test(String(W.que_hacemos||""))?` <span class="badge stale">sin analizar</span>`:"";
-  return `<div class="kv" style="grid-column:1/-1"><b>Recomendación semanal (derivados)</b>
+  // Un WoC posterior que sabemos que existe pero no hemos podido leer: se dice, no se esconde.
+  const P=W.pendiente;
+  const sinLeer=P&&P.fecha>W.woc_fecha?`<div class="note" style="color:var(--hot);margin-top:6px"><b>Hay un Week On-Chain más nuevo sin leer:</b> «${esc(P.titulo||"?")}» (${esc(P.fecha)}${P.semana?" · "+esc(P.semana):""}). Lo de abajo es del ${esc(W.woc_fecha)} y NO recoge ese informe.${P.adelanto?`<div style="margin-top:3px">Adelanto del email: ${esc(P.adelanto)}</div>`:""}${P.motivo?`<div class="note" style="margin-top:3px">${esc(P.motivo)}</div>`:""}</div>`:"";
+  return `<div class="kv" style="grid-column:1/-1"><b>Recomendación semanal (derivados)</b>${sinLeer}
     <div>${W.que_hacemos||"—"}${pend}</div>
     ${W.senal_a_vigilar_txt?"":""}
     ${(W.llamadas_abiertas||[]).length?`<div style="margin-top:4px"><b>A vigilar:</b> ${esc(W.llamadas_abiertas[0].llamada||"")}</div>`:""}
