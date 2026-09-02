@@ -1213,7 +1213,7 @@ async function loadLecturas(){
 /* ---------- carga privada (repo privado vía /api/private, con la sesión global) ---------- */
 function privMsg(txt,err){const el=$("#privMsg");el.style.display="block";el.innerHTML=txt;el.style.color=err?"var(--bear)":"var(--muted)";}
 let PRIVATE_READY=false,PIPELINE_META=null,EVM_EVENTS=[];
-const CHAIN_LABEL={ethereum:"Ethereum",base:"Base",hyperevm:"HyperEVM",solana:"Solana"};
+const CHAIN_LABEL={ethereum:"Ethereum",base:"Base",hyperevm:"HyperEVM",solana:"Solana",arbitrum:"Arbitrum",optimism:"Optimism",polygon:"Polygon"};
 // Metadatos del portfolio unificado (cuándo corrió el pipeline y qué cadenas leyó). Opcional:
 // si el archivo aún no existe en el repo privado, el panel sigue funcionando sin él.
 async function loadPipelineMeta(){
