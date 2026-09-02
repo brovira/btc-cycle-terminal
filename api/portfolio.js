@@ -273,7 +273,19 @@ async function historicalUsdPrice(symbol, timestamp) {
           } catch (e) {}
         }
       }
-      if ((symbol || "").toUpperCase() === "HYPE") {
+      // Binance geobloquea (451) desde Vercel: currentMarketUsd ya caia a OKX, pero el
+      // precio HISTORICO no, y sin el fetchPositionHistory devolvia null. Por eso las
+      // posiciones de Base y HyperEVM salian con "sin historico" y n/d en PnL y fees.
+      if (pair) {
+        try {
+          const r = await fetch(`https://www.okx.com/api/v5/market/history-candles?instId=${pair.replace("USDT", "-USDT")}&bar=1m&after=${minute + 60000}&limit=1`, { headers: { "User-Agent": "portfolio" } });
+          if (r.ok) {
+            const row = ((await r.json()).data || [])[0];
+            if (row && +row[4] > 0) return +row[4];
+          }
+        } catch (e) {}
+      }
+      if (["HYPE", "WHYPE"].includes((symbol || "").toUpperCase())) {
         try {
           const from = Math.floor(timestamp / 1000) - 3600;
           const to = Math.floor(timestamp / 1000) + 3600;
@@ -562,8 +574,14 @@ async function fetchV3Positions(baseUrl, rpcs, addr, protoLabel, knownManagers =
       const position = { id: String(it.id), pair: `${t0.sym}/${t1.sym}`, fee: fee / 10000 + "%",
         amt0, amt1, sym0: t0.sym, sym1: t1.sym, usd: priced ? usd : (usd || null),
         price0: px0, price1: px1, inRange: sp >= spa && sp <= spb, range, protocol: protoLabel, network };
+      // Un historico que falla no puede desaparecer sin decir por que: el panel ensenaba
+      // "sin historico" y n/d, indistinguible de "esta posicion no tiene movimientos".
       position.history = await cachedPositionHistory({ baseUrl, rpcs, call, owner: addr, manager: npm,
-        tokenId: it.id, network, token0: t0, token1: t1, currentUsd: position.usd, px0, px1 }).catch(() => null);
+        tokenId: it.id, network, token0: t0, token1: t1, currentUsd: position.usd, px0, px1 })
+        .catch(e => { position.historyError = String((e && e.message) || e).slice(0, 160); return null; });
+      if (!position.history && !position.historyError) {
+        position.historyError = "no se pudo reconstruir: falta la acunacion del NFT en el explorador o el precio historico de algun token";
+      }
       out.positions.push(position);
       if (usd) out.totalUsd += usd;
     }

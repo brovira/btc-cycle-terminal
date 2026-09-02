@@ -928,7 +928,7 @@ function renderTabPos(M,BTC){
     const claimedAssets=h?byPairOrder(p.pair,[{amount:h.claimedFeeAmount0,symbol:p.sym0,usd:p.price0!=null?h.claimedFeeAmount0*p.price0:null},{amount:h.claimedFeeAmount1,symbol:p.sym1,usd:p.price1!=null?h.claimedFeeAmount1*p.price1:null}]):[];
     const pendingAssets=h?byPairOrder(p.pair,[{amount:h.pendingFeeAmount0,symbol:p.sym0,usd:p.price0!=null?h.pendingFeeAmount0*p.price0:null},{amount:h.pendingFeeAmount1,symbol:p.sym1,usd:p.price1!=null?h.pendingFeeAmount1*p.price1:null}]):[];
     const capitalWithdrawn=h?Math.max(0,(h.withdrawnUsd||0)-(h.claimedFeesUsd||0)):null;
-    const pnlContent=`${h?fmtUSD(h.pnlUsd,0):'<span class="na">n/d</span>'}${h?`<div class="sub ${h.pnlPct>=0?'up':'down'}">${h.pnlPct>=0?'+':''}${h.pnlPct.toFixed(2)}%</div>`:'<div class="sub">sin histórico</div>'}${histState}`;
+    const pnlContent=`${h?fmtUSD(h.pnlUsd,0):'<span class="na">n/d</span>'}${h?`<div class="sub ${h.pnlPct>=0?'up':'down'}">${h.pnlPct>=0?'+':''}${h.pnlPct.toFixed(2)}%</div>`:`<div class="sub" title="${esc(p.historyError||"")}">sin histórico${p.historyError?" ⚠":""}</div>`}${histState}`;
     const feeContent=h?feeMarkup(h.claimedFeesUsd,h.pendingFeesUsd,2):feeMarkup(null,null,2);
     const yieldContent=h?`${h.annualizedYieldPct.toFixed(1)}%`:'<span class="na">n/d</span>',durationContent=h?`${h.durationDays.toFixed(0)}d`:'<span class="na">n/d</span>';
     const pool=poolTip(`${esc(p.pair)} <span class="pilltok">${esc(p.fee)}</span><div class="poolmeta">${esc(p.protocol)} · ${esc(p.network||"EVM")}${nft}</div>`,{protocol:p.protocol,network:p.network||"EVM",fee:p.fee,nft:p.id});
