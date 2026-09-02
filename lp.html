@@ -1008,9 +1008,34 @@ function renderTabClosed(M,BTC){
   const evmTable=evm.length?`<div class="note" style="padding:10px 8px 4px"><b>Cerradas en EVM</b> (Ethereum · HyperEVM · Base). Fechas y PnL desde los logs del gestor de posiciones (Increase/Decrease/Collect), valorados al precio de cada hora. <b>Total PnL = Precio + Farming</b>: Precio es lo que habría hecho HOLD con lo depositado; Farming (vs HOLD) es lo que la pool añadió o quitó (fees − IL). En un par <b>anclado</b> el Total es casi todo precio y lo que cuenta es Farming. ${conPnl<evm.length?`${evm.length-conPnl} sin PnL (sin logs o sin precio de mercado para algún token).`:""}</div>
     <table class="ot"><thead><tr><th>Pool</th><th>Abierta</th><th>Cerrada</th><th>Duración</th><th>Invertido</th><th>Total PnL</th><th>Precio</th><th>Fees</th><th>Farming (vs HOLD)</th><th>Porqué</th></tr></thead><tbody>${evmRows}</tbody></table>`:"";
   $("#tabClosed").innerHTML=`<table class="ot"><thead><tr><th>Pool</th><th>Cerrada</th><th>Duración</th><th>Total PnL</th><th>Fees</th><th>vs HOLD USD</th><th>vs HOLD tokens</th><th>vs HOLD BTC</th><th>Entrada media</th></tr></thead><tbody>${rows||'<tr><td colspan="9" class="note">Sin cerradas en Orca.</td></tr>'}</tbody></table>${evmTable}
+    <div id="porTipo"></div>
     <div class="note" style="padding:14px 8px 4px"><b>Evolución</b> · PnL acumulado de TODAS las cerradas con resultado (Orca + EVM) por fecha de cierre, y las primeras frente a las últimas.</div>
     <div id="evoResumen" class="note" style="padding:0 8px 6px"></div><div id="evoChart" style="height:260px"></div>`;
+  renderPorTipo(M,evm,BTC);
   renderEvolucion(M,evm,BTC);
+}
+/* Cuánto sale de cada TIPO de pool. Separado porque no son la misma actividad: BTC contra
+   estable es farmear fees, y volátil contra volátil es comprar exposición. Mezclarlas en un
+   total escondía que el resultado del año venía de una sola posición grande. */
+function renderPorTipo(M,evm,BTC){
+  const el=$("#porTipo");if(!el)return;
+  const pts=[];
+  for(const p of M.closed)if(p.computed&&isFinite(p.pnl)){const bm=benchmarks(p,BTC);
+    pts.push({tipo:tipoPool(p.pair),pnl:p.pnl,lp:(bm&&isFinite(bm.vsTok))?bm.vsTok:null,fees:p.fees||0,inv:p.invested||0,dias:p.days||0});}
+  for(const p of evm)if(p.pnlUsd!=null)
+    pts.push({tipo:tipoPool(p.pair),pnl:p.pnlUsd,lp:p.vsHoldUsd!=null?p.vsHoldUsd:null,fees:p.feesUsd||0,inv:p.investedUsd||0,dias:p.durationDays||0});
+  const con=pts.filter(x=>x.tipo);
+  if(con.length<2){el.innerHTML="";return;}
+  const orden=["BTC / estable","anclado","alt / estable","volátil / volátil"];
+  const filas=orden.map(t=>{
+    const xs=con.filter(x=>x.tipo===t);if(!xs.length)return "";
+    const sum=f=>xs.reduce((s,x)=>s+(f(x)||0),0);
+    const lp=xs.every(x=>x.lp==null)?null:sum(x=>x.lp),fees=sum(x=>x.fees);
+    const cel=(v,d=0)=>v==null?'<td class="na">—</td>':`<td class="${v>=0?'up':'down'}">${fmtUSD(v,d)}</td>`;
+    return `<tr><td><b>${esc(t)}</b></td><td>${xs.length}</td><td>${fmtUSD(sum(x=>x.inv),0)}</td>${cel(sum(x=>x.pnl))}${cel(lp)}<td class="up">${fmtUSD(fees,0)}</td>${cel(lp==null?null:lp-fees)}<td>${xs.filter(x=>x.pnl>0).length}/${xs.length}</td><td>${Math.round(sum(x=>x.dias)/xs.length)} d</td></tr>`;
+  }).join("");
+  el.innerHTML=`<div class="note" style="padding:14px 8px 4px"><b>Por tipo de pool</b> · no son la misma actividad. <b>Farming</b> es lo que añadió la pool frente a tener los tokens quietos (fees − IL); <b>Precio</b> queda fuera de esta tabla a propósito.</div>
+    <table class="ot"><thead><tr><th>Tipo</th><th>n</th><th>Capital</th><th>Total PnL</th><th>Farming</th><th>Fees</th><th>IL</th><th>En verde</th><th>Duración</th></tr></thead><tbody>${filas}</tbody></table>`;
 }
 /* Cronologia de cierres: cada punto es una posicion cerrada con PnL; la linea es el acumulado.
    Compara el primer tercio con el ultimo: si al principio se perdio por impaciencia, aqui se ve. */
@@ -1277,6 +1302,20 @@ const CHAIN_LABEL={ethereum:"Ethereum",base:"Base",hyperevm:"HyperEVM",solana:"S
    dolares es el precio del subyacente y lo que hizo la pool son las fees (≈ vs HOLD tokens). */
 const PEG_SETS=[["WBTC","CBBTC","UBTC","TBTC","LBTC","SOLVBTC","BTC"],["USDC","USDT","USD₮0","USDBC","DAI","GHO","USDC.E"],["WETH","ETH","CBETH","STETH","WSTETH"]];
 function pairKind(pair){const t=String(pair||"").toUpperCase().split("/").map(x=>x.trim());if(t.length<2)return"?";const g=x=>PEG_SETS.findIndex(S=>S.includes(x));if(g(t[0])>=0&&g(t[0])===g(t[1]))return"anclado";if(g(t[0])===1||g(t[1])===1)return"estable";return"volatil";}
+/* Tipo de pool por PROPOSITO, que es como se gestiona el capital: BTC contra estable
+   (el farming de fees puro), anclado (dos wrappers del mismo activo), alt contra estable,
+   y volatil contra volatil (exposicion a dos activos a la vez). */
+const FAM_BTC=["WBTC","CBBTC","UBTC","TBTC","BTC","SOLVBTC","LBTC"];
+function tipoPool(pair){
+  // OJO: los pares de Orca llegan como "cbBTC / USDC", con espacios; sin recortarlos ninguna
+  // posicion de Solana casaba y todas caian en "volatil / volatil".
+  const t=String(pair||"").toUpperCase().split("/").map(x=>x.trim());if(t.length<2)return null;
+  const est=x=>PEG_SETS[1].includes(x),btc=x=>FAM_BTC.includes(x);
+  if(pairKind(pair)==="anclado")return "anclado";
+  if((btc(t[0])&&est(t[1]))||(btc(t[1])&&est(t[0])))return "BTC / estable";
+  if(est(t[0])||est(t[1]))return "alt / estable";
+  return "volátil / volátil";
+}
 const pegBadge=pair=>pairKind(pair)==="anclado"?' <span class="badge flat" title="Par anclado: sin IL que valga. El PnL en $ es el precio del subyacente; lo que hizo la pool son las fees.">anclado</span>':"";
 // Metadatos del portfolio unificado (cuándo corrió el pipeline y qué cadenas leyó). Opcional:
 // si el archivo aún no existe en el repo privado, el panel sigue funcionando sin él.
