@@ -31,6 +31,7 @@ Uso:
   python ingesta/sync_woc.py --forzar   # reescribe aunque la fecha coincida
 """
 import argparse, base64, json, os, sys, urllib.request, urllib.error
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEST = os.path.join(ROOT, "data", "woc_semana.json")
@@ -193,7 +194,21 @@ def main():
               "el artículo nuevo aún no está ingerido)")
         return
 
+    # El pipeline privado deja la recomendacion PENDIENTE cuando no tiene clave de API (desde
+    # julio, siempre). Aqui se rellena con la suscripcion, con el mismo framework y esquema.
+    if str(rec.get("recomendacion_lp", "")).upper() == "PENDIENTE" and rec.get("articulo"):
+        from woc_recomendacion import recomendar
+        texto = gh_get(f"research/glassnode-kb/articulos/{rec['articulo']}")
+        if texto:
+            d, err = recomendar(texto, rec.get("fecha", "?"), previo)
+            if d:
+                rec = {**rec, **d}
+                print("Recomendacion rellenada con claude -p (el pipeline privado la dejo PENDIENTE).")
+            else:
+                print(f"AVISO: la recomendacion sigue PENDIENTE: {err}", file=sys.stderr)
     nuevo = construir(rec, previo)
+    if rec.get("generado_por"):
+        nuevo["fuentes"].append(rec["generado_por"])
     with open(DEST, "w") as f:
         json.dump(nuevo, f, indent=2, ensure_ascii=False)
     print(f"Actualizado: {actual.get('woc_fecha','(vacío)')} → {nuevo['woc_fecha']} · «{nuevo['woc_titulo']}»")

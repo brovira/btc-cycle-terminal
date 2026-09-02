@@ -36,7 +36,10 @@ REPO_KB = "brovira/defi-tracker"
 RUTA_KB = "research/glassnode-kb/articulos"
 # Solo Week On-Chain. El KB también guarda Strategy Watch y piezas sueltas, que son otro
 # producto y tienen su propio agente (glassnode_strategy).
-PATRON_WOC = re.compile(r"^(\d{4})-(\d{2})-(\d{2})-the-week-on-?chain.*\.md$", re.I)
+# Antes solo entraban los "the-week-onchain-*": un articulo especial de Glassnode (p. ej. uno
+# sobre rangos de BTC, 2-sep-2026) se quedaba fuera del agente. El KB solo guarda posts de
+# research.glassnode.com, asi que todo lo posterior al corte es material del agente.
+PATRON_WOC = re.compile(r"^(\d{4})-(\d{2})-(\d{2})-.+\.md$", re.I)
 
 
 def gh(ruta):

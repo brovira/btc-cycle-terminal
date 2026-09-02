@@ -37,16 +37,19 @@ jobs:
       # Mejor no sincronizar que sincronizar con las notas mal atribuidas.
       - name: Test del clasificador de fiabilidad
         run: python ingesta/test_fiabilidad.py
+      # Se paga con la suscripción (CLAUDE_CODE_OAUTH_TOKEN), no con la API: la recomendación
+      # cuando el pipeline privado la deja PENDIENTE, y los informes destilados del agente.
+      - name: Instalar Claude Code
+        run: curl -fsSL https://claude.ai/install.sh | bash
       - name: Sincronizar
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         run: |
+          export PATH="$HOME/.local/bin:$PATH"
           python ingesta/sync_woc.py ${{ inputs.forzar && '--forzar' || '' }}
       # El paso de arriba trae la RECOMENDACIÓN al dashboard. Este trae los INFORMES que lee
       # el agente `glassnode_woc` para citar, que hasta el 17-ago-2026 no los escribía nadie.
-      # Se paga con la suscripción (CLAUDE_CODE_OAUTH_TOKEN), no con la API.
-      - name: Instalar Claude Code
-        run: curl -fsSL https://claude.ai/install.sh | bash
       - name: Destilar los informes que falten
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
