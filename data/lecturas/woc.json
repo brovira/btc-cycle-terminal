@@ -1,0 +1,39 @@
+{
+ "agente": "woc",
+ "nombre": "Glassnode · Week On-Chain",
+ "fuente_fecha": "2026-08-26",
+ "fuentes": [
+  "20260826-the-week-onchain-week-34-2026.md"
+ ],
+ "titulo": "The Week On-Chain — Squeeze into Supply",
+ "tendencia": "neutral",
+ "horizonte": "semanas",
+ "escenario": "Glassnode describe una 'recuperación por etapas': el mayor short-flush registrado desde 2019 (19-ago-2026) arrancó el movimiento, financiado por 2.23B$ de entradas ETF y salidas de exchanges, mientras el compuesto de ciclo sale de la zona fría hacia el límite neutral de 40 tras siete meses por debajo. Por encima converge un muro de resistencia agregado en 81K-86K$ (cost-basis shelf, gamma flip, liquidaciones, oferta LTH); por debajo, el STH cost basis en 70.0K$ y el suelo 62K-65K son los niveles a vigilar. Las opciones descuentan mantener el rango hasta el vencimiento de septiembre, no una ruptura ni un retest del suelo.",
+ "rango_esperado": {
+  "bajo": 62000,
+  "alto": 86000,
+  "base": "suelo del rango jun-ago sostenido por compradores STH (62K-65K) hasta la zona de resistencia agregada donde convergen el cost-basis shelf de LTH, el dealer gamma flip y el shelf de liquidaciones cortas supervivientes (81K-86K)"
+ },
+ "regimen_leverage": "Flush de shorts sin apalancamiento repuesto: el OI en términos de BTC cayó 11% durante la ventana del squeeze y el funding se mantuvo cerca de neutral (con lecturas negativas después); Glassnode lo lee como purga de stops, no como rally impulsado por apalancamiento. Una reconstrucción del OI coin-margined junto a funding al alza sería la primera señal de que vuelve el apalancamiento.",
+ "accion_lp": "ESTRECHAR",
+ "niveles": {
+  "sth_cost_basis": 70000,
+  "true_market_mean": null,
+  "realized_price": null,
+  "soporte": 62000,
+  "resistencia": 83300,
+  "sth_menos_1s": null,
+  "sth_mas_1s": null
+ },
+ "accion": "Vigilan el cierre sostenido por encima de 83.3K$ como confirmación alcista (muro absorbido, no respetado); la primera señal de alerta sería debilidad en el STH cost basis (70.0K$), y un test más profundo sería la pérdida del suelo 62K-65K; volver a 62.9K$ (origen del squeeze) invalidaría todo el episodio.",
+ "para_mis_lps": "El informe no da una recomendación de LP explícita, pero el mercado de opciones descuenta consolidación entre aprox. 69.0K-89.7K$ hasta el vencimiento del 25-sep (mediana cerca de spot): un rango LP ceñido a esa banda capturaría fees en el escenario base de 'hold dentro de los muros', con el riesgo de quedar fuera de rango si se confirma ruptura sobre 83.3K$ o pérdida del suelo 62K-65K.",
+ "citas": [
+  "the largest single day of short liquidations since 2019",
+  "the market is pricing a hold inside the walls, not a breakout or a retest of the floor"
+ ],
+ "confianza": "alta",
+ "cambios_vs_anterior": "primera lectura",
+ "cadencia_dias": 7,
+ "actualizado": "2026-09-02T09:44:15+00:00",
+ "historial": []
+}

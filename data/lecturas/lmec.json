@@ -1,0 +1,73 @@
+{
+ "agente": "lmec",
+ "nombre": "LMEC",
+ "fuente_fecha": "2026-08-20",
+ "fuentes": [
+  "20260731-aqu-estoy-invirtiendo-muy-fuerte-oportunidad-muy-clara.md",
+  "20260820-este-v-deo-deber-a-ser-de-pago.md"
+ ],
+ "titulo": "Este Vídeo Debería SER DE PAGO",
+ "tendencia": "bajista",
+ "horizonte": "semanas",
+ "escenario": "Bitcoin ha subido hasta tocar los $70,000 y por fin ha llegado a testear la Bull Market Support Band (situada en su anterior análisis entre $68,000 y $69,000), algo que llevaba meses esperando como señal clave. Según el patrón histórico de 2018 y 2014, lo más probable es que este testeo falle y el mercado siga cayendo, así que de momento mantiene el plan intacto (55% invertido en BTC/altcoins/farming, 45% en stables), pero si BTC cierra dos semanas seguidas por encima de la banda cambiará de plan, y si cae de nuevo por debajo y toca mínimos bajo $60,000 comprará fuerte.",
+ "posiciones": [
+  {
+   "par": "ETH/cbBTC",
+   "protocolo": "PancakeSwap",
+   "red": "Base",
+   "rango": "rango muy amplio (actualmente fuera de rango)",
+   "peso": "$19,000 inicial (marzo), ahora ~$20,000",
+   "comentario": "Posición principal; ha generado $1,320 en comisiones, TAE nominal 55% pero rentabilidad realizada 18-20% anual por usar rangos amplios; reinvierte dividendos en la misma pool para acumular BTC/ETH."
+  },
+  {
+   "par": "BNB/ETH",
+   "protocolo": "Uniswap",
+   "red": "Ethereum",
+   "rango": null,
+   "peso": null,
+   "comentario": "TAE actual ~20% anual, con tramos históricos de hasta 100%; posición muy consistente para acumular dos de sus monedas de convicción."
+  },
+  {
+   "par": "BNB/ZEC",
+   "protocolo": "Uniswap",
+   "red": "BNB Chain",
+   "rango": null,
+   "peso": null,
+   "comentario": "Rentabilidad baja de momento; tesis de que ZEC volverá a tener mucha atención y volumen en el próximo mercado alcista, lo que revalorizaría la posición."
+  },
+  {
+   "par": "HYPE/BTC",
+   "protocolo": "HyperSwap",
+   "red": "HyperEVM (Hyperliquid)",
+   "rango": null,
+   "peso": null,
+   "comentario": "TAE actual ~320% anual, no representativo (pico puntual por la noticia de que la CFTC/Trump quiere traer Hyperliquid a EE.UU.); estuvo fuera de rango bastante tiempo antes."
+  }
+ ],
+ "cartera": {
+  "stables_pct": 45,
+  "btc_pct": null,
+  "alts_pct": null,
+  "farming_pct": null
+ },
+ "niveles": {
+  "soporte": 60000,
+  "resistencia": 69000,
+  "objetivo": null,
+  "compra_escalonada": [
+   50000
+  ]
+ },
+ "accion": "Mantiene el plan de inversión sin cambios: espera confirmación (cierre semanal de BTC dos semanas seguidas por encima de la Bull Market Support Band) antes de modificarlo; si BTC vuelve a caer bajo la banda y toca mínimos por debajo de $60,000 comprará fuerte, y si ve debilidad bajo la banda volverá a abrir cortos en altcoins.",
+ "para_mis_lps": "No menciona rangos concretos para BTC/USDC, pero su principio general aplicable es usar rangos de precio muy amplios en pares volátiles (ETH/BTC, BNB/ETH, HYPE/BTC) durante el mercado bajista para minimizar gestión activa, aceptando menor TAE nominal a cambio de no tener que reajustar posiciones constantemente.",
+ "citas": [
+  "Bitcoin, con la reciente subida que ha tenido, ha venido a tocar la Bull Market Support Band.",
+  "Si durante las siguientes dos semanas Bitcoin sigue por encima de la Bull Market Superband, probablemente toque hacer cambios en el plan de inversión.",
+  "Yo con estas posiciones trabajo con rangos de precios muy amplios, aunque mi rentabilidad decaiga bastante."
+ ],
+ "confianza": "alta",
+ "cambios_vs_anterior": "En julio BTC rondaba $64,000 sin haber tocado aún la Bull Market Support Band (~$68-69k) y esperaba agosto/septiembre bajistas por el patrón histórico; en agosto BTC subió a $70,000, tocó por fin la banda, e HYPE saltó un 23% por la noticia de que la CFTC quiere regular Hyperliquid en EE.UU. (reduciendo su riesgo regulatorio), lo que le llevó a hacer su segunda compra de HYPE a ~$53.7.",
+ "cadencia_dias": 30,
+ "actualizado": "2026-09-02T09:43:29+00:00",
+ "historial": []
+}
