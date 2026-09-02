@@ -6,17 +6,35 @@
   "woc_titulo": "Squeeze into Supply",
   "fuentes": [
     "2026-08-26-the-week-onchain-week-34-2026.md",
-    "recomendaciones.jsonl (pipeline semanal, DeFi-Tracker)"
+    "recomendaciones.jsonl (pipeline semanal, DeFi-Tracker)",
+    "claude -p en sync-woc (btc-cycle-terminal), con la suscripcion; el pipeline privado la dejo PENDIENTE"
   ],
-  "resumen": "Pendiente de análisis (sin API key o error de API).",
-  "que_hacemos": "<b>Acción de LP: PENDIENTE</b> · régimen de leverage: <b>?</b> · confianza: baja.<br>—",
-  "niveles": [],
-  "metricas": "—",
+  "resumen": "El short base quedó destruido (85% de las liquidaciones fueron shorts, el mayor evento desde 2019) pero el funding nunca despegó de neutral y el OI en coin cayó, es decir: se desapalancó, no se releverageó con longs nuevos. El rally lo pagó demanda real (ETF +$2.23B sin outflows, salidas de exchange, acumulación en las 6 cohortes), no apalancamiento; el mercado de opciones no muestra pánico ni euforia, solo precia un 'hold' plano. El offside real no está en derivados sino on-chain: los LTH sentados en el muro $83-86K (¿venden en breakeven?) frente a los STH recientes que defienden $62-65K/$70K.",
+  "que_hacemos": "<b>Acción de LP: ENSANCHAR</b> · régimen de leverage: <b>reseteando</b> · confianza: media.<br>El leverage está limpio/reseteado (funding neutral, OI cayendo) así que no hay señal de leverage apinado que dispare SALIR, pero el spot ($79K) está pegado al dealer gamma flip ($82.3K) y a una convergencia de resistencia estructural ($81K-86K: shelf de autocustodia, muro de LTH, liquidaciones, asks re-laderados); eso es zona de gamma corta inminente, no un pivote de reversión a la media (spot no está en max pain $69-70K), así que toca ampliar el rango y reducir tamaño en vez de farmear estrecho.",
+  "niveles": [
+    {
+      "k": "STH cost basis (resistencia/soporte)",
+      "v": "$70.000"
+    },
+    {
+      "k": "Estante de demanda (soporte)",
+      "v": "$62.000"
+    },
+    {
+      "k": "Muro de oferta (resistencia)",
+      "v": "$83.300"
+    },
+    {
+      "k": "Max pain de opciones",
+      "v": "$70.000"
+    }
+  ],
+  "metricas": "Funding apenas se movió de neutral durante y después del squeeze (sin persecución de longs); OI en BTC cayó -11% durante la ventana (shorts liquidados, no repuestos); sin cifras explícitas de skew/put-call/DVOL esta semana; max pain $69K (vencimiento semanal $10.4B) y $70K (trimestral sep, $13.7B) vs spot $79K; dealer gamma flip negativo en $82.3K; distribución forward al 25-sep con rango del 70% central en $69.0K-89.7K.",
   "llamadas_abiertas": [
     {
-      "llamada": "—",
+      "llamada": "Que el Open Interest vuelva a crecer junto con funding positivo cerca del muro $81-86K (leverage largo apinándose antes de la prueba) reactivaría la señal de apinado-long y justificaría SALIR; en cambio, cierres asentados por encima de $83.3K con las entradas de ETF sosteniéndose confirmarían absorción del muro y abrirían paso a FARMEAR en un rango más alto.",
       "tipo": "señal a vigilar (del WoC)",
-      "fiabilidad_tipo": "sin clasificar — pendiente de que el agente lo calibre",
+      "fiabilidad_tipo": "posicionamiento/leverage — 8/10 histórico (su punto fuerte)",
       "criterio_exito": "se evalúa el jueves siguiente: narrativa del WoC nuevo + movimiento real de precio",
       "estado": "pendiente"
     }
