@@ -975,10 +975,45 @@ function renderTabClosed(M,BTC){
   }).join("");
   const evm=((PIPELINE_META&&PIPELINE_META.positions)||[]).filter(p=>p.chain!=="solana"&&p.status==="closed").sort((a,b)=>String(b.closedDate||b.openedDate||"").localeCompare(String(a.closedDate||a.openedDate||"")));
   const dias=(a,b)=>a&&b?Math.round((new Date(b)-new Date(a))/864e5)+"d":"—";
-  const evmRows=evm.map(p=>`<tr><td>${esc(p.pair)}<div class="sub">${esc([p.protocol,CHAIN_LABEL[p.chain]||p.chain].join(" · "))}${p.nft?" · "+esc(p.nft.replace(/.*#/,"#")):""}</div></td><td>${esc(p.openedDate||"—")}</td><td>${p.closedDate?esc(p.closedDate):'<span class="note">liquidez 0 on-chain · fecha de retirada no visible</span>'}</td><td>${dias(p.openedDate,p.closedDate)}</td><td style="text-align:left">${esc(p.sourceOfTruth||"—")}</td><td>${p.rationaleInTime?'<span class="badge up">porqué antes</span>':p.hasRationale?'<span class="badge flat">porqué después</span>':'<span class="badge down">sin porqué</span>'}</td></tr>`).join("");
-  const evmTable=evm.length?`<div class="note" style="padding:10px 8px 4px"><b>Cerradas en EVM</b> (Ethereum · HyperEVM · Base), desde el lector on-chain del repo privado. Sin PnL todavía: la analítica de fees y HOLD solo existe para Orca.</div>
-    <table class="ot"><thead><tr><th>Pool</th><th>Abierta</th><th>Cerrada</th><th>Duración</th><th>Fuente de verdad</th><th>Porqué</th></tr></thead><tbody>${evmRows}</tbody></table>`:"";
-  $("#tabClosed").innerHTML=`<table class="ot"><thead><tr><th>Pool</th><th>Cerrada</th><th>Duración</th><th>Total PnL</th><th>Fees</th><th>vs HOLD USD</th><th>vs HOLD tokens</th><th>vs HOLD BTC</th><th>Entrada media</th></tr></thead><tbody>${rows||'<tr><td colspan="9" class="note">Sin cerradas en Orca.</td></tr>'}</tbody></table>${evmTable}`;
+  const pnlCell=p=>p.pnlUsd==null?`<span class="na">${p.analyticsStatus==="unpriced"?"sin precio":"n/d"}</span>`:`<span class="${p.pnlUsd>=0?'up':'down'}">${fmtUSD(p.pnlUsd,0)}${p.pnlPct!=null?`<div class="sub ${p.pnlPct>=0?'up':'down'}">${p.pnlPct>=0?'+':''}${p.pnlPct.toFixed(2)}%</div>`:''}</span>`;
+  const evmRows=evm.map(p=>`<tr><td>${esc(p.pair)}<div class="sub">${esc([p.protocol,CHAIN_LABEL[p.chain]||p.chain].join(" · "))}${p.nft?" · "+esc(p.nft.replace(/.*#/,"#")):""}</div></td><td>${esc(p.openedDate||"—")}</td><td>${p.closedDate?esc(p.closedDate):'<span class="note">fecha no visible</span>'}</td><td>${p.durationDays!=null?Math.round(p.durationDays)+"d":dias(p.openedDate,p.closedDate)}</td><td>${p.investedUsd!=null?fmtUSD(p.investedUsd,0):"—"}</td><td>${pnlCell(p)}</td><td class="up">${p.feesUsd!=null?fmtUSD(p.feesUsd,0):"—"}</td><td class="${(p.vsHoldUsd||0)>=0?'up':'down'}">${p.vsHoldUsd!=null?fmtUSD(p.vsHoldUsd,0):"—"}</td><td>${p.rationaleInTime?'<span class="badge up">porqué antes</span>':p.hasRationale?'<span class="badge flat">porqué después</span>':'<span class="badge down">sin porqué</span>'}</td></tr>`).join("");
+  const conPnl=evm.filter(p=>p.pnlUsd!=null).length;
+  const evmTable=evm.length?`<div class="note" style="padding:10px 8px 4px"><b>Cerradas en EVM</b> (Ethereum · HyperEVM · Base). Fechas y PnL desde los logs del gestor de posiciones (Increase/Decrease/Collect), valorados al precio de cada hora. ${conPnl<evm.length?`${evm.length-conPnl} sin PnL (sin logs o sin precio de mercado para algún token).`:""}</div>
+    <table class="ot"><thead><tr><th>Pool</th><th>Abierta</th><th>Cerrada</th><th>Duración</th><th>Invertido</th><th>Total PnL</th><th>Fees</th><th>vs HOLD USD</th><th>Porqué</th></tr></thead><tbody>${evmRows}</tbody></table>`:"";
+  $("#tabClosed").innerHTML=`<table class="ot"><thead><tr><th>Pool</th><th>Cerrada</th><th>Duración</th><th>Total PnL</th><th>Fees</th><th>vs HOLD USD</th><th>vs HOLD tokens</th><th>vs HOLD BTC</th><th>Entrada media</th></tr></thead><tbody>${rows||'<tr><td colspan="9" class="note">Sin cerradas en Orca.</td></tr>'}</tbody></table>${evmTable}
+    <div class="note" style="padding:14px 8px 4px"><b>Evolución</b> · PnL acumulado de TODAS las cerradas con resultado (Orca + EVM) por fecha de cierre, y las primeras frente a las últimas.</div>
+    <div id="evoResumen" class="note" style="padding:0 8px 6px"></div><div id="evoChart" style="height:260px"></div>`;
+  renderEvolucion(M,evm);
+}
+/* Cronologia de cierres: cada punto es una posicion cerrada con PnL; la linea es el acumulado.
+   Compara el primer tercio con el ultimo: si al principio se perdio por impaciencia, aqui se ve. */
+function renderEvolucion(M,evm){
+  const pts=[];
+  for(const p of M.closed)if(p.computed&&p.last&&isFinite(p.pnl))pts.push({t:p.last,pool:p.pair+" (Orca)",pnl:p.pnl,pct:p.pnlPct,days:p.days,inv:p.invested});
+  for(const p of evm)if(p.pnlUsd!=null&&p.closedDate)pts.push({t:new Date(p.closedDate).getTime(),pool:`${p.pair} (${p.protocol} · ${CHAIN_LABEL[p.chain]||p.chain})`,pnl:p.pnlUsd,pct:p.pnlPct,days:p.durationDays,inv:p.investedUsd});
+  pts.sort((a,b)=>a.t-b.t);
+  const el=$("#evoResumen");
+  if(pts.length<2){el.textContent="Hacen falta al menos dos cerradas con PnL.";return;}
+  let acc=0;const cum=pts.map(x=>(acc+=x.pnl));
+  const n=Math.max(2,Math.floor(pts.length/3));const ini=pts.slice(0,n),fin=pts.slice(-n);
+  const media=(a,f)=>a.reduce((s,x)=>s+(f(x)||0),0)/a.length;
+  const wins=a=>a.filter(x=>x.pnl>0).length;
+  const fila=(nom,a)=>`<b>${nom}</b> (${a.length}): PnL medio ${fmtUSD(media(a,x=>x.pnl),0)}${a.some(x=>x.pct!=null)?` (${media(a.filter(x=>x.pct!=null),x=>x.pct).toFixed(1)}%)`:""} · duración media ${Math.round(media(a,x=>x.days))} d · ${wins(a)}/${a.length} en positivo`;
+  el.innerHTML=`${fila("Primeras "+n,ini)}<br>${fila("Últimas "+n,fin)}<br>Total: ${pts.length} cerradas · ${fmtUSD(acc,0)} · ${wins(pts)}/${pts.length} en positivo`;
+  if(!window.Plotly)return;
+  const cMut=cssv("--muted"),cInk=cssv("--ink"),cGrid=cssv("--grid"),cPanel=cssv("--panel"),cAcc=cssv("--accent");
+  const x=pts.map(p=>new Date(p.t).toISOString().slice(0,10));
+  Plotly.react("evoChart",[
+    {type:"bar",x,y:pts.map(p=>p.pnl),name:"PnL de cada cierre",marker:{color:pts.map(p=>p.pnl>=0?"rgba(46,204,113,.6)":"rgba(231,76,60,.6)")},
+      text:pts.map(p=>`${p.pool}<br>${fmtUSD(p.pnl,0)}${p.pct!=null?" ("+p.pct.toFixed(1)+"%)":""} · ${Math.round(p.days||0)} d${p.inv?" · inv "+fmtUSD(p.inv,0):""}`),hoverinfo:"text"},
+    {type:"scatter",x,y:cum,name:"acumulado",line:{color:cAcc,width:2},yaxis:"y2",hoverinfo:"y"},
+  ],{paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{color:cInk,family:cssv("--font")},
+    margin:{l:52,r:52,t:10,b:26},hovermode:"closest",hoverlabel:{bgcolor:cPanel,bordercolor:cAcc,font:{color:cInk,size:11}},
+    legend:{orientation:"h",y:1.05,x:0,font:{size:10.5},bgcolor:"rgba(0,0,0,0)"},
+    xaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,type:"date"},
+    yaxis:{gridcolor:cGrid,linecolor:cGrid,color:cMut,title:{text:"$ por cierre",font:{size:10}}},
+    yaxis2:{overlaying:"y",side:"right",gridcolor:"rgba(0,0,0,0)",color:cMut,title:{text:"acum. $",font:{size:10}}}},
+    {responsive:true,displaylogo:false,scrollZoom:false,modeBarButtonsToRemove:["select2d","lasso2d"]});
 }
 $("#tabbar").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const t=b.dataset.tab;
   $("#tabbar").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
