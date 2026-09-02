@@ -1,38 +1,34 @@
 {
   "_como_se_actualiza": "AUTOMÁTICO desde jul-2026: ingesta/sync_woc.py lee la recomendación del pipeline semanal del repo privado (DeFi-Tracker) y la traduce a este formato. Workflow: sync-woc.yml, jueves 14:00 UTC (1h después del pipeline).",
   "_pendiente_agente": "`fiabilidad_tipo` se asigna por heurística de palabras clave y `cambios_de_fiabilidad` queda vacío: eso lo calibra el agente glassnode_tactico contra track_record.md.",
-  "updated": "2026-08-26",
-  "woc_fecha": "2026-08-26",
-  "woc_titulo": "Squeeze into Supply",
+  "updated": "2026-09-02",
+  "woc_fecha": "2026-09-02",
+  "woc_titulo": "Doubt at the Boundaries",
   "fuentes": [
-    "2026-08-26-the-week-onchain-week-34-2026.md",
+    "2026-09-02-the-week-onchain-week-35-2026.md",
     "recomendaciones.jsonl (pipeline semanal, DeFi-Tracker)",
     "claude -p en sync-woc (btc-cycle-terminal), con la suscripcion; el pipeline privado la dejo PENDIENTE"
   ],
-  "resumen": "El short base quedó destruido (85% de las liquidaciones fueron shorts, el mayor evento desde 2019) pero el funding nunca despegó de neutral y el OI en coin cayó, es decir: se desapalancó, no se releverageó con longs nuevos. El rally lo pagó demanda real (ETF +$2.23B sin outflows, salidas de exchange, acumulación en las 6 cohortes), no apalancamiento; el mercado de opciones no muestra pánico ni euforia, solo precia un 'hold' plano. El offside real no está en derivados sino on-chain: los LTH sentados en el muro $83-86K (¿venden en breakeven?) frente a los STH recientes que defienden $62-65K/$70K.",
-  "que_hacemos": "<b>Acción de LP: ENSANCHAR</b> · régimen de leverage: <b>reseteando</b> · confianza: media.<br>El leverage está limpio/reseteado (funding neutral, OI cayendo) así que no hay señal de leverage apinado que dispare SALIR, pero el spot ($79K) está pegado al dealer gamma flip ($82.3K) y a una convergencia de resistencia estructural ($81K-86K: shelf de autocustodia, muro de LTH, liquidaciones, asks re-laderados); eso es zona de gamma corta inminente, no un pivote de reversión a la media (spot no está en max pain $69-70K), así que toca ampliar el rango y reducir tamaño en vez de farmear estrecho.",
+  "resumen": "El squeeze del 19-ago ya limpio buena parte del apalancamiento largo previo, y el rechazo bajo $80K disparo nuevas liquidaciones long, dejando el heatmap con fuel bilateral: shorts liquidables entre $83K-$86K y longs entre $60K-$63K. El sentimiento de opciones a corto plazo se enfrio de euforia a neutral, sin skew extremo en ningun sentido, mientras el profit-supply mas alto que en mayo (68% vs 65%) anade oferta latente en el techo.",
+  "que_hacemos": "<b>Acción de LP: ENSANCHAR</b> · régimen de leverage: <b>mixto</b> · confianza: baja.<br>No hay confluencia de leverage apinado en una sola direccion (fuel bilateral, skew ya normalizado a neutral) ni datos de VRP/funding que justifiquen farmear estrecho; el rango on-chain esta bien definido ($62-65K piso, $83-86K techo) pero es amplio, con el vencimiento trimestral del 25-sep como ancla de volatilidad adicional, asi que conviene rango ancho y tamano reducido.",
   "niveles": [
     {
       "k": "STH cost basis (resistencia/soporte)",
-      "v": "$70.000"
+      "v": "$71.000"
     },
     {
       "k": "Estante de demanda (soporte)",
-      "v": "$62.000"
+      "v": "$63.500"
     },
     {
       "k": "Muro de oferta (resistencia)",
-      "v": "$83.300"
-    },
-    {
-      "k": "Max pain de opciones",
-      "v": "$70.000"
+      "v": "$84.500"
     }
   ],
-  "metricas": "Funding apenas se movió de neutral durante y después del squeeze (sin persecución de longs); OI en BTC cayó -11% durante la ventana (shorts liquidados, no repuestos); sin cifras explícitas de skew/put-call/DVOL esta semana; max pain $69K (vencimiento semanal $10.4B) y $70K (trimestral sep, $13.7B) vs spot $79K; dealer gamma flip negativo en $82.3K; distribución forward al 25-sep con rango del 70% central en $69.0K-89.7K.",
+  "metricas": "Skew 7d 25-delta: spike durante el squeeze -> reversion a neutral tras el rechazo en la resistencia; skew 180d estable (demanda estructural de optionality intacta); expiry trimestral 25-sep con ~$14B OI concentrado en strikes >$80K actua de ancla; no se citan cifras de funding, OI total, put/call ni VRP.",
   "llamadas_abiertas": [
     {
-      "llamada": "Que el Open Interest vuelva a crecer junto con funding positivo cerca del muro $81-86K (leverage largo apinándose antes de la prueba) reactivaría la señal de apinado-long y justificaría SALIR; en cambio, cierres asentados por encima de $83.3K con las entradas de ETF sosteniéndose confirmarían absorción del muro y abrirían paso a FARMEAR en un rango más alto.",
+      "llamada": "Ruptura y cierre por encima de $83-86K con skew rotando a call-heavy y OI subiendo (apinado long -> riesgo de flush) o perdida de $62-65K con funding negativo y skew de panico (capitulacion/short squeeze); tambien el comportamiento de vol alrededor del vencimiento del 25-sep ($14B OI).",
       "tipo": "señal a vigilar (del WoC)",
       "fiabilidad_tipo": "posicionamiento/leverage — 8/10 histórico (su punto fuerte)",
       "criterio_exito": "se evalúa el jueves siguiente: narrativa del WoC nuevo + movimiento real de precio",
@@ -40,14 +36,5 @@
     }
   ],
   "evaluadas_recientes": [],
-  "cambios_de_fiabilidad": "",
-  "pendiente": {
-    "fecha": "2026-09-02",
-    "titulo": "Doubt at the Boundaries",
-    "semana": "Week 35 2026",
-    "url": "https://research.glassnode.com/the-week-onchain-week-35-2026/",
-    "adelanto": "Tras el short squeeze de mediados de agosto y una breve euforia, Bitcoin se paro justo debajo de la oferta de los tenedores de largo plazo. Con los tipos soberanos en maximos de ciclo y el volumen de los ETF apagado, el mercado ha vuelto a un rango bien definido: el precio, encajonado entre la oferta de corto plazo por debajo y la de largo plazo por encima.",
-    "motivo": "Solo tenemos el adelanto del email (insights@glassnode.com, 2-sep 16:33 UTC). El informe completo esta en research.glassnode.com y en X, y los dos devuelven 403 al archivador desde el 2-sep-2026. No se ingiere medio articulo: el agente citaria niveles que no ha leido.",
-    "como_entra": "research/glassnode-kb/ingerir_manual.py (repo privado) con el texto completo pegado, y despues el workflow sync-woc."
-  }
+  "cambios_de_fiabilidad": ""
 }
