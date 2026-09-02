@@ -897,6 +897,31 @@ function renderPnl(){
   $("#sumNote").innerHTML="<b>Todas las pools:</b> fees cobradas reconstruidas desde el histórico y fees pendientes consultadas on-chain en vivo."+(LIVE_LP_SOURCES?` <span class="note">Lectura en vivo: ${esc(LIVE_LP_SOURCES)}.</span>`:"")+([LIVE_LP_WARNING,ORCA_PENDING_WARNING].filter(Boolean).length?` <span style="color:var(--hot)">${esc([LIVE_LP_WARNING,ORCA_PENDING_WARNING].filter(Boolean).join(" · "))}</span>`:"");
   renderTabPos(M,BTC);renderTabHist(M);renderTabClosed(M,BTC);renderFresh();
 }
+/* Reconstruye el histórico de una posición viva con lo que ya calculó el pipeline privado
+   (data/normalized/evm_pnl.json: invertido y fees valorados al precio de cada evento), y le
+   pega las fees PENDIENTES que sí llegan del RPC en vivo. Se marca como parcial: el capital
+   y las fechas son de la última pasada del pipeline, no de este segundo. */
+function histDesdePipeline(p){
+  const pend=p.history&&p.history.soloPendientes?p.history:null;
+  const red={Base:"base",HyperEVM:"hyperevm",Ethereum:"ethereum",Arbitrum:"arbitrum",Optimism:"optimism",Polygon:"polygon"}[p.network]||String(p.network||"").toLowerCase();
+  const fila=(EVM_PNL||[]).find(x=>x.chain===red&&String(x.nft||"").replace(/.*#/,"")===String(p.id));
+  if(!fila||!fila.performance)return pend?{...pend,complete:false,fuentePipeline:false}:null;
+  const pf=fila.performance,inv=pf.investedValueUsd,cobrado=pf.withdrawnValueUsd||0;
+  if(!(inv>0))return pend;
+  const fee=s=>{const t=(fila.tokens||[]).find(t=>String(t.symbol).toUpperCase()===String(s).toUpperCase());return t?t.fees:null;};
+  const dias=fila.firstSeen?Math.max(0.01,(Date.now()/1000-fila.firstSeen)/86400):(fila.durationDays||null);
+  const pendUsd=pend?pend.pendingFeesUsd:null;
+  const claimed=pf.feeLikeValueUsd||0;
+  const feesTot=claimed+(Number.isFinite(pendUsd)?pendUsd:0);
+  const pnl=Number.isFinite(p.usd)?p.usd+cobrado-inv:null;
+  return {investedUsd:inv,withdrawnUsd:cobrado,claimedFeesUsd:claimed,
+    claimedFeeAmount0:fee(p.sym0),claimedFeeAmount1:fee(p.sym1),
+    pendingFeesUsd:pendUsd,pendingFeeAmount0:pend?pend.pendingFeeAmount0:null,pendingFeeAmount1:pend?pend.pendingFeeAmount1:null,
+    feesUsd:feesTot,gasUsd:null,pnlUsd:pnl,pnlPct:pnl!=null&&inv?pnl/inv*100:null,
+    annualizedYieldPct:dias?feesTot/inv*365/dias*100:null,
+    openedAt:fila.firstSeen?fila.firstSeen*1000:null,durationDays:dias,
+    entryPrices:[],events:fila.events||[],complete:false,fuentePipeline:true};
+}
 function renderTabPos(M,BTC){
   const th=(id,label)=>columnVisible(id)?`<th data-col="${id}">${label}</th>`:"";
   const td=(id,content,attrs="")=>columnVisible(id)?`<td data-col="${id}"${attrs?` ${attrs}`:""}>${content}</td>`:"";
@@ -919,9 +944,9 @@ function renderTabPos(M,BTC){
     return `<tr><td data-col="pool">${pool}</td>${td("balance",balanceTip(bal,assets))}${td("pnl",pnlTip(pnlContent,{invested:p.invested,current:bal,withdrawn:capitalWithdrawn,claimed:p.fees,pending:p._pendingFees,gas:p.gas,pnl}),`class="${(pnl||0)>=0?'up':'down'}"`)}${td("fees",feesTip(feeContent,p.fees,p._pendingFees,claimedAssets,pendingAssets),'class="up"')}${td("yield",yieldTip(yieldContent,(p.fees||0)+(p._pendingFees||0),p.invested,p.days,ey))}${td("duration",durationTip(durationContent,p.first,p.last))}${td("range",rangeTip(range,p.range,current),'style="text-align:left"')}${td("current",currentPriceTip(currentPriceMarkup(p.range,current),p.range,current))}${td("entry",entryTip(entryMarkup(entry),entry))}${td("tokenA",tokenTip(assets[0],assets,"Token A"))}${td("tokenB",tokenTip(assets[1],assets,"Token B"))}</tr>`;
   }).join("");
   const liveRows=LIVE_LPS.map(p=>{
-    const h=p.history;
+    const h=p.history&&!p.history.soloPendientes?p.history:histDesdePipeline(p);
     const entryRows=byPairOrder(p.pair,(h&&h.entryPrices)||[]),entry=entryMarkup(entryRows);
-    const histState=h&&!h.complete?'<div class="sub">histórico parcial</div>':'';
+    const histState=h&&h.fuentePipeline?'<div class="sub" title="Capital y fees del pipeline privado (logs del gestor); las pendientes, en vivo.">del pipeline</div>':(h&&!h.complete?'<div class="sub">histórico parcial</div>':'');
     const nft=columnVisible("nft")?` · NFT #${esc(p.id)}`:"";
     const assets=byPairOrder(p.pair,[{amount:p.amt0,symbol:p.sym0,usd:p.price0!=null?p.amt0*p.price0:null},{amount:p.amt1,symbol:p.sym1,usd:p.price1!=null?p.amt1*p.price1:null}]);
     const current=p.range&&p.range.currentPrice;
@@ -1246,7 +1271,7 @@ async function loadLecturas(){
 
 /* ---------- carga privada (repo privado vía /api/private, con la sesión global) ---------- */
 function privMsg(txt,err){const el=$("#privMsg");el.style.display="block";el.innerHTML=txt;el.style.color=err?"var(--bear)":"var(--muted)";}
-let PRIVATE_READY=false,PIPELINE_META=null,EVM_EVENTS=[];
+let PRIVATE_READY=false,PIPELINE_META=null,EVM_EVENTS=[],EVM_PNL=[];
 const CHAIN_LABEL={ethereum:"Ethereum",base:"Base",hyperevm:"HyperEVM",solana:"Solana",arbitrum:"Arbitrum",optimism:"Optimism",polygon:"Polygon"};
 /* Tipo de par: en un par ANCLADO (dos wrappers de BTC, dos estables) no hay IL que valga: el PnL en
    dolares es el precio del subyacente y lo que hizo la pool son las fees (≈ vs HOLD tokens). */
@@ -1259,6 +1284,11 @@ async function loadPipelineMeta(){
   try{const r=await fetch("/api/private?file=lp_portfolio",{cache:"no-store"});
     if(r.ok){const j=await r.json();if(j&&j.generado)PIPELINE_META={generado:j.generado,cobertura:j.cobertura||null,positions:Array.isArray(j.positions)?j.positions:[]};}}catch(e){}
   // Movimientos de LP en las cadenas EVM (deposito/retirada), del lector on-chain del repo privado.
+  // El PnL por posicion que ya calculo el pipeline privado (logs del gestor + precios de cada
+  // hora). Es la red de seguridad cuando la API en vivo no puede reconstruir el historico:
+  // en Base, Blockscout contesta 429 y se quedaba sin coste de entrada ni fechas.
+  try{const r=await fetch("/api/private?file=evm_pnl",{cache:"no-store"});
+    if(r.ok){const j=await r.json();EVM_PNL=Array.isArray(j)?j:[];}}catch(e){}
   try{const r=await fetch("/api/private?file=evm_events",{cache:"no-store"});
     if(r.ok){const j=await r.json();EVM_EVENTS=(j&&j.eventos||[]).filter(e=>e.tipo==="deposito_lp"||e.tipo==="retirada_lp");}}catch(e){}
 }

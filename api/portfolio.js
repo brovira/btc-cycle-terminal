@@ -376,7 +376,14 @@ async function fetchPositionHistory({ baseUrl, rpcs, call, owner, manager, token
     recentManagerTransactions(baseUrl, owner, manager, network),
     pendingPositionCollect(call, manager, tokenId, owner, token0, token1, px0, px1),
   ]);
-  if (!mint) return null;
+  if (!mint) {
+    // Sin la acuñación no hay coste de entrada -- en Base el explorador (Blockscout) contesta
+    // 429 a menudo -- pero las fees PENDIENTES salen del RPC y son correctas. Antes se tiraba
+    // todo, incluidas ellas. El panel completa lo que falta con el pipeline privado.
+    return { soloPendientes: true, pendingFeesUsd: pending ? pending.usd : null,
+      pendingFeeAmount0: pending ? pending.amount0 : null, pendingFeeAmount1: pending ? pending.amount1 : null,
+      motivo: "el explorador no devolvió la acuñación del NFT (no hay coste de entrada on-chain)" };
+  }
   const txRows = recent.rows.filter(x => x.block >= mint.block);
   if (!txRows.some(x => x.hash.toLowerCase() === mint.hash.toLowerCase())) txRows.push(mint);
   const receipts = await Promise.all(txRows.map(async row => ({
@@ -579,7 +586,9 @@ async function fetchV3Positions(baseUrl, rpcs, addr, protoLabel, knownManagers =
       position.history = await cachedPositionHistory({ baseUrl, rpcs, call, owner: addr, manager: npm,
         tokenId: it.id, network, token0: t0, token1: t1, currentUsd: position.usd, px0, px1 })
         .catch(e => { position.historyError = String((e && e.message) || e).slice(0, 160); return null; });
-      if (!position.history && !position.historyError) {
+      if (position.history && position.history.soloPendientes) {
+        position.historyError = position.history.motivo;
+      } else if (!position.history && !position.historyError) {
         position.historyError = "no se pudo reconstruir: falta la acunacion del NFT en el explorador o el precio historico de algun token";
       }
       out.positions.push(position);
