@@ -6,11 +6,10 @@
   "woc_titulo": "Doubt at the Boundaries",
   "fuentes": [
     "2026-09-02-the-week-onchain-week-35-2026.md",
-    "recomendaciones.jsonl (pipeline semanal, DeFi-Tracker)",
-    "claude -p en sync-woc (btc-cycle-terminal), con la suscripcion; el pipeline privado la dejo PENDIENTE"
+    "recomendaciones.jsonl (pipeline semanal, DeFi-Tracker)"
   ],
-  "resumen": "El squeeze del 19-ago ya limpio buena parte del apalancamiento largo previo, y el rechazo bajo $80K disparo nuevas liquidaciones long, dejando el heatmap con fuel bilateral: shorts liquidables entre $83K-$86K y longs entre $60K-$63K. El sentimiento de opciones a corto plazo se enfrio de euforia a neutral, sin skew extremo en ningun sentido, mientras el profit-supply mas alto que en mayo (68% vs 65%) anade oferta latente en el techo.",
-  "que_hacemos": "<b>Acción de LP: ENSANCHAR</b> · régimen de leverage: <b>mixto</b> · confianza: baja.<br>No hay confluencia de leverage apinado en una sola direccion (fuel bilateral, skew ya normalizado a neutral) ni datos de VRP/funding que justifiquen farmear estrecho; el rango on-chain esta bien definido ($62-65K piso, $83-86K techo) pero es amplio, con el vencimiento trimestral del 25-sep como ancla de volatilidad adicional, asi que conviene rango ancho y tamano reducido.",
+  "resumen": "No hay apalancamiento extremo vigente: el squeeze de agosto ya limpió shorts y la caída a $76K liquidó parte de los longs recién montados, devolviendo el skew corto plazo a neutral. Quedan bolsas de liquidación bilaterales intactas a ambos lados ($60-63K largos, $83-86K cortos) que funcionan como imanes, y el mayor supply en beneficio (68% vs 65% en mayo al mismo precio) deja a los compradores de verano potencialmente offside si el precio revisita el techo.",
+  "que_hacemos": "<b>Acción de LP: FARMEAR</b> · régimen de leverage: <b>reseteando</b> · confianza: media.<br>El rango está bien delimitado por niveles on-chain (piso $62-65K, techo LTH $83-86K) y el apalancamiento ya se reseteó parcialmente en ambas direcciones (skew corto plazo vuelto a neutral tras el squeeze y el flush de largos), sin señal de leverage apinado vigente en ninguna dirección; farmear dentro de esas bandas mientras el macro (yields en máximos de ciclo) y el OI del vencimiento de septiembre anclan el precio por debajo de $80K.",
   "niveles": [
     {
       "k": "STH cost basis (resistencia/soporte)",
@@ -25,10 +24,10 @@
       "v": "$84.500"
     }
   ],
-  "metricas": "Skew 7d 25-delta: spike durante el squeeze -> reversion a neutral tras el rechazo en la resistencia; skew 180d estable (demanda estructural de optionality intacta); expiry trimestral 25-sep con ~$14B OI concentrado en strikes >$80K actua de ancla; no se citan cifras de funding, OI total, put/call ni VRP.",
+  "metricas": "Skew 7d 25-delta se disparó call-heavy durante el squeeze y revirtió a neutral tras el rechazo; skew 180d estable (demanda estructural larga intacta); vencimiento trimestral 25-sep concentra ~$14B OI en strikes >$80K; heatmap de liquidaciones muestra cluster corto intacto $83-86K y cluster largo intacto $60-63K; el artículo no da funding, put/call ni VRP explícitos.",
   "llamadas_abiertas": [
     {
-      "llamada": "Ruptura y cierre por encima de $83-86K con skew rotando a call-heavy y OI subiendo (apinado long -> riesgo de flush) o perdida de $62-65K con funding negativo y skew de panico (capitulacion/short squeeze); tambien el comportamiento de vol alrededor del vencimiento del 25-sep ($14B OI).",
+      "llamada": "Si el skew 25d corto plazo vuelve a dispararse >20% con OI creciendo hacia el vencimiento del 25-sep cerca del techo $83-86K (longs apinados otra vez), o si el spot pierde el piso $62-65K y rechaza el STH cost basis ($71K) desde abajo, salir del LP.",
       "tipo": "señal a vigilar (del WoC)",
       "fiabilidad_tipo": "posicionamiento/leverage — 8/10 histórico (su punto fuerte)",
       "criterio_exito": "se evalúa el jueves siguiente: narrativa del WoC nuevo + movimiento real de precio",
