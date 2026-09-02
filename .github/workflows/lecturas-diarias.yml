@@ -1,0 +1,72 @@
+name: Lecturas diarias de analistas (Cowen · LMEC · WoC)
+
+# Un pase al dia para los tres. Solo llama al modelo cuando hay material NUEVO (transcript o
+# informe con fecha posterior a la ultima lectura): Cowen casi a diario, WoC semanal, LMEC
+# mensual. Sin novedad, no gasta y no toca nada. Se paga con la suscripcion (claude -p +
+# CLAUDE_CODE_OAUTH_TOKEN), igual que la sintesis semanal del WoC.
+#
+# Codigo 2 del script = hay material nuevo SIN LEER (sin token o fallo del modelo): aviso,
+# no fallo, pero visible. El panel tambien lo ensena.
+
+on:
+  schedule:
+    - cron: "40 6 * * *"
+  workflow_dispatch:
+    inputs:
+      agente:
+        description: "Solo un agente (cowen | lmec | woc); vacio = los tres"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lecturas-diarias
+  cancel-in-progress: false
+
+jobs:
+  lecturas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: "¿Hay material nuevo?"
+        id: novedad
+        run: |
+          set +e
+          python agentes/tools/lecturas.py --listar ${{ inputs.agente && format('--agente {0}', inputs.agente) || '' }} | tee novedad.txt
+          if grep -q "fuente(s) nueva(s)" novedad.txt; then echo "hay=1" >> "$GITHUB_OUTPUT"; else echo "hay=0" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Instalar Claude Code
+        if: steps.novedad.outputs.hay == '1'
+        run: curl -fsSL https://claude.ai/install.sh | bash
+
+      - name: Leer lo nuevo
+        if: steps.novedad.outputs.hay == '1'
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          set +e
+          python agentes/tools/lecturas.py ${{ inputs.agente && format('--agente {0}', inputs.agente) || '' }}
+          codigo=$?
+          set -e
+          if [ $codigo -eq 2 ]; then
+            echo "::warning title=Lecturas pendientes::Hay material nuevo que no se pudo leer (sin token o fallo del modelo). La ultima lectura buena se conserva y el panel avisa."
+            exit 0
+          fi
+          exit $codigo
+
+      - name: Commit
+        if: always()
+        run: |
+          git config user.name "lecturas-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/lecturas/
+          git diff --cached --quiet || git commit -m "lecturas: pase diario [skip ci]"
+          git pull --rebase origin main || true
+          git push || true

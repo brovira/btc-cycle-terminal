@@ -109,6 +109,22 @@
   #positionsTable [data-col="pnl"],#positionsTable [data-col="fees"],#positionsTable [data-col="yield"],#positionsTable [data-col="duration"]{min-width:108px}
   #positionsTable [data-col="range"]{min-width:270px}
   #positionsTable [data-col="current"],#positionsTable [data-col="entry"],#positionsTable [data-col="tokenA"],#positionsTable [data-col="tokenB"]{min-width:150px}
+  .dec-strip{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .dec-chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;background:var(--panel2);cursor:pointer}
+  .dec-chip b{font-family:var(--mono);font-size:11px}
+  .dec{border:1px solid var(--line);border-radius:10px;background:var(--panel);margin-bottom:8px;overflow:hidden}
+  .dec summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:10px 14px;font-weight:700;font-size:13px}
+  .dec summary::-webkit-details-marker{display:none}
+  .dec summary .meta{margin-left:auto;font-weight:500;font-size:11px;color:var(--muted);font-family:var(--mono)}
+  .dec .dec-in{padding:0 14px 14px;font-size:13px;line-height:1.5}
+  .dec .dec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:8px}
+  .dec .kv{font-size:12px}.dec .kv b{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px}
+  .dec blockquote{margin:6px 0 0;padding:6px 10px;border-left:3px solid var(--line);color:var(--muted);font-size:12px}
+  .dec table.mini{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}.dec table.mini td,.dec table.mini th{padding:4px 6px;border-bottom:1px solid var(--line);text-align:left}
+  .badge.up{color:var(--bull);background:color-mix(in oklab,var(--bull) 16%,transparent)}
+  .badge.down{color:var(--bear);background:color-mix(in oklab,var(--bear) 16%,transparent)}
+  .badge.flat{color:var(--muted);background:color-mix(in oklab,var(--muted) 16%,transparent)}
+  .badge.stale{color:var(--hot);background:color-mix(in oklab,var(--hot) 16%,transparent)}
   .pilltok{display:inline-block;font-size:9.5px;font-weight:700;color:var(--muted);background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;margin-left:6px}
   .metric-hover{display:inline-flex;flex-direction:column;align-items:flex-end;max-width:100%;border-radius:4px;cursor:help;outline:none}
   .metric-hover.left{align-items:flex-start}.metric-hover.block{display:flex;width:100%}
@@ -245,6 +261,14 @@
   </div>
 
   <!-- DIARIO DE OPERATIVA (privado) -->
+  <!-- DECISIONES: que dicen hoy los tres, cruzado con MIS posiciones. Va justo encima del
+       diario a proposito: leer la lectura, decidir, escribir el porque, en ese orden. -->
+  <div class="section" id="decisionesSec" style="display:none">
+    <div class="sec-head"><h2>Decisiones · qué dicen hoy</h2><div class="rule"></div><span class="tag" id="decTag">—</span></div>
+    <div id="decStrip" class="dec-strip"></div>
+    <div id="decBody"></div>
+  </div>
+
   <div class="section" id="journalSec" style="display:none">
     <div class="sec-head"><h2>Diario de operativa</h2><div class="rule"></div>
       <button class="btn pri" id="journalNew" style="padding:5px 12px">＋ Nueva entrada</button></div>
@@ -1055,6 +1079,89 @@ function redraw(){if(!window.Plotly)return;if(MODE==="pnl"&&PNL)renderPnl();else
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 async function loadPlotly(){if(window.Plotly)return;for(const u of["https://cdn.plot.ly/plotly-2.27.0.min.js","https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"]){try{await loadScript(u);if(window.Plotly)return;}catch(e){}}throw new Error("no se pudo cargar Plotly");}
 
+/* ---------- DECISIONES: lecturas diarias de los analistas (data/lecturas/*.json, público) ---------- */
+let LECTURAS={};
+const DEC_ORDEN=[["cowen","Cowen"],["lmec","LMEC"],["woc","WoC"]];
+function decDias(fecha){if(!fecha)return null;return Math.round((Date.now()-new Date(fecha+"T12:00:00Z").getTime())/864e5);}
+function decTendencia(t){const m={alcista:["up","alcista"],bajista:["down","bajista"],neutral:["flat","neutral"],lateral:["flat","lateral"]}[t]||["flat",t||"—"];return `<span class="badge ${m[0]}">${esc(m[1])}</span>`;}
+function decNum(v){return v==null||!isFinite(+v)?null:fmtUSD(+v,0);}
+function decNiveles(niv){const rows=Object.entries(niv||{}).filter(([,v])=>v!=null&&v!==""&&!(Array.isArray(v)&&!v.length));
+  if(!rows.length)return "";
+  return rows.map(([k,v])=>`<span class="pilltok" style="margin:2px 4px 0 0">${esc(k.replace(/_/g," "))} ${esc(Array.isArray(v)?v.map(x=>decNum(x)||x).join(" · "):(decNum(v)||String(v)))}</span>`).join("");}
+/* Cruce del rango que espera WoC con MIS posiciones en USD (solo las cotizadas contra estable). */
+function decCruceRangos(re){
+  if(!re||!(re.bajo>0)||!(re.alto>0))return "";
+  const mias=[];
+  if(PNL&&PNL.open)for(const p of PNL.open){const r=p.range;if(r&&r.quote&&/USD/i.test(r.quote)&&r.priceLow>0)mias.push({nombre:p.pair+" (Orca)",lo:r.priceLow,hi:r.priceHigh});}
+  for(const p of LIVE_LPS){const r=p.range;if(r&&r.quote&&/USD/i.test(r.quote)&&r.priceLow>0)mias.push({nombre:p.pair+" ("+esc(p.protocol)+")",lo:r.priceLow,hi:r.priceHigh});}
+  if(!mias.length)return `<div class="kv"><b>Mis rangos en USD</b>ninguna posición cotizada contra estable: el rango esperado no aplica a los pares volátiles (ratio, no precio).</div>`;
+  const filas=mias.map(m=>{const inter=Math.max(0,Math.min(m.hi,re.alto)-Math.max(m.lo,re.bajo));const cob=inter/(m.hi-m.lo);const cubre=re.bajo>=m.lo&&re.alto<=m.hi;
+    const veredicto=cubre?"su rango cabe dentro del mío":cob>=.7?"solapan casi enteros":cob>0?"solapan parcialmente (borde)":"NO solapan: fuera de su escenario";
+    return `<tr><td>${m.nombre}</td><td>${fmtUSD(m.lo,0)} – ${fmtUSD(m.hi,0)}</td><td>${Math.round(cob*100)}%</td><td>${esc(veredicto)}</td></tr>`;}).join("");
+  return `<div class="kv" style="grid-column:1/-1"><b>Su rango esperado ${fmtUSD(re.bajo,0)} – ${fmtUSD(re.alto,0)} frente a mis rangos</b><table class="mini"><thead><tr><th>Posición</th><th>Mi rango</th><th>Cubierto</th><th>Lectura</th></tr></thead><tbody>${filas}</tbody></table></div>`;}
+function decPosicionesLmec(pos){
+  if(!Array.isArray(pos)||!pos.length)return `<div class="kv"><b>Sus pools</b>no las nombra en este vídeo.</div>`;
+  const mios=new Set([...(PNL&&PNL.open?PNL.open.map(p=>p.pair):[]),...LIVE_LPS.map(p=>p.pair)].map(x=>String(x).replace(/[^A-Za-z]/g,"").toUpperCase().replace("WETH","ETH").replace("CBBTC","BTC").replace("UBTC","BTC").replace("WBTC","BTC")));
+  const filas=pos.map(p=>{const k=String(p.par||"").replace(/[^A-Za-z]/g,"").toUpperCase().replace("WETH","ETH").replace("CBBTC","BTC").replace("UBTC","BTC").replace("WBTC","BTC");const rev=k.length===6?k.slice(3)+k.slice(0,3):k;const coincide=mios.has(k)||mios.has(rev);
+    return `<tr><td>${esc(p.par||"?")}${coincide?' <span class="badge up">también la tengo</span>':""}</td><td>${esc([p.protocolo,p.red].filter(Boolean).join(" · "))}</td><td>${esc(p.rango||"—")}</td><td>${esc(p.peso||"—")}</td><td>${esc(p.comentario||"")}</td></tr>`;}).join("");
+  return `<div class="kv" style="grid-column:1/-1"><b>Sus pools de farming</b><table class="mini"><thead><tr><th>Par</th><th>Dónde</th><th>Rango</th><th>Peso</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>`;}
+function renderDecisiones(){
+  const sec=$("#decisionesSec");const idx=LECTURAS._indice;if(!idx&&!Object.keys(LECTURAS).some(k=>k!=="_indice")){sec.style.display="none";return;}
+  sec.style.display="";
+  $("#decTag").textContent=idx&&idx.actualizado?"pase diario · "+idx.actualizado.slice(0,16).replace("T"," ")+" UTC":"—";
+  const chips=[],bloques=[];
+  for(const [k,corto] of DEC_ORDEN){
+    const L=LECTURAS[k];
+    if(!L||(!L.fuente_fecha&&!L.pendiente)){chips.push(`<span class="dec-chip">${corto} <b>sin lectura</b></span>`);continue;}
+    const dias=decDias(L.fuente_fecha);const cad=L.cadencia_dias||7;const vieja=dias!=null&&dias>cad*2;
+    const pend=L.pendiente?` <span class="badge stale" title="${esc(L.pendiente.motivo||"")}">material nuevo sin leer desde ${esc(L.pendiente.desde||"?")}</span>`:"";
+    chips.push(`<span class="dec-chip" data-dec="${k}">${corto} ${L.tendencia?decTendencia(L.tendencia):""} <b>${L.fuente_fecha?esc(L.fuente_fecha)+(dias!=null?" · hace "+dias+" d":""):"—"}</b>${L.pendiente?' <span class="badge stale">nuevo sin leer</span>':""}</span>`);
+    const niveles=decNiveles(L.niveles);
+    const extra=k==="woc"?decCruceRangos(L.rango_esperado):k==="lmec"?decPosicionesLmec(L.posiciones):"";
+    const cartera=k==="lmec"&&L.cartera&&Object.values(L.cartera).some(v=>v!=null)?`<div class="kv"><b>Su cartera</b>${esc(Object.entries(L.cartera).filter(([,v])=>v!=null).map(([a,v])=>a.replace("_pct","")+" "+v+"%").join(" · "))}</div>`:"";
+    const woc=k==="woc"?`${L.accion_lp?`<div class="kv"><b>Acción de LP que recomienda</b>${esc(L.accion_lp)}</div>`:""}${L.regimen_leverage?`<div class="kv"><b>Régimen de apalancamiento</b>${esc(L.regimen_leverage)}</div>`:""}`:"";
+    const cowen=k==="cowen"&&L.risk_metric!=null?`<div class="kv"><b>Risk metric</b>${esc(String(L.risk_metric))}</div>`:"";
+    bloques.push(`<details class="dec" id="dec-${k}"><summary>${esc(L.nombre||corto)} ${L.tendencia?decTendencia(L.tendencia):""}${vieja?' <span class="badge stale">lectura vieja</span>':""}<span class="meta">${L.fuente_fecha?"fuente "+esc(L.fuente_fecha)+(dias!=null?" · hace "+dias+" d":""):""}${L.horizonte?" · "+esc(L.horizonte):""}${L.confianza?" · confianza "+esc(L.confianza):""}</span></summary>
+      <div class="dec-in">
+        ${L.titulo?`<div class="note" style="margin-bottom:6px">${esc(L.titulo)}${(L.fuentes||[]).length?` · <span style="font-family:var(--mono)">${esc((L.fuentes||[]).join(", "))}</span>`:""}</div>`:""}
+        ${pend?`<div class="note" style="color:var(--hot);margin-bottom:6px">${pend}</div>`:""}
+        ${L.escenario?`<div><b>Escenario:</b> ${esc(L.escenario)}</div>`:""}
+        ${L.accion?`<div style="margin-top:4px"><b>Lo que hace / recomienda él:</b> ${esc(L.accion)}</div>`:""}
+        ${L.para_mis_lps?`<div style="margin-top:4px"><b>Para mis LPs:</b> ${esc(L.para_mis_lps)}</div>`:""}
+        <div class="dec-grid">
+          ${niveles?`<div class="kv"><b>Niveles</b>${niveles}</div>`:""}
+          ${cowen}${woc}${cartera}${extra}
+        </div>
+        ${(L.citas||[]).length?`<blockquote>${(L.citas||[]).map(c=>"«"+esc(c)+"»").join("<br>")}</blockquote>`:""}
+        ${L.cambios_vs_anterior?`<div class="note" style="margin-top:6px">Cambio frente a la lectura anterior: ${esc(L.cambios_vs_anterior)}</div>`:""}
+        <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="btn pri" data-decidir="${k}" style="padding:5px 12px">Registrar decisión en el diario</button>
+          <span class="note">El porqué se escribe ANTES de ejecutar. La entrada cita la lectura y su fecha.</span>
+        </div>
+      </div></details>`);
+  }
+  $("#decStrip").innerHTML=chips.join("");
+  $("#decBody").innerHTML=bloques.join("")||'<div class="note">Aún no hay lecturas. Las genera el pase diario (Actions → Lecturas diarias).</div>';
+  $$("#decStrip [data-dec]").forEach(ch=>ch.addEventListener("click",()=>{const d=$("#dec-"+ch.dataset.dec);if(d){d.open=true;d.scrollIntoView({behavior:"smooth",block:"start"});}}));
+  $$("[data-decidir]").forEach(b=>b.addEventListener("click",()=>registrarDecision(b.dataset.decidir)));
+}
+function registrarDecision(k){
+  const L=LECTURAS[k]||{};const hoy=new Date().toISOString().slice(0,10);
+  $("#journalSec").style.display="";$("#journalFormWrap").style.display="";
+  $("#jDate").value=hoy;$("#jType").value="Nota";
+  $("#jAction").value=`Decisión tras la lectura de ${L.nombre||k} (${L.fuente_fecha||"?"})`;
+  $("#jRationale").value=`Lectura de ${L.nombre||k}, fuente ${L.fuente_fecha||"?"} (${(L.fuentes||[]).join(", ")}):\n· Tendencia: ${L.tendencia||"?"}. ${L.escenario||""}\n· Lo que hace él: ${L.accion||"—"}\n· Para mis LPs: ${L.para_mis_lps||"—"}\n\nMI DECISIÓN Y POR QUÉ: `;
+  $("#jPlan").value="";$("#journalSec").scrollIntoView({behavior:"smooth",block:"start"});setTimeout(()=>$("#jRationale").focus(),400);
+}
+async function loadLecturas(){
+  try{
+    const r=await fetch("data/lecturas/_indice.json",{cache:"no-store"});
+    if(r.ok)LECTURAS._indice=await r.json();
+    await Promise.all(DEC_ORDEN.map(async([k])=>{try{const q=await fetch(`data/lecturas/${k}.json`,{cache:"no-store"});if(q.ok)LECTURAS[k]=await q.json();}catch(e){}}));
+  }catch(e){}
+  renderDecisiones();
+}
+
 /* ---------- carga privada (repo privado vía /api/private, con la sesión global) ---------- */
 function privMsg(txt,err){const el=$("#privMsg");el.style.display="block";el.innerHTML=txt;el.style.color=err?"var(--bear)":"var(--muted)";}
 let PRIVATE_READY=false,PIPELINE_META=null;
@@ -1078,6 +1185,7 @@ async function loadPrivate(){
     await metaPromise;
     PRIVATE_READY=true;
     privMsg("Datos Orca y posiciones EVM cargados.",false);
+    setTimeout(renderDecisiones,0); // el cruce de rangos necesita PNL y LIVE_LPS ya cargados
     await loadBaseline(); // línea base del fresh start ANTES de pintar (para filtrar desde el primer render)
     loadText(text,false); // NO cachear datos personales: se vuelven a pedir con la sesión global
     loadJournal();
@@ -1199,6 +1307,7 @@ $("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;co
 (function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);
   Promise.all([fetchBtc(),fetchPegRatio()]).then(()=>redraw());
   localStorage.removeItem("lp-dash-pw");sessionStorage.removeItem("lp-dash-pw");
+  loadLecturas();
   loadPlotly().then(async()=>{const ok=await loadPrivate();const saved=localStorage.getItem(LKEY);if(!ok&&saved)loadText(saved);});})();
 </script>
 </body>
