@@ -1,12 +1,8 @@
 {
   "metric": "sth_realized_price",
   "source": "https://bitcoin-data.com/v1/sth-realized-price",
-  "points": 1457,
+  "points": 1456,
   "series": [
-    {
-      "date": "2022-09-02",
-      "value": 25004.96
-    },
     {
       "date": "2022-09-03",
       "value": 24938.39
