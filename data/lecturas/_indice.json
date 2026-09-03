@@ -1,14 +1,14 @@
 {
- "actualizado": "2026-09-02T22:49:08+00:00",
+ "actualizado": "2026-09-03T11:44:03+00:00",
  "agentes": {
   "cowen": {
    "nombre": "Benjamin Cowen",
    "cadencia_dias": 2,
-   "fuente_fecha": "2026-08-30",
-   "actualizado": "2026-09-02T09:42:26+00:00",
-   "tendencia": "bajista",
+   "fuente_fecha": "2026-09-02",
+   "actualizado": "2026-09-03T11:44:03+00:00",
+   "tendencia": "neutral",
    "pendiente": null,
-   "resultado_pase": "sin novedad"
+   "resultado_pase": "actualizada"
   },
   "lmec": {
    "nombre": "LMEC",
@@ -26,7 +26,7 @@
    "actualizado": "2026-09-02T22:49:08+00:00",
    "tendencia": "lateral",
    "pendiente": null,
-   "resultado_pase": "actualizada"
+   "resultado_pase": "sin novedad"
   }
  }
 }

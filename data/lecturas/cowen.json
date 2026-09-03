@@ -1,34 +1,66 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-08-30",
+ "fuente_fecha": "2026-09-02",
  "fuentes": [
-  "20260828-bitcoin-rallies-to-80k-kevin-warsh-speaking-at-jackson-hole.md",
-  "20260828-hawkish-kevin-warsh.md",
-  "20260830-bitcoin-stalls-at-the-50-week-moving-average.md"
+  "20260901-gold-the-next-big-move.md",
+  "20260902-bitcoin-the-liquidity-paradox.md"
  ],
- "titulo": "Bitcoin Stalls at the 50 Week Moving Average",
- "tendencia": "bajista",
+ "titulo": "Bitcoin: The Liquidity Paradox",
+ "tendencia": "neutral",
  "horizonte": "meses",
- "escenario": "Bitcoin rebotó desde el mínimo de verano ($57,000) hasta la media móvil de 50 semanas (~$80,000), donde se ha estancado, replicando el fractal de 2018 (mínimo en 5700, rechazo en la 50W). Cowen sigue bajista desde que BTC perdió la 50W en noviembre de 2025 (entonces sobre $100k) y espera que, como en 2018 y 2022, el rally del 40% desde el mínimo de verano se agote y el precio vuelva a bajar hacia un suelo de ciclo en Q4, probablemente tras las elecciones de mitad de mandato (noviembre). Si hay cierre semanal por encima de la 50W, dice que abandonaría el sesgo bajista.",
+ "escenario": "Cowen explica que Bitcoin no está en máximos históricos, aunque M2 y la bolsa sí lo están, porque BTC responde a la liquidez neta global (balances de Fed, BoJ, PBoC, BoE, ECB menos reverse repo y TGA), que ronda los 25 billones frente a los ~30 billones de 2021-22, un déficit de 5 billones; por eso BTC 'topó por apatía y no por euforia' y su valoración frente al S&P 500 está en niveles de 2021/inicios de 2022. Sobre el oro (tras corregir ~30% desde el techo de enero y rebotar ~20%), espera debilidad de corto plazo (2-4 semanas) por una subida temporal del dólar ligada a posibles subidas de tipos, con 65% de probabilidad de un 'higher low' a mediados de sept/oct frente a 35% de un 'lower low', manteniendo su tesis de que el techo secular del oro aún no ha llegado.",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
   "bmsb": null,
-  "ma50w": 80000,
+  "ma50w": null,
   "objetivo_correccion": null,
-  "invalidacion": 57000
+  "invalidacion": null
  },
- "accion": "Dice haber empezado a acumular BTC desde el 1 de julio (ventana de acumulación abierta), pero mantiene que el precio podría hacer un mínimo más bajo en el cuarto trimestre, y solo abandonaría el sesgo bajista con un cierre semanal por encima de la media de 50 semanas.",
- "para_mis_lps": "Marca la zona de la 50W (~$80,000) como resistencia clave donde el precio ya se ha estancado, y el mínimo de verano ($57,000) como el soporte/invalidación de referencia; para rangos BTC/USDC esto sugiere contemplar ese rango amplio (57k-80k) como zona de mayor probabilidad de rango-bound hasta que se confirme ruptura semanal, sin que dé cifras más precisas para LPs.",
+ "accion": "No da una acción de trading explícita sobre BTC en este vídeo (es explicativo del framework de liquidez); sobre el oro no habla de comprar/vender, solo da probabilidades para el próximo mínimo (65% higher low / 35% lower low) antes de un nuevo tramo alcista.",
+ "para_mis_lps": "No aplica directamente a niveles de rango: estos dos vídeos no dan precios de BTC ni de la 50W/200W/BMSB; el mensaje macro es que mientras la liquidez neta global se mantenga estancada (~25 billones), Cowen espera que BTC siga infraponderando frente a otros activos, lo que sugiere cautela con rangos sesgados a favor de una subida fuerte de BTC/USDC mientras no cambie esa condición.",
  "citas": [
-  "the accumulation window for Bitcoin, in my opinion, had begun",
-  "stalling out at the 50 week moving average in itself is not evidence that we are going to be rejected by it",
-  "if we get weekly closes... above the 50we... I'm happy to drop the bias"
+  "I'd put about a 65% chance that it's a higher low and about a 35% chance that it's a lower low.",
+  "the reason why Bitcoin has been stuck in traffic on struggle street for the last 5 years, arguably, is because net liquidity remains low."
  ],
  "confianza": "media",
- "cambios_vs_anterior": "primera lectura",
+ "cambios_vs_anterior": "No reafirma ni invalida el sesgo bajista de la 50W ni el objetivo de mínimo de ciclo en Q4; en vez de eso, añade una explicación macro (liquidez neta global, no M2) de por qué BTC ha infraponderado, sin dar nuevos niveles de precio para BTC.",
  "cadencia_dias": 2,
- "actualizado": "2026-09-02T09:42:26+00:00",
- "historial": []
+ "actualizado": "2026-09-03T11:44:03+00:00",
+ "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-08-30",
+   "fuentes": [
+    "20260828-bitcoin-rallies-to-80k-kevin-warsh-speaking-at-jackson-hole.md",
+    "20260828-hawkish-kevin-warsh.md",
+    "20260830-bitcoin-stalls-at-the-50-week-moving-average.md"
+   ],
+   "titulo": "Bitcoin Stalls at the 50 Week Moving Average",
+   "tendencia": "bajista",
+   "horizonte": "meses",
+   "escenario": "Bitcoin rebotó desde el mínimo de verano ($57,000) hasta la media móvil de 50 semanas (~$80,000), donde se ha estancado, replicando el fractal de 2018 (mínimo en 5700, rechazo en la 50W). Cowen sigue bajista desde que BTC perdió la 50W en noviembre de 2025 (entonces sobre $100k) y espera que, como en 2018 y 2022, el rally del 40% desde el mínimo de verano se agote y el precio vuelva a bajar hacia un suelo de ciclo en Q4, probablemente tras las elecciones de mitad de mandato (noviembre). Si hay cierre semanal por encima de la 50W, dice que abandonaría el sesgo bajista.",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": null,
+    "ma50w": 80000,
+    "objetivo_correccion": null,
+    "invalidacion": 57000
+   },
+   "accion": "Dice haber empezado a acumular BTC desde el 1 de julio (ventana de acumulación abierta), pero mantiene que el precio podría hacer un mínimo más bajo en el cuarto trimestre, y solo abandonaría el sesgo bajista con un cierre semanal por encima de la media de 50 semanas.",
+   "para_mis_lps": "Marca la zona de la 50W (~$80,000) como resistencia clave donde el precio ya se ha estancado, y el mínimo de verano ($57,000) como el soporte/invalidación de referencia; para rangos BTC/USDC esto sugiere contemplar ese rango amplio (57k-80k) como zona de mayor probabilidad de rango-bound hasta que se confirme ruptura semanal, sin que dé cifras más precisas para LPs.",
+   "citas": [
+    "the accumulation window for Bitcoin, in my opinion, had begun",
+    "stalling out at the 50 week moving average in itself is not evidence that we are going to be rejected by it",
+    "if we get weekly closes... above the 50we... I'm happy to drop the bias"
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "primera lectura",
+   "cadencia_dias": 2,
+   "actualizado": "2026-09-02T09:42:26+00:00"
+  }
+ ]
 }
