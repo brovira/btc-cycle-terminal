@@ -1,15 +1,14 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-09-02",
+ "fuente_fecha": "2026-09-04",
  "fuentes": [
-  "20260901-gold-the-next-big-move.md",
-  "20260902-bitcoin-the-liquidity-paradox.md"
+  "20260904-labor-market-remains-hot.md"
  ],
- "titulo": "Bitcoin: The Liquidity Paradox",
+ "titulo": "Labor Market Remains Hot",
  "tendencia": "neutral",
- "horizonte": "meses",
- "escenario": "Cowen explica que Bitcoin no está en máximos históricos, aunque M2 y la bolsa sí lo están, porque BTC responde a la liquidez neta global (balances de Fed, BoJ, PBoC, BoE, ECB menos reverse repo y TGA), que ronda los 25 billones frente a los ~30 billones de 2021-22, un déficit de 5 billones; por eso BTC 'topó por apatía y no por euforia' y su valoración frente al S&P 500 está en niveles de 2021/inicios de 2022. Sobre el oro (tras corregir ~30% desde el techo de enero y rebotar ~20%), espera debilidad de corto plazo (2-4 semanas) por una subida temporal del dólar ligada a posibles subidas de tipos, con 65% de probabilidad de un 'higher low' a mediados de sept/oct frente a 35% de un 'lower low', manteniendo su tesis de que el techo secular del oro aún no ha llegado.",
+ "horizonte": "semanas",
+ "escenario": "Cowen analiza el mercado laboral y la Fed sin referirse directamente a Bitcoin: el informe de empleo salió 'caliente', la probabilidad de subida de tipos en la reunión del 16 de septiembre subió de ~50% a 60% tras revisarse al alza el non-farm payroll (variación interanual de 116.000 en diciembre 2025 a 603.000 ahora) y con desempleo en 4,1% y peticiones iniciales de paro en 206.000 (lejos del umbral de 300.000 que asociaría a recesión). Espera que la inflación se mantenga persistente por el petróleo (~90$/barril), el gasto de capital en IA (inflacionario a corto plazo, deflacionario a largo) y el conflicto en Oriente Medio, lo que junto a un Banco de Japón que probablemente suba tipos en septiembre y diciembre (hasta ~1,5%) y una probable primera subida de tipos de la Fed, seguiría empujando al alza el tramo largo de la curva de tipos (10, 20 y 30 años, este último ya superando su máximo previo de 5,17%).",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
@@ -18,17 +17,50 @@
   "objetivo_correccion": null,
   "invalidacion": null
  },
- "accion": "No da una acción de trading explícita sobre BTC en este vídeo (es explicativo del framework de liquidez); sobre el oro no habla de comprar/vender, solo da probabilidades para el próximo mínimo (65% higher low / 35% lower low) antes de un nuevo tramo alcista.",
- "para_mis_lps": "No aplica directamente a niveles de rango: estos dos vídeos no dan precios de BTC ni de la 50W/200W/BMSB; el mensaje macro es que mientras la liquidez neta global se mantenga estancada (~25 billones), Cowen espera que BTC siga infraponderando frente a otros activos, lo que sugiere cautela con rangos sesgados a favor de una subida fuerte de BTC/USDC mientras no cambie esa condición.",
+ "accion": "No da ninguna acción ni lectura explícita sobre Bitcoin en este vídeo; se centra en diseccionar datos de empleo, inflación y política de tipos (Fed y BoJ) como inputs macro de fondo.",
+ "para_mis_lps": "No aplica directamente: el vídeo no menciona BTC, risk metric ni niveles técnicos; solo aporta contexto macro (posible subida de tipos Fed/BoJ y presión al alza en yields largos) que, según su marco habitual, tiende a ser un viento en contra para la liquidez y por tanto para activos de riesgo como BTC.",
  "citas": [
-  "I'd put about a 65% chance that it's a higher low and about a 35% chance that it's a lower low.",
-  "the reason why Bitcoin has been stuck in traffic on struggle street for the last 5 years, arguably, is because net liquidity remains low."
+  "we actually had a relatively hot jobs report today",
+  "the labor market is actually showing signs of being resilient",
+  "I'm leaning more towards in the direction of of a rate hike at this point",
+  "there's just a lot of inflationary forces that... are going to keep the Fed from being able to cut rates anytime soon"
  ],
  "confianza": "media",
- "cambios_vs_anterior": "No reafirma ni invalida el sesgo bajista de la 50W ni el objetivo de mínimo de ciclo en Q4; en vez de eso, añade una explicación macro (liquidez neta global, no M2) de por qué BTC ha infraponderado, sin dar nuevos niveles de precio para BTC.",
+ "cambios_vs_anterior": "Cambio de foco: frente a la lectura anterior centrada en liquidez neta global y BTC/oro, aquí Cowen no menciona Bitcoin ni el oro en absoluto y se dedica por completo al mercado laboral y la probabilidad de subida de tipos de la Fed (ahora 60%) y del Banco de Japón, reforzando su tesis de inflación persistente y presión alcista sobre el tramo largo de la curva.",
  "cadencia_dias": 2,
- "actualizado": "2026-09-03T11:44:03+00:00",
+ "actualizado": "2026-09-05T10:56:09+00:00",
  "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-09-02",
+   "fuentes": [
+    "20260901-gold-the-next-big-move.md",
+    "20260902-bitcoin-the-liquidity-paradox.md"
+   ],
+   "titulo": "Bitcoin: The Liquidity Paradox",
+   "tendencia": "neutral",
+   "horizonte": "meses",
+   "escenario": "Cowen explica que Bitcoin no está en máximos históricos, aunque M2 y la bolsa sí lo están, porque BTC responde a la liquidez neta global (balances de Fed, BoJ, PBoC, BoE, ECB menos reverse repo y TGA), que ronda los 25 billones frente a los ~30 billones de 2021-22, un déficit de 5 billones; por eso BTC 'topó por apatía y no por euforia' y su valoración frente al S&P 500 está en niveles de 2021/inicios de 2022. Sobre el oro (tras corregir ~30% desde el techo de enero y rebotar ~20%), espera debilidad de corto plazo (2-4 semanas) por una subida temporal del dólar ligada a posibles subidas de tipos, con 65% de probabilidad de un 'higher low' a mediados de sept/oct frente a 35% de un 'lower low', manteniendo su tesis de que el techo secular del oro aún no ha llegado.",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": null,
+    "ma50w": null,
+    "objetivo_correccion": null,
+    "invalidacion": null
+   },
+   "accion": "No da una acción de trading explícita sobre BTC en este vídeo (es explicativo del framework de liquidez); sobre el oro no habla de comprar/vender, solo da probabilidades para el próximo mínimo (65% higher low / 35% lower low) antes de un nuevo tramo alcista.",
+   "para_mis_lps": "No aplica directamente a niveles de rango: estos dos vídeos no dan precios de BTC ni de la 50W/200W/BMSB; el mensaje macro es que mientras la liquidez neta global se mantenga estancada (~25 billones), Cowen espera que BTC siga infraponderando frente a otros activos, lo que sugiere cautela con rangos sesgados a favor de una subida fuerte de BTC/USDC mientras no cambie esa condición.",
+   "citas": [
+    "I'd put about a 65% chance that it's a higher low and about a 35% chance that it's a lower low.",
+    "the reason why Bitcoin has been stuck in traffic on struggle street for the last 5 years, arguably, is because net liquidity remains low."
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "No reafirma ni invalida el sesgo bajista de la 50W ni el objetivo de mínimo de ciclo en Q4; en vez de eso, añade una explicación macro (liquidez neta global, no M2) de por qué BTC ha infraponderado, sin dar nuevos niveles de precio para BTC.",
+   "cadencia_dias": 2,
+   "actualizado": "2026-09-03T11:44:03+00:00"
+  },
   {
    "agente": "cowen",
    "nombre": "Benjamin Cowen",

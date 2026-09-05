@@ -1,73 +1,110 @@
 {
  "agente": "lmec",
  "nombre": "LMEC",
- "fuente_fecha": "2026-08-20",
+ "fuente_fecha": "2026-09-04",
  "fuentes": [
-  "20260731-aqu-estoy-invirtiendo-muy-fuerte-oportunidad-muy-clara.md",
-  "20260820-este-v-deo-deber-a-ser-de-pago.md"
+  "20260904-hay-mucho-dinero-en-juego-este-es-mi-nuevo-plan.md"
  ],
- "titulo": "Este Vídeo Debería SER DE PAGO",
- "tendencia": "bajista",
- "horizonte": "semanas",
- "escenario": "Bitcoin ha subido hasta tocar los $70,000 y por fin ha llegado a testear la Bull Market Support Band (situada en su anterior análisis entre $68,000 y $69,000), algo que llevaba meses esperando como señal clave. Según el patrón histórico de 2018 y 2014, lo más probable es que este testeo falle y el mercado siga cayendo, así que de momento mantiene el plan intacto (55% invertido en BTC/altcoins/farming, 45% en stables), pero si BTC cierra dos semanas seguidas por encima de la banda cambiará de plan, y si cae de nuevo por debajo y toca mínimos bajo $60,000 comprará fuerte.",
- "posiciones": [
-  {
-   "par": "ETH/cbBTC",
-   "protocolo": "PancakeSwap",
-   "red": "Base",
-   "rango": "rango muy amplio (actualmente fuera de rango)",
-   "peso": "$19,000 inicial (marzo), ahora ~$20,000",
-   "comentario": "Posición principal; ha generado $1,320 en comisiones, TAE nominal 55% pero rentabilidad realizada 18-20% anual por usar rangos amplios; reinvierte dividendos en la misma pool para acumular BTC/ETH."
-  },
-  {
-   "par": "BNB/ETH",
-   "protocolo": "Uniswap",
-   "red": "Ethereum",
-   "rango": null,
-   "peso": null,
-   "comentario": "TAE actual ~20% anual, con tramos históricos de hasta 100%; posición muy consistente para acumular dos de sus monedas de convicción."
-  },
-  {
-   "par": "BNB/ZEC",
-   "protocolo": "Uniswap",
-   "red": "BNB Chain",
-   "rango": null,
-   "peso": null,
-   "comentario": "Rentabilidad baja de momento; tesis de que ZEC volverá a tener mucha atención y volumen en el próximo mercado alcista, lo que revalorizaría la posición."
-  },
-  {
-   "par": "HYPE/BTC",
-   "protocolo": "HyperSwap",
-   "red": "HyperEVM (Hyperliquid)",
-   "rango": null,
-   "peso": null,
-   "comentario": "TAE actual ~320% anual, no representativo (pico puntual por la noticia de que la CFTC/Trump quiere traer Hyperliquid a EE.UU.); estuvo fuera de rango bastante tiempo antes."
-  }
- ],
+ "titulo": "Hay Mucho DINERO en JUEGO (Este es Mi NUEVO PLAN)",
+ "tendencia": "alcista",
+ "horizonte": "meses",
+ "escenario": "Bitcoin ha roto con fuerza la Bull Market Support Band y la EMA50 en una sola semana (subida del 41% desde el mínimo de junio en $57,000), algo anómalo frente a 2014/2018/2022 donde hubo varios testeos antes de la ruptura definitiva; RSI y MACD semanales confirman el patrón de fin de mercado bajista, pero el MVRV Z-Score nunca entró en terreno negativo y la caída (54% desde máximos en ~270 días) fue más corta y suave que en ciclos anteriores. Con todo esto en la balanza, estima un 75% de probabilidad de que el mercado bajista ya haya terminado en junio y un 25% de que falte una última capitulación hacia octubre-noviembre.",
+ "posiciones": [],
  "cartera": {
-  "stables_pct": 45,
+  "stables_pct": null,
   "btc_pct": null,
   "alts_pct": null,
   "farming_pct": null
  },
  "niveles": {
-  "soporte": 60000,
-  "resistencia": 69000,
+  "soporte": 70000,
+  "resistencia": 82000,
   "objetivo": null,
-  "compra_escalonada": [
-   50000
-  ]
+  "compra_escalonada": []
  },
- "accion": "Mantiene el plan de inversión sin cambios: espera confirmación (cierre semanal de BTC dos semanas seguidas por encima de la Bull Market Support Band) antes de modificarlo; si BTC vuelve a caer bajo la banda y toca mínimos por debajo de $60,000 comprará fuerte, y si ve debilidad bajo la banda volverá a abrir cortos en altcoins.",
- "para_mis_lps": "No menciona rangos concretos para BTC/USDC, pero su principio general aplicable es usar rangos de precio muy amplios en pares volátiles (ETH/BTC, BNB/ETH, HYPE/BTC) durante el mercado bajista para minimizar gestión activa, aceptando menor TAE nominal a cambio de no tener que reajustar posiciones constantemente.",
+ "accion": "Abandona la estrategia de esperar precios objetivo y pasa a hacer DCA semanal (comprando las criptomonedas de su interés) hasta aproximadamente noviembre-diciembre de 2026, por el coste de oportunidad de seguir esperando confirmaciones.",
+ "para_mis_lps": "No aplica: en este fragmento no detalla rangos ni pares de liquidez concentrada nuevos, solo menciona de forma genérica que sigue farmeando airdrops de perpetuos y aumentando inversiones en la blockchain de Robin Hood.",
  "citas": [
-  "Bitcoin, con la reciente subida que ha tenido, ha venido a tocar la Bull Market Support Band.",
-  "Si durante las siguientes dos semanas Bitcoin sigue por encima de la Bull Market Superband, probablemente toque hacer cambios en el plan de inversión.",
-  "Yo con estas posiciones trabajo con rangos de precios muy amplios, aunque mi rentabilidad decaiga bastante."
+  "esto podría estar indicando claramente que estamos pasando de una tendencia bajista a una alcista",
+  "yo diría que en un 75% sí ha terminado el mercado bajista y en un 25% de posibilidades todavía nos quedarían más caídas",
+  "A partir de ahora voy a dejar de centrarme en precios objetivo, como lo estábamos haciendo hasta ahora"
  ],
- "confianza": "alta",
- "cambios_vs_anterior": "En julio BTC rondaba $64,000 sin haber tocado aún la Bull Market Support Band (~$68-69k) y esperaba agosto/septiembre bajistas por el patrón histórico; en agosto BTC subió a $70,000, tocó por fin la banda, e HYPE saltó un 23% por la noticia de que la CFTC quiere regular Hyperliquid en EE.UU. (reduciendo su riesgo regulatorio), lo que le llevó a hacer su segunda compra de HYPE a ~$53.7.",
+ "confianza": "media",
+ "cambios_vs_anterior": "Pasa de mantener el plan bajista sin cambios (55% invertido/45% stables, esperando que fallara el testeo de la banda) a reconocer una ruptura anómala y directa de la Bull Market Support Band y la EMA50, subir su probabilidad de fin de mercado bajista al 75% y abandonar la espera de precios objetivo para iniciar ya un DCA semanal.",
  "cadencia_dias": 30,
- "actualizado": "2026-09-02T09:43:29+00:00",
- "historial": []
+ "actualizado": "2026-09-05T10:57:10+00:00",
+ "historial": [
+  {
+   "agente": "lmec",
+   "nombre": "LMEC",
+   "fuente_fecha": "2026-08-20",
+   "fuentes": [
+    "20260731-aqu-estoy-invirtiendo-muy-fuerte-oportunidad-muy-clara.md",
+    "20260820-este-v-deo-deber-a-ser-de-pago.md"
+   ],
+   "titulo": "Este Vídeo Debería SER DE PAGO",
+   "tendencia": "bajista",
+   "horizonte": "semanas",
+   "escenario": "Bitcoin ha subido hasta tocar los $70,000 y por fin ha llegado a testear la Bull Market Support Band (situada en su anterior análisis entre $68,000 y $69,000), algo que llevaba meses esperando como señal clave. Según el patrón histórico de 2018 y 2014, lo más probable es que este testeo falle y el mercado siga cayendo, así que de momento mantiene el plan intacto (55% invertido en BTC/altcoins/farming, 45% en stables), pero si BTC cierra dos semanas seguidas por encima de la banda cambiará de plan, y si cae de nuevo por debajo y toca mínimos bajo $60,000 comprará fuerte.",
+   "posiciones": [
+    {
+     "par": "ETH/cbBTC",
+     "protocolo": "PancakeSwap",
+     "red": "Base",
+     "rango": "rango muy amplio (actualmente fuera de rango)",
+     "peso": "$19,000 inicial (marzo), ahora ~$20,000",
+     "comentario": "Posición principal; ha generado $1,320 en comisiones, TAE nominal 55% pero rentabilidad realizada 18-20% anual por usar rangos amplios; reinvierte dividendos en la misma pool para acumular BTC/ETH."
+    },
+    {
+     "par": "BNB/ETH",
+     "protocolo": "Uniswap",
+     "red": "Ethereum",
+     "rango": null,
+     "peso": null,
+     "comentario": "TAE actual ~20% anual, con tramos históricos de hasta 100%; posición muy consistente para acumular dos de sus monedas de convicción."
+    },
+    {
+     "par": "BNB/ZEC",
+     "protocolo": "Uniswap",
+     "red": "BNB Chain",
+     "rango": null,
+     "peso": null,
+     "comentario": "Rentabilidad baja de momento; tesis de que ZEC volverá a tener mucha atención y volumen en el próximo mercado alcista, lo que revalorizaría la posición."
+    },
+    {
+     "par": "HYPE/BTC",
+     "protocolo": "HyperSwap",
+     "red": "HyperEVM (Hyperliquid)",
+     "rango": null,
+     "peso": null,
+     "comentario": "TAE actual ~320% anual, no representativo (pico puntual por la noticia de que la CFTC/Trump quiere traer Hyperliquid a EE.UU.); estuvo fuera de rango bastante tiempo antes."
+    }
+   ],
+   "cartera": {
+    "stables_pct": 45,
+    "btc_pct": null,
+    "alts_pct": null,
+    "farming_pct": null
+   },
+   "niveles": {
+    "soporte": 60000,
+    "resistencia": 69000,
+    "objetivo": null,
+    "compra_escalonada": [
+     50000
+    ]
+   },
+   "accion": "Mantiene el plan de inversión sin cambios: espera confirmación (cierre semanal de BTC dos semanas seguidas por encima de la Bull Market Support Band) antes de modificarlo; si BTC vuelve a caer bajo la banda y toca mínimos por debajo de $60,000 comprará fuerte, y si ve debilidad bajo la banda volverá a abrir cortos en altcoins.",
+   "para_mis_lps": "No menciona rangos concretos para BTC/USDC, pero su principio general aplicable es usar rangos de precio muy amplios en pares volátiles (ETH/BTC, BNB/ETH, HYPE/BTC) durante el mercado bajista para minimizar gestión activa, aceptando menor TAE nominal a cambio de no tener que reajustar posiciones constantemente.",
+   "citas": [
+    "Bitcoin, con la reciente subida que ha tenido, ha venido a tocar la Bull Market Support Band.",
+    "Si durante las siguientes dos semanas Bitcoin sigue por encima de la Bull Market Superband, probablemente toque hacer cambios en el plan de inversión.",
+    "Yo con estas posiciones trabajo con rangos de precios muy amplios, aunque mi rentabilidad decaiga bastante."
+   ],
+   "confianza": "alta",
+   "cambios_vs_anterior": "En julio BTC rondaba $64,000 sin haber tocado aún la Bull Market Support Band (~$68-69k) y esperaba agosto/septiembre bajistas por el patrón histórico; en agosto BTC subió a $70,000, tocó por fin la banda, e HYPE saltó un 23% por la noticia de que la CFTC quiere regular Hyperliquid en EE.UU. (reduciendo su riesgo regulatorio), lo que le llevó a hacer su segunda compra de HYPE a ~$53.7.",
+   "cadencia_dias": 30,
+   "actualizado": "2026-09-02T09:43:29+00:00"
+  }
+ ]
 }
