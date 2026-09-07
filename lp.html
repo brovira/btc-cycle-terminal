@@ -947,7 +947,15 @@ function entradaEnRango(r,entradas){
   // Un estable no aparece en los precios de entrada (nadie anota "compre USDC a 1$"), pero
   // hace falta para el cociente. Sin esto, la marca no salia en NINGUNA pool contra estable,
   // que son justo las suyas.
-  const val=t=>{const k=String(t).toUpperCase();return px[k]!=null?px[k]:(PEG_SETS[1].includes(k)?1:null);};
+  // Un token envuelto y el nativo son el mismo precio, pero no el mismo NOMBRE: la API
+  // devuelve la entrada como "ETH" mientras el rango dice "WETH", y sin esto no casaban,
+  // asi que la BNB/WETH se quedaba sin cociente y sin linea. Se prueba tal cual, sin la W
+  // y con la W. cbBTC, WBTC y UBTC siguen siendo distintos entre si: solo cae la W inicial.
+  const val=t=>{
+    const k=String(t).toUpperCase();
+    for(const c of [k, k.startsWith("W")?k.slice(1):"W"+k]){ if(px[c]!=null)return px[c]; }
+    return PEG_SETS[1].includes(k)?1:null;
+  };
   const b=val(r.base), q=val(r.quote);
   if(!(b>0)||!(q>0))return null;
   return b/q;
