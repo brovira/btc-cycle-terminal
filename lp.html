@@ -448,6 +448,7 @@ const num=v=>{const n=parseFloat(v);return isNaN(n)?0:n;};
 
 /* ---------- agregación por posición ---------- */
 let MODEL=null, MODE="csv", PNL=null, LIVE_LPS=[], LIVE_LP_WARNING="", LIVE_LP_SOURCES="", ORCA_PENDING={}, ORCA_PENDING_WARNING="";
+let LIVE_LP_ILEGIBLES=new Set();   // cadenas cuya lectura en vivo fallo entera
 function build(rows){
   const pos={};const collects=[];
   for(const r of rows){
@@ -542,16 +543,22 @@ async function fetchLiveLps(){
   LIVE_LP_WARNING="";
   try{
     const r=await fetch("/api/portfolio",{cache:"no-store"});
-    if(!r.ok){LIVE_LPS=[];LIVE_LP_WARNING="LPs EVM no disponibles ("+r.status+")";return;}
+    if(!r.ok){LIVE_LPS=[];LIVE_LP_ILEGIBLES=new Set();LIVE_LP_WARNING="LPs EVM no disponibles ("+r.status+")";return;}
     const j=await r.json();
-    const named=[["Uniswap ETH",j.uniswap],["ProjectX",j.projectx],["HyperSwap",j.hyperswap],["Uniswap Base",j.uniswapBase]];
+    const named=[["Uniswap ETH",j.uniswap,"Ethereum"],["ProjectX",j.projectx,"HyperEVM"],["HyperSwap",j.hyperswap,"HyperEVM"],["Uniswap Base",j.uniswapBase,"Base"]];
+    // Una cadena es ILEGIBLE si TODAS sus fuentes fallaron o faltan. Solo entonces tiene
+    // sentido completar con lo que sabe el pipeline: si la cadena se leyo bien y una posicion
+    // no esta, es que ya no existe -- se cerro -- y anadirla seria un fantasma.
+    const okRed=new Set(), malRed=new Set();
+    for(const [,src,red] of named){ if(src&&!src.warning)okRed.add(red); else malRed.add(red); }
+    LIVE_LP_ILEGIBLES=new Set([...malRed].filter(r=>!okRed.has(r)));
     const sources=named.map(x=>x[1]).filter(Boolean);
     LIVE_LPS=sources.flatMap(src=>(src.positions||[]).map(p=>({...p,protocol:p.protocol||src.protocol||"V3"})));
     // Por fuente: cuántas vivas y, si la hay, la advertencia. Una fuente ausente en la
     // respuesta (API antigua en caché del navegador) se dice, no se calla.
     LIVE_LP_SOURCES=named.map(([n,src])=>src?`${n} ${(src.positions||[]).length}${src.warning?" ⚠":""}`:`${n} —`).join(" · ");
     LIVE_LP_WARNING=sources.map(src=>src.warning).filter(Boolean).join(" · ");
-  }catch(e){LIVE_LPS=[];LIVE_LP_WARNING="LPs EVM no disponibles";}
+  }catch(e){LIVE_LPS=[];LIVE_LP_ILEGIBLES=new Set();LIVE_LP_WARNING="LPs EVM no disponibles";}
 }
 async function fetchOrcaPending(positions){
   const mints=(positions||[]).map(p=>p.mint).filter(Boolean);
@@ -1008,6 +1015,7 @@ function renderTabPos(M,BTC){
   const vivasApi=new Set(LIVE_LPS.map(p=>`${(p.network||"").toLowerCase()}:${p.id}`));
   const faltantes=((PIPELINE_META&&PIPELINE_META.positions)||[]).filter(p=>
       p.chain!=="solana"&&p.status==="open"&&p.nft&&
+      LIVE_LP_ILEGIBLES.has(CHAIN_LABEL[p.chain]||p.chain)&&
       !vivasApi.has(`${(CHAIN_LABEL[p.chain]||p.chain).toLowerCase()}:${String(p.nft).replace(/.*#/,"")}`))
     .map(p=>({id:String(p.nft).replace(/.*#/,""),pair:p.pair,fee:"",sym0:(p.pair||"/").split("/")[0],sym1:(p.pair||"/").split("/")[1],
               usd:null,amt0:null,amt1:null,range:null,protocol:p.protocol||"V3",network:CHAIN_LABEL[p.chain]||p.chain,
