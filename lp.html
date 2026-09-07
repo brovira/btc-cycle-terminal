@@ -62,6 +62,8 @@
   .rbar{position:relative;height:7px;border-radius:4px;background:var(--panel2);border:1px solid var(--line);margin:8px 0 3px}
   .rbar .fill{position:absolute;inset:0;border-radius:4px;background:color-mix(in oklab,var(--accum) 34%,transparent)}
   .rbar .mark{position:absolute;top:-4px;width:3px;height:16px;border-radius:2px;transform:translateX(-50%);box-shadow:0 0 0 2px var(--panel)}
+  /* Marca de ENTRADA: gris, mas fina y sin sombra, para que no compita con la del precio actual. */
+  .rbar .mark.entrada{background:var(--muted);width:2px;height:12px;top:-2px;opacity:.85;box-shadow:none}
   .rbar.mini{height:6px;margin:3px 0 0}
   .rangebox{min-width:240px;width:100%}
   .rangeends,.rangefoot{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:10.5px;color:var(--muted)}
@@ -648,7 +650,7 @@ function durationTip(content,openedAt,lastAt=null){
     {label:"Estado",value:"Abierta",tone:"up",total:true},
   ]);
 }
-function rangeTip(content,r,current){
+function rangeTip(content,r,current,entrada=null){
   if(!r)return content;
   const lo=+r.priceLow,hi=+r.priceHigh,cur=current!=null?+current:null,has=Number.isFinite(cur)&&cur>0;
   const inRange=has&&cur>=lo&&cur<=hi,unit=(r.quote&&r.base)?`${r.quote} por ${r.base}`:"precio";
@@ -657,6 +659,7 @@ function rangeTip(content,r,current){
     {label:"Límite inferior",value:`${fmtRangePrice(lo)} ${unit}`},
     {label:"Precio actual",value:has?`${fmtRangePrice(cur)} ${unit}`:"n/d"},
     {label:"Límite superior",value:`${fmtRangePrice(hi)} ${unit}`},
+    ...(entrada>0?[{label:"Entrada (IL cero aquí)",value:`${fmtRangePrice(entrada)} ${unit}`}]:[]),
     {label:"Estado",value:state,tone:inRange?"up":"down",total:true},
   ],inRange?"La posición está generando fees dentro del rango.":"Fuera de rango deja de generar fees hasta que el precio vuelva.","left block");
 }
@@ -680,18 +683,25 @@ function poolTip(content,{protocol,network,fee,nft}){
     nft?{label:"NFT / posición",value:String(nft),total:true}:null,
   ],"Identificador completo de la posición on-chain.","left");
 }
-function rangeVisual(r,current,showCurrent=true){
+function posEnBarra(v,lo,hi){
+  const raw=lo>0&&hi>0?Math.log(v/lo)/Math.log(hi/lo):(v-lo)/(hi-lo);
+  return Math.max(0,Math.min(1,raw))*100;
+}
+function rangeVisual(r,current,showCurrent=true,entrada=null){
   if(!r||!(r.priceHigh>r.priceLow))return'<span class="na">n/d</span>';
   const lo=+r.priceLow,hi=+r.priceHigh,cur=current!=null?+current:null;
   const has=cur!=null&&isFinite(cur)&&cur>0;
   const inr=has&&cur>=lo&&cur<=hi;
-  let pos=50;
-  if(has){const raw=lo>0&&hi>0?Math.log(cur/lo)/Math.log(hi/lo):(cur-lo)/(hi-lo);pos=Math.max(0,Math.min(1,raw))*100;}
+  const pos=has?posEnBarra(cur,lo,hi):50;
   const state=!has?"Precio n/d":inr?"En rango":cur<lo?"Por debajo":"Por encima";
   const unit=(r.quote&&r.base)?`${r.quote} por ${r.base}`:"precio";
+  // Marca gris = precio de entrada. Si el precio vuelve ahi, la composicion es la del
+  // deposito y retirar no deja impermanent loss.
+  const ent=(entrada>0&&entrada>=lo&&entrada<=hi)
+    ? `<div class="mark entrada" style="left:${posEnBarra(entrada,lo,hi)}%" title="Entrada ${fmtRangePrice(entrada)} ${esc(unit)} · retirar a este precio = 0 impermanent loss"></div>` : "";
   return `<div class="rangebox" title="${esc(state)}">
     <div class="rangeends"><span>${fmtRangePrice(lo)}</span><span>${fmtRangePrice(hi)}</span></div>
-    <div class="rbar mini"><div class="fill"></div>${has?`<div class="mark" style="left:${pos}%;background:${inr?'var(--bull)':'var(--bear)'}"></div>`:""}</div>
+    <div class="rbar mini"><div class="fill"></div>${ent}${has?`<div class="mark" style="left:${pos}%;background:${inr?'var(--bull)':'var(--bear)'}"></div>`:""}</div>
     <div class="rangefoot"><span>${showCurrent&&has?`Actual ${fmtRangePrice(cur)} ${esc(unit)}`:esc(unit)}</span><strong class="${inr?'in':'out'}">${state}</strong></div>
   </div>`;
 }
@@ -905,6 +915,34 @@ function renderPnl(){
    (data/normalized/evm_pnl.json: invertido y fees valorados al precio de cada evento), y le
    pega las fees PENDIENTES que sí llegan del RPC en vivo. Se marca como parcial: el capital
    y las fechas son de la última pasada del pipeline, no de este segundo. */
+/* Precio medio de ENTRADA por token, ponderado por la cantidad depositada en cada evento.
+   Sale de los flujos que ya valoró el pipeline al precio de SU hora, no de una estimación. */
+function entradaMedia(fila){
+  const acc={};
+  for(const e of (fila.events||[])){
+    if(e.tipo!=="increase"||!e.px)continue;
+    for(const sym in e.px){
+      const cant=+e[sym], px=+e.px[sym];
+      if(!(cant>0)||!(px>0))continue;
+      acc[sym]=acc[sym]||{cant:0,usd:0};
+      acc[sym].cant+=cant; acc[sym].usd+=cant*px;
+    }
+  }
+  return Object.entries(acc).map(([symbol,v])=>({symbol,priceUsd:v.usd/v.cant}));
+}
+/* Precio de entrada EXPRESADO EN LAS UNIDADES DEL RANGO (quote por base). Es el punto en el
+   que la composición vuelve a ser la del depósito: si retiras ahí, el impermanent loss es 0. */
+function entradaEnRango(r,entradas){
+  if(!r||!r.base||!r.quote||!entradas||!entradas.length)return null;
+  const px=Object.fromEntries(entradas.map(e=>[String(e.symbol).toUpperCase(),e.priceUsd]));
+  // Un estable no aparece en los precios de entrada (nadie anota "compre USDC a 1$"), pero
+  // hace falta para el cociente. Sin esto, la marca no salia en NINGUNA pool contra estable,
+  // que son justo las suyas.
+  const val=t=>{const k=String(t).toUpperCase();return px[k]!=null?px[k]:(PEG_SETS[1].includes(k)?1:null);};
+  const b=val(r.base), q=val(r.quote);
+  if(!(b>0)||!(q>0))return null;
+  return b/q;
+}
 function histDesdePipeline(p){
   const pend=p.history&&p.history.soloPendientes?p.history:null;
   const red={Base:"base",HyperEVM:"hyperevm",Ethereum:"ethereum",Arbitrum:"arbitrum",Optimism:"optimism",Polygon:"polygon"}[p.network]||String(p.network||"").toLowerCase();
@@ -924,7 +962,7 @@ function histDesdePipeline(p){
     feesUsd:feesTot,gasUsd:null,pnlUsd:pnl,pnlPct:pnl!=null&&inv?pnl/inv*100:null,
     annualizedYieldPct:dias?feesTot/inv*365/dias*100:null,
     openedAt:fila.firstSeen?fila.firstSeen*1000:null,durationDays:dias,
-    entryPrices:[],events:fila.events||[],complete:false,fuentePipeline:true};
+    entryPrices:entradaMedia(fila),events:fila.events||[],complete:false,fuentePipeline:true};
 }
 function renderTabPos(M,BTC){
   const th=(id,label)=>columnVisible(id)?`<th data-col="${id}">${label}</th>`:"";
@@ -935,7 +973,7 @@ function renderTabPos(M,BTC){
     const bal=p._bal, pnl=bal!=null?bal+returned+(p._pendingFees||0)-(p.invested||0)-(p.gas||0):null, pct=(pnl!=null&&p.invested)?pnl/p.invested*100:null;
     const entry=byPairOrder(p.pair,entryPricesFromCashflows(p.cf)),ey=estYield(p,p._pendingFees);
     const current=p.range&&p.range.quote==="USDC"?BTC:PEG_RATIO;
-    const range=rangeVisual(p.range,current,!columnVisible("current"));
+    const range=rangeVisual(p.range,current,!columnVisible("current"),entradaEnRango(p.range,entry));
     const fee=p.feePercent!=null?` <span class="pilltok">${p.feePercent}%</span>`:'';
     const nft=columnVisible("nft")&&p.mint?` · <span title="${esc(p.mint)}">NFT ${esc(shortNft(p.mint))}</span>`:'';
     const v=p._position;
@@ -945,7 +983,7 @@ function renderTabPos(M,BTC){
     const pnlContent=`${pnl!=null?fmtUSD(pnl,0):'—'}${pct!=null?`<div class="sub ${pct>=0?'up':'down'}">${pct>=0?'+':''}${pct.toFixed(2)}%</div>`:''}`;
     const feeContent=feeMarkup(p.fees,p._pendingFees,2);
     const yieldContent=ey!=null?ey.toFixed(1)+'%':'—',durationContent=p.days.toFixed(0)+'d';
-    return `<tr><td data-col="pool">${pool}</td>${td("balance",balanceTip(bal,assets))}${td("pnl",pnlTip(pnlContent,{invested:p.invested,current:bal,withdrawn:capitalWithdrawn,claimed:p.fees,pending:p._pendingFees,gas:p.gas,pnl}),`class="${(pnl||0)>=0?'up':'down'}"`)}${td("fees",feesTip(feeContent,p.fees,p._pendingFees,claimedAssets,pendingAssets),'class="up"')}${td("yield",yieldTip(yieldContent,(p.fees||0)+(p._pendingFees||0),p.invested,p.days,ey))}${td("duration",durationTip(durationContent,p.first,p.last))}${td("range",rangeTip(range,p.range,current),'style="text-align:left"')}${td("current",currentPriceTip(currentPriceMarkup(p.range,current),p.range,current))}${td("entry",entryTip(entryMarkup(entry),entry))}${td("tokenA",tokenTip(assets[0],assets,"Token A"))}${td("tokenB",tokenTip(assets[1],assets,"Token B"))}</tr>`;
+    return `<tr><td data-col="pool">${pool}</td>${td("balance",balanceTip(bal,assets))}${td("pnl",pnlTip(pnlContent,{invested:p.invested,current:bal,withdrawn:capitalWithdrawn,claimed:p.fees,pending:p._pendingFees,gas:p.gas,pnl}),`class="${(pnl||0)>=0?'up':'down'}"`)}${td("fees",feesTip(feeContent,p.fees,p._pendingFees,claimedAssets,pendingAssets),'class="up"')}${td("yield",yieldTip(yieldContent,(p.fees||0)+(p._pendingFees||0),p.invested,p.days,ey))}${td("duration",durationTip(durationContent,p.first,p.last))}${td("range",rangeTip(range,p.range,current,entradaEnRango(p.range,entry)),'style="text-align:left"')}${td("current",currentPriceTip(currentPriceMarkup(p.range,current),p.range,current))}${td("entry",entryTip(entryMarkup(entry),entry))}${td("tokenA",tokenTip(assets[0],assets,"Token A"))}${td("tokenB",tokenTip(assets[1],assets,"Token B"))}</tr>`;
   }).join("");
   // Si la lectura en vivo falla para una cadena (RPC caido), sus posiciones desaparecian de la
   // tabla como si no existieran. El pipeline privado si sabe que estan vivas: se anaden con lo
@@ -983,7 +1021,7 @@ function renderTabPos(M,BTC){
       ${td("fees",h?feesTip(feeContent,h.claimedFeesUsd,h.pendingFeesUsd,claimedAssets,pendingAssets):feeContent,`class="${h?'up':''}"`)}
       ${td("yield",h?yieldTip(yieldContent,h.feesUsd,h.investedUsd,h.durationDays,h.annualizedYieldPct):yieldContent)}
       ${td("duration",h?durationTip(durationContent,h.openedAt):durationContent)}
-      ${td("range",rangeTip(rangeVisual(p.range,current,!columnVisible("current")),p.range,current),'style="text-align:left"')}
+      ${td("range",rangeTip(rangeVisual(p.range,current,!columnVisible("current"),entradaEnRango(p.range,entryRows)),p.range,current,entradaEnRango(p.range,entryRows)),'style="text-align:left"')}
       ${td("current",currentPriceTip(currentPriceMarkup(p.range,current),p.range,current))}${td("entry",entryTip(entry,entryRows))}${td("tokenA",tokenTip(assets[0],assets,"Token A"))}${td("tokenB",tokenTip(assets[1],assets,"Token B"))}
     </tr>`;
   }).join("");
