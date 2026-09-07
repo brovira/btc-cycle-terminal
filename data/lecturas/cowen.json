@@ -1,35 +1,66 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-09-04",
+ "fuente_fecha": "2026-09-07",
  "fuentes": [
-  "20260904-labor-market-remains-hot.md"
+  "20260907-bitcoin-closes-at-the-50-week-moving-average.md"
  ],
- "titulo": "Labor Market Remains Hot",
+ "titulo": "Bitcoin Closes at the 50 Week Moving Average",
  "tendencia": "neutral",
  "horizonte": "semanas",
- "escenario": "Cowen analiza el mercado laboral y la Fed sin referirse directamente a Bitcoin: el informe de empleo salió 'caliente', la probabilidad de subida de tipos en la reunión del 16 de septiembre subió de ~50% a 60% tras revisarse al alza el non-farm payroll (variación interanual de 116.000 en diciembre 2025 a 603.000 ahora) y con desempleo en 4,1% y peticiones iniciales de paro en 206.000 (lejos del umbral de 300.000 que asociaría a recesión). Espera que la inflación se mantenga persistente por el petróleo (~90$/barril), el gasto de capital en IA (inflacionario a corto plazo, deflacionario a largo) y el conflicto en Oriente Medio, lo que junto a un Banco de Japón que probablemente suba tipos en septiembre y diciembre (hasta ~1,5%) y una probable primera subida de tipos de la Fed, seguiría empujando al alza el tramo largo de la curva de tipos (10, 20 y 30 años, este último ya superando su máximo previo de 5,17%).",
+ "escenario": "Bitcoin cotiza sobre 80.000$ y cerro practicamente justo en la media movil de 50 semanas (unos 80.300-80.400$ segun exchange, algunos por encima y otros por debajo), tras hacer un higher high intradia hasta ~82.292$ que sigue siendo un lower high frente a mayo. El informe de empleo (NFP) salio caliente el viernes y volvio a subir la probabilidad de subida de tipos, lo que provoco la venta; ahora el mercado esta pendiente del dato de inflacion (en unos 5 dias) y de la reunion de la Fed la semana siguiente.",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
   "bmsb": null,
-  "ma50w": null,
+  "ma50w": 80360,
   "objetivo_correccion": null,
   "invalidacion": null
  },
- "accion": "No da ninguna acción ni lectura explícita sobre Bitcoin en este vídeo; se centra en diseccionar datos de empleo, inflación y política de tipos (Fed y BoJ) como inputs macro de fondo.",
- "para_mis_lps": "No aplica directamente: el vídeo no menciona BTC, risk metric ni niveles técnicos; solo aporta contexto macro (posible subida de tipos Fed/BoJ y presión al alza en yields largos) que, según su marco habitual, tiende a ser un viento en contra para la liquidez y por tanto para activos de riesgo como BTC.",
+ "accion": "No toma ninguna posicion ni da recomendacion concreta; se limita a vigilar si Bitcoin logra cerrar de forma sostenida por encima de la media de 50 semanas o si es rechazado, usando los patrones de 2015/2019/2023 como referencia.",
+ "para_mis_lps": "BTC esta enroscado justo en el pivote de la MA50w (~80.300-80.400$) con riesgo bidireccional alto de cara al dato de inflacion y la reunion de la Fed; no conviene concentrar liquidez en rangos muy estrechos alrededor de ese nivel hasta que se resuelva la direccion.",
  "citas": [
-  "we actually had a relatively hot jobs report today",
-  "the labor market is actually showing signs of being resilient",
-  "I'm leaning more towards in the direction of of a rate hike at this point",
-  "there's just a lot of inflationary forces that... are going to keep the Fed from being able to cut rates anytime soon"
+  "Bitcoin closed at its 50week moving average... some exchanges above it, some exchanges below it, but we're essentially at it right now.",
+  "Multiple closes above the 50we moving average typically signifies the end of the bare market.",
+  "the longer it spins at the 50we moving average, then you start to say, you know what, it's more likely to break through."
  ],
  "confianza": "media",
- "cambios_vs_anterior": "Cambio de foco: frente a la lectura anterior centrada en liquidez neta global y BTC/oro, aquí Cowen no menciona Bitcoin ni el oro en absoluto y se dedica por completo al mercado laboral y la probabilidad de subida de tipos de la Fed (ahora 60%) y del Banco de Japón, reforzando su tesis de inflación persistente y presión alcista sobre el tramo largo de la curva.",
+ "cambios_vs_anterior": "La lectura anterior (04-09) era puramente macro/Fed sin mencionar a Bitcoin; ahora da una lectura directa de precio: BTC cerro exactamente en la MA50 semanal, un punto que considera decisivo para saber si el mercado bajista termina o si aun queda un ultimo tramo bajista en el cuarto trimestre.",
  "cadencia_dias": 2,
- "actualizado": "2026-09-05T10:56:09+00:00",
+ "actualizado": "2026-09-07T13:01:55+00:00",
  "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-09-04",
+   "fuentes": [
+    "20260904-labor-market-remains-hot.md"
+   ],
+   "titulo": "Labor Market Remains Hot",
+   "tendencia": "neutral",
+   "horizonte": "semanas",
+   "escenario": "Cowen analiza el mercado laboral y la Fed sin referirse directamente a Bitcoin: el informe de empleo salió 'caliente', la probabilidad de subida de tipos en la reunión del 16 de septiembre subió de ~50% a 60% tras revisarse al alza el non-farm payroll (variación interanual de 116.000 en diciembre 2025 a 603.000 ahora) y con desempleo en 4,1% y peticiones iniciales de paro en 206.000 (lejos del umbral de 300.000 que asociaría a recesión). Espera que la inflación se mantenga persistente por el petróleo (~90$/barril), el gasto de capital en IA (inflacionario a corto plazo, deflacionario a largo) y el conflicto en Oriente Medio, lo que junto a un Banco de Japón que probablemente suba tipos en septiembre y diciembre (hasta ~1,5%) y una probable primera subida de tipos de la Fed, seguiría empujando al alza el tramo largo de la curva de tipos (10, 20 y 30 años, este último ya superando su máximo previo de 5,17%).",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": null,
+    "ma50w": null,
+    "objetivo_correccion": null,
+    "invalidacion": null
+   },
+   "accion": "No da ninguna acción ni lectura explícita sobre Bitcoin en este vídeo; se centra en diseccionar datos de empleo, inflación y política de tipos (Fed y BoJ) como inputs macro de fondo.",
+   "para_mis_lps": "No aplica directamente: el vídeo no menciona BTC, risk metric ni niveles técnicos; solo aporta contexto macro (posible subida de tipos Fed/BoJ y presión al alza en yields largos) que, según su marco habitual, tiende a ser un viento en contra para la liquidez y por tanto para activos de riesgo como BTC.",
+   "citas": [
+    "we actually had a relatively hot jobs report today",
+    "the labor market is actually showing signs of being resilient",
+    "I'm leaning more towards in the direction of of a rate hike at this point",
+    "there's just a lot of inflationary forces that... are going to keep the Fed from being able to cut rates anytime soon"
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "Cambio de foco: frente a la lectura anterior centrada en liquidez neta global y BTC/oro, aquí Cowen no menciona Bitcoin ni el oro en absoluto y se dedica por completo al mercado laboral y la probabilidad de subida de tipos de la Fed (ahora 60%) y del Banco de Japón, reforzando su tesis de inflación persistente y presión alcista sobre el tramo largo de la curva.",
+   "cadencia_dias": 2,
+   "actualizado": "2026-09-05T10:56:09+00:00"
+  },
   {
    "agente": "cowen",
    "nombre": "Benjamin Cowen",

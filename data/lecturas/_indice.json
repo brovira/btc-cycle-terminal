@@ -1,11 +1,11 @@
 {
- "actualizado": "2026-09-05T10:57:10+00:00",
+ "actualizado": "2026-09-07T13:01:55+00:00",
  "agentes": {
   "cowen": {
    "nombre": "Benjamin Cowen",
    "cadencia_dias": 2,
-   "fuente_fecha": "2026-09-04",
-   "actualizado": "2026-09-05T10:56:09+00:00",
+   "fuente_fecha": "2026-09-07",
+   "actualizado": "2026-09-07T13:01:55+00:00",
    "tendencia": "neutral",
    "pendiente": null,
    "resultado_pase": "actualizada"
@@ -17,7 +17,7 @@
    "actualizado": "2026-09-05T10:57:10+00:00",
    "tendencia": "alcista",
    "pendiente": null,
-   "resultado_pase": "actualizada"
+   "resultado_pase": "sin novedad"
   },
   "woc": {
    "nombre": "Glassnode · Week On-Chain",
