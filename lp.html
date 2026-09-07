@@ -63,7 +63,10 @@
   .rbar .fill{position:absolute;inset:0;border-radius:4px;background:color-mix(in oklab,var(--accum) 34%,transparent)}
   .rbar .mark{position:absolute;top:-4px;width:3px;height:16px;border-radius:2px;transform:translateX(-50%);box-shadow:0 0 0 2px var(--panel)}
   /* Marca de ENTRADA: gris, mas fina y sin sombra, para que no compita con la del precio actual. */
-  .rbar .mark.entrada{background:var(--muted);width:2px;height:12px;top:-2px;opacity:.85;box-shadow:none}
+  /* La de ENTRADA va POR ENCIMA de la barra y la del precio actual la cruza entera: cuando
+     casi coinciden -- lo normal los primeros dias -- las dos se ven. Por debajo no puede ir:
+     invadia la etiqueta de la unidad ("WETH por cbBTC" salia partido). */
+  .rbar .mark.entrada{background:var(--muted);width:2px;height:7px;top:-9px;opacity:.95;box-shadow:none;border-radius:1px}
   .rbar.mini{height:6px;margin:3px 0 0}
   .rangebox{min-width:240px;width:100%}
   .rangeends,.rangefoot{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:10.5px;color:var(--muted)}
@@ -601,9 +604,15 @@ function entryPricesFromCashflows(cashflows){
   }
   return Object.values(bySymbol).filter(x=>x.amount>0).map(x=>({symbol:x.symbol,priceUsd:x.usd/x.amount}));
 }
-function entryMarkup(entries){
+function entryMarkup(entries,r){
   if(!entries||!entries.length)return'<span class="na">n/d</span>';
-  return entries.map((x,i)=>`${i?'<div class="sub">':''}${fmtUSD(x.priceUsd)} ${esc(x.symbol)}${i?'</div>':''}`).join("");
+  const enUsd=entries.map((x,i)=>`${i?'<div class="sub">':''}${fmtUSD(x.priceUsd)} ${esc(x.symbol)}${i?'</div>':''}`).join("");
+  // En un par de dos volatiles, dos precios en dolares no se comparan con el precio actual,
+  // que es un ratio. Se ensena el mismo ratio y los dolares debajo: manzanas con manzanas.
+  const ratio=entradaEnRango(r,entries);
+  if(ratio==null)return enUsd;
+  const unit=`${r.quote} por ${r.base}`;
+  return `${fmtRangePrice(ratio)}<div class="sub">${esc(unit)}</div><div class="sub" style="opacity:.75;margin-top:2px">${enUsd}</div>`;
 }
 function feeMarkup(claimed,pending,digits=2){
   const row=(value,label)=>`<div>${Number.isFinite(value)?fmtUSD(value,digits):'<span class="na">n/d</span>'}<span class="sub"> ${label}</span></div>`;
@@ -983,7 +992,7 @@ function renderTabPos(M,BTC){
     const pnlContent=`${pnl!=null?fmtUSD(pnl,0):'—'}${pct!=null?`<div class="sub ${pct>=0?'up':'down'}">${pct>=0?'+':''}${pct.toFixed(2)}%</div>`:''}`;
     const feeContent=feeMarkup(p.fees,p._pendingFees,2);
     const yieldContent=ey!=null?ey.toFixed(1)+'%':'—',durationContent=p.days.toFixed(0)+'d';
-    return `<tr><td data-col="pool">${pool}</td>${td("balance",balanceTip(bal,assets))}${td("pnl",pnlTip(pnlContent,{invested:p.invested,current:bal,withdrawn:capitalWithdrawn,claimed:p.fees,pending:p._pendingFees,gas:p.gas,pnl}),`class="${(pnl||0)>=0?'up':'down'}"`)}${td("fees",feesTip(feeContent,p.fees,p._pendingFees,claimedAssets,pendingAssets),'class="up"')}${td("yield",yieldTip(yieldContent,(p.fees||0)+(p._pendingFees||0),p.invested,p.days,ey))}${td("duration",durationTip(durationContent,p.first,p.last))}${td("range",rangeTip(range,p.range,current,entradaEnRango(p.range,entry)),'style="text-align:left"')}${td("current",currentPriceTip(currentPriceMarkup(p.range,current),p.range,current))}${td("entry",entryTip(entryMarkup(entry),entry))}${td("tokenA",tokenTip(assets[0],assets,"Token A"))}${td("tokenB",tokenTip(assets[1],assets,"Token B"))}</tr>`;
+    return `<tr><td data-col="pool">${pool}</td>${td("balance",balanceTip(bal,assets))}${td("pnl",pnlTip(pnlContent,{invested:p.invested,current:bal,withdrawn:capitalWithdrawn,claimed:p.fees,pending:p._pendingFees,gas:p.gas,pnl}),`class="${(pnl||0)>=0?'up':'down'}"`)}${td("fees",feesTip(feeContent,p.fees,p._pendingFees,claimedAssets,pendingAssets),'class="up"')}${td("yield",yieldTip(yieldContent,(p.fees||0)+(p._pendingFees||0),p.invested,p.days,ey))}${td("duration",durationTip(durationContent,p.first,p.last))}${td("range",rangeTip(range,p.range,current,entradaEnRango(p.range,entry)),'style="text-align:left"')}${td("current",currentPriceTip(currentPriceMarkup(p.range,current),p.range,current))}${td("entry",entryTip(entryMarkup(entry,p.range),entry))}${td("tokenA",tokenTip(assets[0],assets,"Token A"))}${td("tokenB",tokenTip(assets[1],assets,"Token B"))}</tr>`;
   }).join("");
   // Si la lectura en vivo falla para una cadena (RPC caido), sus posiciones desaparecian de la
   // tabla como si no existieran. El pipeline privado si sabe que estan vivas: se anaden con lo
@@ -1022,7 +1031,7 @@ function renderTabPos(M,BTC){
       ${td("yield",h?yieldTip(yieldContent,h.feesUsd,h.investedUsd,h.durationDays,h.annualizedYieldPct):yieldContent)}
       ${td("duration",h?durationTip(durationContent,h.openedAt):durationContent)}
       ${td("range",rangeTip(rangeVisual(p.range,current,!columnVisible("current"),entradaEnRango(p.range,entryRows)),p.range,current,entradaEnRango(p.range,entryRows)),'style="text-align:left"')}
-      ${td("current",currentPriceTip(currentPriceMarkup(p.range,current),p.range,current))}${td("entry",entryTip(entry,entryRows))}${td("tokenA",tokenTip(assets[0],assets,"Token A"))}${td("tokenB",tokenTip(assets[1],assets,"Token B"))}
+      ${td("current",currentPriceTip(currentPriceMarkup(p.range,current),p.range,current))}${td("entry",entryTip(entryMarkup(entryRows,p.range),entryRows))}${td("tokenA",tokenTip(assets[0],assets,"Token A"))}${td("tokenB",tokenTip(assets[1],assets,"Token B"))}
     </tr>`;
   }).join("");
   const rows=orcaRows+liveRows;
