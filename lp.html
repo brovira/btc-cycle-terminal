@@ -462,7 +462,7 @@ function build(rows){
     const latest=p.rows.reduce((m,r)=>Date.parse(r["Date"])>Date.parse(m["Date"])?r:m,p.rows[0]);
     p.cost=p.closed?0:num(latest["Cost Basis (USD)"]);
     p.first=p.dates.reduce((m,d)=>d<m?d:m); p.last=p.dates.reduce((m,d)=>d>m?d:m);
-    p.days=Math.max(1,(Date.parse(p.last)-Date.parse(p.first))/864e5);
+    p.days=Math.max(1,((p.status==="open"?Date.now():Date.parse(p.last))-Date.parse(p.first))/864e5);
     p.aprFee=p.costMax>0?(p.fees/p.costMax)/p.days*365*100:null;
   }
   collects.sort((a,b)=>Date.parse(a.date)-Date.parse(b.date));
@@ -497,7 +497,11 @@ function buildPnl(data){
     .filter(p=>["cbBTC / USDC","WBTC / cbBTC"].includes(primaryPair(p.tokens,p.liquidityState)));  // solo tus pares BTC (como Orca)
   const P=conf.map(p=>{const pf=p.performance||{};const vs=(p.benchmarks||{}).vsHold||{};
     return{mint:p.positionMint,pair:primaryPair(p.tokens,p.liquidityState),status:p.status||"?",computed:(p.analyticsStatus||{}).pnl==="computed",
-      first:(p.firstSeen||0)*1000,last:(p.lastSeen||0)*1000,days:Math.max(1,((p.lastSeen-p.firstSeen)||0)/86400),
+      first:(p.firstSeen||0)*1000,last:(p.lastSeen||0)*1000,
+      // Una posicion ABIERTA lleva abierta hasta HOY. Medir hasta el ultimo movimiento la
+      // congelaba: la cbBTC/USDC del 1-sep marcaba "1d" seis dias despues, y como el yield
+      // divide por los dias, lo multiplicaba por seis (99,7% donde eran ~17%).
+      days:Math.max(1,(((p.status==="open"?Date.now()/1000:p.lastSeen)-p.firstSeen)||0)/86400),
       invested:pf.investedValueUsd,withdrawn:pf.withdrawnValueUsd,fees:pf.feeLikeValueUsd,gas:pf.gasValueUsd,
       pnl:pf.netPnlUsd,pnlPct:pf.netPnlPct,vsHold:(vs.complete?vs.pnlUsd:null),current:pf.currentValueUsd,range:p.priceRange||null,
       ls:p.liquidityState||null,feePercent:orcaFeePercent(p.liquidityState),cf:p.cashflows||[]};});
@@ -943,7 +947,17 @@ function renderTabPos(M,BTC){
     const yieldContent=ey!=null?ey.toFixed(1)+'%':'—',durationContent=p.days.toFixed(0)+'d';
     return `<tr><td data-col="pool">${pool}</td>${td("balance",balanceTip(bal,assets))}${td("pnl",pnlTip(pnlContent,{invested:p.invested,current:bal,withdrawn:capitalWithdrawn,claimed:p.fees,pending:p._pendingFees,gas:p.gas,pnl}),`class="${(pnl||0)>=0?'up':'down'}"`)}${td("fees",feesTip(feeContent,p.fees,p._pendingFees,claimedAssets,pendingAssets),'class="up"')}${td("yield",yieldTip(yieldContent,(p.fees||0)+(p._pendingFees||0),p.invested,p.days,ey))}${td("duration",durationTip(durationContent,p.first,p.last))}${td("range",rangeTip(range,p.range,current),'style="text-align:left"')}${td("current",currentPriceTip(currentPriceMarkup(p.range,current),p.range,current))}${td("entry",entryTip(entryMarkup(entry),entry))}${td("tokenA",tokenTip(assets[0],assets,"Token A"))}${td("tokenB",tokenTip(assets[1],assets,"Token B"))}</tr>`;
   }).join("");
-  const liveRows=LIVE_LPS.map(p=>{
+  // Si la lectura en vivo falla para una cadena (RPC caido), sus posiciones desaparecian de la
+  // tabla como si no existieran. El pipeline privado si sabe que estan vivas: se anaden con lo
+  // que el sabe y se marcan "sin lectura en vivo".
+  const vivasApi=new Set(LIVE_LPS.map(p=>`${(p.network||"").toLowerCase()}:${p.id}`));
+  const faltantes=((PIPELINE_META&&PIPELINE_META.positions)||[]).filter(p=>
+      p.chain!=="solana"&&p.status==="open"&&p.nft&&
+      !vivasApi.has(`${(CHAIN_LABEL[p.chain]||p.chain).toLowerCase()}:${String(p.nft).replace(/.*#/,"")}`))
+    .map(p=>({id:String(p.nft).replace(/.*#/,""),pair:p.pair,fee:"",sym0:(p.pair||"/").split("/")[0],sym1:(p.pair||"/").split("/")[1],
+              usd:null,amt0:null,amt1:null,range:null,protocol:p.protocol||"V3",network:CHAIN_LABEL[p.chain]||p.chain,
+              sinLectura:true,historyError:"la lectura en vivo no devolvió esta posición (RPC del explorador caído); sigue viva según el pipeline"}));
+  const liveRows=LIVE_LPS.concat(faltantes).map(p=>{
     const h=p.history&&!p.history.soloPendientes?p.history:histDesdePipeline(p);
     const entryRows=byPairOrder(p.pair,(h&&h.entryPrices)||[]),entry=entryMarkup(entryRows);
     const histState=h&&h.fuentePipeline?'<div class="sub" title="Capital y fees del pipeline privado (logs del gestor); las pendientes, en vivo.">del pipeline</div>':(h&&!h.complete?'<div class="sub">histórico parcial</div>':'');
@@ -953,13 +967,18 @@ function renderTabPos(M,BTC){
     const claimedAssets=h?byPairOrder(p.pair,[{amount:h.claimedFeeAmount0,symbol:p.sym0,usd:p.price0!=null?h.claimedFeeAmount0*p.price0:null},{amount:h.claimedFeeAmount1,symbol:p.sym1,usd:p.price1!=null?h.claimedFeeAmount1*p.price1:null}]):[];
     const pendingAssets=h?byPairOrder(p.pair,[{amount:h.pendingFeeAmount0,symbol:p.sym0,usd:p.price0!=null?h.pendingFeeAmount0*p.price0:null},{amount:h.pendingFeeAmount1,symbol:p.sym1,usd:p.price1!=null?h.pendingFeeAmount1*p.price1:null}]):[];
     const capitalWithdrawn=h?Math.max(0,(h.withdrawnUsd||0)-(h.claimedFeesUsd||0)):null;
-    const pnlContent=`${h?fmtUSD(h.pnlUsd,0):'<span class="na">n/d</span>'}${h?`<div class="sub ${h.pnlPct>=0?'up':'down'}">${h.pnlPct>=0?'+':''}${h.pnlPct.toFixed(2)}%</div>`:`<div class="sub" title="${esc(p.historyError||"")}">sin histórico${p.historyError?" ⚠":""}</div>`}${histState}`;
+    // Sin lectura en vivo no hay valor actual, asi que no hay PnL ni yield: se dice, no se
+    // revienta. Antes un null aqui tiraba TODA la tabla y no se veia ninguna posicion.
+    const nd='<span class="na">n/d</span>';
+    const pnlContent=`${h&&h.pnlUsd!=null?fmtUSD(h.pnlUsd,0):nd}${h&&h.pnlPct!=null?`<div class="sub ${h.pnlPct>=0?'up':'down'}">${h.pnlPct>=0?'+':''}${h.pnlPct.toFixed(2)}%</div>`:`<div class="sub" title="${esc(p.historyError||"")}">${h?"sin valor en vivo":"sin histórico"}${p.historyError?" ⚠":""}</div>`}${histState}`;
     const feeContent=h?feeMarkup(h.claimedFeesUsd,h.pendingFeesUsd,2):feeMarkup(null,null,2);
-    const yieldContent=h?`${h.annualizedYieldPct.toFixed(1)}%`:'<span class="na">n/d</span>',durationContent=h?`${h.durationDays.toFixed(0)}d`:'<span class="na">n/d</span>';
-    const pool=poolTip(`${esc(p.pair)} <span class="pilltok">${esc(p.fee)}</span><div class="poolmeta">${esc(p.protocol)} · ${esc(p.network||"EVM")}${nft}</div>`,{protocol:p.protocol,network:p.network||"EVM",fee:p.fee,nft:p.id});
+    const yieldContent=h&&h.annualizedYieldPct!=null?`${h.annualizedYieldPct.toFixed(1)}%`:nd,
+          durationContent=h&&h.durationDays!=null?`${h.durationDays.toFixed(0)}d`:nd;
+    const aviso=p.sinLectura?' <span class="badge stale" title="El pipeline la ve viva on-chain, pero la lectura en vivo no la devolvió: balance y rango no disponibles ahora.">sin lectura en vivo</span>':"";
+    const pool=poolTip(`${esc(p.pair)}${p.fee?` <span class="pilltok">${esc(p.fee)}</span>`:""}${aviso}<div class="poolmeta">${esc(p.protocol)} · ${esc(p.network||"EVM")}${nft}</div>`,{protocol:p.protocol,network:p.network||"EVM",fee:p.fee,nft:p.id});
     return `<tr>
       <td data-col="pool">${pool}</td>
-      ${td("balance",balanceTip(p.usd,assets))}
+      ${td("balance",p.usd!=null?balanceTip(p.usd,assets):nd)}
       ${td("pnl",h?pnlTip(pnlContent,{invested:h.investedUsd,current:p.usd,withdrawn:capitalWithdrawn,claimed:h.claimedFeesUsd,pending:h.pendingFeesUsd,gas:h.gasUsd,pnl:h.pnlUsd}):pnlContent,`class="${h&&h.pnlUsd>=0?'up':'down'}"`)}
       ${td("fees",h?feesTip(feeContent,h.claimedFeesUsd,h.pendingFeesUsd,claimedAssets,pendingAssets):feeContent,`class="${h?'up':''}"`)}
       ${td("yield",h?yieldTip(yieldContent,h.feesUsd,h.investedUsd,h.durationDays,h.annualizedYieldPct):yieldContent)}
