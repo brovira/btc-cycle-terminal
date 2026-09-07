@@ -155,7 +155,12 @@ async function fetchEvmChain(base, chain, addr) {
    Para protocolos conocidos se enumeran sus NFTs directamente en el position manager.
    Para forks desconocidos se usa la lista paginada de ERC-721 de Blockscout y se prueba
    positions(tokenId). El pool sale de factory()+getPool() y el precio actual de slot0(). */
-const ETH_RPCS = ["https://eth.blockscout.com/api/eth-rpc", "https://eth.llamarpc.com", "https://cloudflare-eth.com", "https://rpc.ankr.com/eth"];
+// Lista probada en el pipeline privado (ingestion/liquidez_nft.py). La anterior empezaba por
+// el eth-rpc de Blockscout, que limita, y acababa en rpc.ankr.com, que desde hace meses exige
+// clave y responde "Unauthorized" como si fuera un revert. Resultado: uniswap=0 en Ethereum
+// durante dias, con la posicion BNB/WETH viva y sin aparecer en el panel.
+const ETH_RPCS = ["https://ethereum-rpc.publicnode.com", "https://eth.llamarpc.com", "https://cloudflare-eth.com",
+                  "https://eth.drpc.org", "https://1rpc.io/eth", "https://eth.merkle.io", "https://eth.blockscout.com/api/eth-rpc"];
 const HYPE_RPCS = ["https://rpc.hyperliquid.xyz/evm", "https://hyperliquid.drpc.org"];
 // base.blockscout.com/api/eth-rpc devuelve 429 a la segunda llamada (sonda del 2-sep): va el ultimo.
 const BASE_RPCS = ["https://base.drpc.org", "https://mainnet.base.org", "https://base-rpc.publicnode.com", "https://base.blockscout.com/api/eth-rpc"];
@@ -542,6 +547,11 @@ async function fetchV3Positions(baseUrl, rpcs, addr, protoLabel, knownManagers =
     const items = direct.checked
       ? direct.items
       : await blockscoutNfts(baseUrl, addr, knownManagers);
+    // Si NINGUN RPC contesto y el explorador tampoco dio nada, esto no es "no tienes
+    // posiciones": es que no hemos podido mirar. Se declara para que el panel lo diga.
+    if (!direct.checked && !items.length) {
+      out.warning = "ningun RPC ni el explorador respondieron: no se ha podido comprobar si hay posiciones";
+    }
     for (const it of items.slice(0, knownManagers.length ? 100 : 15)) {
       const npm = nftContract(it);
       if (!npm) continue;
