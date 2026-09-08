@@ -71,6 +71,10 @@
   .rangebox{min-width:240px;width:100%}
   .rangeends,.rangefoot{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:10.5px;color:var(--muted)}
   .rangefoot{margin-top:5px;white-space:normal}
+  .rangeends{gap:6px}
+  .rangeends>span{white-space:nowrap}
+  .rangeends .marg{font-style:normal;font-family:var(--mono);opacity:.75;margin:0 3px}
+  .rangeends .ancho{font-family:var(--mono);opacity:.6;white-space:nowrap}
   .rangefoot strong{font-family:var(--font);font-size:10.5px;white-space:nowrap}
   .rangefoot strong.in{color:var(--bull)} .rangefoot strong.out{color:var(--bear)}
   .poolmeta{font-family:var(--mono);font-size:10.5px;color:var(--muted);font-weight:500;margin-top:3px}
@@ -572,6 +576,14 @@ async function fetchOrcaPending(positions){
     if(failed)ORCA_PENDING_WARNING=failed+" posición(es) Orca sin fees pendientes";
   }catch(e){ORCA_PENDING={};ORCA_PENDING_WARNING="Fees pendientes de Orca no disponibles";}
 }
+// El de la barra redondea para que quepa. Este NO: es el que se compara con la web del
+// DEX, y ahi 0,0270 y 0,027043265 son limites distintos.
+function fmtRangePriceExacto(v){
+  if(v==null||!isFinite(v))return"—";
+  const a=Math.abs(v);
+  if(a>=1)return Number(v).toLocaleString("en-US",{maximumFractionDigits:6});
+  return Number(v.toPrecision(9)).toString();
+}
 function fmtRangePrice(v){
   if(v==null||!isFinite(v))return"—";
   const a=Math.abs(v),d=a>=1000?0:a>=10?2:a>=1?4:a>=.01?4:6;
@@ -671,10 +683,12 @@ function rangeTip(content,r,current,entrada=null){
   const lo=+r.priceLow,hi=+r.priceHigh,cur=current!=null?+current:null,has=Number.isFinite(cur)&&cur>0;
   const inRange=has&&cur>=lo&&cur<=hi,unit=(r.quote&&r.base)?`${r.quote} por ${r.base}`:"precio";
   const state=!has?"Precio no disponible":inRange?"En rango":cur<lo?"Por debajo":"Por encima";
+  const mLo=has?margenPct(lo,cur):null,mHi=has?margenPct(hi,cur):null,anch=anchuraPct(lo,hi);
   return metricTip(content,"Rango de liquidez",[
-    {label:"Límite inferior",value:`${fmtRangePrice(lo)} ${unit}`},
+    {label:"Límite inferior",value:`${fmtRangePriceExacto(lo)} ${unit}${mLo!=null?` (${fmtMargen(mLo)})`:""}`},
     {label:"Precio actual",value:has?`${fmtRangePrice(cur)} ${unit}`:"n/d"},
-    {label:"Límite superior",value:`${fmtRangePrice(hi)} ${unit}`},
+    {label:"Límite superior",value:`${fmtRangePriceExacto(hi)} ${unit}${mHi!=null?` (${fmtMargen(mHi)})`:""}`},
+    ...(anch!=null?[{label:"Anchura total",value:`${anch.toFixed(1)}%`}]:[]),
     ...(entrada>0?[{label:"Entrada (IL cero aquí)",value:`${fmtRangePrice(entrada)} ${unit}`}]:[]),
     {label:"Estado",value:state,tone:inRange?"up":"down",total:true},
   ],inRange?"La posición está generando fees dentro del rango.":"Fuera de rango deja de generar fees hasta que el precio vuelva.","left block");
@@ -707,6 +721,17 @@ function posEnBarra(v,lo,hi){
 // la lectura en vivo falla, la fila salia SIN rango aunque el dato existiera guardado.
 // No trae precio actual, asi que la barra se dibuja con los limites y el estado sale
 // "Precio n/d": preferible a esconder el rango.
+// Margen hasta un limite del rango, en % sobre el precio actual. Es LO QUE FALTABA para
+// poder juzgar un rango: los dos limites en crudo no dicen si te has pasado, porque el
+// mismo -43%/+30% es holgado en un par y asfixiante en otro. En % se comparan entre si.
+function margenPct(limite,actual){
+  if(!(limite>0)||!(actual>0)||!isFinite(limite)||!isFinite(actual))return null;
+  return (limite/actual-1)*100;
+}
+function fmtMargen(v){return v==null?"":(v>=0?"+":"")+v.toFixed(1)+"%";}
+// Anchura total del rango: cuanto tiene que subir el precio desde el suelo para tocar el
+// techo. No depende del precio actual, asi que existe aunque no haya lectura en vivo.
+function anchuraPct(lo,hi){return (lo>0&&hi>lo)?(hi/lo-1)*100:null;}
 function rangoDelPipeline(p){
   if(!p||!(p.rangeMin>0)||!(p.rangeMax>p.rangeMin))return null;
   return {priceLow:+p.rangeMin,priceHigh:+p.rangeMax,base:p.rangeBase||null,quote:p.rangeQuote||null,delPipeline:true};
@@ -723,8 +748,12 @@ function rangeVisual(r,current,showCurrent=true,entrada=null){
   // deposito y retirar no deja impermanent loss.
   const ent=(entrada>0&&entrada>=lo&&entrada<=hi)
     ? `<div class="mark entrada" style="left:${posEnBarra(entrada,lo,hi)}%" title="Entrada ${fmtRangePrice(entrada)} ${esc(unit)} · retirar a este precio = 0 impermanent loss"></div>` : "";
+  const mLo=has?margenPct(lo,cur):null,mHi=has?margenPct(hi,cur):null,anch=anchuraPct(lo,hi);
+  const pctLo=mLo!=null?`<em class="marg">${fmtMargen(mLo)}</em>`:"";
+  const pctHi=mHi!=null?`<em class="marg">${fmtMargen(mHi)}</em>`:"";
+  const anchTxt=anch!=null?`<span class="ancho" title="Anchura total: cuanto tiene que subir el precio desde el suelo para tocar el techo">ancho ${anch.toFixed(0)}%</span>`:"";
   return `<div class="rangebox" title="${esc(state)}">
-    <div class="rangeends"><span>${fmtRangePrice(lo)}</span><span>${fmtRangePrice(hi)}</span></div>
+    <div class="rangeends"><span>${fmtRangePrice(lo)}${pctLo}</span>${anchTxt}<span>${pctHi}${fmtRangePrice(hi)}</span></div>
     <div class="rbar mini"><div class="fill"></div>${ent}${has?`<div class="mark" style="left:${pos}%;background:${inr?'var(--bull)':'var(--bear)'}"></div>`:""}</div>
     <div class="rangefoot"><span>${showCurrent&&has?`Actual ${fmtRangePrice(cur)} ${esc(unit)}`:esc(unit)}</span><strong class="${inr?'in':'out'}">${state}</strong></div>
   </div>`;
