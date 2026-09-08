@@ -171,6 +171,11 @@ const PROJECTX_POSITION_MANAGER = "0xeaD19AE861c29bBb2101E834922B2FEee69B9091";
 // HyperSwap y la cbBTC/WETH de Base no salian en el panel aunque estuvieran vivas.
 const HYPERSWAP_POSITION_MANAGER = "0x6eDA206207c09e5428F281761DdC0D300851fBC8";
 const UNISWAP_V3_BASE_POSITION_MANAGER = "0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1";
+// PancakeSwap V3 usa el MISMO gestor en todas sus cadenas. Sin el, una posicion abierta
+// en PancakeSwap Base no salia en el panel: el codigo de abajo es generico (lee factory()
+// del propio gestor, asi que sirve para cualquier fork de Uniswap v3), pero solo miraba
+// los gestores de esta lista.
+const PANCAKESWAP_V3_POSITION_MANAGER = "0x46A15B0b27311cedF172AB29E4f4766fbE7F4364";
 const TOPIC_INCREASE = "0x3067048beee31b25b2f1681f88dac838c8bba36af25bfb2b7cf7473a5847e35f";
 const TOPIC_DECREASE = "0x26f6a048ee9138f2c0ce266f322cb99228e8d619ae2bff30c67f8dcf9d2377b4";
 const TOPIC_COLLECT = "0x40d0efd1a53d60ecbf40971b9daf7dc90178c3aadc7aab1765632738fa8b8f01";
@@ -542,17 +547,23 @@ function displayPriceRange(sp, spa, spb, token0, token1) {
 async function fetchV3Positions(baseUrl, rpcs, addr, protoLabel, knownManagers = [], network = "EVM") {
   const out = { positions: [], totalUsd: 0, protocol: protoLabel };
   const call = rpcCaller(rpcs);
+  // Una cadena puede tener varios DEX v3. knownManagers admite "0x..." o {address, label};
+  // sin la etiqueta por gestor, una posicion de PancakeSwap saldria rotulada como el
+  // primer protocolo de la lista.
+  const gestores = knownManagers.map(m => (typeof m === "string" ? { address: m, label: protoLabel } : m));
+  const etiqueta = Object.fromEntries(gestores.map(g => [g.address.toLowerCase(), g.label || protoLabel]));
+  const direcciones = gestores.map(g => g.address);
   try {
-    const direct = knownManagers.length ? await ownedPositionNfts(call, addr, knownManagers) : { items: [], checked: false };
+    const direct = direcciones.length ? await ownedPositionNfts(call, addr, direcciones) : { items: [], checked: false };
     const items = direct.checked
       ? direct.items
-      : await blockscoutNfts(baseUrl, addr, knownManagers);
+      : await blockscoutNfts(baseUrl, addr, direcciones);
     // Si NINGUN RPC contesto y el explorador tampoco dio nada, esto no es "no tienes
     // posiciones": es que no hemos podido mirar. Se declara para que el panel lo diga.
     if (!direct.checked && !items.length) {
       out.warning = "ningun RPC ni el explorador respondieron: no se ha podido comprobar si hay posiciones";
     }
-    for (const it of items.slice(0, knownManagers.length ? 100 : 15)) {
+    for (const it of items.slice(0, direcciones.length ? 100 : 15)) {
       const npm = nftContract(it);
       if (!npm) continue;
       const pos = await call(npm, "0x99fbab88" + pad(BigInt(it.id).toString(16)));
@@ -590,7 +601,8 @@ async function fetchV3Positions(baseUrl, rpcs, addr, protoLabel, knownManagers =
       const range = displayPriceRange(sp, spa, spb, t0, t1);
       const position = { id: String(it.id), pair: `${t0.sym}/${t1.sym}`, fee: fee / 10000 + "%",
         amt0, amt1, sym0: t0.sym, sym1: t1.sym, usd: priced ? usd : (usd || null),
-        price0: px0, price1: px1, inRange: sp >= spa && sp <= spb, range, protocol: protoLabel, network };
+        price0: px0, price1: px1, inRange: sp >= spa && sp <= spb, range,
+        protocol: etiqueta[String(npm).toLowerCase()] || protoLabel, network };
       // Un historico que falla no puede desaparecer sin decir por que: el panel ensenaba
       // "sin historico" y n/d, indistinguible de "esta posicion no tiene movimientos".
       position.history = await cachedPositionHistory({ baseUrl, rpcs, call, owner: addr, manager: npm,
@@ -703,7 +715,10 @@ module.exports = async (req, res) => {
       wallets.evm ? fetchV3Positions("https://hyperliquid.cloud.blockscout.com", HYPE_RPCS, wallets.evm, "ProjectX", [PROJECTX_POSITION_MANAGER], "HyperEVM").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
       wallets.solana ? fetchKamino(wallets.solana).catch(e => ({ usd: 0, ok: false, warning: String(e.message || e) })) : null,
       wallets.evm ? fetchV3Positions("https://hyperliquid.cloud.blockscout.com", HYPE_RPCS, wallets.evm, "HyperSwap", [HYPERSWAP_POSITION_MANAGER], "HyperEVM").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
-      wallets.evm ? fetchV3Positions("https://base.blockscout.com", BASE_RPCS, wallets.evm, "Uniswap V3", [UNISWAP_V3_BASE_POSITION_MANAGER], "Base").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
+      wallets.evm ? fetchV3Positions("https://base.blockscout.com", BASE_RPCS, wallets.evm, "Uniswap V3", [
+        { address: UNISWAP_V3_BASE_POSITION_MANAGER, label: "Uniswap V3" },
+        { address: PANCAKESWAP_V3_POSITION_MANAGER, label: "PancakeSwap V3" },
+      ], "Base").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
     ]);
     // Traza por fuente V3 en los logs de Vercel: desde el panel no se ve el cuerpo de la
     // respuesta, y "no aparece" no distingue entre 0 posiciones, error o timeout.
