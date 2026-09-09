@@ -1,34 +1,65 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-09-07",
+ "fuente_fecha": "2026-09-08",
  "fuentes": [
-  "20260907-bitcoin-closes-at-the-50-week-moving-average.md"
+  "20260908-bitcoin-golden-cross.md"
  ],
- "titulo": "Bitcoin Closes at the 50 Week Moving Average",
+ "titulo": "Bitcoin Golden Cross",
  "tendencia": "neutral",
  "horizonte": "semanas",
- "escenario": "Bitcoin cotiza sobre 80.000$ y cerro practicamente justo en la media movil de 50 semanas (unos 80.300-80.400$ segun exchange, algunos por encima y otros por debajo), tras hacer un higher high intradia hasta ~82.292$ que sigue siendo un lower high frente a mayo. El informe de empleo (NFP) salio caliente el viernes y volvio a subir la probabilidad de subida de tipos, lo que provoco la venta; ahora el mercado esta pendiente del dato de inflacion (en unos 5 dias) y de la reunion de la Fed la semana siguiente.",
+ "escenario": "Bitcoin acaba de producir un golden cross (media de 50 dias cruzando por encima de la de 200 dias), y segun los precedentes de 2014, 2015, 2019 y 2023 este cruce suele venir acompanado de una caida inicial del 8-15% desde el maximo previo antes de resolverse. Una caida del 10-12% llevaria el precio a la zona de 72.000$ y una del 14-15% a unos 70.000$, niveles similares a los de 2019 y 2023; lo decisivo no es ese dump inicial sino si el rebote posterior marca un higher high (caso alcista, como 2019/2023) o un lower high con rechazo en la media de 50 semanas (caso bajista, como 2014/2015, que llevaria a una caida hacia el cuarto trimestre).",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
   "bmsb": null,
-  "ma50w": 80360,
+  "ma50w": null,
   "objetivo_correccion": null,
   "invalidacion": null
  },
- "accion": "No toma ninguna posicion ni da recomendacion concreta; se limita a vigilar si Bitcoin logra cerrar de forma sostenida por encima de la media de 50 semanas o si es rechazado, usando los patrones de 2015/2019/2023 como referencia.",
- "para_mis_lps": "BTC esta enroscado justo en el pivote de la MA50w (~80.300-80.400$) con riesgo bidireccional alto de cara al dato de inflacion y la reunion de la Fed; no conviene concentrar liquidez en rangos muy estrechos alrededor de ese nivel hasta que se resuelva la direccion.",
+ "accion": "No toma posicion; se limita a vigilar si tras el dump post-golden-cross el rebote forma un higher high (bull thesis intacta) o un lower high con rechazo en la media de 50 semanas (bull thesis en peligro).",
+ "para_mis_lps": "No da niveles de precio semanales concretos en este video (solo referencias aproximadas de 70.000-72.000$ como zona de dump post-golden-cross); no aplica para calibrar un rango de LP salvo como aviso de volatilidad a corto plazo tras el cruce.",
  "citas": [
-  "Bitcoin closed at its 50week moving average... some exchanges above it, some exchanges below it, but we're essentially at it right now.",
-  "Multiple closes above the 50we moving average typically signifies the end of the bare market.",
-  "the longer it spins at the 50we moving average, then you start to say, you know what, it's more likely to break through."
+  "what normally happens regardless of the ultimate direction is that Bitcoin will sell off typically from the local high on a golden cross",
+  "the bull thesis fades when the rally after the golden cross dump is over. When that resolves to a lower high, that's when the bullcase is in danger",
+  "if Bitcoin drops here and then rallies back up to the 50week moving average and breaks through it and sets a higher high, then you have a strong case that the bare market low is in"
  ],
  "confianza": "media",
- "cambios_vs_anterior": "La lectura anterior (04-09) era puramente macro/Fed sin mencionar a Bitcoin; ahora da una lectura directa de precio: BTC cerro exactamente en la MA50 semanal, un punto que considera decisivo para saber si el mercado bajista termina o si aun queda un ultimo tramo bajista en el cuarto trimestre.",
+ "cambios_vs_anterior": "Cambia el foco: ya no habla del posible cierre semanal sobre la media de 50 semanas ni de NFP/Fed, sino de un golden cross diario recien ocurrido que historicamente trae un dump del 10-15% (hacia 70.000-72.000$) antes de definir si hay higher high (alcista) o lower high (bajista).",
  "cadencia_dias": 2,
- "actualizado": "2026-09-07T13:01:55+00:00",
+ "actualizado": "2026-09-09T11:51:52+00:00",
  "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-09-07",
+   "fuentes": [
+    "20260907-bitcoin-closes-at-the-50-week-moving-average.md"
+   ],
+   "titulo": "Bitcoin Closes at the 50 Week Moving Average",
+   "tendencia": "neutral",
+   "horizonte": "semanas",
+   "escenario": "Bitcoin cotiza sobre 80.000$ y cerro practicamente justo en la media movil de 50 semanas (unos 80.300-80.400$ segun exchange, algunos por encima y otros por debajo), tras hacer un higher high intradia hasta ~82.292$ que sigue siendo un lower high frente a mayo. El informe de empleo (NFP) salio caliente el viernes y volvio a subir la probabilidad de subida de tipos, lo que provoco la venta; ahora el mercado esta pendiente del dato de inflacion (en unos 5 dias) y de la reunion de la Fed la semana siguiente.",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": null,
+    "ma50w": 80360,
+    "objetivo_correccion": null,
+    "invalidacion": null
+   },
+   "accion": "No toma ninguna posicion ni da recomendacion concreta; se limita a vigilar si Bitcoin logra cerrar de forma sostenida por encima de la media de 50 semanas o si es rechazado, usando los patrones de 2015/2019/2023 como referencia.",
+   "para_mis_lps": "BTC esta enroscado justo en el pivote de la MA50w (~80.300-80.400$) con riesgo bidireccional alto de cara al dato de inflacion y la reunion de la Fed; no conviene concentrar liquidez en rangos muy estrechos alrededor de ese nivel hasta que se resuelva la direccion.",
+   "citas": [
+    "Bitcoin closed at its 50week moving average... some exchanges above it, some exchanges below it, but we're essentially at it right now.",
+    "Multiple closes above the 50we moving average typically signifies the end of the bare market.",
+    "the longer it spins at the 50we moving average, then you start to say, you know what, it's more likely to break through."
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "La lectura anterior (04-09) era puramente macro/Fed sin mencionar a Bitcoin; ahora da una lectura directa de precio: BTC cerro exactamente en la MA50 semanal, un punto que considera decisivo para saber si el mercado bajista termina o si aun queda un ultimo tramo bajista en el cuarto trimestre.",
+   "cadencia_dias": 2,
+   "actualizado": "2026-09-07T13:01:55+00:00"
+  },
   {
    "agente": "cowen",
    "nombre": "Benjamin Cowen",
