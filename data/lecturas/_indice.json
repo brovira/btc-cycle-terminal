@@ -1,11 +1,11 @@
 {
- "actualizado": "2026-09-09T11:51:52+00:00",
+ "actualizado": "2026-09-10T11:50:11+00:00",
  "agentes": {
   "cowen": {
    "nombre": "Benjamin Cowen",
    "cadencia_dias": 2,
-   "fuente_fecha": "2026-09-08",
-   "actualizado": "2026-09-09T11:51:52+00:00",
+   "fuente_fecha": "2026-09-09",
+   "actualizado": "2026-09-10T11:50:11+00:00",
    "tendencia": "neutral",
    "pendiente": null,
    "resultado_pase": "actualizada"
