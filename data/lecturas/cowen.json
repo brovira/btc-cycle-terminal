@@ -1,14 +1,14 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-09-09",
+ "fuente_fecha": "2026-09-11",
  "fuentes": [
-  "20260909-bitcoin-bull-case-vs-bear-case.md"
+  "20260911-has-the-fed-been-making-a-mistake.md"
  ],
- "titulo": "Bitcoin: Bull Case Vs. Bear Case",
- "tendencia": "neutral",
- "horizonte": "meses",
- "escenario": "Cowen hace un ejercicio deliberadamente 'sin sesgo' repasando indicador por indicador (PE/risk metric, RSI semanal y mensual, MVRV Z-Score, precio realizado, balance price) y comparando cada uno con los ciclos de 2011, 2014, 2015, 2018 y 2019/2022 para dar un punto a los alcistas o a los bajistas. En el tramo transcrito el marcador queda empatado 3 a 3 (bulls: higher low en el RSI semanal, RSI mensual cerca de niveles de suelo, comisiones de transacción muy bajas; bears: el risk metric/PE multiple no ha bajado de 0.4 como en cada suelo previo, el MVRV Z-Score no ha perforado cero, y el precio no ha caído por debajo del precio realizado ni del balance price, algo que sí ocurrió en todos los suelos anteriores incluido el de 2019 'pandémico').",
+ "titulo": "Has the Fed Been Making A Mistake?",
+ "tendencia": "bajista",
+ "horizonte": "semanas",
+ "escenario": "Cowen deja de lado el marco on-chain para centrarse en macro: el 10-year yield está en ~4.8% y el 2-year en ~4.3%, subiendo desde febrero porque la Fed se niega a subir tipos pese a que la inflación repunta (petróleo a $92) y el paro sigue bajando. Como la Fed controla solo el tramo corto, su inacción deja que el tramo largo 'no tenga más remedio que subir', lo que presiona a los activos de riesgo; a 8 días del FOMC de septiembre la probabilidad de subida de tipos está en un inusual 50/50-60%, un nivel de incertidumbre que históricamente precede a reacciones de mercado más violentas en ambas direcciones.",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
@@ -17,19 +17,50 @@
   "objetivo_correccion": null,
   "invalidacion": null
  },
- "accion": "No toma postura direccional; se limita a tabular objetivamente puntos a favor y en contra por indicador, dejando el marcador empatado (3-3) sin concluir el video con un veredicto.",
- "para_mis_lps": "No aplica directamente: en este análisis no da niveles de precio ni rangos concretos, solo un marco de indicadores en tablas; el mensaje implícito es de incertidumbre no resuelta (empate bulls/bears), lo que sugiere prudencia con rangos amplios en vez de apostar por una dirección hasta que el precio rompa por debajo del realized/balance price (bajista) o evite hacerlo como en la comparación con 2019 (alcista).",
+ "accion": "No da una acción de trading concreta; argumenta que la Fed debería subir tipos 25-50 pb en septiembre y advierte que mientras no lo haga el tramo largo de la curva seguirá subiendo y presionando a los activos de riesgo.",
+ "para_mis_lps": "No habla de rangos ni de niveles de BTC; solo señala que la resolución del FOMC (8 días vista, probabilidad casi 50/50 de subida) es un catalizador de alta incertidumbre que suele producir movimientos de mercado más violentos de lo normal en ambas direcciones, lo que sugiere prudencia/rangos más anchos en torno a esa fecha, y recuerda que tras golden crosses Bitcoin suele caer temporalmente antes de definir si hace higher high o lower high.",
  "citas": [
-  "we're just going to look at it and we're going to be fair",
-  "This is simply looking at the data. Nothing more, nothing less.",
-  "So now we got two for the bulls and one for the bears. Two two to one.",
-  "objectively that would be a point for the bears"
+  "I believe they have been making mistake by not raising rates.",
+  "the long end has no choice but to go up.",
+  "the odds of a rate hike in September only 60%... it's still a coin flip."
  ],
  "confianza": "media",
- "cambios_vs_anterior": "Deja de centrarse en el escenario concreto del golden cross y su corrección del 8-15%, y pasa a un tally sistemático de muchos indicadores frente a ciclos previos; el resultado es un empate 3-3 sin conclusión clara, más neutral y menos direccional que la lectura anterior.",
+ "cambios_vs_anterior": "Cambia completamente de tema: abandona el marcador on-chain 3-3 de la lectura anterior y pasa a un análisis puramente macro sobre la Fed y la curva de tipos, marcando el FOMC de septiembre (probabilidad de subida ~50/60%) como el próximo catalizador clave de volatilidad.",
  "cadencia_dias": 2,
- "actualizado": "2026-09-10T11:50:11+00:00",
+ "actualizado": "2026-09-12T11:15:42+00:00",
  "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-09-09",
+   "fuentes": [
+    "20260909-bitcoin-bull-case-vs-bear-case.md"
+   ],
+   "titulo": "Bitcoin: Bull Case Vs. Bear Case",
+   "tendencia": "neutral",
+   "horizonte": "meses",
+   "escenario": "Cowen hace un ejercicio deliberadamente 'sin sesgo' repasando indicador por indicador (PE/risk metric, RSI semanal y mensual, MVRV Z-Score, precio realizado, balance price) y comparando cada uno con los ciclos de 2011, 2014, 2015, 2018 y 2019/2022 para dar un punto a los alcistas o a los bajistas. En el tramo transcrito el marcador queda empatado 3 a 3 (bulls: higher low en el RSI semanal, RSI mensual cerca de niveles de suelo, comisiones de transacción muy bajas; bears: el risk metric/PE multiple no ha bajado de 0.4 como en cada suelo previo, el MVRV Z-Score no ha perforado cero, y el precio no ha caído por debajo del precio realizado ni del balance price, algo que sí ocurrió en todos los suelos anteriores incluido el de 2019 'pandémico').",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": null,
+    "ma50w": null,
+    "objetivo_correccion": null,
+    "invalidacion": null
+   },
+   "accion": "No toma postura direccional; se limita a tabular objetivamente puntos a favor y en contra por indicador, dejando el marcador empatado (3-3) sin concluir el video con un veredicto.",
+   "para_mis_lps": "No aplica directamente: en este análisis no da niveles de precio ni rangos concretos, solo un marco de indicadores en tablas; el mensaje implícito es de incertidumbre no resuelta (empate bulls/bears), lo que sugiere prudencia con rangos amplios en vez de apostar por una dirección hasta que el precio rompa por debajo del realized/balance price (bajista) o evite hacerlo como en la comparación con 2019 (alcista).",
+   "citas": [
+    "we're just going to look at it and we're going to be fair",
+    "This is simply looking at the data. Nothing more, nothing less.",
+    "So now we got two for the bulls and one for the bears. Two two to one.",
+    "objectively that would be a point for the bears"
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "Deja de centrarse en el escenario concreto del golden cross y su corrección del 8-15%, y pasa a un tally sistemático de muchos indicadores frente a ciclos previos; el resultado es un empate 3-3 sin conclusión clara, más neutral y menos direccional que la lectura anterior.",
+   "cadencia_dias": 2,
+   "actualizado": "2026-09-10T11:50:11+00:00"
+  },
   {
    "agente": "cowen",
    "nombre": "Benjamin Cowen",
