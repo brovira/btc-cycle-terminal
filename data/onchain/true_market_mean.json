@@ -1,12 +1,8 @@
 {
   "metric": "true_market_mean",
   "source": "https://bitcoin-data.com/v1/true-market-mean",
-  "points": 1461,
+  "points": 1455,
   "series": [
-    {
-      "date": "2022-09-12",
-      "value": 32131.39
-    },
     {
       "date": "2022-09-13",
       "value": 32009.59
@@ -5826,26 +5822,6 @@
     {
       "date": "2026-09-06",
       "value": 78246.57
-    },
-    {
-      "date": "2026-09-07",
-      "value": 78220.7
-    },
-    {
-      "date": "2026-09-08",
-      "value": 78109.29
-    },
-    {
-      "date": "2026-09-09",
-      "value": 78253.71
-    },
-    {
-      "date": "2026-09-10",
-      "value": 78254.96
-    },
-    {
-      "date": "2026-09-11",
-      "value": 78272.34
     }
   ]
 }
