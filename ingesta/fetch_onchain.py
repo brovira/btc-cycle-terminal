@@ -100,12 +100,17 @@ def normalize(raw):
 MAX_DIAS = 2
 
 
-def ultima_fecha(series, dkey):
+def ultima_fecha(series):
     """(fecha_iso, dias_desde_hoy) del punto mas reciente, o (None, None) si no se puede
-    leer. Nunca se inventa: sin fecha legible no se puede afirmar que el dato este al dia."""
+    leer. Nunca se inventa: sin fecha legible no se puede afirmar que el dato este al dia.
+
+    OJO con la clave: normalize() devuelve items {date, value}. El dkey que tambien
+    devuelve es el nombre en el ORIGEN ('d'), no en la serie ya normalizada. Pasarle dkey
+    hacia que las 12 metricas salieran "sin fecha legible", incluidas las dos que si
+    estaban al dia."""
     fechas = []
     for p in series or []:
-        v = p.get(dkey) if isinstance(p, dict) else None
+        v = p.get("date") if isinstance(p, dict) else None
         if isinstance(v, str) and len(v) >= 10:
             fechas.append(v[:10])
     if not fechas:
@@ -128,7 +133,7 @@ def main():
 
     items = list(METRICS.items())[:1] if args.probe else list(METRICS.items())
     os.makedirs(OUTDIR, exist_ok=True)
-    ok, rancios = 0, []
+    ok, escritas, rancios = 0, 0, []
     for name, slug in items:
         status, raw = fetch(slug)
         print(f"[{name}] GET /v1/{slug} -> HTTP {status}")
@@ -140,7 +145,7 @@ def main():
             continue
         try:
             series, dkey, vkey = normalize(raw)
-            ultimo, dias = ultima_fecha(series, dkey)
+            ultimo, dias = ultima_fecha(series)
             # Sin fecha legible NO es "al dia": es que no sabemos. Contarlo como bueno
             # seria el mismo fallo silencioso, con otro disfraz.
             rancio = dias is None or dias > MAX_DIAS
@@ -153,6 +158,7 @@ def main():
             edad = f"último {ultimo} ({dias} d)" if dias is not None else "SIN FECHA LEGIBLE"
             print(f"  -> {len(series)} puntos · {edad}"
                   + ("  <<< RANCIO" if rancio else "") )
+            escritas += 1
             if rancio:
                 rancios.append((name, ultimo, dias))
             else:
@@ -160,7 +166,8 @@ def main():
         except Exception as e:
             print(f"  !! no pude normalizar: {e}")
             print("  primeros 400 chars:", raw[:400])
-    print(f"AL DIA {ok}/{len(items)}" + (f" · RANCIAS {len(rancios)}" if rancios else ""))
+    print(f"ESCRITAS {escritas}/{len(items)} · AL DIA {ok}"
+          + (f" · RANCIAS {len(rancios)}" if rancios else ""))
     if rancios:
         # Un 200 con la serie entera NO significa que el dato este al dia: BGeometrics
         # responde 200 con una serie que termina hace dias. Hasta el 21-sep-2026 esto se
@@ -174,7 +181,11 @@ def main():
                             for n, _u, d in rancios))
         for n, u, d in rancios:
             print(f"  RANCIA: {n} — ultimo {u}, " + (f"{d} dias" if d is not None else "sin fecha legible"))
-    sys.exit(0 if (ok or args.probe) else 1)
+    # El job NO falla por datos rancios: que la fuente deje de publicar no es un fallo de
+    # esta ingesta, y un rojo diario mas seria otro aviso que nadie lee. Falla solo si no
+    # se pudo escribir nada. Lo rancio se avisa con ::warning y queda marcado en cada
+    # fichero para el panel y para ingesta/frescura.py.
+    sys.exit(0 if (escritas or args.probe) else 1)
 
 if __name__ == "__main__":
     main()
