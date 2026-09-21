@@ -16,6 +16,7 @@ Uso:
   python ingesta/fetch_onchain.py --probe            # 1 métrica, imprime crudo
   python ingesta/fetch_onchain.py                    # todas, escribe data/onchain/
 """
+from datetime import date, datetime, timezone
 import argparse, json, os, sys, urllib.request, urllib.error
 
 BASE = "https://bitcoin-data.com/v1"
@@ -94,6 +95,29 @@ def normalize(raw):
             continue
     return out, dkey, vkey
 
+# Cuantos dias puede tener el ultimo punto antes de considerarlo rancio. La serie es
+# diaria; dos dias es margen para el retraso de publicacion de la fuente.
+MAX_DIAS = 2
+
+
+def ultima_fecha(series, dkey):
+    """(fecha_iso, dias_desde_hoy) del punto mas reciente, o (None, None) si no se puede
+    leer. Nunca se inventa: sin fecha legible no se puede afirmar que el dato este al dia."""
+    fechas = []
+    for p in series or []:
+        v = p.get(dkey) if isinstance(p, dict) else None
+        if isinstance(v, str) and len(v) >= 10:
+            fechas.append(v[:10])
+    if not fechas:
+        return None, None
+    ultimo = max(fechas)
+    try:
+        d = (datetime.now(timezone.utc).date() - date.fromisoformat(ultimo)).days
+    except ValueError:
+        return ultimo, None
+    return ultimo, d
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--probe", action="store_true", help="solo 1 métrica, imprime respuesta cruda")
@@ -104,7 +128,7 @@ def main():
 
     items = list(METRICS.items())[:1] if args.probe else list(METRICS.items())
     os.makedirs(OUTDIR, exist_ok=True)
-    ok = 0
+    ok, rancios = 0, []
     for name, slug in items:
         status, raw = fetch(slug)
         print(f"[{name}] GET /v1/{slug} -> HTTP {status}")
@@ -116,16 +140,40 @@ def main():
             continue
         try:
             series, dkey, vkey = normalize(raw)
+            ultimo, dias = ultima_fecha(series, dkey)
+            # Sin fecha legible NO es "al dia": es que no sabemos. Contarlo como bueno
+            # seria el mismo fallo silencioso, con otro disfraz.
+            rancio = dias is None or dias > MAX_DIAS
             path = os.path.join(OUTDIR, f"{name}.json")
             with open(path, "w") as f:
                 json.dump({"metric": name, "source": f"{BASE}/{slug}",
-                           "points": len(series), "series": series}, f, indent=2)
-            print(f"  -> {len(series)} puntos (fecha='{dkey}', valor='{vkey}') escrito en data/onchain/{name}.json")
-            ok += 1
+                           "points": len(series), "ultimo": ultimo,
+                           "diasDesdeUltimo": dias, "rancio": rancio,
+                           "series": series}, f, indent=2)
+            edad = f"último {ultimo} ({dias} d)" if dias is not None else "SIN FECHA LEGIBLE"
+            print(f"  -> {len(series)} puntos · {edad}"
+                  + ("  <<< RANCIO" if rancio else "") )
+            if rancio:
+                rancios.append((name, ultimo, dias))
+            else:
+                ok += 1
         except Exception as e:
             print(f"  !! no pude normalizar: {e}")
             print("  primeros 400 chars:", raw[:400])
-    print(f"OK {ok}/{len(items)}")
+    print(f"AL DIA {ok}/{len(items)}" + (f" · RANCIAS {len(rancios)}" if rancios else ""))
+    if rancios:
+        # Un 200 con la serie entera NO significa que el dato este al dia: BGeometrics
+        # responde 200 con una serie que termina hace dias. Hasta el 21-sep-2026 esto se
+        # imprimia como "OK 10/10" y el job salia verde con datos de hace ocho dias.
+        # Se avisa con ::warning (sale en el resumen del job) y se deja escrito en el
+        # propio fichero, que es lo que leen el panel y ingesta/frescura.py.
+        print("")
+        print(f"::warning::{len(rancios)} metrica(s) de BGeometrics responden 200 pero su "
+              f"ultimo dato tiene mas de {MAX_DIAS} dias: "
+              + ", ".join(f"{n} ({d} d)" if d is not None else f"{n} (sin fecha)"
+                            for n, _u, d in rancios))
+        for n, u, d in rancios:
+            print(f"  RANCIA: {n} — ultimo {u}, " + (f"{d} dias" if d is not None else "sin fecha legible"))
     sys.exit(0 if (ok or args.probe) else 1)
 
 if __name__ == "__main__":
