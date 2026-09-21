@@ -1,39 +1,54 @@
 {
   "_como_se_actualiza": "AUTOMÁTICO desde jul-2026: ingesta/sync_woc.py lee la recomendación del pipeline semanal del repo privado (DeFi-Tracker) y la traduce a este formato. Workflow: sync-woc.yml, jueves 14:00 UTC (1h después del pipeline).",
   "_pendiente_agente": "`fiabilidad_tipo` se asigna por heurística de palabras clave y `cambios_de_fiabilidad` queda vacío: eso lo calibra el agente glassnode_tactico contra track_record.md.",
-  "updated": "2026-09-02",
-  "woc_fecha": "2026-09-02",
-  "woc_titulo": "Doubt at the Boundaries",
+  "updated": "2026-09-20",
+  "woc_fecha": "2026-09-20",
+  "woc_titulo": "Phá vỡ biên dưới hỗ trợ mỏng",
   "fuentes": [
-    "2026-09-02-the-week-onchain-week-35-2026.md",
-    "recomendaciones.jsonl (pipeline semanal, DeFi-Tracker)"
+    "2026-09-20-the-week-onchain-week-37-2026-vietnamese.md",
+    "recomendaciones.jsonl (pipeline semanal, DeFi-Tracker)",
+    "claude -p con la suscripcion (CLAUDE_CODE_OAUTH_TOKEN), sin ANTHROPIC_API_KEY"
   ],
-  "resumen": "No hay apalancamiento extremo vigente: el squeeze de agosto ya limpió shorts y la caída a $76K liquidó parte de los longs recién montados, devolviendo el skew corto plazo a neutral. Quedan bolsas de liquidación bilaterales intactas a ambos lados ($60-63K largos, $83-86K cortos) que funcionan como imanes, y el mayor supply en beneficio (68% vs 65% en mayo al mismo precio) deja a los compradores de verano potencialmente offside si el precio revisita el techo.",
-  "que_hacemos": "<b>Acción de LP: FARMEAR</b> · régimen de leverage: <b>reseteando</b> · confianza: media.<br>El rango está bien delimitado por niveles on-chain (piso $62-65K, techo LTH $83-86K) y el apalancamiento ya se reseteó parcialmente en ambas direcciones (skew corto plazo vuelto a neutral tras el squeeze y el flush de largos), sin señal de leverage apinado vigente en ninguna dirección; farmear dentro de esas bandas mientras el macro (yields en máximos de ciclo) y el OI del vencimiento de septiembre anclan el precio por debajo de $80K.",
+  "resumen": "Las opciones siguen en modo defensivo (skew put-heavy sin revertir) con max pain debajo del spot antes del mayor vencimiento del trimestre, consistente con dealers en gamma corta que amplifican el movimiento. En on-chain nadie grande esta offside al alza: la racha de 27 dias del Realized Cap termino, ETF en outflow (~334M en la semana), stablecoins planas y tesorerias corporativas bajo su costo (80.500) sin comprar.",
+  "que_hacemos": "<b>Acción de LP: SALIR</b> · régimen de leverage: <b>mixto</b> · confianza: media.<br>La confluencia que disparo la salida la semana pasada sigue intacta y sin revertir: precio bajo el True Market Mean (76.700), opciones pagando por downside con max pain debajo del spot y muro de calls en 85-90k limitando el alza, mas las cuatro fuentes de demanda (Realized Cap, ETF, stablecoins, tesorerias) apagadas -- no hay reseteo de leverage ni reversion que justifique reingresar.",
   "niveles": [
     {
       "k": "STH cost basis (resistencia/soporte)",
-      "v": "$71.000"
+      "v": "$71.300"
+    },
+    {
+      "k": "True Market Mean (línea bull/bear)",
+      "v": "$76.700"
     },
     {
       "k": "Estante de demanda (soporte)",
-      "v": "$63.500"
+      "v": "$62.000"
     },
     {
       "k": "Muro de oferta (resistencia)",
-      "v": "$84.500"
+      "v": "$85.000"
+    },
+    {
+      "k": "Max pain de opciones",
+      "v": "$72.000"
     }
   ],
-  "metricas": "Skew 7d 25-delta se disparó call-heavy durante el squeeze y revirtió a neutral tras el rechazo; skew 180d estable (demanda estructural larga intacta); vencimiento trimestral 25-sep concentra ~$14B OI en strikes >$80K; heatmap de liquidaciones muestra cluster corto intacto $83-86K y cluster largo intacto $60-63K; el artículo no da funding, put/call ni VRP explícitos.",
+  "metricas": "No se citan funding ni OI; skew semanal 25-delta paso de fuertemente negativo (calls mas caros, risk-on pre-voto) a positivo y en ascenso tras el voto del Senado (puts mas caros); IV semanal repunto en la hora del voto y bajo despues pero la cobertura bajista no se vendio de vuelta; max pain del vencimiento 25-sep en 72.000 sin seguir al spot; strike mas pesado (put+call) en 70.000; muros de calls en 85.000 y 90.000.",
   "llamadas_abiertas": [
     {
-      "llamada": "Si el skew 25d corto plazo vuelve a dispararse >20% con OI creciendo hacia el vencimiento del 25-sep cerca del techo $83-86K (longs apinados otra vez), o si el spot pierde el piso $62-65K y rechaza el STH cost basis ($71K) desde abajo, salir del LP.",
+      "llamada": "Dos cierres diarios consecutivos sobre 76.700 con Realized Cap volviendo a crecer revierte a FARMEAR; skew semanal cayendo de nuevo bajo cero antes de la decision de la Fed tambien lo haria. Confirmacion de ruptura: segundo cierre bajo 76.700 abre camino a 71.300 y luego 62.000-65.000.",
       "tipo": "señal a vigilar (del WoC)",
-      "fiabilidad_tipo": "posicionamiento/leverage — 8/10 histórico (su punto fuerte)",
+      "fiabilidad_tipo": "sin clasificar — pendiente de que el agente lo calibre",
       "criterio_exito": "se evalúa el jueves siguiente: narrativa del WoC nuevo + movimiento real de precio",
       "estado": "pendiente"
     }
   ],
-  "evaluadas_recientes": [],
+  "evaluadas_recientes": [
+    {
+      "llamada": "Dos cierres diarios consecutivos sobre 76.700 con Realized Cap volviendo a crecer revierte a FARMEAR; skew semanal cayendo de nuevo bajo cero antes de la decision de la Fed tambien lo haria. Confirmacion de ruptura: segundo cierre bajo 76.700 abre camino a 71.300 y luego 62.000-65.000.",
+      "veredicto": "PENDIENTE",
+      "nota": "Este es el mismo articulo de la semana 37 (corte de datos 16-sep) que genero la recomendacion SALIR, ahora en version vietnamita -- sin accion de precio nueva desde entonces, por lo que la tesis de salida sigue sin poder confirmarse ni refutarse."
+    }
+  ],
   "cambios_de_fiabilidad": ""
 }
