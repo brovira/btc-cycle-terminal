@@ -1,42 +1,81 @@
 {
  "agente": "woc",
  "nombre": "Glassnode · Week On-Chain",
- "fuente_fecha": "2026-09-17",
+ "fuente_fecha": "2026-09-16",
  "fuentes": [
-  "20260917-glassnode-alpha-lab.md"
+  "20260916-the-week-onchain-week-37-2026.md"
  ],
- "titulo": "Glassnode Alpha Lab",
- "tendencia": "neutral",
+ "titulo": "The Week On-Chain — Breakdown into Thin Support (Week 37, 2026)",
+ "tendencia": "bajista",
  "horizonte": "semanas",
- "escenario": "Este informe no es una lectura de mercado: anuncia Alpha Lab, una plataforma cuantitativa que mina el catalogo de metricas de Glassnode para generar reglas de trading heuristicas (arboles de decision de profundidad maxima 2), validadas con walk-forward, un holdout out-of-sample del 20% mas reciente de la historia, y seguimiento en vivo tras catalogarse. No ofrece escenario de precio, niveles de cost basis ni postura direccional sobre BTC.",
+ "escenario": "Bitcoin cayó a unos $76K (-4.6% semanal), perdiendo por primera vez con cierre diario la True Market Mean ($76.7K) tras el fracaso del voto del Senado sobre la CLARITY Act; los dos test previos de ese nivel (23-ago y 10-sep) habían aguantado. La demanda se ha parado en todos los frentes (Realized Cap cortó una racha de 27 días de entradas, ETF en negativo, stablecoins planas, tesorerías corporativas casi sin comprar) y las opciones giraron a pricear protección bajista, mientras el libro de órdenes se ha adelgazado bajo precio.",
  "rango_esperado": {
-  "bajo": null,
-  "alto": null,
-  "base": "no aplica: el articulo describe una herramienta de investigacion cuantitativa (Alpha Lab), no un analisis de mercado con niveles de precio"
+  "bajo": 62000,
+  "alto": 76700,
+  "base": "escenario bajista/ruptura confirmada: STH Cost Basis $71.3K como primer soporte y luego el suelo on-chain $62K-$65K; escenario alcista/rango restaurado: dos cierres diarios consecutivos por encima de la True Market Mean $76.7K con Realized Cap creciendo de nuevo"
  },
- "regimen_leverage": null,
- "accion_lp": null,
+ "regimen_leverage": "El 25-Delta Skew a 1 semana pasó de negativo (prima por calls, posicionamiento alcista) a positivo horas después del voto fallido y sigue subiendo (prima por protección bajista); la IV a 1 semana repuntó con el voto y luego bajó pero la cobertura no se ha deshecho. El vencimiento de opciones del 25-sep (el mayor del trimestre) tiene max pain en $72K y muro de calls en $85K-$90K.",
+ "accion_lp": "REDUCIR",
  "niveles": {
-  "sth_cost_basis": null,
-  "true_market_mean": null,
+  "sth_cost_basis": 71300,
+  "true_market_mean": 76700,
   "realized_price": null,
-  "soporte": null,
-  "resistencia": null,
+  "soporte": 71300,
+  "resistencia": 80500,
   "sth_menos_1s": null,
   "sth_mas_1s": null
  },
- "accion": "Glassnode no toma postura de mercado en este texto; se limita a lanzar y describir Alpha Lab como plataforma de investigacion, en beta y disponible para un grupo limitado de clientes via representante.",
- "para_mis_lps": "No aplica: el informe no contiene niveles de precio, cost basis ni lectura de posicionamiento/derivados que permitan ajustar rangos de liquidez concentrada.",
+ "accion": "Glassnode no cierra el veredicto: marca la ruptura como 'no confirmada' y da explícitamente el gatillo bajista (segundo cierre diario bajo $76.7K) y el alcista (dos cierres por encima con Realized Cap recuperándose) para vigilar en los próximos días.",
+ "para_mis_lps": "El libro de órdenes está adelgazado justo bajo precio (casi dos tercios de los bids entre -1% y -10%, con 'tierra de nadie' iliquida entre ~$68K y ~$61K), lo que sugiere rangos LP estrechos cerca de spot son más vulnerables a slippage si se pierde el STH Cost Basis ($71.3K); no da recomendación de LP explícita.",
  "citas": [
-  "labels every historical day as a \"good\" buying/shorting opportunity or not, based on what price actually did afterward",
-  "if a rule only works at one exact threshold or lookback window, that fragility should be treated as suspect",
-  "outputs are based on historical data and do not constitute investment advice or a guarantee of future performance"
+  "This is not the first test: the same level was pierced on August 23, 2026 and September 10, 2026 and held both times.",
+  "Options flipped from pricing upside to pricing downside within hours of the vote",
+  "a lost range points first to the $71.3K Short-Term Holder Cost Basis, then to a thin zone down to a $62K–$65K on-chain floor"
  ],
- "confianza": "baja",
- "cambios_vs_anterior": "No es comparable con la lectura del 2026-09-02: aquella era un Week On-Chain con escenario de mercado y niveles de cost basis, esta es un anuncio de producto (Alpha Lab) sin lectura de precio ni actualizacion del rango 62K-86K$ previo.",
+ "confianza": "alta",
+ "cambios_vs_anterior": "La lectura anterior no era de mercado (lanzamiento de la plataforma Alpha Lab); esta retoma el análisis habitual y marca la primera ruptura de cierre bajo la True Market Mean, con demanda estancada en todos los canales y opciones girando a proteger caídas.",
  "cadencia_dias": 7,
- "actualizado": "2026-09-21T13:21:50+00:00",
+ "actualizado": "2026-09-23T20:46:22+00:00",
  "historial": [
+  {
+   "agente": "woc",
+   "nombre": "Glassnode · Week On-Chain",
+   "fuente_fecha": "2026-09-17",
+   "fuentes": [
+    "20260917-glassnode-alpha-lab.md"
+   ],
+   "titulo": "Glassnode Alpha Lab",
+   "tendencia": "neutral",
+   "horizonte": "semanas",
+   "escenario": "Este informe no es una lectura de mercado: anuncia Alpha Lab, una plataforma cuantitativa que mina el catalogo de metricas de Glassnode para generar reglas de trading heuristicas (arboles de decision de profundidad maxima 2), validadas con walk-forward, un holdout out-of-sample del 20% mas reciente de la historia, y seguimiento en vivo tras catalogarse. No ofrece escenario de precio, niveles de cost basis ni postura direccional sobre BTC.",
+   "rango_esperado": {
+    "bajo": null,
+    "alto": null,
+    "base": "no aplica: el articulo describe una herramienta de investigacion cuantitativa (Alpha Lab), no un analisis de mercado con niveles de precio"
+   },
+   "regimen_leverage": null,
+   "accion_lp": null,
+   "niveles": {
+    "sth_cost_basis": null,
+    "true_market_mean": null,
+    "realized_price": null,
+    "soporte": null,
+    "resistencia": null,
+    "sth_menos_1s": null,
+    "sth_mas_1s": null
+   },
+   "accion": "Glassnode no toma postura de mercado en este texto; se limita a lanzar y describir Alpha Lab como plataforma de investigacion, en beta y disponible para un grupo limitado de clientes via representante.",
+   "para_mis_lps": "No aplica: el informe no contiene niveles de precio, cost basis ni lectura de posicionamiento/derivados que permitan ajustar rangos de liquidez concentrada.",
+   "citas": [
+    "labels every historical day as a \"good\" buying/shorting opportunity or not, based on what price actually did afterward",
+    "if a rule only works at one exact threshold or lookback window, that fragility should be treated as suspect",
+    "outputs are based on historical data and do not constitute investment advice or a guarantee of future performance"
+   ],
+   "confianza": "baja",
+   "cambios_vs_anterior": "No es comparable con la lectura del 2026-09-02: aquella era un Week On-Chain con escenario de mercado y niveles de cost basis, esta es un anuncio de producto (Alpha Lab) sin lectura de precio ni actualizacion del rango 62K-86K$ previo.",
+   "cadencia_dias": 7,
+   "actualizado": "2026-09-21T13:21:50+00:00"
+  },
   {
    "agente": "woc",
    "nombre": "Glassnode · Week On-Chain",
