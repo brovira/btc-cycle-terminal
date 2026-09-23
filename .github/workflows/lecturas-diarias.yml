@@ -13,6 +13,10 @@ on:
     - cron: "40 6 * * *"
   workflow_dispatch:
     inputs:
+      forzar:
+        description: "Releer la última fuente aunque ya esté leída (marca de agua envenenada)"
+        type: boolean
+        default: false
       agente:
         description: "Solo un agente (cowen | lmec | woc); vacio = los tres"
         required: false
@@ -38,7 +42,7 @@ jobs:
         id: novedad
         run: |
           set +e
-          python agentes/tools/lecturas.py --listar ${{ inputs.agente && format('--agente {0}', inputs.agente) || '' }} | tee novedad.txt
+          python agentes/tools/lecturas.py --listar ${{ inputs.agente && format('--agente {0}', inputs.agente) || '' }} ${{ inputs.forzar && '--forzar' || '' }} | tee novedad.txt
           if grep -q "fuente(s) nueva(s)" novedad.txt; then echo "hay=1" >> "$GITHUB_OUTPUT"; else echo "hay=0" >> "$GITHUB_OUTPUT"; fi
 
       - name: Instalar Claude Code
@@ -52,7 +56,7 @@ jobs:
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           set +e
-          python agentes/tools/lecturas.py ${{ inputs.agente && format('--agente {0}', inputs.agente) || '' }}
+          python agentes/tools/lecturas.py ${{ inputs.agente && format('--agente {0}', inputs.agente) || '' }} ${{ inputs.forzar && '--forzar' || '' }}
           codigo=$?
           set -e
           if [ $codigo -eq 2 ]; then

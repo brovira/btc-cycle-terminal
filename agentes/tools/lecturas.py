@@ -180,7 +180,7 @@ def llamar_modelo(clave, nuevas, anterior):
     return doc, None
 
 
-def procesar(clave, solo_listar=False):
+def procesar(clave, solo_listar=False, forzar=False):
     cfg = AGENTES[clave]
     fuentes = fuentes_de(clave)
     if not fuentes:
@@ -189,6 +189,10 @@ def procesar(clave, solo_listar=False):
     anterior = cargar(clave)
     ultima_leida = (anterior or {}).get("fuente_fecha") or "0000-00-00"
     nuevas = [f for f in fuentes if f["fecha"] > ultima_leida]
+    if forzar and not nuevas:
+        nuevas = fuentes[-cfg["max_fuentes"]:]
+        print(f"{clave}: --forzar, releo {', '.join(f['fichero'] for f in nuevas)} "
+              f"(marca de agua en {ultima_leida})")
     if not nuevas:
         print(f"{clave}: sin novedad (ultima fuente {fuentes[-1]['fecha']}, ya leida)")
         return "sin novedad"
@@ -239,10 +243,16 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--agente", choices=list(AGENTES))
     ap.add_argument("--listar", action="store_true")
+    # La marca de agua es la fecha de la ULTIMA fuente leida, asi que una lectura mala la
+    # envenena: el 17-sep el WoC se leyo del anuncio de Alpha Lab y, al sacar esa pieza de
+    # reports/, el Week On-Chain bueno (16-sep) quedaba "antes" de la marca y se daba por
+    # leido para siempre. Con --forzar se relee la ultima fuente aunque no sea posterior.
+    ap.add_argument("--forzar", action="store_true",
+                    help="relee la ultima fuente aunque la marca de agua sea posterior")
     a = ap.parse_args()
     resultados = {}
     for clave in ([a.agente] if a.agente else list(AGENTES)):
-        resultados[clave] = procesar(clave, solo_listar=a.listar)
+        resultados[clave] = procesar(clave, solo_listar=a.listar, forzar=a.forzar)
     if not a.listar:
         escribir_indice(resultados)
     resumen = " · ".join(f"{k}: {v}" for k, v in resultados.items())
