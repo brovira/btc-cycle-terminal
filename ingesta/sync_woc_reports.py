@@ -39,7 +39,25 @@ RUTA_KB = "research/glassnode-kb/articulos"
 # Antes solo entraban los "the-week-onchain-*": un articulo especial de Glassnode (p. ej. uno
 # sobre rangos de BTC, 2-sep-2026) se quedaba fuera del agente. El KB solo guarda posts de
 # research.glassnode.com, asi que todo lo posterior al corte es material del agente.
+# 21-sep-2026: esa suposicion dejo de ser cierta. Al arreglar el lector (Cloudflare nos
+# devolvia 403 y ahora se pasa el reto con navegador) empezaron a entrar en el KB otros
+# productos de research.glassnode.com: BTC Market Pulse, Market Compass, Alpha Lab e
+# informes con socios. No son Week On-Chain y no llevan lectura de mercado, pero al
+# colarse en reports/ se convirtieron en "la fuente mas reciente" para agentes/tools/
+# lecturas.py, que coge la ultima por fecha. El 17-sep la lectura diaria del WoC salio
+# del ANUNCIO de Alpha Lab, con accion_lp a null, y el panel de LP se quedo sin
+# recomendacion mientras el Week On-Chain del 16-sep decia SALIR.
+NO_SON_WOC = ("btc-market-pulse", "market-compass", "alpha-lab", "strategy-watch",
+              "-glassnode-the-", "ark-invest-", "the-decentralization-spectrum")
 PATRON_WOC = re.compile(r"^(\d{4})-(\d{2})-(\d{2})-.+\.md$", re.I)
+
+
+def es_week_onchain(nombre):
+    """Se excluye por serie conocida, no por patron positivo: los Week On-Chain viejos
+    llevan titulo editorial ('paid-to-wait', 'doubt-at-the-boundaries') y ningun patron
+    positivo los cazaria sin dejar fuera la mitad."""
+    n = nombre.lower()
+    return not any(x in n for x in NO_SON_WOC)
 
 
 def gh(ruta):
@@ -83,7 +101,7 @@ def pendientes():
     out = []
     for entrada in gh(RUTA_KB):
         m = PATRON_WOC.match(entrada["name"])
-        if not m:
+        if not m or not es_week_onchain(entrada["name"]):
             continue
         fecha = "-".join(m.groups())
         if fecha > corte and fecha not in ya:
