@@ -1,42 +1,34 @@
 {
   "_como_se_actualiza": "AUTOMÁTICO desde jul-2026: ingesta/sync_woc.py lee la recomendación del pipeline semanal del repo privado (DeFi-Tracker) y la traduce a este formato. Workflow: sync-woc.yml, jueves 14:00 UTC (1h después del pipeline).",
   "_pendiente_agente": "`fiabilidad_tipo` se asigna por heurística de palabras clave y `cambios_de_fiabilidad` queda vacío: eso lo calibra el agente glassnode_tactico contra track_record.md.",
-  "updated": "2026-09-16",
-  "woc_fecha": "2026-09-16",
-  "woc_titulo": "Breakdown into Thin Support",
+  "updated": "2026-09-23",
+  "woc_fecha": "2026-09-23",
+  "woc_titulo": "Escape Velocity",
   "fuentes": [
-    "2026-09-16-the-week-onchain-week-37-2026.md",
+    "2026-09-23-the-week-onchain-week-38-2026.md",
     "recomendaciones.jsonl (pipeline semanal, DeFi-Tracker)",
     "claude -p con la suscripcion (CLAUDE_CODE_OAUTH_TOKEN), sin ANTHROPIC_API_KEY"
   ],
-  "resumen": "El mercado de opciones paso de complacencia a cobertura defensiva en horas (skew de negativo a positivo, IV no vendida de vuelta) con max pain por debajo de spot antes del mayor vencimiento del trimestre -- consistente con dealers en gamma corta cerca de spot, lo que amplifica el movimiento hacia abajo. Del lado on-chain, el comprador esta ausente: Realized Cap corto la racha de 27 dias, ETF en outflow, stablecoins planas y tesorerias corporativas bajo su costo (80.500) sin comprar -- ningun actor grande esta offside al alza para sostener el rango.",
-  "que_hacemos": "<b>Acción de LP: SALIR</b> · régimen de leverage: <b>mixto</b> · confianza: media.<br>Confluencia de senales, no una sola: el precio cerro por primera vez bajo el True Market Mean (76.700) que ancla el rango, las opciones giraron a pagar por downside en horas con max pain en 72.000, y simultaneamente se apagaron las cuatro fuentes de demanda (Realized Cap, ETF, stablecoins, tesorerias) -- ademas el libro de ordenes se adelgaza fuerte bajo 68.000-71.000 camino a 62.000-65.000, exactamente el escenario que la recomendacion previa marcaba como gatillo de salida.",
+  "resumen": "Mercado limpio de apalancamiento, no complaciente ni sobrecubierto: el profit-taking de holders es una fraccion del visto en los techos de 2024-2025 pese a que casi todos los STH estan en ganancia, y en altcoins el rally es de spot con OI de perps casi plano -- nadie esta forzado a vender ni corriendo para cubrirse. El comprador ausente de la semana pasada volvio: ETFs metieron ~$1.3B en 5 dias tras dos semanas de salidas, y el volumen spot se duplico desde el minimo de agosto con precio subiendo (no capitulacion). Quien esta offside es el vendedor especulativo de corto plazo, no el comprador.",
+  "que_hacemos": "<b>Acción de LP: ENSANCHAR</b> · régimen de leverage: <b>limpio</b> · confianza: media.<br>No hay leverage apinado en ninguna direccion (perps de alts planos, sin mencion de funding/OI extremos en BTC) por lo que no aplica SALIR; pero la gamma dealer negativa entre spot y $92K amplifica el movimiento hacia $95K-97K mientras que $84K (bloque LTH) y $77K (True Market Mean) son los soportes on-chain -- rango amplio $84K-$96.7K captura la zona de baja friccion sin quedar corto de vol justo en el area donde el gamma acelera.",
   "niveles": [
     {
-      "k": "STH cost basis (resistencia/soporte)",
-      "v": "$71.300"
-    },
-    {
       "k": "True Market Mean (línea bull/bear)",
-      "v": "$76.700"
+      "v": "$77.000"
     },
     {
       "k": "Estante de demanda (soporte)",
-      "v": "$62.000"
+      "v": "$84.000"
     },
     {
       "k": "Muro de oferta (resistencia)",
-      "v": "$85.000"
-    },
-    {
-      "k": "Max pain de opciones",
-      "v": "$72.000"
+      "v": "$96.700"
     }
   ],
-  "metricas": "Skew semanal 25-delta paso de negativo (calls mas caros, risk-on pre-voto) a positivo y subiendo horas despues del voto (puts mas caros, defensivo); IV semanal repunto en la hora del voto y no fue vendida de vuelta; max pain del vencimiento del 25-sep en 72.000 vs spot ~76.000; mayor muro de calls en 85.000 (segundo en 90.000); strike mas pesado (put+call) en 70.000; no se citan funding ni OI.",
+  "metricas": "Gamma dealer positiva en strikes ~$95K en maximo del chart (resistencia a la suba); gamma negativa entre spot y $92K (dealers compran en subas/venden en bajas, amplifica el movimiento); no se citan funding/OI de BTC explicitos; OI de perps de altcoins casi plano en 30 dias con menos de la mitad de mercados sumando posicion (vs. subidas fuertes en feb-2021/dic-2024); no se cita skew 25d, put/call OI ni VRP numerico esta semana.",
   "llamadas_abiertas": [
     {
-      "llamada": "Un segundo cierre diario consecutivo bajo el True Market Mean (76.700) confirmaria el quiebre y el objetivo pasaria a STH cost basis 71.300 y luego el piso 62.000-65.000; en cambio, el skew semanal volviendo bajo cero antes de la decision de la Fed junto con Realized Cap subiendo de nuevo revertiria la tesis hacia FARMEAR.",
+      "llamada": "Un cierre diario por debajo de $84K devolveria el foco a $77K y reabriria el riesgo de la tesis previa; en cambio, Net Realized Profit/Loss semanal subiendo hacia los niveles de los techos de 2024-2025 (o el Percent Supply in Profit de STH cruzando la linea de venta junto con realized profit al alza) senalaria que los holders empiezan a vender la fuerza, gatillo para pasar a SALIR cerca de $95K-97K.",
       "tipo": "señal a vigilar (del WoC)",
       "fiabilidad_tipo": "posicionamiento + nivel on-chain — 8/10 histórico",
       "criterio_exito": "se evalúa el jueves siguiente: narrativa del WoC nuevo + movimiento real de precio",
@@ -45,9 +37,9 @@
   ],
   "evaluadas_recientes": [
     {
-      "llamada": "Cierre sostenido sobre 86.000 con Sell-Side Risk Ratio aun por debajo de 16bps/dia confirmaria absorcion y activaria ENSANCHAR al alza; un retorno del Sell-Side Risk Ratio sobre 16bps/dia (vendedores tipo agosto) o la perdida del piso 62.000-65.000 activarian SALIR.",
-      "veredicto": "PARCIAL",
-      "nota": "El rango amplio de FARMEAR (piso 60.000-63.000, techo 83.000-86.000) no se rompio -- ninguno de los dos triggers explicitos de salida se activo -- pero el precio perdio por primera vez el True Market Mean (76.700) y cerro por debajo, algo que la tesis de 'sin señal de leverage extremo' no anticipaba con esta rapidez tras el fallo del voto del Senado."
+      "llamada": "Un segundo cierre diario consecutivo bajo el True Market Mean (76.700) confirmaria el quiebre y el objetivo pasaria a STH cost basis 71.300 y luego el piso 62.000-65.000; en cambio, el skew semanal volviendo bajo cero antes de la decision de la Fed junto con Realized Cap subiendo de nuevo revertiria la tesis hacia FARMEAR.",
+      "veredicto": "MISS",
+      "nota": "La recomendacion de SALIR se disparo justo antes de que el precio recuperara el True Market Mean en dias y siguiera subiendo hasta romper la banda superior del LP (resistencia $85K); la senal de 'confluencia bajista' resulto ser un fake-out de corto plazo, no el inicio del quiebre que anticipaba."
     }
   ],
   "cambios_de_fiabilidad": ""
