@@ -29,6 +29,12 @@
 
 set -uo pipefail
 
+# Las UNICAS carpetas que este script lee y sube. Antes se usaba el glob agentes/*/yt-transcripts/
+# y eso cogia cualquier agente de la carpeta: el 13-sep aparecieron en el Mac agentes/hormozi/ y
+# agentes/miner/, que no son de este proyecto, y si traian transcripts se habrian subido al repo
+# PUBLICO. Se nombran a mano para que un agente nuevo nunca entre por accidente.
+CANALES="agentes/lmec/yt-transcripts agentes/cowen/yt-transcripts"
+
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 LOGDIR="$REPO/.local"
 LOG="$LOGDIR/ingesta.log"
@@ -59,10 +65,27 @@ avisar(){
 
 cd "$REPO" || { log "FATAL: no existe $REPO"; exit 1; }
 
+# Si la ultima ejecucion BUENA es anterior a la ventana, se busca desde ella. "Hoy - 10 dias"
+# vale mientras corra a diario; tras un parón largo la ventana pasa de largo y lo publicado
+# en el hueco se pierde para siempre. El 25-sep-2026, tras 13 dias abortando, la ventana
+# empezaba el 15-sep y la ultima ingesta buena era del 12-sep: tres dias de Cowen fuera.
+# Solo cuando no se ha pasado fecha a mano.
+if [ $# -lt 1 ] && [ -f ingesta/local/estado.json ]; then
+  ULTIMA="$(python3 -c 'import json;print(json.load(open("ingesta/local/estado.json"))["ultima_ejecucion"][:10].replace("-",""))' 2>/dev/null || true)"
+  if [ -n "$ULTIMA" ] && [[ "$ULTIMA" < "$SINCE" ]]; then
+    log "La ultima ingesta buena fue el $ULTIMA: busco desde ahi, no desde $SINCE"
+    SINCE="$ULTIMA"
+  fi
+fi
+
 log "─── inicio (desde $SINCE) ───"
 
 # Nunca tocar un árbol sucio: si hay trabajo a medias, el pull/commit haría destrozos.
-if [ -n "$(git status --porcelain -- ':!.local')" ]; then
+# Solo cuentan los ficheros SEGUIDOS modificados, que son los que chocarian con el pull. Una
+# carpeta nueva sin seguir (otro agente a medias) no se toca ni se sube, porque el add de
+# abajo solo mira $CANALES. Antes contaba tambien y tuvo esto abortando 13 dias seguidos por
+# agentes/hormozi/ y agentes/miner/, en silencio para el repo.
+if [ -n "$(git status --porcelain --untracked-files=no -- ':!.local')" ]; then
   log "ABORTA: hay cambios sin commitear en el repo. Límpialos y vuelve a lanzar."
   avisar "Abortada: hay cambios sin commitear"
   exit 1
@@ -133,9 +156,9 @@ JSON
 
 # Se commitea lo que haya entrado aunque el otro canal fallara. El latido va siempre,
 # incluso cuando no hay transcripts nuevos: sobre todo cuando no hay transcripts nuevos.
-if [ -n "$(git status --porcelain agentes/*/yt-transcripts/ ingesta/local/estado.json)" ]; then
-  n=$(git status --porcelain agentes/*/yt-transcripts/ | wc -l | tr -d ' ')
-  git add agentes/*/yt-transcripts/ ingesta/local/estado.json
+if [ -n "$(git status --porcelain $CANALES ingesta/local/estado.json)" ]; then
+  n=$(git status --porcelain $CANALES | wc -l | tr -d ' ')
+  git add $CANALES ingesta/local/estado.json
   git commit --quiet -m "transcripts: ingesta local ($n nuevos)"
   if git push --quiet origin main 2>>"$LOG"; then
     log "OK: $n transcript(s) nuevos subidos"
