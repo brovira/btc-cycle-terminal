@@ -1,42 +1,81 @@
 {
  "agente": "woc",
  "nombre": "Glassnode · Week On-Chain",
- "fuente_fecha": "2026-09-16",
+ "fuente_fecha": "2026-09-23",
  "fuentes": [
-  "20260916-the-week-onchain-week-37-2026.md"
+  "20260923-the-week-onchain-week-38-2026.md"
  ],
- "titulo": "The Week On-Chain — Breakdown into Thin Support (Week 37, 2026)",
- "tendencia": "bajista",
+ "titulo": "Escape Velocity",
+ "tendencia": "alcista",
  "horizonte": "semanas",
- "escenario": "Bitcoin cayó a unos $76K (-4.6% semanal), perdiendo por primera vez con cierre diario la True Market Mean ($76.7K) tras el fracaso del voto del Senado sobre la CLARITY Act; los dos test previos de ese nivel (23-ago y 10-sep) habían aguantado. La demanda se ha parado en todos los frentes (Realized Cap cortó una racha de 27 días de entradas, ETF en negativo, stablecoins planas, tesorerías corporativas casi sin comprar) y las opciones giraron a pricear protección bajista, mientras el libro de órdenes se ha adelgazado bajo precio.",
+ "escenario": "Bitcoin ha recuperado la True Market Mean (~$77K) y el STH Cost Basis, y cotiza justo debajo del mayor cluster de oferta de long-term holders ($84K-$85K); la siguiente resistencia estructural es el mean MVRV price en $96.7K. El profit-taking sigue siendo ligero frente a los techos de 2024/2025, el ETF ha vuelto a comprar ($1.3B en 5 días) y las altcoins suben sin apalancamiento nuevo, lo que Glassnode lee como una fase temprana de recuperación y no como un blow-off top.",
  "rango_esperado": {
-  "bajo": 62000,
-  "alto": 76700,
-  "base": "escenario bajista/ruptura confirmada: STH Cost Basis $71.3K como primer soporte y luego el suelo on-chain $62K-$65K; escenario alcista/rango restaurado: dos cierres diarios consecutivos por encima de la True Market Mean $76.7K con Realized Cap creciendo de nuevo"
+  "bajo": 84000,
+  "alto": 96700,
+  "base": "soporte en el cluster de oferta LTH $84K-$85K (por debajo, la True Market Mean $77K vuelve a ser soporte); resistencia en el mean MVRV price $96.7K, reforzada por el muro de gamma positiva de opciones en $95K-$97K"
  },
- "regimen_leverage": "El 25-Delta Skew a 1 semana pasó de negativo (prima por calls, posicionamiento alcista) a positivo horas después del voto fallido y sigue subiendo (prima por protección bajista); la IV a 1 semana repuntó con el voto y luego bajó pero la cobertura no se ha deshecho. El vencimiento de opciones del 25-sep (el mayor del trimestre) tiene max pain en $72K y muro de calls en $85K-$90K.",
- "accion_lp": "REDUCIR",
+ "regimen_leverage": "Gamma de opciones en Deribit: negativa entre spot y $92K (amplifica movimientos), positiva y en máximo histórico alrededor de $95K (amortigua movimientos); apalancamiento en altcoins prácticamente plano pese al rally, sin señales de sobrecalentamiento",
+ "accion_lp": "ENSANCHAR",
  "niveles": {
-  "sth_cost_basis": 71300,
-  "true_market_mean": 76700,
+  "sth_cost_basis": null,
+  "true_market_mean": 77000,
   "realized_price": null,
-  "soporte": 71300,
-  "resistencia": 80500,
+  "soporte": 84000,
+  "resistencia": 96700,
   "sth_menos_1s": null,
   "sth_mas_1s": null
  },
- "accion": "Glassnode no cierra el veredicto: marca la ruptura como 'no confirmada' y da explícitamente el gatillo bajista (segundo cierre diario bajo $76.7K) y el alcista (dos cierres por encima con Realized Cap recuperándose) para vigilar en los próximos días.",
- "para_mis_lps": "El libro de órdenes está adelgazado justo bajo precio (casi dos tercios de los bids entre -1% y -10%, con 'tierra de nadie' iliquida entre ~$68K y ~$61K), lo que sugiere rangos LP estrechos cerca de spot son más vulnerables a slippage si se pierde el STH Cost Basis ($71.3K); no da recomendación de LP explícita.",
+ "accion": "No da un veredicto cerrado: marca $84K como el nivel que mantiene abierto el camino a $96.7K y $77K como el soporte de última línea, señalando $95K-$97K como el primer test real del rally.",
+ "para_mis_lps": "Con el precio aún en la zona de gamma negativa (spot-$92K) donde el hedging de dealers amplifica los movimientos, conviene un rango algo más ancho hasta acercarse a $95K-$97K, zona de gamma positiva donde la propia cobertura de opciones tiende a comprimir la volatilidad y favorecería rangos más estrechos si el precio llega ahí.",
  "citas": [
-  "This is not the first test: the same level was pierced on August 23, 2026 and September 10, 2026 and held both times.",
-  "Options flipped from pricing upside to pricing downside within hours of the vote",
-  "a lost range points first to the $71.3K Short-Term Holder Cost Basis, then to a thin zone down to a $62K–$65K on-chain floor"
+  "Holding above $84K keeps the path to $96.7K open; a fall back below $84K would put the $77K True Market Mean back in play as support.",
+  "placing $95K-$97K as the first real test if the rally continues",
+  "sustained low profit-taking argues the rally still has room"
  ],
  "confianza": "alta",
- "cambios_vs_anterior": "La lectura anterior no era de mercado (lanzamiento de la plataforma Alpha Lab); esta retoma el análisis habitual y marca la primera ruptura de cierre bajo la True Market Mean, con demanda estancada en todos los canales y opciones girando a proteger caídas.",
+ "cambios_vs_anterior": "Giro completo respecto a la semana pasada: de perder la True Market Mean con la demanda parada, a reclamar TMM y STH cost basis, con ETF volviendo a comprar ($1.3B), volumen spot duplicado y altcoins liderando sin apalancamiento nuevo.",
  "cadencia_dias": 7,
- "actualizado": "2026-09-23T20:46:22+00:00",
+ "actualizado": "2026-09-25T12:14:39+00:00",
  "historial": [
+  {
+   "agente": "woc",
+   "nombre": "Glassnode · Week On-Chain",
+   "fuente_fecha": "2026-09-16",
+   "fuentes": [
+    "20260916-the-week-onchain-week-37-2026.md"
+   ],
+   "titulo": "The Week On-Chain — Breakdown into Thin Support (Week 37, 2026)",
+   "tendencia": "bajista",
+   "horizonte": "semanas",
+   "escenario": "Bitcoin cayó a unos $76K (-4.6% semanal), perdiendo por primera vez con cierre diario la True Market Mean ($76.7K) tras el fracaso del voto del Senado sobre la CLARITY Act; los dos test previos de ese nivel (23-ago y 10-sep) habían aguantado. La demanda se ha parado en todos los frentes (Realized Cap cortó una racha de 27 días de entradas, ETF en negativo, stablecoins planas, tesorerías corporativas casi sin comprar) y las opciones giraron a pricear protección bajista, mientras el libro de órdenes se ha adelgazado bajo precio.",
+   "rango_esperado": {
+    "bajo": 62000,
+    "alto": 76700,
+    "base": "escenario bajista/ruptura confirmada: STH Cost Basis $71.3K como primer soporte y luego el suelo on-chain $62K-$65K; escenario alcista/rango restaurado: dos cierres diarios consecutivos por encima de la True Market Mean $76.7K con Realized Cap creciendo de nuevo"
+   },
+   "regimen_leverage": "El 25-Delta Skew a 1 semana pasó de negativo (prima por calls, posicionamiento alcista) a positivo horas después del voto fallido y sigue subiendo (prima por protección bajista); la IV a 1 semana repuntó con el voto y luego bajó pero la cobertura no se ha deshecho. El vencimiento de opciones del 25-sep (el mayor del trimestre) tiene max pain en $72K y muro de calls en $85K-$90K.",
+   "accion_lp": "REDUCIR",
+   "niveles": {
+    "sth_cost_basis": 71300,
+    "true_market_mean": 76700,
+    "realized_price": null,
+    "soporte": 71300,
+    "resistencia": 80500,
+    "sth_menos_1s": null,
+    "sth_mas_1s": null
+   },
+   "accion": "Glassnode no cierra el veredicto: marca la ruptura como 'no confirmada' y da explícitamente el gatillo bajista (segundo cierre diario bajo $76.7K) y el alcista (dos cierres por encima con Realized Cap recuperándose) para vigilar en los próximos días.",
+   "para_mis_lps": "El libro de órdenes está adelgazado justo bajo precio (casi dos tercios de los bids entre -1% y -10%, con 'tierra de nadie' iliquida entre ~$68K y ~$61K), lo que sugiere rangos LP estrechos cerca de spot son más vulnerables a slippage si se pierde el STH Cost Basis ($71.3K); no da recomendación de LP explícita.",
+   "citas": [
+    "This is not the first test: the same level was pierced on August 23, 2026 and September 10, 2026 and held both times.",
+    "Options flipped from pricing upside to pricing downside within hours of the vote",
+    "a lost range points first to the $71.3K Short-Term Holder Cost Basis, then to a thin zone down to a $62K–$65K on-chain floor"
+   ],
+   "confianza": "alta",
+   "cambios_vs_anterior": "La lectura anterior no era de mercado (lanzamiento de la plataforma Alpha Lab); esta retoma el análisis habitual y marca la primera ruptura de cierre bajo la True Market Mean, con demanda estancada en todos los canales y opciones girando a proteger caídas.",
+   "cadencia_dias": 7,
+   "actualizado": "2026-09-23T20:46:22+00:00"
+  },
   {
    "agente": "woc",
    "nombre": "Glassnode · Week On-Chain",
