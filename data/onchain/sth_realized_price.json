@@ -2,14 +2,10 @@
   "metric": "sth_realized_price",
   "source": "https://bitcoin-data.com/v1/sth-realized-price",
   "points": 1446,
-  "ultimo": "2026-09-18",
+  "ultimo": "2026-09-19",
   "diasDesdeUltimo": 7,
   "rancio": true,
   "series": [
-    {
-      "date": "2022-09-25",
-      "value": 23270.07
-    },
     {
       "date": "2022-09-26",
       "value": 23209.14
@@ -5789,6 +5785,10 @@
     {
       "date": "2026-09-18",
       "value": 71636.24
+    },
+    {
+      "date": "2026-09-19",
+      "value": 71776.19
     }
   ]
 }
