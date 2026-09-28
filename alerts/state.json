@@ -1,5 +1,5 @@
 {
-  "date": "2026-09-21",
+  "date": "2026-09-28",
   "phase": "Alcista",
   "signals": {
     "strong_buy": false,
@@ -8,6 +8,6 @@
     "mvrv_z_out_of_green": false,
     "reclaim_bmsb": true
   },
-  "price": 85072.66,
-  "checked_at": "2026-09-27T13:32:36.488203Z"
+  "price": 84124.32,
+  "checked_at": "2026-09-28T16:28:35.989345Z"
 }
