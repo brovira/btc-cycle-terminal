@@ -1,20 +1,24 @@
 {
   "_como_se_actualiza": "AUTOMÁTICO desde jul-2026: ingesta/sync_woc.py lee la recomendación del pipeline semanal del repo privado (DeFi-Tracker) y la traduce a este formato. Workflow: sync-woc.yml, jueves 14:00 UTC (1h después del pipeline).",
   "_pendiente_agente": "`fiabilidad_tipo` se asigna por heurística de palabras clave y `cambios_de_fiabilidad` queda vacío: eso lo calibra el agente glassnode_tactico contra track_record.md.",
-  "updated": "2026-09-23",
-  "woc_fecha": "2026-09-23",
-  "woc_titulo": "Escape Velocity",
+  "updated": "2026-09-30",
+  "woc_fecha": "2026-09-30",
+  "woc_titulo": "Strength Meets a Wall",
   "fuentes": [
-    "2026-09-23-the-week-onchain-week-38-2026.md",
+    "2026-09-30-the-week-onchain-week-39-2026.md",
     "recomendaciones.jsonl (pipeline semanal, DeFi-Tracker)",
     "claude -p con la suscripcion (CLAUDE_CODE_OAUTH_TOKEN), sin ANTHROPIC_API_KEY"
   ],
-  "resumen": "Mercado limpio de apalancamiento, no complaciente ni sobrecubierto: el profit-taking de holders es una fraccion del visto en los techos de 2024-2025 pese a que casi todos los STH estan en ganancia, y en altcoins el rally es de spot con OI de perps casi plano -- nadie esta forzado a vender ni corriendo para cubrirse. El comprador ausente de la semana pasada volvio: ETFs metieron ~$1.3B en 5 dias tras dos semanas de salidas, y el volumen spot se duplico desde el minimo de agosto con precio subiendo (no capitulacion). Quien esta offside es el vendedor especulativo de corto plazo, no el comprador.",
-  "que_hacemos": "<b>Acción de LP: ENSANCHAR</b> · régimen de leverage: <b>limpio</b> · confianza: media.<br>No hay leverage apinado en ninguna direccion (perps de alts planos, sin mencion de funding/OI extremos en BTC) por lo que no aplica SALIR; pero la gamma dealer negativa entre spot y $92K amplifica el movimiento hacia $95K-97K mientras que $84K (bloque LTH) y $77K (True Market Mean) son los soportes on-chain -- rango amplio $84K-$96.7K captura la zona de baja friccion sin quedar corto de vol justo en el area donde el gamma acelera.",
+  "resumen": "Mercado limpio de apalancamiento y ni complaciente ni sobrecubierto: el profit taking total sigue ligero frente a los techos de 2024-2025 y en altcoins el OI no crece en monedas, así que no hay longs apinados ni shorts atrapados. La demanda de ETFs se enfrió (de ~$1B/día a $24M) y el volumen total está en mínimos del rango desde el lanzamiento de los ETFs, por lo que el rally es temprano y especulativo. El único lado algo incómodo son los compradores en el muro de $85K-$85.5K, con LTH empezando a vender la fuerza.",
+  "que_hacemos": "<b>Acción de LP: ENSANCHAR</b> · régimen de leverage: <b>limpio</b> · confianza: media.<br>Sin leverage extremo no aplica SALIR, pero el precio está comprimido entre un muro de asks en $85-85.5K y soportes on-chain a $77.2K (True Market Mean) y $73.3K (STH cost basis) con volumen bajo y LTH vendiendo, lo que no justifica rango estrecho. Un rango amplio de ~$77K a ~$86K captura la zona de baja fricción sin quedar corto de vol si el muro cede o falla el soporte.",
   "niveles": [
     {
+      "k": "STH cost basis (resistencia/soporte)",
+      "v": "$73.300"
+    },
+    {
       "k": "True Market Mean (línea bull/bear)",
-      "v": "$77.000"
+      "v": "$77.200"
     },
     {
       "k": "Estante de demanda (soporte)",
@@ -22,13 +26,13 @@
     },
     {
       "k": "Muro de oferta (resistencia)",
-      "v": "$96.700"
+      "v": "$85.500"
     }
   ],
-  "metricas": "Gamma dealer positiva en strikes ~$95K en maximo del chart (resistencia a la suba); gamma negativa entre spot y $92K (dealers compran en subas/venden en bajas, amplifica el movimiento); no se citan funding/OI de BTC explicitos; OI de perps de altcoins casi plano en 30 dias con menos de la mitad de mercados sumando posicion (vs. subidas fuertes en feb-2021/dic-2024); no se cita skew 25d, put/call OI ni VRP numerico esta semana.",
+  "metricas": "Funding en perps de altcoins: solo 19% de las monedas paga por encima de 0.01% (muy por debajo de cualquier techo previo); OI de perps de altcoins sube en USD pero cae en monedas (sin nuevas posiciones); no se citan funding/OI de BTC, skew 25d, put/call OI, VRP, DVOL ni max pain.",
   "llamadas_abiertas": [
     {
-      "llamada": "Un cierre diario por debajo de $84K devolveria el foco a $77K y reabriria el riesgo de la tesis previa; en cambio, Net Realized Profit/Loss semanal subiendo hacia los niveles de los techos de 2024-2025 (o el Percent Supply in Profit de STH cruzando la linea de venta junto con realized profit al alza) senalaria que los holders empiezan a vender la fuerza, gatillo para pasar a SALIR cerca de $95K-97K.",
+      "llamada": "Cierre diario bajo $77.2K (True Market Mean) o profit taking semanal/LTH subiendo hacia niveles de techos pasados con precio plano pasaría a SALIR; una ruptura sostenida sobre $85.5K con volumen creciente e inflows de ETF de vuelta permitiría reevaluar hacia un rango más alto o FARMEAR.",
       "tipo": "señal a vigilar (del WoC)",
       "fiabilidad_tipo": "posicionamiento + nivel on-chain — 8/10 histórico",
       "criterio_exito": "se evalúa el jueves siguiente: narrativa del WoC nuevo + movimiento real de precio",
@@ -37,9 +41,9 @@
   ],
   "evaluadas_recientes": [
     {
-      "llamada": "Un segundo cierre diario consecutivo bajo el True Market Mean (76.700) confirmaria el quiebre y el objetivo pasaria a STH cost basis 71.300 y luego el piso 62.000-65.000; en cambio, el skew semanal volviendo bajo cero antes de la decision de la Fed junto con Realized Cap subiendo de nuevo revertiria la tesis hacia FARMEAR.",
-      "veredicto": "MISS",
-      "nota": "La recomendacion de SALIR se disparo justo antes de que el precio recuperara el True Market Mean en dias y siguiera subiendo hasta romper la banda superior del LP (resistencia $85K); la senal de 'confluencia bajista' resulto ser un fake-out de corto plazo, no el inicio del quiebre que anticipaba."
+      "llamada": "Un cierre diario por debajo de $84K devolveria el foco a $77K y reabriria el riesgo de la tesis previa; en cambio, Net Realized Profit/Loss semanal subiendo hacia los niveles de los techos de 2024-2025 (o el Percent Supply in Profit de STH cruzando la linea de venta junto con realized profit al alza) senalaria que los holders empiezan a vender la fuerza, gatillo para pasar a SALIR cerca de $95K-97K.",
+      "veredicto": "PARCIAL",
+      "nota": "ENSANCHAR con rango $84K-$96.7K fue razonable: no hubo leverage apinado y el precio no quebró $84K de forma decisiva, solo se deslizó apenas por debajo. Sin embargo, el precio no avanzó hacia $95K-97K; chocó con un muro de ventas en $85K-$85.5K y se movió de lado, y la señal de vigilancia (venta de LTH) se activó parcialmente (su realized profit casi se duplicó) sin que el profit taking total suba hacia niveles de techo."
     }
   ],
   "cambios_de_fiabilidad": ""
