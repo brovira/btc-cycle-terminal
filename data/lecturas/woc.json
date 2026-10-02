@@ -1,42 +1,81 @@
 {
  "agente": "woc",
  "nombre": "Glassnode · Week On-Chain",
- "fuente_fecha": "2026-09-23",
+ "fuente_fecha": "2026-09-30",
  "fuentes": [
-  "20260923-the-week-onchain-week-38-2026.md"
+  "20260930-the-week-onchain-week-39-2026.md"
  ],
- "titulo": "Escape Velocity",
+ "titulo": "The Week On-Chain — Strength Meets a Wall (Week 39, 2026)",
  "tendencia": "alcista",
  "horizonte": "semanas",
- "escenario": "Bitcoin ha recuperado la True Market Mean (~$77K) y el STH Cost Basis, y cotiza justo debajo del mayor cluster de oferta de long-term holders ($84K-$85K); la siguiente resistencia estructural es el mean MVRV price en $96.7K. El profit-taking sigue siendo ligero frente a los techos de 2024/2025, el ETF ha vuelto a comprar ($1.3B en 5 días) y las altcoins suben sin apalancamiento nuevo, lo que Glassnode lee como una fase temprana de recuperación y no como un blow-off top.",
+ "escenario": "Bitcoin está en una tendencia alcista temprana y sin participación amplia: el soporte on-chain aguanta (precio ~13% sobre el STH Cost Basis de $73.3K y ~8% sobre la True Market Mean de $77.2K), pero la demanda de ETF se ha enfriado (de ~$1B/día el 21-22 sep a $24M el 28 sep) y el volumen es bajo (~$6.4B/día). El test a corto plazo es el muro de ventas spot en Binance en $85K-$85.5K, que se ha triplicado desde el 24 sep; el profit-taking sigue ligero frente a los techos de 2024/2025, aunque los LTH ya son los principales vendedores (55% del beneficio realizado).",
  "rango_esperado": {
-  "bajo": 84000,
-  "alto": 96700,
-  "base": "soporte en el cluster de oferta LTH $84K-$85K (por debajo, la True Market Mean $77K vuelve a ser soporte); resistencia en el mean MVRV price $96.7K, reforzada por el muro de gamma positiva de opciones en $95K-$97K"
+  "bajo": 77200,
+  "alto": 85500,
+  "base": "soporte en la True Market Mean $77.2K (cierre diario por debajo invalida); techo en el muro de ask de Binance $85K-$85.5K (una ruptura sostenida lo despeja). STH Cost Basis $73.3K como soporte más profundo"
  },
- "regimen_leverage": "Gamma de opciones en Deribit: negativa entre spot y $92K (amplifica movimientos), positiva y en máximo histórico alrededor de $95K (amortigua movimientos); apalancamiento en altcoins prácticamente plano pese al rally, sin señales de sobrecalentamiento",
- "accion_lp": "ENSANCHAR",
+ "regimen_leverage": "Apalancamiento modesto: solo 19% de las altcoins pagan funding por encima de 0.01%, OI de altcoins sube en dólares pero baja en monedas (riesgo de unwind forzado bajo); no da cifras de funding/skew de BTC",
+ "accion_lp": null,
  "niveles": {
-  "sth_cost_basis": null,
-  "true_market_mean": 77000,
+  "sth_cost_basis": 73300,
+  "true_market_mean": 77200,
   "realized_price": null,
-  "soporte": 84000,
-  "resistencia": 96700,
+  "soporte": 77200,
+  "resistencia": 85500,
   "sth_menos_1s": null,
   "sth_mas_1s": null
  },
- "accion": "No da un veredicto cerrado: marca $84K como el nivel que mantiene abierto el camino a $96.7K y $77K como el soporte de última línea, señalando $95K-$97K como el primer test real del rally.",
- "para_mis_lps": "Con el precio aún en la zona de gamma negativa (spot-$92K) donde el hedging de dealers amplifica los movimientos, conviene un rango algo más ancho hasta acercarse a $95K-$97K, zona de gamma positiva donde la propia cobertura de opciones tiende a comprimir la volatilidad y favorecería rangos más estrechos si el precio llega ahí.",
+ "accion": "No da recomendación operativa: marca el muro $85K-$85.5K como test inmediato y define confirmación (ruptura con volumen creciente y vuelta de flujos de ETF) e invalidación (cierre diario bajo $77.2K o venta LTH más fuerte con precio plano).",
+ "para_mis_lps": "Su lectura sugiere un rango BTC/USDC acotado entre ~$77K y ~$85.5K mientras el muro aguante, con riesgo de salida por arriba si rompe con volumen y por abajo si cierra diario bajo $77.2K; no da recomendación explícita de LP, es inferencia de sus niveles.",
  "citas": [
-  "Holding above $84K keeps the path to $96.7K open; a fall back below $84K would put the $77K True Market Mean back in play as support.",
-  "placing $95K-$97K as the first real test if the rally continues",
-  "sustained low profit-taking argues the rally still has room"
+  "Bitcoin is in an early uptrend without broad participation: on-chain support holds, ETF demand has cooled, spot volume is low.",
+  "a daily close below the True Market Mean at $77.2K",
+  "long-term holders are now the main sellers."
  ],
- "confianza": "alta",
- "cambios_vs_anterior": "Giro completo respecto a la semana pasada: de perder la True Market Mean con la demanda parada, a reclamar TMM y STH cost basis, con ETF volviendo a comprar ($1.3B), volumen spot duplicado y altcoins liderando sin apalancamiento nuevo.",
+ "confianza": "media",
+ "cambios_vs_anterior": "El precio ha caído justo por debajo de $84K (el nivel a mantener) y topa con un muro de ask en $85K-$85.5K; la resistencia inmediata baja de $96.7K a $85.5K, el STH Cost Basis se concreta en $73.3K, la demanda de ETF se enfría y los LTH pasan a ser los principales vendedores, aunque la True Market Mean $77.2K sigue siendo el soporte clave.",
  "cadencia_dias": 7,
- "actualizado": "2026-09-25T12:14:39+00:00",
+ "actualizado": "2026-10-02T13:11:13+00:00",
  "historial": [
+  {
+   "agente": "woc",
+   "nombre": "Glassnode · Week On-Chain",
+   "fuente_fecha": "2026-09-23",
+   "fuentes": [
+    "20260923-the-week-onchain-week-38-2026.md"
+   ],
+   "titulo": "Escape Velocity",
+   "tendencia": "alcista",
+   "horizonte": "semanas",
+   "escenario": "Bitcoin ha recuperado la True Market Mean (~$77K) y el STH Cost Basis, y cotiza justo debajo del mayor cluster de oferta de long-term holders ($84K-$85K); la siguiente resistencia estructural es el mean MVRV price en $96.7K. El profit-taking sigue siendo ligero frente a los techos de 2024/2025, el ETF ha vuelto a comprar ($1.3B en 5 días) y las altcoins suben sin apalancamiento nuevo, lo que Glassnode lee como una fase temprana de recuperación y no como un blow-off top.",
+   "rango_esperado": {
+    "bajo": 84000,
+    "alto": 96700,
+    "base": "soporte en el cluster de oferta LTH $84K-$85K (por debajo, la True Market Mean $77K vuelve a ser soporte); resistencia en el mean MVRV price $96.7K, reforzada por el muro de gamma positiva de opciones en $95K-$97K"
+   },
+   "regimen_leverage": "Gamma de opciones en Deribit: negativa entre spot y $92K (amplifica movimientos), positiva y en máximo histórico alrededor de $95K (amortigua movimientos); apalancamiento en altcoins prácticamente plano pese al rally, sin señales de sobrecalentamiento",
+   "accion_lp": "ENSANCHAR",
+   "niveles": {
+    "sth_cost_basis": null,
+    "true_market_mean": 77000,
+    "realized_price": null,
+    "soporte": 84000,
+    "resistencia": 96700,
+    "sth_menos_1s": null,
+    "sth_mas_1s": null
+   },
+   "accion": "No da un veredicto cerrado: marca $84K como el nivel que mantiene abierto el camino a $96.7K y $77K como el soporte de última línea, señalando $95K-$97K como el primer test real del rally.",
+   "para_mis_lps": "Con el precio aún en la zona de gamma negativa (spot-$92K) donde el hedging de dealers amplifica los movimientos, conviene un rango algo más ancho hasta acercarse a $95K-$97K, zona de gamma positiva donde la propia cobertura de opciones tiende a comprimir la volatilidad y favorecería rangos más estrechos si el precio llega ahí.",
+   "citas": [
+    "Holding above $84K keeps the path to $96.7K open; a fall back below $84K would put the $77K True Market Mean back in play as support.",
+    "placing $95K-$97K as the first real test if the rally continues",
+    "sustained low profit-taking argues the rally still has room"
+   ],
+   "confianza": "alta",
+   "cambios_vs_anterior": "Giro completo respecto a la semana pasada: de perder la True Market Mean con la demanda parada, a reclamar TMM y STH cost basis, con ETF volviendo a comprar ($1.3B), volumen spot duplicado y altcoins liderando sin apalancamiento nuevo.",
+   "cadencia_dias": 7,
+   "actualizado": "2026-09-25T12:14:39+00:00"
+  },
   {
    "agente": "woc",
    "nombre": "Glassnode · Week On-Chain",
