@@ -78,7 +78,16 @@ if [ $# -lt 1 ] && [ -f ingesta/local/estado.json ]; then
   fi
 fi
 
-log "─── inicio (desde $SINCE) ───"
+# Cuantos videos pedir por canal. Era un 8 fijo, y eso deshacia en silencio el arreglo de la
+# ventana: el 4-oct el script busco desde el 12-sep, pero yt-dlp solo miro los 8 videos mas
+# recientes de Cowen (24-sep a 2-oct) y los del 12 al 23-sep se quedaron fuera aunque la
+# fecha era la buena. Se piden 2 por dia de ventana (Cowen publica hasta 2 diarios), minimo
+# 8 y maximo 80. Lo que ya existe no se vuelve a bajar, asi que pedir de mas solo cuesta
+# tiempo de listado.
+DIAS="$(python3 -c 'import sys;from datetime import date,datetime;print((date.today()-datetime.strptime(sys.argv[1],"%Y%m%d").date()).days)' "$SINCE" 2>/dev/null || echo 10)"
+MAX=$(( DIAS * 2 )); [ "$MAX" -lt 8 ] && MAX=8; [ "$MAX" -gt 80 ] && MAX=80
+
+log "─── inicio (desde $SINCE, $DIAS dias, hasta $MAX videos por canal) ───"
 
 # Nunca tocar un árbol sucio: si hay trabajo a medias, el pull/commit haría destrozos.
 # Solo cuentan los ficheros SEGUIDOS modificados, que son los que chocarian con el pull. Una
@@ -132,11 +141,11 @@ fi
 fallos=0
 # fetch_captions.py devuelve 1 si NO PUDO LEER un canal. Cero vídeos leyendo bien
 # devuelve 0 y no es un error: puede que simplemente no hayan publicado.
-python3 agentes/tools/fetch_captions.py --persona lmec --lang es --max 8 --since "$SINCE" \
+python3 agentes/tools/fetch_captions.py --persona lmec --lang es --max "$MAX" --since "$SINCE" \
   "https://www.youtube.com/@LaMejorEstrategiaCriptomonedas/videos" 2>&1 | tee -a "$LOG"
 [ "${PIPESTATUS[0]}" -ne 0 ] && { fallos=$((fallos+1)); log "FALLO leyendo el canal de LMEC"; }
 
-python3 agentes/tools/fetch_captions.py --persona cowen --lang en --max 8 --since "$SINCE" \
+python3 agentes/tools/fetch_captions.py --persona cowen --lang en --max "$MAX" --since "$SINCE" \
   "https://www.youtube.com/@benjaminjcowen/videos" 2>&1 | tee -a "$LOG"
 [ "${PIPESTATUS[0]}" -ne 0 ] && { fallos=$((fallos+1)); log "FALLO leyendo el canal de Cowen"; }
 
