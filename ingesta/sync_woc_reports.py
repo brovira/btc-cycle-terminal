@@ -47,8 +47,11 @@ RUTA_KB = "research/glassnode-kb/articulos"
 # lecturas.py, que coge la ultima por fecha. El 17-sep la lectura diaria del WoC salio
 # del ANUNCIO de Alpha Lab, con accion_lp a null, y el panel de LP se quedo sin
 # recomendacion mientras el Week On-Chain del 16-sep decia SALIR.
-NO_SON_WOC = ("btc-market-pulse", "market-compass", "alpha-lab", "strategy-watch",
-              "-glassnode-the-", "ark-invest-", "the-decentralization-spectrum")
+# "glassnode" en el slug: lo llevan TODAS las piezas con socios (ark-invest-glassnode-...,
+# bybit-glassnode-..., xapo-bank-glassnode-...) y NINGUN Week On-Chain (comprobado el
+# 4-oct-2026 contra los 300+ del KB). Una sola regla cubre a los socios de manana; la
+# primera version los listaba uno a uno y Xapo Bank se colo a la semana.
+NO_SON_WOC = ("btc-market-pulse", "market-compass", "alpha-lab", "strategy-watch", "glassnode")
 PATRON_WOC = re.compile(r"^(\d{4})-(\d{2})-(\d{2})-.+\.md$", re.I)
 
 
