@@ -1,14 +1,16 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-09-11",
+ "fuente_fecha": "2026-10-05",
  "fuentes": [
-  "20260911-has-the-fed-been-making-a-mistake.md"
+  "20261002-bitcoin-the-beauty-of-mathematics-part-73.md",
+  "20261002-payrolls-come-in-weak-unemployment-ticks-higher.md",
+  "20261005-when-will-interest-rates-drop.md"
  ],
- "titulo": "Has the Fed Been Making A Mistake?",
- "tendencia": "bajista",
+ "titulo": "When Will Interest Rates Drop?",
+ "tendencia": "neutral",
  "horizonte": "semanas",
- "escenario": "Cowen deja de lado el marco on-chain para centrarse en macro: el 10-year yield está en ~4.8% y el 2-year en ~4.3%, subiendo desde febrero porque la Fed se niega a subir tipos pese a que la inflación repunta (petróleo a $92) y el paro sigue bajando. Como la Fed controla solo el tramo corto, su inacción deja que el tramo largo 'no tenga más remedio que subir', lo que presiona a los activos de riesgo; a 8 días del FOMC de septiembre la probabilidad de subida de tipos está en un inusual 50/50-60%, un nivel de incertidumbre que históricamente precede a reacciones de mercado más violentas en ambas direcciones.",
+ "escenario": "Cowen espera que el 10-year yield (ya en ~5.3%, por encima de su objetivo blando del 5% y del máximo de octubre) haga su techo local entre ahora y principios/mediados de noviembre, con pico de miedo en torno al FOMC del 28 de octubre, y que los tipos empiecen a bajar tras las midterms, como en 2018 y 2022. Mientras tanto, el S&P está en máximos pero Russell 2000 (-10%), S&P equal weight y Dow caen, y los spreads CCC (~12%) se ensanchan, así que 'algo tiene que ceder': o el S&P cae hacia el Russell o el Russell sube; admite no saber cuál. En cripto, la capitalización total (~2.88T) sigue muy por debajo de la regresión logarítmica de valor justo, lo más infravalorada desde 2010, y a largo plazo apunta a ~10T (±unos pocos T).",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
@@ -17,18 +19,49 @@
   "objetivo_correccion": null,
   "invalidacion": null
  },
- "accion": "No da una acción de trading concreta; argumenta que la Fed debería subir tipos 25-50 pb en septiembre y advierte que mientras no lo haga el tramo largo de la curva seguirá subiendo y presionando a los activos de riesgo.",
- "para_mis_lps": "No habla de rangos ni de niveles de BTC; solo señala que la resolución del FOMC (8 días vista, probabilidad casi 50/50 de subida) es un catalizador de alta incertidumbre que suele producir movimientos de mercado más violentos de lo normal en ambas direcciones, lo que sugiere prudencia/rangos más anchos en torno a esa fecha, y recuerda que tras golden crosses Bitcoin suele caer temporalmente antes de definir si hace higher high o lower high.",
+ "accion": "No da una acción de trading; recomienda asumir que el techo local de los tipos está dentro hacia principios de noviembre y vigilar yields, inflación y el FOMC de octubre como catalizadores para activos de riesgo.",
+ "para_mis_lps": "No habla de BTC/USDC ni de rangos de liquidez concentrada. Implícitamente, riesgo de volatilidad macro alta hasta el FOMC del 28 de octubre y mediados de noviembre (posible corrección Q4 en bolsa, como en midterms previos), lo que sugiere cautela con rangos estrechos; es inferencia, no recomendación suya.",
  "citas": [
-  "I believe they have been making mistake by not raising rates.",
-  "the long end has no choice but to go up.",
-  "the odds of a rate hike in September only 60%... it's still a coin flip."
+  "my guess is that the current move will finalize before mid November.",
+  "rates will start dropping shortly after the midterms.",
+  "the asset class will be heading probably to around 10 trillion or so, uh plus or minus a few trillion."
  ],
  "confianza": "media",
- "cambios_vs_anterior": "Cambia completamente de tema: abandona el marcador on-chain 3-3 de la lectura anterior y pasa a un análisis puramente macro sobre la Fed y la curva de tipos, marcando el FOMC de septiembre (probabilidad de subida ~50/60%) como el próximo catalizador clave de volatilidad.",
+ "cambios_vs_anterior": "El 10-year pasa de ~4.8% a ~5.3% y Cowen pasa de exigir una subida de la Fed a proyectar un techo local de tipos antes de mediados de noviembre con bajada posterior a las midterms; la probabilidad de subida en octubre cayó de 64% a 17.7%, y vuelve al marco de valoración (cap total muy bajo el valor justo, objetivo ~10T).",
  "cadencia_dias": 2,
- "actualizado": "2026-09-12T11:15:42+00:00",
+ "actualizado": "2026-10-05T15:17:05+00:00",
  "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-09-11",
+   "fuentes": [
+    "20260911-has-the-fed-been-making-a-mistake.md"
+   ],
+   "titulo": "Has the Fed Been Making A Mistake?",
+   "tendencia": "bajista",
+   "horizonte": "semanas",
+   "escenario": "Cowen deja de lado el marco on-chain para centrarse en macro: el 10-year yield está en ~4.8% y el 2-year en ~4.3%, subiendo desde febrero porque la Fed se niega a subir tipos pese a que la inflación repunta (petróleo a $92) y el paro sigue bajando. Como la Fed controla solo el tramo corto, su inacción deja que el tramo largo 'no tenga más remedio que subir', lo que presiona a los activos de riesgo; a 8 días del FOMC de septiembre la probabilidad de subida de tipos está en un inusual 50/50-60%, un nivel de incertidumbre que históricamente precede a reacciones de mercado más violentas en ambas direcciones.",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": null,
+    "ma50w": null,
+    "objetivo_correccion": null,
+    "invalidacion": null
+   },
+   "accion": "No da una acción de trading concreta; argumenta que la Fed debería subir tipos 25-50 pb en septiembre y advierte que mientras no lo haga el tramo largo de la curva seguirá subiendo y presionando a los activos de riesgo.",
+   "para_mis_lps": "No habla de rangos ni de niveles de BTC; solo señala que la resolución del FOMC (8 días vista, probabilidad casi 50/50 de subida) es un catalizador de alta incertidumbre que suele producir movimientos de mercado más violentos de lo normal en ambas direcciones, lo que sugiere prudencia/rangos más anchos en torno a esa fecha, y recuerda que tras golden crosses Bitcoin suele caer temporalmente antes de definir si hace higher high o lower high.",
+   "citas": [
+    "I believe they have been making mistake by not raising rates.",
+    "the long end has no choice but to go up.",
+    "the odds of a rate hike in September only 60%... it's still a coin flip."
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "Cambia completamente de tema: abandona el marcador on-chain 3-3 de la lectura anterior y pasa a un análisis puramente macro sobre la Fed y la curva de tipos, marcando el FOMC de septiembre (probabilidad de subida ~50/60%) como el próximo catalizador clave de volatilidad.",
+   "cadencia_dias": 2,
+   "actualizado": "2026-09-12T11:15:42+00:00"
+  },
   {
    "agente": "cowen",
    "nombre": "Benjamin Cowen",
