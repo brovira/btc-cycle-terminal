@@ -1,16 +1,14 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-10-05",
+ "fuente_fecha": "2026-10-06",
  "fuentes": [
-  "20261002-bitcoin-the-beauty-of-mathematics-part-73.md",
-  "20261002-payrolls-come-in-weak-unemployment-ticks-higher.md",
-  "20261005-when-will-interest-rates-drop.md"
+  "20261006-silver-dubious-speculation.md"
  ],
- "titulo": "When Will Interest Rates Drop?",
+ "titulo": "Silver: Dubious Speculation",
  "tendencia": "neutral",
  "horizonte": "semanas",
- "escenario": "Cowen espera que el 10-year yield (ya en ~5.3%, por encima de su objetivo blando del 5% y del máximo de octubre) haga su techo local entre ahora y principios/mediados de noviembre, con pico de miedo en torno al FOMC del 28 de octubre, y que los tipos empiecen a bajar tras las midterms, como en 2018 y 2022. Mientras tanto, el S&P está en máximos pero Russell 2000 (-10%), S&P equal weight y Dow caen, y los spreads CCC (~12%) se ensanchan, así que 'algo tiene que ceder': o el S&P cae hacia el Russell o el Russell sube; admite no saber cuál. En cripto, la capitalización total (~2.88T) sigue muy por debajo de la regresión logarítmica de valor justo, lo más infravalorada desde 2010, y a largo plazo apunta a ~10T (±unos pocos T).",
+ "escenario": "La plata está en fase de digestión tras un avance parabólico (ya cae más del 50% desde el máximo, frente a ~41% en 1974) y la presión continuará unas semanas mientras el 10-year (~5.3%) siga subiendo con el dólar. Espera que la plata marque su mínimo en la ventana sep-nov habitual del año de midterms, antes o cerca del techo de yields, y que los yields no bajen de verdad hasta después de las midterms; si cae el soporte de ~60$, el objetivo sería barrer los máximos previos de ~50$ (1980/2011). Si el mínimo no llega en un par de meses, cree que los bajistas pasarán a alcistas; después prevé una consolidación larga hasta una nueva subida parabólica hacia finales de la década.",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
@@ -19,18 +17,51 @@
   "objetivo_correccion": null,
   "invalidacion": null
  },
- "accion": "No da una acción de trading; recomienda asumir que el techo local de los tipos está dentro hacia principios de noviembre y vigilar yields, inflación y el FOMC de octubre como catalizadores para activos de riesgo.",
- "para_mis_lps": "No habla de BTC/USDC ni de rangos de liquidez concentrada. Implícitamente, riesgo de volatilidad macro alta hasta el FOMC del 28 de octubre y mediados de noviembre (posible corrección Q4 en bolsa, como en midterms previos), lo que sugiere cautela con rangos estrechos; es inferencia, no recomendación suya.",
+ "accion": "No da una acción de trading; recomienda vigilar la plata (dependiente del oro) y el 10-year, esperando que la debilidad culmine en las próximas semanas.",
+ "para_mis_lps": "El vídeo trata de plata y no de BTC, así que no da rangos ni niveles para LPs BTC/USDC; solo refuerza el contexto macro (yields y dólar al alza hasta tras las midterms), que sugiere cautela con la volatilidad en las próximas semanas. Es inferencia mía, no una recomendación suya.",
  "citas": [
-  "my guess is that the current move will finalize before mid November.",
-  "rates will start dropping shortly after the midterms.",
-  "the asset class will be heading probably to around 10 trillion or so, uh plus or minus a few trillion."
+  "silver should sniff out a low more than likely before yields top.",
+  "when you have a parabolic advance like this, it often requires a long consolidation phase.",
+  "I don't think you're going to really start to see them go down until after the midterms."
  ],
  "confianza": "media",
- "cambios_vs_anterior": "El 10-year pasa de ~4.8% a ~5.3% y Cowen pasa de exigir una subida de la Fed a proyectar un techo local de tipos antes de mediados de noviembre con bajada posterior a las midterms; la probabilidad de subida en octubre cayó de 64% a 17.7%, y vuelve al marco de valoración (cap total muy bajo el valor justo, objetivo ~10T).",
+ "cambios_vs_anterior": "Mantiene el escenario macro (techo de yields tras/cerca de las midterms, como 2018 y 2022) pero pasa el foco a la plata y no aporta nada nuevo sobre BTC ni cifras del mercado cripto; solo compara el ciclo de la plata con el de BTC (mínimos de febrero y marzo).",
  "cadencia_dias": 2,
- "actualizado": "2026-10-05T15:17:05+00:00",
+ "actualizado": "2026-10-06T13:37:48+00:00",
  "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-10-05",
+   "fuentes": [
+    "20261002-bitcoin-the-beauty-of-mathematics-part-73.md",
+    "20261002-payrolls-come-in-weak-unemployment-ticks-higher.md",
+    "20261005-when-will-interest-rates-drop.md"
+   ],
+   "titulo": "When Will Interest Rates Drop?",
+   "tendencia": "neutral",
+   "horizonte": "semanas",
+   "escenario": "Cowen espera que el 10-year yield (ya en ~5.3%, por encima de su objetivo blando del 5% y del máximo de octubre) haga su techo local entre ahora y principios/mediados de noviembre, con pico de miedo en torno al FOMC del 28 de octubre, y que los tipos empiecen a bajar tras las midterms, como en 2018 y 2022. Mientras tanto, el S&P está en máximos pero Russell 2000 (-10%), S&P equal weight y Dow caen, y los spreads CCC (~12%) se ensanchan, así que 'algo tiene que ceder': o el S&P cae hacia el Russell o el Russell sube; admite no saber cuál. En cripto, la capitalización total (~2.88T) sigue muy por debajo de la regresión logarítmica de valor justo, lo más infravalorada desde 2010, y a largo plazo apunta a ~10T (±unos pocos T).",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": null,
+    "ma50w": null,
+    "objetivo_correccion": null,
+    "invalidacion": null
+   },
+   "accion": "No da una acción de trading; recomienda asumir que el techo local de los tipos está dentro hacia principios de noviembre y vigilar yields, inflación y el FOMC de octubre como catalizadores para activos de riesgo.",
+   "para_mis_lps": "No habla de BTC/USDC ni de rangos de liquidez concentrada. Implícitamente, riesgo de volatilidad macro alta hasta el FOMC del 28 de octubre y mediados de noviembre (posible corrección Q4 en bolsa, como en midterms previos), lo que sugiere cautela con rangos estrechos; es inferencia, no recomendación suya.",
+   "citas": [
+    "my guess is that the current move will finalize before mid November.",
+    "rates will start dropping shortly after the midterms.",
+    "the asset class will be heading probably to around 10 trillion or so, uh plus or minus a few trillion."
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "El 10-year pasa de ~4.8% a ~5.3% y Cowen pasa de exigir una subida de la Fed a proyectar un techo local de tipos antes de mediados de noviembre con bajada posterior a las midterms; la probabilidad de subida en octubre cayó de 64% a 17.7%, y vuelve al marco de valoración (cap total muy bajo el valor justo, objetivo ~10T).",
+   "cadencia_dias": 2,
+   "actualizado": "2026-10-05T15:17:05+00:00"
+  },
   {
    "agente": "cowen",
    "nombre": "Benjamin Cowen",
