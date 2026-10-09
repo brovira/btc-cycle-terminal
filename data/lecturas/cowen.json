@@ -1,14 +1,14 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-10-06",
+ "fuente_fecha": "2026-10-08",
  "fuentes": [
-  "20261006-silver-dubious-speculation.md"
+  "20261008-bitcoin-q4-2026.md"
  ],
- "titulo": "Silver: Dubious Speculation",
+ "titulo": "Bitcoin: Q4 2026",
  "tendencia": "neutral",
  "horizonte": "semanas",
- "escenario": "La plata está en fase de digestión tras un avance parabólico (ya cae más del 50% desde el máximo, frente a ~41% en 1974) y la presión continuará unas semanas mientras el 10-year (~5.3%) siga subiendo con el dólar. Espera que la plata marque su mínimo en la ventana sep-nov habitual del año de midterms, antes o cerca del techo de yields, y que los yields no bajen de verdad hasta después de las midterms; si cae el soporte de ~60$, el objetivo sería barrer los máximos previos de ~50$ (1980/2011). Si el mínimo no llega en un par de meses, cree que los bajistas pasarán a alcistas; después prevé una consolidación larga hasta una nueva subida parabólica hacia finales de la década.",
+ "escenario": "Con BTC en ~81-82k, admite que se equivocó con la extensión del rally (máximo más alto), pero no abandona la tesis de debilidad en el Q4 del año de midterms: si BTC acepta de nuevo por debajo del rango, podría volver a los mínimos del rango, igual que el 'fake out' bajista (mínimo ~57k, por debajo del mínimo de febrero ~60-66k) se revirtió hasta los máximos. Cree que el oro está más cerca de su mínimo que BTC (el oro suele tocar fondo cuando los yields hacen techo, oct-nov) y que BTC/oro podría sangrar de vuelta a los mínimos del rango. Insiste en no ser determinista: es una probabilidad no despreciable, no una certeza.",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
@@ -17,18 +17,49 @@
   "objetivo_correccion": null,
   "invalidacion": null
  },
- "accion": "No da una acción de trading; recomienda vigilar la plata (dependiente del oro) y el 10-year, esperando que la debilidad culmine en las próximas semanas.",
- "para_mis_lps": "El vídeo trata de plata y no de BTC, así que no da rangos ni niveles para LPs BTC/USDC; solo refuerza el contexto macro (yields y dólar al alza hasta tras las midterms), que sugiere cautela con la volatilidad en las próximas semanas. Es inferencia mía, no una recomendación suya.",
+ "accion": "No da una acción de trading; pide poner en el radar el riesgo de un movimiento a la baja en Q4 y ser menos determinista.",
+ "para_mis_lps": "No da rangos ni niveles concretos; lo único aplicable es que ve riesgo no despreciable de volver al rango bajo (los 57-66k que cita como referencia del rango/fake out), así que conviene no asumir que el rango alto se mantiene. Sin precios de rango explícitos, no hay más que extraer.",
  "citas": [
-  "silver should sniff out a low more than likely before yields top.",
-  "when you have a parabolic advance like this, it often requires a long consolidation phase.",
-  "I don't think you're going to really start to see them go down until after the midterms."
+  "there is a non-negligible chance that this is just the polar opposite of what happened in the summer",
+  "Q4 is not over until Q4 is over",
+  "perhaps we should all be a little less deterministic about things. This is a difficult market"
  ],
  "confianza": "media",
- "cambios_vs_anterior": "Mantiene el escenario macro (techo de yields tras/cerca de las midterms, como 2018 y 2022) pero pasa el foco a la plata y no aporta nada nuevo sobre BTC ni cifras del mercado cripto; solo compara el ciclo de la plata con el de BTC (mínimos de febrero y marzo).",
+ "cambios_vs_anterior": "La lectura anterior (6-oct) trataba de plata/10-year; ahora pasa a BTC: reconoce el máximo más alto pero mantiene la tesis de debilidad en Q4 y vincula el timing de BTC al techo del 10-year (oct-nov), con el oro tocando fondo antes.",
  "cadencia_dias": 2,
- "actualizado": "2026-10-06T13:37:48+00:00",
+ "actualizado": "2026-10-09T13:46:44+00:00",
  "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-10-06",
+   "fuentes": [
+    "20261006-silver-dubious-speculation.md"
+   ],
+   "titulo": "Silver: Dubious Speculation",
+   "tendencia": "neutral",
+   "horizonte": "semanas",
+   "escenario": "La plata está en fase de digestión tras un avance parabólico (ya cae más del 50% desde el máximo, frente a ~41% en 1974) y la presión continuará unas semanas mientras el 10-year (~5.3%) siga subiendo con el dólar. Espera que la plata marque su mínimo en la ventana sep-nov habitual del año de midterms, antes o cerca del techo de yields, y que los yields no bajen de verdad hasta después de las midterms; si cae el soporte de ~60$, el objetivo sería barrer los máximos previos de ~50$ (1980/2011). Si el mínimo no llega en un par de meses, cree que los bajistas pasarán a alcistas; después prevé una consolidación larga hasta una nueva subida parabólica hacia finales de la década.",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": null,
+    "ma50w": null,
+    "objetivo_correccion": null,
+    "invalidacion": null
+   },
+   "accion": "No da una acción de trading; recomienda vigilar la plata (dependiente del oro) y el 10-year, esperando que la debilidad culmine en las próximas semanas.",
+   "para_mis_lps": "El vídeo trata de plata y no de BTC, así que no da rangos ni niveles para LPs BTC/USDC; solo refuerza el contexto macro (yields y dólar al alza hasta tras las midterms), que sugiere cautela con la volatilidad en las próximas semanas. Es inferencia mía, no una recomendación suya.",
+   "citas": [
+    "silver should sniff out a low more than likely before yields top.",
+    "when you have a parabolic advance like this, it often requires a long consolidation phase.",
+    "I don't think you're going to really start to see them go down until after the midterms."
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "Mantiene el escenario macro (techo de yields tras/cerca de las midterms, como 2018 y 2022) pero pasa el foco a la plata y no aporta nada nuevo sobre BTC ni cifras del mercado cripto; solo compara el ciclo de la plata con el de BTC (mínimos de febrero y marzo).",
+   "cadencia_dias": 2,
+   "actualizado": "2026-10-06T13:37:48+00:00"
+  },
   {
    "agente": "cowen",
    "nombre": "Benjamin Cowen",
