@@ -2,14 +2,10 @@
   "metric": "lth_sopr",
   "source": "https://bitcoin-data.com/v1/lth-sopr",
   "points": 1454,
-  "ultimo": "2026-10-03",
+  "ultimo": "2026-10-04",
   "diasDesdeUltimo": 7,
   "rancio": true,
   "series": [
-    {
-      "date": "2022-10-10",
-      "value": 0.4714
-    },
     {
       "date": "2022-10-11",
       "value": 0.6849
@@ -5821,6 +5817,10 @@
     {
       "date": "2026-10-03",
       "value": 1.163
+    },
+    {
+      "date": "2026-10-04",
+      "value": 1.7226
     }
   ]
 }
