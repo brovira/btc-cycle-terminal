@@ -1,14 +1,14 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-10-08",
+ "fuente_fecha": "2026-10-12",
  "fuentes": [
-  "20261008-bitcoin-q4-2026.md"
+  "20261012-bitcoin-dominance.md"
  ],
- "titulo": "Bitcoin: Q4 2026",
+ "titulo": "Bitcoin Dominance",
  "tendencia": "neutral",
- "horizonte": "semanas",
- "escenario": "Con BTC en ~81-82k, admite que se equivocó con la extensión del rally (máximo más alto), pero no abandona la tesis de debilidad en el Q4 del año de midterms: si BTC acepta de nuevo por debajo del rango, podría volver a los mínimos del rango, igual que el 'fake out' bajista (mínimo ~57k, por debajo del mínimo de febrero ~60-66k) se revirtió hasta los máximos. Cree que el oro está más cerca de su mínimo que BTC (el oro suele tocar fondo cuando los yields hacen techo, oct-nov) y que BTC/oro podría sangrar de vuelta a los mínimos del rango. Insiste en no ser determinista: es una probabilidad no despreciable, no una certeza.",
+ "horizonte": "meses",
+ "escenario": "Con la dominancia de BTC en ~60%, espera que suba a corto plazo (objetivo: reencontrar los máximos de 2025 incluyendo stables) porque la política monetaria vuelve a ser restrictiva (Fed funds ~4,75% hacia abril vs 2-year ~4,8%, con el 2-year posiblemente bajando tras las midterms) y el dólar (DXY) sigue con mínimos crecientes, como en 2018. A diferencia del ciclo pasado, no espera que suba durante todo el ciclo: más adelante, cuando los tipos altos golpeen la economía y la política se relaje (quizá 1-2 años), la dominancia caería hacia los 50 bajos o incluso los 40 altos. Los pares de altcoins seguirían débiles frente a BTC hasta ese giro.",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
@@ -17,18 +17,49 @@
   "objetivo_correccion": null,
   "invalidacion": null
  },
- "accion": "No da una acción de trading; pide poner en el radar el riesgo de un movimiento a la baja en Q4 y ser menos determinista.",
- "para_mis_lps": "No da rangos ni niveles concretos; lo único aplicable es que ve riesgo no despreciable de volver al rango bajo (los 57-66k que cita como referencia del rango/fake out), así que conviene no asumir que el rango alto se mantiene. Sin precios de rango explícitos, no hay más que extraer.",
+ "accion": "No da acción de trading; recomienda no asumir que la dominancia sube todo el ciclo y esperar política monetaria más laxa antes de que los pares alt/BTC vayan bien.",
+ "para_mis_lps": "Sin niveles de precio de BTC, no da base para fijar rangos BTC/USDC. Para pares volátiles (alts/BTC) implica sesgo bajista frente a BTC a corto-medio plazo, es decir riesgo de impermanent loss si el LP está en el lado alt.",
  "citas": [
-  "there is a non-negligible chance that this is just the polar opposite of what happened in the summer",
-  "Q4 is not over until Q4 is over",
-  "perhaps we should all be a little less deterministic about things. This is a difficult market"
+  "I think what's more likely to happen is that Bitcoin dominance will go up for part of the cycle, but not for the entire cycle",
+  "my guess is that altcoin pairs are likely going to still want to continue to the downside as difficult as that might be",
+  "I'm still bullish here on the Dixie, the dollar."
  ],
  "confianza": "media",
- "cambios_vs_anterior": "La lectura anterior (6-oct) trataba de plata/10-year; ahora pasa a BTC: reconoce el máximo más alto pero mantiene la tesis de debilidad en Q4 y vincula el timing de BTC al techo del 10-year (oct-nov), con el oro tocando fondo antes.",
+ "cambios_vs_anterior": "Vídeo monotemático de dominancia y macro (sin precio de BTC ni Q4 bajista); mantiene el marco de tipos/midterms y dólar al alza, sin contradecir la lectura del 2026-10-08.",
  "cadencia_dias": 2,
- "actualizado": "2026-10-09T13:46:44+00:00",
+ "actualizado": "2026-10-13T14:34:54+00:00",
  "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-10-08",
+   "fuentes": [
+    "20261008-bitcoin-q4-2026.md"
+   ],
+   "titulo": "Bitcoin: Q4 2026",
+   "tendencia": "neutral",
+   "horizonte": "semanas",
+   "escenario": "Con BTC en ~81-82k, admite que se equivocó con la extensión del rally (máximo más alto), pero no abandona la tesis de debilidad en el Q4 del año de midterms: si BTC acepta de nuevo por debajo del rango, podría volver a los mínimos del rango, igual que el 'fake out' bajista (mínimo ~57k, por debajo del mínimo de febrero ~60-66k) se revirtió hasta los máximos. Cree que el oro está más cerca de su mínimo que BTC (el oro suele tocar fondo cuando los yields hacen techo, oct-nov) y que BTC/oro podría sangrar de vuelta a los mínimos del rango. Insiste en no ser determinista: es una probabilidad no despreciable, no una certeza.",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": null,
+    "ma50w": null,
+    "objetivo_correccion": null,
+    "invalidacion": null
+   },
+   "accion": "No da una acción de trading; pide poner en el radar el riesgo de un movimiento a la baja en Q4 y ser menos determinista.",
+   "para_mis_lps": "No da rangos ni niveles concretos; lo único aplicable es que ve riesgo no despreciable de volver al rango bajo (los 57-66k que cita como referencia del rango/fake out), así que conviene no asumir que el rango alto se mantiene. Sin precios de rango explícitos, no hay más que extraer.",
+   "citas": [
+    "there is a non-negligible chance that this is just the polar opposite of what happened in the summer",
+    "Q4 is not over until Q4 is over",
+    "perhaps we should all be a little less deterministic about things. This is a difficult market"
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "La lectura anterior (6-oct) trataba de plata/10-year; ahora pasa a BTC: reconoce el máximo más alto pero mantiene la tesis de debilidad en Q4 y vincula el timing de BTC al techo del 10-year (oct-nov), con el oro tocando fondo antes.",
+   "cadencia_dias": 2,
+   "actualizado": "2026-10-09T13:46:44+00:00"
+  },
   {
    "agente": "cowen",
    "nombre": "Benjamin Cowen",
