@@ -1,14 +1,14 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-10-12",
+ "fuente_fecha": "2026-10-14",
  "fuentes": [
-  "20261012-bitcoin-dominance.md"
+  "20261014-inflation-comes-in-hot.md"
  ],
- "titulo": "Bitcoin Dominance",
+ "titulo": "Inflation Comes in Hot",
  "tendencia": "neutral",
  "horizonte": "meses",
- "escenario": "Con la dominancia de BTC en ~60%, espera que suba a corto plazo (objetivo: reencontrar los máximos de 2025 incluyendo stables) porque la política monetaria vuelve a ser restrictiva (Fed funds ~4,75% hacia abril vs 2-year ~4,8%, con el 2-year posiblemente bajando tras las midterms) y el dólar (DXY) sigue con mínimos crecientes, como en 2018. A diferencia del ciclo pasado, no espera que suba durante todo el ciclo: más adelante, cuando los tipos altos golpeen la economía y la política se relaje (quizá 1-2 años), la dominancia caería hacia los 50 bajos o incluso los 40 altos. Los pares de altcoins seguirían débiles frente a BTC hasta ese giro.",
+ "escenario": "Video puramente macro (transcript cortado a mitad de frase, sin analisis de BTC). El CPI interanual salio 3,7% (consenso 3,6%, mes anterior 3,4%) y el core 2,6% (consenso 2,4%), empujado por energia/transporte (petroleo al alza por el conflicto con Iran) y vivienda. Espera que los rendimientos largos sigan elevados hasta las midterms y que suelan caer despues; el Fed funds estaria unos 75 pb por debajo del neutral y el 2-year podria cambiar rapido si acaba la guerra. Presion sobre sectores sensibles a tipos (Russell, Dow) mientras el S&P esta cerca de maximos.",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
@@ -17,18 +17,49 @@
   "objetivo_correccion": null,
   "invalidacion": null
  },
- "accion": "No da acción de trading; recomienda no asumir que la dominancia sube todo el ciclo y esperar política monetaria más laxa antes de que los pares alt/BTC vayan bien.",
- "para_mis_lps": "Sin niveles de precio de BTC, no da base para fijar rangos BTC/USDC. Para pares volátiles (alts/BTC) implica sesgo bajista frente a BTC a corto-medio plazo, es decir riesgo de impermanent loss si el LP está en el lado alt.",
+ "accion": "No da accion de trading; argumenta que el Fed no tiene mas remedio que ser restrictivo ante un shock de oferta y que los yields altos seguiran presionando hasta las midterms.",
+ "para_mis_lps": "No habla de BTC ni de rangos en este video, asi que no aplica directamente; el contexto macro (tipos largos altos hasta las midterms, riesgo de volatilidad por petroleo/Iran) sugiere prudencia con rangos muy estrechos, pero es inferencia mia, no suya.",
  "citas": [
-  "I think what's more likely to happen is that Bitcoin dominance will go up for part of the cycle, but not for the entire cycle",
-  "my guess is that altcoin pairs are likely going to still want to continue to the downside as difficult as that might be",
-  "I'm still bullish here on the Dixie, the dollar."
+  "the long end is going to remain elevated until after the midterms",
+  "What that's forcing the Fed to do is forcing the Fed to raise rates into a supply shock because inflation is is going back up.",
+  "you could argue that that the Fed funds rate is below the neutral rate by about 75 basis points"
  ],
- "confianza": "media",
- "cambios_vs_anterior": "Vídeo monotemático de dominancia y macro (sin precio de BTC ni Q4 bajista); mantiene el marco de tipos/midterms y dólar al alza, sin contradecir la lectura del 2026-10-08.",
+ "confianza": "baja",
+ "cambios_vs_anterior": "Refuerza el marco macro de la lectura anterior (politica restrictiva, 2-year elevado, alivio tras las midterms) con inflacion mas caliente y petroleo/Iran como causa; no aporta nada nuevo sobre dominancia ni niveles de BTC.",
  "cadencia_dias": 2,
- "actualizado": "2026-10-13T14:34:54+00:00",
+ "actualizado": "2026-10-15T12:07:52+00:00",
  "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-10-12",
+   "fuentes": [
+    "20261012-bitcoin-dominance.md"
+   ],
+   "titulo": "Bitcoin Dominance",
+   "tendencia": "neutral",
+   "horizonte": "meses",
+   "escenario": "Con la dominancia de BTC en ~60%, espera que suba a corto plazo (objetivo: reencontrar los máximos de 2025 incluyendo stables) porque la política monetaria vuelve a ser restrictiva (Fed funds ~4,75% hacia abril vs 2-year ~4,8%, con el 2-year posiblemente bajando tras las midterms) y el dólar (DXY) sigue con mínimos crecientes, como en 2018. A diferencia del ciclo pasado, no espera que suba durante todo el ciclo: más adelante, cuando los tipos altos golpeen la economía y la política se relaje (quizá 1-2 años), la dominancia caería hacia los 50 bajos o incluso los 40 altos. Los pares de altcoins seguirían débiles frente a BTC hasta ese giro.",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": null,
+    "ma50w": null,
+    "objetivo_correccion": null,
+    "invalidacion": null
+   },
+   "accion": "No da acción de trading; recomienda no asumir que la dominancia sube todo el ciclo y esperar política monetaria más laxa antes de que los pares alt/BTC vayan bien.",
+   "para_mis_lps": "Sin niveles de precio de BTC, no da base para fijar rangos BTC/USDC. Para pares volátiles (alts/BTC) implica sesgo bajista frente a BTC a corto-medio plazo, es decir riesgo de impermanent loss si el LP está en el lado alt.",
+   "citas": [
+    "I think what's more likely to happen is that Bitcoin dominance will go up for part of the cycle, but not for the entire cycle",
+    "my guess is that altcoin pairs are likely going to still want to continue to the downside as difficult as that might be",
+    "I'm still bullish here on the Dixie, the dollar."
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "Vídeo monotemático de dominancia y macro (sin precio de BTC ni Q4 bajista); mantiene el marco de tipos/midterms y dólar al alza, sin contradecir la lectura del 2026-10-08.",
+   "cadencia_dias": 2,
+   "actualizado": "2026-10-13T14:34:54+00:00"
+  },
   {
    "agente": "cowen",
    "nombre": "Benjamin Cowen",
