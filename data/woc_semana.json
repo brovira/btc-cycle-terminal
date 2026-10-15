@@ -1,38 +1,34 @@
 {
   "_como_se_actualiza": "AUTOMÁTICO desde jul-2026: ingesta/sync_woc.py lee la recomendación del pipeline semanal del repo privado (DeFi-Tracker) y la traduce a este formato. Workflow: sync-woc.yml, jueves 14:00 UTC (1h después del pipeline).",
   "_pendiente_agente": "`fiabilidad_tipo` se asigna por heurística de palabras clave y `cambios_de_fiabilidad` queda vacío: eso lo calibra el agente glassnode_tactico contra track_record.md.",
-  "updated": "2026-09-30",
-  "woc_fecha": "2026-09-30",
-  "woc_titulo": "Strength Meets a Wall",
+  "updated": "2026-10-14",
+  "woc_fecha": "2026-10-14",
+  "woc_titulo": "Boxed In",
   "fuentes": [
-    "2026-09-30-the-week-onchain-week-39-2026.md",
+    "2026-10-14-the-week-onchain-week-41-2026.md",
     "recomendaciones.jsonl (pipeline semanal, DeFi-Tracker)",
     "claude -p con la suscripcion (CLAUDE_CODE_OAUTH_TOKEN), sin ANTHROPIC_API_KEY"
   ],
-  "resumen": "Mercado limpio de apalancamiento y ni complaciente ni sobrecubierto: el profit taking total sigue ligero frente a los techos de 2024-2025 y en altcoins el OI no crece en monedas, así que no hay longs apinados ni shorts atrapados. La demanda de ETFs se enfrió (de ~$1B/día a $24M) y el volumen total está en mínimos del rango desde el lanzamiento de los ETFs, por lo que el rally es temprano y especulativo. El único lado algo incómodo son los compradores en el muro de $85K-$85.5K, con LTH empezando a vender la fuerza.",
-  "que_hacemos": "<b>Acción de LP: ENSANCHAR</b> · régimen de leverage: <b>limpio</b> · confianza: media.<br>Sin leverage extremo no aplica SALIR, pero el precio está comprimido entre un muro de asks en $85-85.5K y soportes on-chain a $77.2K (True Market Mean) y $73.3K (STH cost basis) con volumen bajo y LTH vendiendo, lo que no justifica rango estrecho. Un rango amplio de ~$77K a ~$86K captura la zona de baja fricción sin quedar corto de vol si el muro cede o falla el soporte.",
+  "resumen": "El leverage de BTC está equilibrado y no hay un lado claramente apinado: los clusters de liquidación pesan lo mismo abajo (justo bajo $80K) que arriba (~$88K). El apalancamiento se concentra en altcoins individuales, con coin froth alto y global froth bajo, es decir bolsillos de longs apretados que serían los más expuestos si BTC cae hacia $80K. Offside están los compradores de 6-12 meses y de 1-2 años, que esperan cerca de su break-even en $88K a $100K, y los ETF, que vuelven a vender tras casi $3B de entradas.",
+  "que_hacemos": "<b>Acción de LP: ENSANCHAR</b> · régimen de leverage: <b>mixto</b> · confianza: media.<br>BTC está encajonado entre soporte firme ($80K-$81.5K con bids y ETF cost basis, True Market Mean ~$78K) y oferta pesada hacia $88K. Esto es una caja con ruptura posible a ambos lados, sin demanda fresca (ETF con salidas, CPI alto, decisión de la Fed el 28 oct y elecciones el 3 nov). Sin confluencia de leverage extremo con un nivel on-chain roto no corresponde SALIR, pero un rango estrecho se quedaría corto de vol ante un flush o un squeeze.",
   "niveles": [
     {
-      "k": "STH cost basis (resistencia/soporte)",
-      "v": "$73.300"
-    },
-    {
       "k": "True Market Mean (línea bull/bear)",
-      "v": "$77.200"
+      "v": "$78.000"
     },
     {
       "k": "Estante de demanda (soporte)",
-      "v": "$84.000"
+      "v": "$80.000"
     },
     {
       "k": "Muro de oferta (resistencia)",
-      "v": "$85.500"
+      "v": "$88.000"
     }
   ],
-  "metricas": "Funding en perps de altcoins: solo 19% de las monedas paga por encima de 0.01% (muy por debajo de cualquier techo previo); OI de perps de altcoins sube en USD pero cae en monedas (sin nuevas posiciones); no se citan funding/OI de BTC, skew 25d, put/call OI, VRP, DVOL ni max pain.",
+  "metricas": "No cita funding, OI, skew 25d, put/call, VRP, DVOL ni max pain de BTC. Los clusters de liquidación a ambos lados del precio son de tamaño similar (uno justo bajo $80K y otro cerca de $88K) y la banda alrededor del precio se adelgazó más de un quinto en una semana. El Altcoin Froth Indicator muestra coin froth en su quintil superior desde el 28 sep y global froth bajo.",
   "llamadas_abiertas": [
     {
-      "llamada": "Cierre diario bajo $77.2K (True Market Mean) o profit taking semanal/LTH subiendo hacia niveles de techos pasados con precio plano pasaría a SALIR; una ruptura sostenida sobre $85.5K con volumen creciente e inflows de ETF de vuelta permitiría reevaluar hacia un rango más alto o FARMEAR.",
+      "llamada": "Un cierre diario bajo $80K y bajo el ETF cost basis (~$81.5K), con el cluster de liquidaciones bajo $80K activándose y los altcoins con coin froth haciendo unwind, pasaría a SALIR hacia el True Market Mean (~$78K). Un cierre diario sobre $88K con entradas ETF de vuelta permitiría subir el rango o pasar a FARMEAR.",
       "tipo": "señal a vigilar (del WoC)",
       "fiabilidad_tipo": "posicionamiento + nivel on-chain — 8/10 histórico",
       "criterio_exito": "se evalúa el jueves siguiente: narrativa del WoC nuevo + movimiento real de precio",
@@ -41,9 +37,9 @@
   ],
   "evaluadas_recientes": [
     {
-      "llamada": "Un cierre diario por debajo de $84K devolveria el foco a $77K y reabriria el riesgo de la tesis previa; en cambio, Net Realized Profit/Loss semanal subiendo hacia los niveles de los techos de 2024-2025 (o el Percent Supply in Profit de STH cruzando la linea de venta junto con realized profit al alza) senalaria que los holders empiezan a vender la fuerza, gatillo para pasar a SALIR cerca de $95K-97K.",
-      "veredicto": "PARCIAL",
-      "nota": "ENSANCHAR con rango $84K-$96.7K fue razonable: no hubo leverage apinado y el precio no quebró $84K de forma decisiva, solo se deslizó apenas por debajo. Sin embargo, el precio no avanzó hacia $95K-97K; chocó con un muro de ventas en $85K-$85.5K y se movió de lado, y la señal de vigilancia (venta de LTH) se activó parcialmente (su realized profit casi se duplicó) sin que el profit taking total suba hacia niveles de techo."
+      "llamada": "Una ruptura de las bids de $81K con cierre diario debajo (activando los clusters de $75K) junto con altcoins unwinding pasaría a SALIR; un cierre asentado sobre $85.5K-$86.5K con repunte de volumen spot y ETF permitiría subir el rango o pasar a FARMEAR con objetivo hacia $92K.",
+      "veredicto": "HIT",
+      "nota": "ENSANCHAR con rango ~$81K-$87K fue razonable: el precio perdió las bids de $81K el 8 oct (se movió a $80K) y las pruebas bajo el ETF cost basis cerraron de vuelta arriba, sin llegar a $75K. Los compradores cercanos a $85K fueron los offside y los ETF pasaron a vender, validando la cautela. No se activó SALIR, porque no hubo cierre diario bajo el soporte con unwind de altcoins."
     }
   ],
   "cambios_de_fiabilidad": ""
