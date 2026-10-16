@@ -1,42 +1,81 @@
 {
  "agente": "woc",
  "nombre": "Glassnode · Week On-Chain",
- "fuente_fecha": "2026-09-30",
+ "fuente_fecha": "2026-10-14",
  "fuentes": [
-  "20260930-the-week-onchain-week-39-2026.md"
+  "20261014-the-week-onchain-week-41-2026.md"
  ],
- "titulo": "The Week On-Chain — Strength Meets a Wall (Week 39, 2026)",
- "tendencia": "alcista",
+ "titulo": "The Week On-Chain — Boxed In (Week 41, 2026)",
+ "tendencia": "lateral",
  "horizonte": "semanas",
- "escenario": "Bitcoin está en una tendencia alcista temprana y sin participación amplia: el soporte on-chain aguanta (precio ~13% sobre el STH Cost Basis de $73.3K y ~8% sobre la True Market Mean de $77.2K), pero la demanda de ETF se ha enfriado (de ~$1B/día el 21-22 sep a $24M el 28 sep) y el volumen es bajo (~$6.4B/día). El test a corto plazo es el muro de ventas spot en Binance en $85K-$85.5K, que se ha triplicado desde el 24 sep; el profit-taking sigue ligero frente a los techos de 2024/2025, aunque los LTH ya son los principales vendedores (55% del beneficio realizado).",
+ "escenario": "Bitcoin está 'boxed in': soporte firme debajo (True Market Mean ~$78K, ETF Cost Basis ~$81.5K, bids de Binance en $80K) y mucha oferta encima (cost basis de compradores de 6-12 meses ~$88K y de 1-2 años ~$100K, que ya han rechazado el precio en enero y mayo). A corto plazo pide cautela (ETF vendedores con ~$760M de salidas desde el 7 oct, CPI caliente de 3.7%, decisión de la Fed el 28 oct y midterms el 3 nov); la visión larga es más fuerte (pérdidas de LTH -85% desde el pico del 12 ago, Realized Price nunca perdido en este bear, ciclo temprano en recuperación).",
  "rango_esperado": {
-  "bajo": 77200,
-  "alto": 85500,
-  "base": "soporte en la True Market Mean $77.2K (cierre diario por debajo invalida); techo en el muro de ask de Binance $85K-$85.5K (una ruptura sostenida lo despeja). STH Cost Basis $73.3K como soporte más profundo"
+  "bajo": 78000,
+  "alto": 88000,
+  "base": "suelo en la True Market Mean ~$78K (tras perder el cluster de liquidaciones <$80K y el ETF Cost Basis $81.5K); techo en el cost basis de 6-12 meses ~$88K, donde está además el otro cluster de liquidaciones. Zona de soporte inmediata $80K-$81.5K."
  },
- "regimen_leverage": "Apalancamiento modesto: solo 19% de las altcoins pagan funding por encima de 0.01%, OI de altcoins sube en dólares pero baja en monedas (riesgo de unwind forzado bajo); no da cifras de funding/skew de BTC",
+ "regimen_leverage": "Colchón de liquidaciones adelgazado más de una quinta parte en una semana; clusters de tamaño similar justo bajo $80K y cerca de $88K. Euforia de altcoins alta moneda a moneda (top quintil desde 28 sep) pero baja a nivel global: apalancamiento concentrado en bolsillos.",
  "accion_lp": null,
  "niveles": {
-  "sth_cost_basis": 73300,
-  "true_market_mean": 77200,
+  "sth_cost_basis": null,
+  "true_market_mean": 78000,
   "realized_price": null,
-  "soporte": 77200,
-  "resistencia": 85500,
+  "soporte": 81500,
+  "resistencia": 88000,
   "sth_menos_1s": null,
   "sth_mas_1s": null
  },
- "accion": "No da recomendación operativa: marca el muro $85K-$85.5K como test inmediato y define confirmación (ruptura con volumen creciente y vuelta de flujos de ETF) e invalidación (cierre diario bajo $77.2K o venta LTH más fuerte con precio plano).",
- "para_mis_lps": "Su lectura sugiere un rango BTC/USDC acotado entre ~$77K y ~$85.5K mientras el muro aguante, con riesgo de salida por arriba si rompe con volumen y por abajo si cierra diario bajo $77.2K; no da recomendación explícita de LP, es inferencia de sus niveles.",
+ "accion": "No da recomendación operativa: pide cautela a corto plazo y marca como confirmación un cierre diario sobre $88K con vuelta de flujos de ETF, e invalidación la ruptura de $80K / $81.5K hacia la True Market Mean ~$78K.",
+ "para_mis_lps": "No habla de LPs. Su caja implícita es ~$78K-$88K, con soporte denso en $80K-$81.5K y techo en $88K; un rango concentrado BTC/USDC dentro de ese canal es coherente, con riesgo de cola bajista si se rompe $80K y de squeeze hasta $88K. Para pares volátiles/alts avisa de apalancamiento concentrado, expuesto si BTC cae hacia $80K.",
  "citas": [
-  "Bitcoin is in an early uptrend without broad participation: on-chain support holds, ETF demand has cooled, spot volume is low.",
-  "a daily close below the True Market Mean at $77.2K",
-  "long-term holders are now the main sellers."
+  "Until a daily close above $88K, each advance meets holders able to exit near break-even.",
+  "A daily close below $81.5K would put the average ETF holder at a loss and remove the nearest on-chain support.",
+  "Bitcoin is boxed in: firm support below, heavy supply above."
  ],
  "confianza": "media",
- "cambios_vs_anterior": "El precio ha caído justo por debajo de $84K (el nivel a mantener) y topa con un muro de ask en $85K-$85.5K; la resistencia inmediata baja de $96.7K a $85.5K, el STH Cost Basis se concreta en $73.3K, la demanda de ETF se enfría y los LTH pasan a ser los principales vendedores, aunque la True Market Mean $77.2K sigue siendo el soporte clave.",
+ "cambios_vs_anterior": "Pasa de tendencia alcista temprana con test del muro $85K-$85.5K a lateral 'boxed in': el breakout sobre $85K (con ~$3B de ETF 21 sep-6 oct) no se sostuvo, los ETF vuelven a vender, la resistencia sube a $88K y el soporte práctico sube a $80K-$81.5K (ETF Cost Basis), con la True Market Mean ~$78K como invalidación.",
  "cadencia_dias": 7,
- "actualizado": "2026-10-02T13:11:13+00:00",
+ "actualizado": "2026-10-16T11:55:35+00:00",
  "historial": [
+  {
+   "agente": "woc",
+   "nombre": "Glassnode · Week On-Chain",
+   "fuente_fecha": "2026-09-30",
+   "fuentes": [
+    "20260930-the-week-onchain-week-39-2026.md"
+   ],
+   "titulo": "The Week On-Chain — Strength Meets a Wall (Week 39, 2026)",
+   "tendencia": "alcista",
+   "horizonte": "semanas",
+   "escenario": "Bitcoin está en una tendencia alcista temprana y sin participación amplia: el soporte on-chain aguanta (precio ~13% sobre el STH Cost Basis de $73.3K y ~8% sobre la True Market Mean de $77.2K), pero la demanda de ETF se ha enfriado (de ~$1B/día el 21-22 sep a $24M el 28 sep) y el volumen es bajo (~$6.4B/día). El test a corto plazo es el muro de ventas spot en Binance en $85K-$85.5K, que se ha triplicado desde el 24 sep; el profit-taking sigue ligero frente a los techos de 2024/2025, aunque los LTH ya son los principales vendedores (55% del beneficio realizado).",
+   "rango_esperado": {
+    "bajo": 77200,
+    "alto": 85500,
+    "base": "soporte en la True Market Mean $77.2K (cierre diario por debajo invalida); techo en el muro de ask de Binance $85K-$85.5K (una ruptura sostenida lo despeja). STH Cost Basis $73.3K como soporte más profundo"
+   },
+   "regimen_leverage": "Apalancamiento modesto: solo 19% de las altcoins pagan funding por encima de 0.01%, OI de altcoins sube en dólares pero baja en monedas (riesgo de unwind forzado bajo); no da cifras de funding/skew de BTC",
+   "accion_lp": null,
+   "niveles": {
+    "sth_cost_basis": 73300,
+    "true_market_mean": 77200,
+    "realized_price": null,
+    "soporte": 77200,
+    "resistencia": 85500,
+    "sth_menos_1s": null,
+    "sth_mas_1s": null
+   },
+   "accion": "No da recomendación operativa: marca el muro $85K-$85.5K como test inmediato y define confirmación (ruptura con volumen creciente y vuelta de flujos de ETF) e invalidación (cierre diario bajo $77.2K o venta LTH más fuerte con precio plano).",
+   "para_mis_lps": "Su lectura sugiere un rango BTC/USDC acotado entre ~$77K y ~$85.5K mientras el muro aguante, con riesgo de salida por arriba si rompe con volumen y por abajo si cierra diario bajo $77.2K; no da recomendación explícita de LP, es inferencia de sus niveles.",
+   "citas": [
+    "Bitcoin is in an early uptrend without broad participation: on-chain support holds, ETF demand has cooled, spot volume is low.",
+    "a daily close below the True Market Mean at $77.2K",
+    "long-term holders are now the main sellers."
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "El precio ha caído justo por debajo de $84K (el nivel a mantener) y topa con un muro de ask en $85K-$85.5K; la resistencia inmediata baja de $96.7K a $85.5K, el STH Cost Basis se concreta en $73.3K, la demanda de ETF se enfría y los LTH pasan a ser los principales vendedores, aunque la True Market Mean $77.2K sigue siendo el soporte clave.",
+   "cadencia_dias": 7,
+   "actualizado": "2026-10-02T13:11:13+00:00"
+  },
   {
    "agente": "woc",
    "nombre": "Glassnode · Week On-Chain",
