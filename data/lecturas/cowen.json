@@ -1,34 +1,65 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-10-14",
+ "fuente_fecha": "2026-10-16",
  "fuentes": [
-  "20261014-inflation-comes-in-hot.md"
+  "20261016-bitcoin-extreme-uncertainty.md"
  ],
- "titulo": "Inflation Comes in Hot",
+ "titulo": "Bitcoin Extreme Uncertainty",
  "tendencia": "neutral",
- "horizonte": "meses",
- "escenario": "Video puramente macro (transcript cortado a mitad de frase, sin analisis de BTC). El CPI interanual salio 3,7% (consenso 3,6%, mes anterior 3,4%) y el core 2,6% (consenso 2,4%), empujado por energia/transporte (petroleo al alza por el conflicto con Iran) y vivienda. Espera que los rendimientos largos sigan elevados hasta las midterms y que suelan caer despues; el Fed funds estaria unos 75 pb por debajo del neutral y el 2-year podria cambiar rapido si acaba la guerra. Presion sobre sectores sensibles a tipos (Russell, Dow) mientras el S&P esta cerca de maximos.",
+ "horizonte": "semanas",
+ "escenario": "Dice que la incertidumbre es la mas alta que ha visto y que BTC esta en un punto de decision en la zona baja de los 80K: o imprime un nuevo maximo local por encima de 87K muy pronto, o es una falsa ruptura y se rompen los indicadores tecnicos. Caso alcista: BTC por encima de la 50W SMA, golden cross, retest del maximo previo, bear market de ~38 semanas similar al de 2019 (~37). Caso bajista: sin capitulacion de precio ni reset del MVRV Z-Score, sin expansion del balance del Fed, y patron tras la subida de tipos (pop de unas semanas y caida en Q4) que apunta a un suelo a mediados/finales de diciembre (~60 semanas de bear market, vs 59 en 2013).",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
   "bmsb": null,
   "ma50w": null,
   "objetivo_correccion": null,
-  "invalidacion": null
+  "invalidacion": 87000
  },
- "accion": "No da accion de trading; argumenta que el Fed no tiene mas remedio que ser restrictivo ante un shock de oferta y que los yields altos seguiran presionando hasta las midterms.",
- "para_mis_lps": "No habla de BTC ni de rangos en este video, asi que no aplica directamente; el contexto macro (tipos largos altos hasta las midterms, riesgo de volatilidad por petroleo/Iran) sugiere prudencia con rangos muy estrechos, pero es inferencia mia, no suya.",
+ "accion": "No da una llamada direccional: se declara menos determinista que antes y se limita a exponer los casos alcista y bajista (el transcript se corta antes de su conclusion).",
+ "para_mis_lps": "Sin recomendacion explicita para LPs; la lectura implica un rango incierto y una resolucion inminente (por encima de 87K o ruptura bajista), por lo que conviene rango amplio o cautela con rangos estrechos en BTC/USDC hasta que se resuelva.",
  "citas": [
-  "the long end is going to remain elevated until after the midterms",
-  "What that's forcing the Fed to do is forcing the Fed to raise rates into a supply shock because inflation is is going back up.",
-  "you could argue that that the Fed funds rate is below the neutral rate by about 75 basis points"
+  "I don't think we're going to sit here much longer in the low 80s.",
+  "We're either going to go up and print a new local high above 87K really soon or it's going to be a fake breakout",
+  "uncertainty now is higher for Bitcoin than it has been in the past"
  ],
  "confianza": "baja",
- "cambios_vs_anterior": "Refuerza el marco macro de la lectura anterior (politica restrictiva, 2-year elevado, alivio tras las midterms) con inflacion mas caliente y petroleo/Iran como causa; no aporta nada nuevo sobre dominancia ni niveles de BTC.",
+ "cambios_vs_anterior": "Pasa de un video puramente macro (CPI, yields) a la lectura de BTC: punto de decision en los 80K bajos con maximo local en 87K y se reconoce menos determinista tras el rally que superó el maximo previo; transcript cortado, sin conclusion.",
  "cadencia_dias": 2,
- "actualizado": "2026-10-15T12:07:52+00:00",
+ "actualizado": "2026-10-17T11:11:02+00:00",
  "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-10-14",
+   "fuentes": [
+    "20261014-inflation-comes-in-hot.md"
+   ],
+   "titulo": "Inflation Comes in Hot",
+   "tendencia": "neutral",
+   "horizonte": "meses",
+   "escenario": "Video puramente macro (transcript cortado a mitad de frase, sin analisis de BTC). El CPI interanual salio 3,7% (consenso 3,6%, mes anterior 3,4%) y el core 2,6% (consenso 2,4%), empujado por energia/transporte (petroleo al alza por el conflicto con Iran) y vivienda. Espera que los rendimientos largos sigan elevados hasta las midterms y que suelan caer despues; el Fed funds estaria unos 75 pb por debajo del neutral y el 2-year podria cambiar rapido si acaba la guerra. Presion sobre sectores sensibles a tipos (Russell, Dow) mientras el S&P esta cerca de maximos.",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": null,
+    "ma50w": null,
+    "objetivo_correccion": null,
+    "invalidacion": null
+   },
+   "accion": "No da accion de trading; argumenta que el Fed no tiene mas remedio que ser restrictivo ante un shock de oferta y que los yields altos seguiran presionando hasta las midterms.",
+   "para_mis_lps": "No habla de BTC ni de rangos en este video, asi que no aplica directamente; el contexto macro (tipos largos altos hasta las midterms, riesgo de volatilidad por petroleo/Iran) sugiere prudencia con rangos muy estrechos, pero es inferencia mia, no suya.",
+   "citas": [
+    "the long end is going to remain elevated until after the midterms",
+    "What that's forcing the Fed to do is forcing the Fed to raise rates into a supply shock because inflation is is going back up.",
+    "you could argue that that the Fed funds rate is below the neutral rate by about 75 basis points"
+   ],
+   "confianza": "baja",
+   "cambios_vs_anterior": "Refuerza el marco macro de la lectura anterior (politica restrictiva, 2-year elevado, alivio tras las midterms) con inflacion mas caliente y petroleo/Iran como causa; no aporta nada nuevo sobre dominancia ni niveles de BTC.",
+   "cadencia_dias": 2,
+   "actualizado": "2026-10-15T12:07:52+00:00"
+  },
   {
    "agente": "cowen",
    "nombre": "Benjamin Cowen",
