@@ -1,14 +1,14 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-10-18",
+ "fuente_fecha": "2026-10-19",
  "fuentes": [
-  "20261018-has-the-q4-equity-correction-finally-arrived.md"
+  "20261019-what-will-the-federal-reserve-do-next.md"
  ],
- "titulo": "Has the Q4 Equity Correction Finally Arrived?",
- "tendencia": "bajista",
- "horizonte": "semanas",
- "escenario": "Video solo de renta variable (no habla de BTC en la parte disponible). Dice que una correccion de Q4 del midterm year empezaria justo asi: debilidad primero en los mercados mas sensibles a tipos y de mas riesgo (Russell -11%, Dow -7/8%, Nasdaq -7%, Corea del Sur -24%) y luego baja por la curva de riesgo hasta el S&P 500, que solo esta ~2% bajo maximos. Ve probable que el Fed no suba tipos en octubre (~84,5% de probabilidad), que el 10 anos rebote y siga presionando al Russell, con posible rally hacia las midterms y otra caida despues, como en 2018 y 2022.",
+ "titulo": "What will the Federal Reserve Do Next?",
+ "tendencia": "neutral",
+ "horizonte": "meses",
+ "escenario": "Video puramente macro, sin BTC. Tipos al 4% tras la subida de septiembre; ve probable que el Fed NO suba en octubre (~80-84% de probabilidad de mantener), que el 2 anos (4,76%, llego a 4,9%) y el largo rebote hasta las midterms y luego caigan, y que el Fed suba una vez mas en diciembre (a 4,25%), igualando fed funds y 2 anos y quedando en pausa en 2027. Lo plantea como 'deja vu' de 2018 (subida en septiembre, pausa en noviembre, subida en diciembre) y avisa de que el mercado (dos subidas mas en 2027) suele equivocarse.",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
@@ -17,18 +17,49 @@
   "objetivo_correccion": null,
   "invalidacion": null
  },
- "accion": "No da una llamada de trading; advierte que esto es como empezaria una correccion de Q4 en acciones, aunque admite que es imposible saber si continuara y que la estacionalidad funciona ~70% de las veces.",
- "para_mis_lps": "Sin lectura directa de BTC en este video; solo implica contexto de riesgo en activos de riesgo (posible caida de acciones que podria arrastrar a cripto y subir la volatilidad), asi que conviene no estrechar demasiado rangos de BTC/USDC ni de pares volatiles. Es inferencia, no algo que el diga.",
+ "accion": "No da llamada de trading: solo su prevision macro (sin subida en octubre, una subida en diciembre, probable pausa en 2027) y pide no ser determinista sobre subidas posteriores.",
+ "para_mis_lps": "No aplica directamente: no habla de BTC ni de rangos. Implicacion indirecta: rendimientos subiendo hacia las midterms y bajando despues sugiere volatilidad macro elevada hasta noviembre, pero es inferencia, no algo que el diga.",
  "citas": [
-  "This is what a correction would start to look like, right?",
-  "We would expect to start in some of the riskier indices and then slowly work its way down the risk curve until it gets to the S&P 500.",
-  "It's impossible to know if this correction will continue, right? Like it's just one day at a time"
+  "this does in fact feel like deja vu from 2018",
+  "history doesn't always repeat itself, but it certainly does rhyme",
+  "I think one more rate hike is in the cards before the end of the year"
  ],
- "confianza": "baja",
- "cambios_vs_anterior": "La lectura anterior era de BTC (punto de decision sobre 87K, neutral); esta es solo de acciones y sesga a bajista en riesgo macro (correccion de Q4 en marcha en Russell/Dow/Nasdaq) sin dar niveles de BTC, asi que la invalidacion de 87K ya no se confirma ni se actualiza.",
+ "confianza": "media",
+ "cambios_vs_anterior": "Pasa de advertir sobre una correccion de Q4 en renta variable a un video macro sobre el Fed sin llamada direccional; mantiene el patron midterm tipo 2018 (rebote de yields hacia las midterms y caida despues) y la probabilidad de no subida en octubre (~80-84%).",
  "cadencia_dias": 2,
- "actualizado": "2026-10-19T13:57:39+00:00",
+ "actualizado": "2026-10-20T12:12:18+00:00",
  "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-10-18",
+   "fuentes": [
+    "20261018-has-the-q4-equity-correction-finally-arrived.md"
+   ],
+   "titulo": "Has the Q4 Equity Correction Finally Arrived?",
+   "tendencia": "bajista",
+   "horizonte": "semanas",
+   "escenario": "Video solo de renta variable (no habla de BTC en la parte disponible). Dice que una correccion de Q4 del midterm year empezaria justo asi: debilidad primero en los mercados mas sensibles a tipos y de mas riesgo (Russell -11%, Dow -7/8%, Nasdaq -7%, Corea del Sur -24%) y luego baja por la curva de riesgo hasta el S&P 500, que solo esta ~2% bajo maximos. Ve probable que el Fed no suba tipos en octubre (~84,5% de probabilidad), que el 10 anos rebote y siga presionando al Russell, con posible rally hacia las midterms y otra caida despues, como en 2018 y 2022.",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": null,
+    "ma50w": null,
+    "objetivo_correccion": null,
+    "invalidacion": null
+   },
+   "accion": "No da una llamada de trading; advierte que esto es como empezaria una correccion de Q4 en acciones, aunque admite que es imposible saber si continuara y que la estacionalidad funciona ~70% de las veces.",
+   "para_mis_lps": "Sin lectura directa de BTC en este video; solo implica contexto de riesgo en activos de riesgo (posible caida de acciones que podria arrastrar a cripto y subir la volatilidad), asi que conviene no estrechar demasiado rangos de BTC/USDC ni de pares volatiles. Es inferencia, no algo que el diga.",
+   "citas": [
+    "This is what a correction would start to look like, right?",
+    "We would expect to start in some of the riskier indices and then slowly work its way down the risk curve until it gets to the S&P 500.",
+    "It's impossible to know if this correction will continue, right? Like it's just one day at a time"
+   ],
+   "confianza": "baja",
+   "cambios_vs_anterior": "La lectura anterior era de BTC (punto de decision sobre 87K, neutral); esta es solo de acciones y sesga a bajista en riesgo macro (correccion de Q4 en marcha en Russell/Dow/Nasdaq) sin dar niveles de BTC, asi que la invalidacion de 87K ya no se confirma ni se actualiza.",
+   "cadencia_dias": 2,
+   "actualizado": "2026-10-19T13:57:39+00:00"
+  },
   {
    "agente": "cowen",
    "nombre": "Benjamin Cowen",
@@ -373,37 +404,6 @@
    "cambios_vs_anterior": "Cambio de foco: frente a la lectura anterior centrada en liquidez neta global y BTC/oro, aquí Cowen no menciona Bitcoin ni el oro en absoluto y se dedica por completo al mercado laboral y la probabilidad de subida de tipos de la Fed (ahora 60%) y del Banco de Japón, reforzando su tesis de inflación persistente y presión alcista sobre el tramo largo de la curva.",
    "cadencia_dias": 2,
    "actualizado": "2026-09-05T10:56:09+00:00"
-  },
-  {
-   "agente": "cowen",
-   "nombre": "Benjamin Cowen",
-   "fuente_fecha": "2026-09-02",
-   "fuentes": [
-    "20260901-gold-the-next-big-move.md",
-    "20260902-bitcoin-the-liquidity-paradox.md"
-   ],
-   "titulo": "Bitcoin: The Liquidity Paradox",
-   "tendencia": "neutral",
-   "horizonte": "meses",
-   "escenario": "Cowen explica que Bitcoin no está en máximos históricos, aunque M2 y la bolsa sí lo están, porque BTC responde a la liquidez neta global (balances de Fed, BoJ, PBoC, BoE, ECB menos reverse repo y TGA), que ronda los 25 billones frente a los ~30 billones de 2021-22, un déficit de 5 billones; por eso BTC 'topó por apatía y no por euforia' y su valoración frente al S&P 500 está en niveles de 2021/inicios de 2022. Sobre el oro (tras corregir ~30% desde el techo de enero y rebotar ~20%), espera debilidad de corto plazo (2-4 semanas) por una subida temporal del dólar ligada a posibles subidas de tipos, con 65% de probabilidad de un 'higher low' a mediados de sept/oct frente a 35% de un 'lower low', manteniendo su tesis de que el techo secular del oro aún no ha llegado.",
-   "risk_metric": null,
-   "niveles": {
-    "ma200w": null,
-    "bmsb": null,
-    "ma50w": null,
-    "objetivo_correccion": null,
-    "invalidacion": null
-   },
-   "accion": "No da una acción de trading explícita sobre BTC en este vídeo (es explicativo del framework de liquidez); sobre el oro no habla de comprar/vender, solo da probabilidades para el próximo mínimo (65% higher low / 35% lower low) antes de un nuevo tramo alcista.",
-   "para_mis_lps": "No aplica directamente a niveles de rango: estos dos vídeos no dan precios de BTC ni de la 50W/200W/BMSB; el mensaje macro es que mientras la liquidez neta global se mantenga estancada (~25 billones), Cowen espera que BTC siga infraponderando frente a otros activos, lo que sugiere cautela con rangos sesgados a favor de una subida fuerte de BTC/USDC mientras no cambie esa condición.",
-   "citas": [
-    "I'd put about a 65% chance that it's a higher low and about a 35% chance that it's a lower low.",
-    "the reason why Bitcoin has been stuck in traffic on struggle street for the last 5 years, arguably, is because net liquidity remains low."
-   ],
-   "confianza": "media",
-   "cambios_vs_anterior": "No reafirma ni invalida el sesgo bajista de la 50W ni el objetivo de mínimo de ciclo en Q4; en vez de eso, añade una explicación macro (liquidez neta global, no M2) de por qué BTC ha infraponderado, sin dar nuevos niveles de precio para BTC.",
-   "cadencia_dias": 2,
-   "actualizado": "2026-09-03T11:44:03+00:00"
   }
  ]
 }
