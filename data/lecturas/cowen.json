@@ -1,34 +1,65 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-10-19",
+ "fuente_fecha": "2026-10-21",
  "fuentes": [
-  "20261019-what-will-the-federal-reserve-do-next.md"
+  "20261021-bitcoin-holds-above-83k.md"
  ],
- "titulo": "What will the Federal Reserve Do Next?",
+ "titulo": "Bitcoin Holds Above $83k",
  "tendencia": "neutral",
- "horizonte": "meses",
- "escenario": "Video puramente macro, sin BTC. Tipos al 4% tras la subida de septiembre; ve probable que el Fed NO suba en octubre (~80-84% de probabilidad de mantener), que el 2 anos (4,76%, llego a 4,9%) y el largo rebote hasta las midterms y luego caigan, y que el Fed suba una vez mas en diciembre (a 4,25%), igualando fed funds y 2 anos y quedando en pausa en 2027. Lo plantea como 'deja vu' de 2018 (subida en septiembre, pausa en noviembre, subida en diciembre) y avisa de que el mercado (dos subidas mas en 2027) suele equivocarse.",
+ "horizonte": "semanas",
+ "escenario": "BTC cotiza en torno a 84.000 y los alcistas defienden 83K (el máximo de mayo): hubo un solo cierre semanal por debajo y hacen falta varios para que los bajistas recuperen el control, así que la carga de la prueba sigue en los bajistas mientras se mantenga por encima. En diario rebota en la media de 50 días (~81,7K). Espera más subida de la dominancia BTC (cerca del 61%) por una política monetaria probablemente más restrictiva, con el FOMC como siguiente catalizador en una semana.",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
   "bmsb": null,
   "ma50w": null,
   "objetivo_correccion": null,
-  "invalidacion": null
+  "invalidacion": 83000
  },
- "accion": "No da llamada de trading: solo su prevision macro (sin subida en octubre, una subida en diciembre, probable pausa en 2027) y pide no ser determinista sobre subidas posteriores.",
- "para_mis_lps": "No aplica directamente: no habla de BTC ni de rangos. Implicacion indirecta: rendimientos subiendo hacia las midterms y bajando despues sugiere volatilidad macro elevada hasta noviembre, pero es inferencia, no algo que el diga.",
+ "accion": "No da llamada de compra/venta: pide respetar el gráfico y considera que mientras BTC esté sobre 83K la carga de la prueba es de los bajistas; sigue alcista en dominancia BTC.",
+ "para_mis_lps": "Para BTC/USDC, 83K (cierres semanales) y la media de 50 días (~81,7K) son sus referencias de soporte, y 83K es la invalidación del sesgo; no da rangos ni objetivos de precio al alza. En pares con altcoins, su sesgo de dominancia BTC al alza implica un mayor riesgo de ETH y alts frente a BTC.",
  "citas": [
-  "this does in fact feel like deja vu from 2018",
-  "history doesn't always repeat itself, but it certainly does rhyme",
-  "I think one more rate hike is in the cards before the end of the year"
+  "one weekly close is not really sufficient. I think you need multiple weekly closes below it in order to give some semblance of the bears regaining control",
+  "Bitcoin dominance is now approaching 61%. I think Bitcoin dominance will likely continue to go up.",
+  "as long as Bitcoin's above 83K, then the burden of proof remains on the bears and not the bulls."
  ],
  "confianza": "media",
- "cambios_vs_anterior": "Pasa de advertir sobre una correccion de Q4 en renta variable a un video macro sobre el Fed sin llamada direccional; mantiene el patron midterm tipo 2018 (rebote de yields hacia las midterms y caida despues) y la probabilidad de no subida en octubre (~80-84%).",
+ "cambios_vs_anterior": "La lectura anterior era puramente macro, sin BTC; ahora añade el nivel técnico de 83K (máximo de mayo) como línea que defienden los alcistas, la media de 50 días en ~81,7K y la dominancia BTC al alza cerca del 61%, y mantiene el sesgo macro de política más restrictiva con el FOMC en una semana.",
  "cadencia_dias": 2,
- "actualizado": "2026-10-20T12:12:18+00:00",
+ "actualizado": "2026-10-22T12:26:25+00:00",
  "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-10-19",
+   "fuentes": [
+    "20261019-what-will-the-federal-reserve-do-next.md"
+   ],
+   "titulo": "What will the Federal Reserve Do Next?",
+   "tendencia": "neutral",
+   "horizonte": "meses",
+   "escenario": "Video puramente macro, sin BTC. Tipos al 4% tras la subida de septiembre; ve probable que el Fed NO suba en octubre (~80-84% de probabilidad de mantener), que el 2 anos (4,76%, llego a 4,9%) y el largo rebote hasta las midterms y luego caigan, y que el Fed suba una vez mas en diciembre (a 4,25%), igualando fed funds y 2 anos y quedando en pausa en 2027. Lo plantea como 'deja vu' de 2018 (subida en septiembre, pausa en noviembre, subida en diciembre) y avisa de que el mercado (dos subidas mas en 2027) suele equivocarse.",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": null,
+    "ma50w": null,
+    "objetivo_correccion": null,
+    "invalidacion": null
+   },
+   "accion": "No da llamada de trading: solo su prevision macro (sin subida en octubre, una subida en diciembre, probable pausa en 2027) y pide no ser determinista sobre subidas posteriores.",
+   "para_mis_lps": "No aplica directamente: no habla de BTC ni de rangos. Implicacion indirecta: rendimientos subiendo hacia las midterms y bajando despues sugiere volatilidad macro elevada hasta noviembre, pero es inferencia, no algo que el diga.",
+   "citas": [
+    "this does in fact feel like deja vu from 2018",
+    "history doesn't always repeat itself, but it certainly does rhyme",
+    "I think one more rate hike is in the cards before the end of the year"
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "Pasa de advertir sobre una correccion de Q4 en renta variable a un video macro sobre el Fed sin llamada direccional; mantiene el patron midterm tipo 2018 (rebote de yields hacia las midterms y caida despues) y la probabilidad de no subida en octubre (~80-84%).",
+   "cadencia_dias": 2,
+   "actualizado": "2026-10-20T12:12:18+00:00"
+  },
   {
    "agente": "cowen",
    "nombre": "Benjamin Cowen",
@@ -372,38 +403,6 @@
    "cambios_vs_anterior": "La lectura anterior (04-09) era puramente macro/Fed sin mencionar a Bitcoin; ahora da una lectura directa de precio: BTC cerro exactamente en la MA50 semanal, un punto que considera decisivo para saber si el mercado bajista termina o si aun queda un ultimo tramo bajista en el cuarto trimestre.",
    "cadencia_dias": 2,
    "actualizado": "2026-09-07T13:01:55+00:00"
-  },
-  {
-   "agente": "cowen",
-   "nombre": "Benjamin Cowen",
-   "fuente_fecha": "2026-09-04",
-   "fuentes": [
-    "20260904-labor-market-remains-hot.md"
-   ],
-   "titulo": "Labor Market Remains Hot",
-   "tendencia": "neutral",
-   "horizonte": "semanas",
-   "escenario": "Cowen analiza el mercado laboral y la Fed sin referirse directamente a Bitcoin: el informe de empleo salió 'caliente', la probabilidad de subida de tipos en la reunión del 16 de septiembre subió de ~50% a 60% tras revisarse al alza el non-farm payroll (variación interanual de 116.000 en diciembre 2025 a 603.000 ahora) y con desempleo en 4,1% y peticiones iniciales de paro en 206.000 (lejos del umbral de 300.000 que asociaría a recesión). Espera que la inflación se mantenga persistente por el petróleo (~90$/barril), el gasto de capital en IA (inflacionario a corto plazo, deflacionario a largo) y el conflicto en Oriente Medio, lo que junto a un Banco de Japón que probablemente suba tipos en septiembre y diciembre (hasta ~1,5%) y una probable primera subida de tipos de la Fed, seguiría empujando al alza el tramo largo de la curva de tipos (10, 20 y 30 años, este último ya superando su máximo previo de 5,17%).",
-   "risk_metric": null,
-   "niveles": {
-    "ma200w": null,
-    "bmsb": null,
-    "ma50w": null,
-    "objetivo_correccion": null,
-    "invalidacion": null
-   },
-   "accion": "No da ninguna acción ni lectura explícita sobre Bitcoin en este vídeo; se centra en diseccionar datos de empleo, inflación y política de tipos (Fed y BoJ) como inputs macro de fondo.",
-   "para_mis_lps": "No aplica directamente: el vídeo no menciona BTC, risk metric ni niveles técnicos; solo aporta contexto macro (posible subida de tipos Fed/BoJ y presión al alza en yields largos) que, según su marco habitual, tiende a ser un viento en contra para la liquidez y por tanto para activos de riesgo como BTC.",
-   "citas": [
-    "we actually had a relatively hot jobs report today",
-    "the labor market is actually showing signs of being resilient",
-    "I'm leaning more towards in the direction of of a rate hike at this point",
-    "there's just a lot of inflationary forces that... are going to keep the Fed from being able to cut rates anytime soon"
-   ],
-   "confianza": "media",
-   "cambios_vs_anterior": "Cambio de foco: frente a la lectura anterior centrada en liquidez neta global y BTC/oro, aquí Cowen no menciona Bitcoin ni el oro en absoluto y se dedica por completo al mercado laboral y la probabilidad de subida de tipos de la Fed (ahora 60%) y del Banco de Japón, reforzando su tesis de inflación persistente y presión alcista sobre el tramo largo de la curva.",
-   "cadencia_dias": 2,
-   "actualizado": "2026-09-05T10:56:09+00:00"
   }
  ]
 }
