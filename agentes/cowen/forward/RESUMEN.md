@@ -2,6 +2,16 @@
 
 > Postura direccional/de ciclo extraída de sus vídeos, evaluada por precio real (CoinGecko) a 7/30/90d. Lo último arriba. No es asesoramiento financiero.
 
+## 2026-10-22 · Bitcoin Bull Market Support Band
+
+**Sesgo:** pendiente  ·  **Fase:** incierto  ·  **Acción:** —  ·  **Confianza:** baja
+
+- **Tesis:** Pendiente de análisis (sin API key). Rellenar en chat.
+- **Niveles:** —
+- **Resultado (precio real):** sin horizonte cumplido aún
+
+---
+
 ## 2026-10-14 · Inflation Comes in Hot
 
 **Sesgo:** pendiente  ·  **Fase:** incierto  ·  **Acción:** —  ·  **Confianza:** baja
