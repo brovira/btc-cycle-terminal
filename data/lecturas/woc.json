@@ -1,42 +1,81 @@
 {
  "agente": "woc",
  "nombre": "Glassnode · Week On-Chain",
- "fuente_fecha": "2026-10-14",
+ "fuente_fecha": "2026-10-21",
  "fuentes": [
-  "20261014-the-week-onchain-week-41-2026.md"
+  "20261021-swept-and-refilled.md"
  ],
- "titulo": "The Week On-Chain — Boxed In (Week 41, 2026)",
+ "titulo": "Swept and Refilled (The Week On-Chain, Week 42, 2026)",
  "tendencia": "lateral",
  "horizonte": "semanas",
- "escenario": "Bitcoin está 'boxed in': soporte firme debajo (True Market Mean ~$78K, ETF Cost Basis ~$81.5K, bids de Binance en $80K) y mucha oferta encima (cost basis de compradores de 6-12 meses ~$88K y de 1-2 años ~$100K, que ya han rechazado el precio en enero y mayo). A corto plazo pide cautela (ETF vendedores con ~$760M de salidas desde el 7 oct, CPI caliente de 3.7%, decisión de la Fed el 28 oct y midterms el 3 nov); la visión larga es más fuerte (pérdidas de LTH -85% desde el pico del 12 ago, Realized Price nunca perdido en este bear, ciclo temprano en recuperación).",
+ "escenario": "BTC sigue 'boxed in': el barrido del 15 oct hasta ~$80.1K (hourly close) encontró compradores en los cost basis de ETFs spot ($81.5K) y tesorerías ($80.2K) y los bids de $80K en Binance se rellenaron. Encima, el cost basis de 6-12 meses (~$86.7K), el bloque de asks ($86.5K-$87.5K) y los mayores clusters de liquidaciones ($85K y $87K) forman techo. El profit taking se ha ralentizado a ~la mitad y los ETF recuperaron entradas ($653M el 19 oct) pero con volumen fino.",
  "rango_esperado": {
-  "bajo": 78000,
-  "alto": 88000,
-  "base": "suelo en la True Market Mean ~$78K (tras perder el cluster de liquidaciones <$80K y el ETF Cost Basis $81.5K); techo en el cost basis de 6-12 meses ~$88K, donde está además el otro cluster de liquidaciones. Zona de soporte inmediata $80K-$81.5K."
+  "bajo": 77600,
+  "alto": 87500,
+  "base": "suelo en $80K-$81.5K (cost basis de tesorerías y ETFs; si se pierde con cierre diario, True Market Mean ~$77.6K); techo en la zona $85K-$87.5K (cost basis 6-12 meses ~$86.7K, asks y clusters de liquidación)"
  },
- "regimen_leverage": "Colchón de liquidaciones adelgazado más de una quinta parte en una semana; clusters de tamaño similar justo bajo $80K y cerca de $88K. Euforia de altcoins alta moneda a moneda (top quintil desde 28 sep) pero baja a nivel global: apalancamiento concentrado en bolsillos.",
+ "regimen_leverage": "Altcoin froth y funding enfriados: <5% de altcoins con funding por encima de neutral (vs ~25% a finales de sept); OI solo ~5% bajo el pico de octubre a precios constantes; sin nuevo crowding.",
  "accion_lp": null,
  "niveles": {
   "sth_cost_basis": null,
-  "true_market_mean": 78000,
+  "true_market_mean": 77600,
   "realized_price": null,
-  "soporte": 81500,
-  "resistencia": 88000,
+  "soporte": 80000,
+  "resistencia": 87500,
   "sth_menos_1s": null,
   "sth_mas_1s": null
  },
- "accion": "No da recomendación operativa: pide cautela a corto plazo y marca como confirmación un cierre diario sobre $88K con vuelta de flujos de ETF, e invalidación la ruptura de $80K / $81.5K hacia la True Market Mean ~$78K.",
- "para_mis_lps": "No habla de LPs. Su caja implícita es ~$78K-$88K, con soporte denso en $80K-$81.5K y techo en $88K; un rango concentrado BTC/USDC dentro de ese canal es coherente, con riesgo de cola bajista si se rompe $80K y de squeeze hasta $88K. Para pares volátiles/alts avisa de apalancamiento concentrado, expuesto si BTC cae hacia $80K.",
+ "accion": "No da recomendación operativa: marca como confirmación un cierre diario sobre $87.5K con entradas de ETF repetidas y volumen creciente, e invalidación un cierre diario bajo $80K (apunta a la True Market Mean ~$77.6K).",
+ "para_mis_lps": "Su lectura describe un rango lateral con suelo ~$80K-$81.5K y techo ~$85K-$87.5K, que sirve de referencia para un rango BTC/USDC; no da recomendación de LP y no cubre pares volátiles salvo notar que el funding de altcoins está frío. Catalizadores de volatilidad: Fed 28 oct y lista MSCI 11 nov.",
  "citas": [
-  "Until a daily close above $88K, each advance meets holders able to exit near break-even.",
-  "A daily close below $81.5K would put the average ETF holder at a loss and remove the nearest on-chain support.",
-  "Bitcoin is boxed in: firm support below, heavy supply above."
+  "BTC is still boxed in.",
+  "A daily close below $80K puts the average ETF and treasury holder at a loss",
+  "a daily close above $87.5K with ETF inflows repeating on rising volume would show demand absorbing the supply."
  ],
- "confianza": "media",
- "cambios_vs_anterior": "Pasa de tendencia alcista temprana con test del muro $85K-$85.5K a lateral 'boxed in': el breakout sobre $85K (con ~$3B de ETF 21 sep-6 oct) no se sostuvo, los ETF vuelven a vender, la resistencia sube a $88K y el soporte práctico sube a $80K-$81.5K (ETF Cost Basis), con la True Market Mean ~$78K como invalidación.",
+ "confianza": "alta",
+ "cambios_vs_anterior": "Mismo marco 'boxed in' pero el techo baja de $88K a ~$86.7K-$87.5K (cost basis 6-12m $86.7K), el soporte se confirma con el barrido a $80.1K el 15 oct, hay entradas ETF ($653M) en vez de salidas y el profit taking se ralentiza; se suma la fecha MSCI del 11 nov.",
  "cadencia_dias": 7,
- "actualizado": "2026-10-16T11:55:35+00:00",
+ "actualizado": "2026-10-23T12:07:45+00:00",
  "historial": [
+  {
+   "agente": "woc",
+   "nombre": "Glassnode · Week On-Chain",
+   "fuente_fecha": "2026-10-14",
+   "fuentes": [
+    "20261014-the-week-onchain-week-41-2026.md"
+   ],
+   "titulo": "The Week On-Chain — Boxed In (Week 41, 2026)",
+   "tendencia": "lateral",
+   "horizonte": "semanas",
+   "escenario": "Bitcoin está 'boxed in': soporte firme debajo (True Market Mean ~$78K, ETF Cost Basis ~$81.5K, bids de Binance en $80K) y mucha oferta encima (cost basis de compradores de 6-12 meses ~$88K y de 1-2 años ~$100K, que ya han rechazado el precio en enero y mayo). A corto plazo pide cautela (ETF vendedores con ~$760M de salidas desde el 7 oct, CPI caliente de 3.7%, decisión de la Fed el 28 oct y midterms el 3 nov); la visión larga es más fuerte (pérdidas de LTH -85% desde el pico del 12 ago, Realized Price nunca perdido en este bear, ciclo temprano en recuperación).",
+   "rango_esperado": {
+    "bajo": 78000,
+    "alto": 88000,
+    "base": "suelo en la True Market Mean ~$78K (tras perder el cluster de liquidaciones <$80K y el ETF Cost Basis $81.5K); techo en el cost basis de 6-12 meses ~$88K, donde está además el otro cluster de liquidaciones. Zona de soporte inmediata $80K-$81.5K."
+   },
+   "regimen_leverage": "Colchón de liquidaciones adelgazado más de una quinta parte en una semana; clusters de tamaño similar justo bajo $80K y cerca de $88K. Euforia de altcoins alta moneda a moneda (top quintil desde 28 sep) pero baja a nivel global: apalancamiento concentrado en bolsillos.",
+   "accion_lp": null,
+   "niveles": {
+    "sth_cost_basis": null,
+    "true_market_mean": 78000,
+    "realized_price": null,
+    "soporte": 81500,
+    "resistencia": 88000,
+    "sth_menos_1s": null,
+    "sth_mas_1s": null
+   },
+   "accion": "No da recomendación operativa: pide cautela a corto plazo y marca como confirmación un cierre diario sobre $88K con vuelta de flujos de ETF, e invalidación la ruptura de $80K / $81.5K hacia la True Market Mean ~$78K.",
+   "para_mis_lps": "No habla de LPs. Su caja implícita es ~$78K-$88K, con soporte denso en $80K-$81.5K y techo en $88K; un rango concentrado BTC/USDC dentro de ese canal es coherente, con riesgo de cola bajista si se rompe $80K y de squeeze hasta $88K. Para pares volátiles/alts avisa de apalancamiento concentrado, expuesto si BTC cae hacia $80K.",
+   "citas": [
+    "Until a daily close above $88K, each advance meets holders able to exit near break-even.",
+    "A daily close below $81.5K would put the average ETF holder at a loss and remove the nearest on-chain support.",
+    "Bitcoin is boxed in: firm support below, heavy supply above."
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "Pasa de tendencia alcista temprana con test del muro $85K-$85.5K a lateral 'boxed in': el breakout sobre $85K (con ~$3B de ETF 21 sep-6 oct) no se sostuvo, los ETF vuelven a vender, la resistencia sube a $88K y el soporte práctico sube a $80K-$81.5K (ETF Cost Basis), con la True Market Mean ~$78K como invalidación.",
+   "cadencia_dias": 7,
+   "actualizado": "2026-10-16T11:55:35+00:00"
+  },
   {
    "agente": "woc",
    "nombre": "Glassnode · Week On-Chain",
