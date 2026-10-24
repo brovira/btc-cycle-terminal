@@ -1,14 +1,14 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-10-22",
+ "fuente_fecha": "2026-10-24",
  "fuentes": [
-  "20261022-bitcoin-bull-market-support-band.md"
+  "20261024-bitcoin-a-precarious-position.md"
  ],
- "titulo": "Bitcoin Bull Market Support Band",
- "tendencia": "neutral",
+ "titulo": "Bitcoin: A Precarious Position",
+ "tendencia": "bajista",
  "horizonte": "semanas",
- "escenario": "BTC ha vuelto a perder los 82K tras rebotar en la media de 50 días; mientras esté bajo 83K la carga de la prueba empieza a volver hacia los alcistas. Si pierde 83K, el siguiente punto es la bull market support band (21W EMA), en la zona baja-media de los 70K, y por debajo un retest de los mínimos del rango. Ve un posible máximo local entre el 21 de octubre y el 3 de noviembre (midterms) y un Q4 débil si cae la bolsa; el análisis técnico es alcista, pero el macro para acciones y energía es bajista.",
+ "escenario": "BTC está en una posición precaria: acaba de cerrar diario bajo la media de 50 días y ya hubo un cierre semanal bajo 83K. Si hay un segundo cierre semanal bajo 83K, la carga de la prueba pasa a los alcistas y el 'fake out' del breakout queda prácticamente confirmado, lo que llevaría a BTC a la bull market support band (S&P, Nasdaq, Dow, Total2 y Total3 ya están en la suya). Su guion bajista: FOMC el 28-oct sin subir tipos, PCE caliente el 29-oct, el 10 años sube hacia ~5,3%, caen las acciones y BTC, y se forma un suelo de Q4 tras las midterms (3-nov), con un posible máximo local entre el 21-oct y el 3-nov.",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
@@ -17,18 +17,49 @@
   "objetivo_correccion": null,
   "invalidacion": 83000
  },
- "accion": "No da llamada de compra/venta: vigilar el cierre diario bajo la media de 50 días como primera señal de que se va a la 21W EMA, y un segundo cierre semanal bajo 83K devolvería la carga de la prueba a los alcistas.",
- "para_mis_lps": "Sugiere tener en cuenta un posible retest de la BMSB (low-mid 70s) en las próximas semanas, con 83K y la media de 50 días (~81-82K) como niveles clave; no da rangos concretos para LPs. Una dominancia BTC al alza (altcoins sangrando contra BTC) penaliza los pares volátiles frente a BTC/USDC.",
+ "accion": "No da orden de compra/venta: sigue el checklist paso a paso (segundo cierre semanal bajo 83K, 50 días como resistencia) y deja que el mercado le demuestre que se equivoca con cierres semanales por encima de 83K.",
+ "para_mis_lps": "Sesgo de posible bajada hacia la BMSB (cuyo valor numérico no da en este texto) y de rotura del rango bajo 83K: un rango concentrado BTC/USDC con techo cerca de 83K tiene riesgo de quedar fuera por abajo, y conviene vigilar el cierre semanal y el FOMC/PCE del 28-29 oct. Sin cifras exactas de la banda, no puedo fijar un rango concreto.",
  "citas": [
-  "if we're losing 83k here then the next obvious stop is just the bull market support band, right? And that's going to be like the low to mid 70s.",
-  "A close below the 50-day would be your first sign that the 21-week EMA is in play.",
-  "Bitcoin dominance will likely go up because we're going back to tighter monetary policy"
+  "I have said I thought two weekly closes below 83K would sort of shift the burden back to the bulls.",
+  "My guess is that Bitcoin will also head to the bull market sport band before too long.",
+  "if we're back at 83K, above 83K, then this checklist becomes null and void"
  ],
  "confianza": "media",
- "cambios_vs_anterior": "Sesgo más cauteloso: BTC cae de ~84K a menos de 82K y ahora marca la BMSB (low-mid 70s) como siguiente parada si se pierden 83K; la carga de la prueba sigue en los bajistas solo mientras haya cierre sobre 83K, y mantiene la dominancia BTC al alza.",
+ "cambios_vs_anterior": "Endurece el sesgo: ya hay un primer cierre semanal bajo 83K y un cierre diario bajo la media de 50 días, y añade un guion macro concreto (FOMC 28-oct, PCE 29-oct, 10 años ~5,3%) hacia la BMSB; la invalidación sigue en 83K.",
  "cadencia_dias": 2,
- "actualizado": "2026-10-23T12:07:26+00:00",
+ "actualizado": "2026-10-24T11:38:45+00:00",
  "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-10-22",
+   "fuentes": [
+    "20261022-bitcoin-bull-market-support-band.md"
+   ],
+   "titulo": "Bitcoin Bull Market Support Band",
+   "tendencia": "neutral",
+   "horizonte": "semanas",
+   "escenario": "BTC ha vuelto a perder los 82K tras rebotar en la media de 50 días; mientras esté bajo 83K la carga de la prueba empieza a volver hacia los alcistas. Si pierde 83K, el siguiente punto es la bull market support band (21W EMA), en la zona baja-media de los 70K, y por debajo un retest de los mínimos del rango. Ve un posible máximo local entre el 21 de octubre y el 3 de noviembre (midterms) y un Q4 débil si cae la bolsa; el análisis técnico es alcista, pero el macro para acciones y energía es bajista.",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": null,
+    "ma50w": null,
+    "objetivo_correccion": null,
+    "invalidacion": 83000
+   },
+   "accion": "No da llamada de compra/venta: vigilar el cierre diario bajo la media de 50 días como primera señal de que se va a la 21W EMA, y un segundo cierre semanal bajo 83K devolvería la carga de la prueba a los alcistas.",
+   "para_mis_lps": "Sugiere tener en cuenta un posible retest de la BMSB (low-mid 70s) en las próximas semanas, con 83K y la media de 50 días (~81-82K) como niveles clave; no da rangos concretos para LPs. Una dominancia BTC al alza (altcoins sangrando contra BTC) penaliza los pares volátiles frente a BTC/USDC.",
+   "citas": [
+    "if we're losing 83k here then the next obvious stop is just the bull market support band, right? And that's going to be like the low to mid 70s.",
+    "A close below the 50-day would be your first sign that the 21-week EMA is in play.",
+    "Bitcoin dominance will likely go up because we're going back to tighter monetary policy"
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "Sesgo más cauteloso: BTC cae de ~84K a menos de 82K y ahora marca la BMSB (low-mid 70s) como siguiente parada si se pierden 83K; la carga de la prueba sigue en los bajistas solo mientras haya cierre sobre 83K, y mantiene la dominancia BTC al alza.",
+   "cadencia_dias": 2,
+   "actualizado": "2026-10-23T12:07:26+00:00"
+  },
   {
    "agente": "cowen",
    "nombre": "Benjamin Cowen",
@@ -372,37 +403,6 @@
    "cambios_vs_anterior": "Deja de centrarse en el escenario concreto del golden cross y su corrección del 8-15%, y pasa a un tally sistemático de muchos indicadores frente a ciclos previos; el resultado es un empate 3-3 sin conclusión clara, más neutral y menos direccional que la lectura anterior.",
    "cadencia_dias": 2,
    "actualizado": "2026-09-10T11:50:11+00:00"
-  },
-  {
-   "agente": "cowen",
-   "nombre": "Benjamin Cowen",
-   "fuente_fecha": "2026-09-08",
-   "fuentes": [
-    "20260908-bitcoin-golden-cross.md"
-   ],
-   "titulo": "Bitcoin Golden Cross",
-   "tendencia": "neutral",
-   "horizonte": "semanas",
-   "escenario": "Bitcoin acaba de producir un golden cross (media de 50 dias cruzando por encima de la de 200 dias), y segun los precedentes de 2014, 2015, 2019 y 2023 este cruce suele venir acompanado de una caida inicial del 8-15% desde el maximo previo antes de resolverse. Una caida del 10-12% llevaria el precio a la zona de 72.000$ y una del 14-15% a unos 70.000$, niveles similares a los de 2019 y 2023; lo decisivo no es ese dump inicial sino si el rebote posterior marca un higher high (caso alcista, como 2019/2023) o un lower high con rechazo en la media de 50 semanas (caso bajista, como 2014/2015, que llevaria a una caida hacia el cuarto trimestre).",
-   "risk_metric": null,
-   "niveles": {
-    "ma200w": null,
-    "bmsb": null,
-    "ma50w": null,
-    "objetivo_correccion": null,
-    "invalidacion": null
-   },
-   "accion": "No toma posicion; se limita a vigilar si tras el dump post-golden-cross el rebote forma un higher high (bull thesis intacta) o un lower high con rechazo en la media de 50 semanas (bull thesis en peligro).",
-   "para_mis_lps": "No da niveles de precio semanales concretos en este video (solo referencias aproximadas de 70.000-72.000$ como zona de dump post-golden-cross); no aplica para calibrar un rango de LP salvo como aviso de volatilidad a corto plazo tras el cruce.",
-   "citas": [
-    "what normally happens regardless of the ultimate direction is that Bitcoin will sell off typically from the local high on a golden cross",
-    "the bull thesis fades when the rally after the golden cross dump is over. When that resolves to a lower high, that's when the bullcase is in danger",
-    "if Bitcoin drops here and then rallies back up to the 50week moving average and breaks through it and sets a higher high, then you have a strong case that the bare market low is in"
-   ],
-   "confianza": "media",
-   "cambios_vs_anterior": "Cambia el foco: ya no habla del posible cierre semanal sobre la media de 50 semanas ni de NFP/Fed, sino de un golden cross diario recien ocurrido que historicamente trae un dump del 10-15% (hacia 70.000-72.000$) antes de definir si hay higher high (alcista) o lower high (bajista).",
-   "cadencia_dias": 2,
-   "actualizado": "2026-09-09T11:51:52+00:00"
   }
  ]
 }
