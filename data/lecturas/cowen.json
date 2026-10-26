@@ -1,34 +1,65 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-10-24",
+ "fuente_fecha": "2026-10-25",
  "fuentes": [
-  "20261024-bitcoin-a-precarious-position.md"
+  "20261025-bitcoin-bears-regaining-control.md"
  ],
- "titulo": "Bitcoin: A Precarious Position",
+ "titulo": "Bitcoin: Bears Regaining Control",
  "tendencia": "bajista",
  "horizonte": "semanas",
- "escenario": "BTC está en una posición precaria: acaba de cerrar diario bajo la media de 50 días y ya hubo un cierre semanal bajo 83K. Si hay un segundo cierre semanal bajo 83K, la carga de la prueba pasa a los alcistas y el 'fake out' del breakout queda prácticamente confirmado, lo que llevaría a BTC a la bull market support band (S&P, Nasdaq, Dow, Total2 y Total3 ya están en la suya). Su guion bajista: FOMC el 28-oct sin subir tipos, PCE caliente el 29-oct, el 10 años sube hacia ~5,3%, caen las acciones y BTC, y se forma un suelo de Q4 tras las midterms (3-nov), con un posible máximo local entre el 21-oct y el 3-nov.",
+ "escenario": "BTC (~80K) ya cerró semanalmente bajo 83K (82.042 la semana pasada, 82.179 la anterior al cierre de hoy); si el cierre de hoy se confirma serían dos cierres semanales bajo 83K, lo que apunta a un 'fake out' del breakout sobre el máximo de mayo y a una caída a la bull market support band (72K-76K), como ya hicieron S&P, Nasdaq, Dow, Russell, ETH, Total2, Total3 y MicroStrategy tras cerrar bajo la media de 50 días. Históricamente (2014, 2018, 2022) el último tramo bajista llegó después de las midterms (3-nov), así que no descarta un suelo de Q4; a largo plazo sigue muy alcista.",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
-  "bmsb": null,
+  "bmsb": 76000,
   "ma50w": null,
-  "objetivo_correccion": null,
+  "objetivo_correccion": 72000,
   "invalidacion": 83000
  },
- "accion": "No da orden de compra/venta: sigue el checklist paso a paso (segundo cierre semanal bajo 83K, 50 días como resistencia) y deja que el mercado le demuestre que se equivoca con cierres semanales por encima de 83K.",
- "para_mis_lps": "Sesgo de posible bajada hacia la BMSB (cuyo valor numérico no da en este texto) y de rotura del rango bajo 83K: un rango concentrado BTC/USDC con techo cerca de 83K tiene riesgo de quedar fuera por abajo, y conviene vigilar el cierre semanal y el FOMC/PCE del 28-29 oct. Sin cifras exactas de la banda, no puedo fijar un rango concreto.",
+ "accion": "No da orden de compra/venta: mantiene su estrategia de DCA en la segunda mitad del año de midterms (compró algo en julio) y vigila el segundo cierre semanal bajo 83K; su temor es un camino tipo plata 2011 con nuevos mínimos en 2027-2028.",
+ "para_mis_lps": "Su lectura sugiere que el rango 72K-76K (BMSB) es el objetivo táctico a la baja y 83K la zona de invalidación, por lo que un LP concentrado BTC/USDC por encima de ~83K tendría alto riesgo de quedar fuera de rango; no da rangos de liquidez explícitos, es inferencia de sus niveles.",
  "citas": [
-  "I have said I thought two weekly closes below 83K would sort of shift the burden back to the bulls.",
-  "My guess is that Bitcoin will also head to the bull market sport band before too long.",
-  "if we're back at 83K, above 83K, then this checklist becomes null and void"
+  "a weekly close below 83K would be the shift of considering the bears being back in control, but two weekly closes would more or less confirm it.",
+  "the bull market support band for Bitcoin currently ranges from around 76K to about 72.",
+  "I think DCA is probably the best way to go."
  ],
- "confianza": "media",
- "cambios_vs_anterior": "Endurece el sesgo: ya hay un primer cierre semanal bajo 83K y un cierre diario bajo la media de 50 días, y añade un guion macro concreto (FOMC 28-oct, PCE 29-oct, 10 años ~5,3%) hacia la BMSB; la invalidación sigue en 83K.",
+ "confianza": "alta",
+ "cambios_vs_anterior": "Se endurece: el segundo cierre semanal bajo 83K ya está prácticamente hecho (82.179K vs 82.042K previo), precio ~80K, y concreta la BMSB en 72K-76K; añade que el DCA sigue siendo su estrategia y el escenario de caída de 60K como señal de alarma.",
  "cadencia_dias": 2,
- "actualizado": "2026-10-24T11:38:45+00:00",
+ "actualizado": "2026-10-26T13:34:50+00:00",
  "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-10-24",
+   "fuentes": [
+    "20261024-bitcoin-a-precarious-position.md"
+   ],
+   "titulo": "Bitcoin: A Precarious Position",
+   "tendencia": "bajista",
+   "horizonte": "semanas",
+   "escenario": "BTC está en una posición precaria: acaba de cerrar diario bajo la media de 50 días y ya hubo un cierre semanal bajo 83K. Si hay un segundo cierre semanal bajo 83K, la carga de la prueba pasa a los alcistas y el 'fake out' del breakout queda prácticamente confirmado, lo que llevaría a BTC a la bull market support band (S&P, Nasdaq, Dow, Total2 y Total3 ya están en la suya). Su guion bajista: FOMC el 28-oct sin subir tipos, PCE caliente el 29-oct, el 10 años sube hacia ~5,3%, caen las acciones y BTC, y se forma un suelo de Q4 tras las midterms (3-nov), con un posible máximo local entre el 21-oct y el 3-nov.",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": null,
+    "ma50w": null,
+    "objetivo_correccion": null,
+    "invalidacion": 83000
+   },
+   "accion": "No da orden de compra/venta: sigue el checklist paso a paso (segundo cierre semanal bajo 83K, 50 días como resistencia) y deja que el mercado le demuestre que se equivoca con cierres semanales por encima de 83K.",
+   "para_mis_lps": "Sesgo de posible bajada hacia la BMSB (cuyo valor numérico no da en este texto) y de rotura del rango bajo 83K: un rango concentrado BTC/USDC con techo cerca de 83K tiene riesgo de quedar fuera por abajo, y conviene vigilar el cierre semanal y el FOMC/PCE del 28-29 oct. Sin cifras exactas de la banda, no puedo fijar un rango concreto.",
+   "citas": [
+    "I have said I thought two weekly closes below 83K would sort of shift the burden back to the bulls.",
+    "My guess is that Bitcoin will also head to the bull market sport band before too long.",
+    "if we're back at 83K, above 83K, then this checklist becomes null and void"
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "Endurece el sesgo: ya hay un primer cierre semanal bajo 83K y un cierre diario bajo la media de 50 días, y añade un guion macro concreto (FOMC 28-oct, PCE 29-oct, 10 años ~5,3%) hacia la BMSB; la invalidación sigue en 83K.",
+   "cadencia_dias": 2,
+   "actualizado": "2026-10-24T11:38:45+00:00"
+  },
   {
    "agente": "cowen",
    "nombre": "Benjamin Cowen",
@@ -371,38 +402,6 @@
    "cambios_vs_anterior": "Cambia completamente de tema: abandona el marcador on-chain 3-3 de la lectura anterior y pasa a un análisis puramente macro sobre la Fed y la curva de tipos, marcando el FOMC de septiembre (probabilidad de subida ~50/60%) como el próximo catalizador clave de volatilidad.",
    "cadencia_dias": 2,
    "actualizado": "2026-09-12T11:15:42+00:00"
-  },
-  {
-   "agente": "cowen",
-   "nombre": "Benjamin Cowen",
-   "fuente_fecha": "2026-09-09",
-   "fuentes": [
-    "20260909-bitcoin-bull-case-vs-bear-case.md"
-   ],
-   "titulo": "Bitcoin: Bull Case Vs. Bear Case",
-   "tendencia": "neutral",
-   "horizonte": "meses",
-   "escenario": "Cowen hace un ejercicio deliberadamente 'sin sesgo' repasando indicador por indicador (PE/risk metric, RSI semanal y mensual, MVRV Z-Score, precio realizado, balance price) y comparando cada uno con los ciclos de 2011, 2014, 2015, 2018 y 2019/2022 para dar un punto a los alcistas o a los bajistas. En el tramo transcrito el marcador queda empatado 3 a 3 (bulls: higher low en el RSI semanal, RSI mensual cerca de niveles de suelo, comisiones de transacción muy bajas; bears: el risk metric/PE multiple no ha bajado de 0.4 como en cada suelo previo, el MVRV Z-Score no ha perforado cero, y el precio no ha caído por debajo del precio realizado ni del balance price, algo que sí ocurrió en todos los suelos anteriores incluido el de 2019 'pandémico').",
-   "risk_metric": null,
-   "niveles": {
-    "ma200w": null,
-    "bmsb": null,
-    "ma50w": null,
-    "objetivo_correccion": null,
-    "invalidacion": null
-   },
-   "accion": "No toma postura direccional; se limita a tabular objetivamente puntos a favor y en contra por indicador, dejando el marcador empatado (3-3) sin concluir el video con un veredicto.",
-   "para_mis_lps": "No aplica directamente: en este análisis no da niveles de precio ni rangos concretos, solo un marco de indicadores en tablas; el mensaje implícito es de incertidumbre no resuelta (empate bulls/bears), lo que sugiere prudencia con rangos amplios en vez de apostar por una dirección hasta que el precio rompa por debajo del realized/balance price (bajista) o evite hacerlo como en la comparación con 2019 (alcista).",
-   "citas": [
-    "we're just going to look at it and we're going to be fair",
-    "This is simply looking at the data. Nothing more, nothing less.",
-    "So now we got two for the bulls and one for the bears. Two two to one.",
-    "objectively that would be a point for the bears"
-   ],
-   "confianza": "media",
-   "cambios_vs_anterior": "Deja de centrarse en el escenario concreto del golden cross y su corrección del 8-15%, y pasa a un tally sistemático de muchos indicadores frente a ciclos previos; el resultado es un empate 3-3 sin conclusión clara, más neutral y menos direccional que la lectura anterior.",
-   "cadencia_dias": 2,
-   "actualizado": "2026-09-10T11:50:11+00:00"
   }
  ]
 }
