@@ -1,34 +1,65 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-10-25",
+ "fuente_fecha": "2026-10-27",
  "fuentes": [
-  "20261025-bitcoin-bears-regaining-control.md"
+  "20261027-gold-dubious-speculation.md"
  ],
- "titulo": "Bitcoin: Bears Regaining Control",
+ "titulo": "Gold: Dubious Speculation",
  "tendencia": "bajista",
- "horizonte": "semanas",
- "escenario": "BTC (~80K) ya cerró semanalmente bajo 83K (82.042 la semana pasada, 82.179 la anterior al cierre de hoy); si el cierre de hoy se confirma serían dos cierres semanales bajo 83K, lo que apunta a un 'fake out' del breakout sobre el máximo de mayo y a una caída a la bull market support band (72K-76K), como ya hicieron S&P, Nasdaq, Dow, Russell, ETH, Total2, Total3 y MicroStrategy tras cerrar bajo la media de 50 días. Históricamente (2014, 2018, 2022) el último tramo bajista llegó después de las midterms (3-nov), así que no descarta un suelo de Q4; a largo plazo sigue muy alcista.",
+ "horizonte": "meses",
+ "escenario": "El vídeo trata de oro (~4.000$), no de BTC. Su marco: muchos mercados forman mínimo en Q1, otro en verano y buscan el mínimo de Q4 (como BTC en años de mercado bajista); el dólar seguirá subiendo y la Fed probablemente subirá tipos una vez más en diciembre (hasta 4,25%, mismo guion que 2018), lo que es viento en contra a corto plazo. Cree que el oro está en proceso de suelo, que puede tardar hasta enero de 2027, y que probablemente suba en 2027. Sobre BTC no da cifras ni niveles en este vídeo.",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
-  "bmsb": 76000,
+  "bmsb": null,
   "ma50w": null,
-  "objetivo_correccion": 72000,
-  "invalidacion": 83000
+  "objetivo_correccion": null,
+  "invalidacion": null
  },
- "accion": "No da orden de compra/venta: mantiene su estrategia de DCA en la segunda mitad del año de midterms (compró algo en julio) y vigila el segundo cierre semanal bajo 83K; su temor es un camino tipo plata 2011 con nuevos mínimos en 2027-2028.",
- "para_mis_lps": "Su lectura sugiere que el rango 72K-76K (BMSB) es el objetivo táctico a la baja y 83K la zona de invalidación, por lo que un LP concentrado BTC/USDC por encima de ~83K tendría alto riesgo de quedar fuera de rango; no da rangos de liquidez explícitos, es inferencia de sus niveles.",
+ "accion": "Para el oro recomienda DCA como mejor estrategia y tener siempre una invalidación definida; no da orden sobre BTC en este vídeo.",
+ "para_mis_lps": "No aplica directamente: el vídeo es de oro. Indirectamente, un dólar al alza y otra subida de tipos en diciembre sugieren mantener el sesgo cauto/bajista de riesgo hasta el posible suelo de Q4, es decir, rangos amplios o con margen a la baja en pares volátiles.",
  "citas": [
-  "a weekly close below 83K would be the shift of considering the bears being back in control, but two weekly closes would more or less confirm it.",
-  "the bull market support band for Bitcoin currently ranges from around 76K to about 72.",
-  "I think DCA is probably the best way to go."
+  "if the dollar is going up, it tends to be bearish for gold. And if the dollar is going down, it tends to be bullish for gold.",
+  "we have a a Q1 low in a bare market and then you have your summer low, your like June July low and then you get your Q4 low.",
+  "for gold, I think DCA is the best strategy."
  ],
- "confianza": "alta",
- "cambios_vs_anterior": "Se endurece: el segundo cierre semanal bajo 83K ya está prácticamente hecho (82.179K vs 82.042K previo), precio ~80K, y concreta la BMSB en 72K-76K; añade que el DCA sigue siendo su estrategia y el escenario de caída de 60K como señal de alarma.",
+ "confianza": "baja",
+ "cambios_vs_anterior": "Vídeo de oro sin datos de BTC: no actualiza niveles (BMSB 72-76K, 83K) pero refuerza el patrón de suelo en Q4 de año bajista/midterm y añade el viento en contra de dólar al alza y una posible subida de tipos en diciembre.",
  "cadencia_dias": 2,
- "actualizado": "2026-10-26T13:34:50+00:00",
+ "actualizado": "2026-10-28T13:32:17+00:00",
  "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-10-25",
+   "fuentes": [
+    "20261025-bitcoin-bears-regaining-control.md"
+   ],
+   "titulo": "Bitcoin: Bears Regaining Control",
+   "tendencia": "bajista",
+   "horizonte": "semanas",
+   "escenario": "BTC (~80K) ya cerró semanalmente bajo 83K (82.042 la semana pasada, 82.179 la anterior al cierre de hoy); si el cierre de hoy se confirma serían dos cierres semanales bajo 83K, lo que apunta a un 'fake out' del breakout sobre el máximo de mayo y a una caída a la bull market support band (72K-76K), como ya hicieron S&P, Nasdaq, Dow, Russell, ETH, Total2, Total3 y MicroStrategy tras cerrar bajo la media de 50 días. Históricamente (2014, 2018, 2022) el último tramo bajista llegó después de las midterms (3-nov), así que no descarta un suelo de Q4; a largo plazo sigue muy alcista.",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": 76000,
+    "ma50w": null,
+    "objetivo_correccion": 72000,
+    "invalidacion": 83000
+   },
+   "accion": "No da orden de compra/venta: mantiene su estrategia de DCA en la segunda mitad del año de midterms (compró algo en julio) y vigila el segundo cierre semanal bajo 83K; su temor es un camino tipo plata 2011 con nuevos mínimos en 2027-2028.",
+   "para_mis_lps": "Su lectura sugiere que el rango 72K-76K (BMSB) es el objetivo táctico a la baja y 83K la zona de invalidación, por lo que un LP concentrado BTC/USDC por encima de ~83K tendría alto riesgo de quedar fuera de rango; no da rangos de liquidez explícitos, es inferencia de sus niveles.",
+   "citas": [
+    "a weekly close below 83K would be the shift of considering the bears being back in control, but two weekly closes would more or less confirm it.",
+    "the bull market support band for Bitcoin currently ranges from around 76K to about 72.",
+    "I think DCA is probably the best way to go."
+   ],
+   "confianza": "alta",
+   "cambios_vs_anterior": "Se endurece: el segundo cierre semanal bajo 83K ya está prácticamente hecho (82.179K vs 82.042K previo), precio ~80K, y concreta la BMSB en 72K-76K; añade que el DCA sigue siendo su estrategia y el escenario de caída de 60K como señal de alarma.",
+   "cadencia_dias": 2,
+   "actualizado": "2026-10-26T13:34:50+00:00"
+  },
   {
    "agente": "cowen",
    "nombre": "Benjamin Cowen",
@@ -371,37 +402,6 @@
    "cambios_vs_anterior": "El 10-year pasa de ~4.8% a ~5.3% y Cowen pasa de exigir una subida de la Fed a proyectar un techo local de tipos antes de mediados de noviembre con bajada posterior a las midterms; la probabilidad de subida en octubre cayó de 64% a 17.7%, y vuelve al marco de valoración (cap total muy bajo el valor justo, objetivo ~10T).",
    "cadencia_dias": 2,
    "actualizado": "2026-10-05T15:17:05+00:00"
-  },
-  {
-   "agente": "cowen",
-   "nombre": "Benjamin Cowen",
-   "fuente_fecha": "2026-09-11",
-   "fuentes": [
-    "20260911-has-the-fed-been-making-a-mistake.md"
-   ],
-   "titulo": "Has the Fed Been Making A Mistake?",
-   "tendencia": "bajista",
-   "horizonte": "semanas",
-   "escenario": "Cowen deja de lado el marco on-chain para centrarse en macro: el 10-year yield está en ~4.8% y el 2-year en ~4.3%, subiendo desde febrero porque la Fed se niega a subir tipos pese a que la inflación repunta (petróleo a $92) y el paro sigue bajando. Como la Fed controla solo el tramo corto, su inacción deja que el tramo largo 'no tenga más remedio que subir', lo que presiona a los activos de riesgo; a 8 días del FOMC de septiembre la probabilidad de subida de tipos está en un inusual 50/50-60%, un nivel de incertidumbre que históricamente precede a reacciones de mercado más violentas en ambas direcciones.",
-   "risk_metric": null,
-   "niveles": {
-    "ma200w": null,
-    "bmsb": null,
-    "ma50w": null,
-    "objetivo_correccion": null,
-    "invalidacion": null
-   },
-   "accion": "No da una acción de trading concreta; argumenta que la Fed debería subir tipos 25-50 pb en septiembre y advierte que mientras no lo haga el tramo largo de la curva seguirá subiendo y presionando a los activos de riesgo.",
-   "para_mis_lps": "No habla de rangos ni de niveles de BTC; solo señala que la resolución del FOMC (8 días vista, probabilidad casi 50/50 de subida) es un catalizador de alta incertidumbre que suele producir movimientos de mercado más violentos de lo normal en ambas direcciones, lo que sugiere prudencia/rangos más anchos en torno a esa fecha, y recuerda que tras golden crosses Bitcoin suele caer temporalmente antes de definir si hace higher high o lower high.",
-   "citas": [
-    "I believe they have been making mistake by not raising rates.",
-    "the long end has no choice but to go up.",
-    "the odds of a rate hike in September only 60%... it's still a coin flip."
-   ],
-   "confianza": "media",
-   "cambios_vs_anterior": "Cambia completamente de tema: abandona el marcador on-chain 3-3 de la lectura anterior y pasa a un análisis puramente macro sobre la Fed y la curva de tipos, marcando el FOMC de septiembre (probabilidad de subida ~50/60%) como el próximo catalizador clave de volatilidad.",
-   "cadencia_dias": 2,
-   "actualizado": "2026-09-12T11:15:42+00:00"
   }
  ]
 }
