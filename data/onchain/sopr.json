@@ -2,14 +2,10 @@
   "metric": "sopr",
   "source": "https://bitcoin-data.com/v1/sopr",
   "points": 1455,
-  "ultimo": "2026-10-20",
+  "ultimo": "2026-10-21",
   "diasDesdeUltimo": 7,
   "rancio": true,
   "series": [
-    {
-      "date": "2022-10-27",
-      "value": 1.0005
-    },
     {
       "date": "2022-10-28",
       "value": 0.9984
@@ -5825,6 +5821,10 @@
     {
       "date": "2026-10-20",
       "value": 1.0036
+    },
+    {
+      "date": "2026-10-21",
+      "value": 1.0086
     }
   ]
 }
