@@ -1,84 +1,120 @@
 {
  "agente": "lmec",
  "nombre": "LMEC",
- "fuente_fecha": "2026-10-15",
+ "fuente_fecha": "2026-10-28",
  "fuentes": [
-  "20261015-as-es-mi-nueva-cartera-cripto-bitcoin-altcoins-farming-y-oportunidades.md"
+  "20261028-una-oportunidad-que-aparece-pocas-veces-y-est-pasando-ahora.md"
  ],
- "titulo": "ASÍ ES MI NUEVA CARTERA CRIPTO | Bitcoin, Altcoins, Farming y Oportunidades",
+ "titulo": "Una OPORTUNIDAD que Aparece POCAS VECES (Y Está Pasando AHORA)",
  "tendencia": "alcista",
- "horizonte": "semanas",
- "escenario": "Con BTC en ~80.700 $, cree que tras superar tres niveles clave empieza una nueva tendencia alcista a largo plazo, pero espera en las próximas semanas un nuevo mínimo relevante, quizá en la Bull Market Super Band (~75.000 $) o incluso ~60.000 $. Las altcoins han caído un 10-15% en la semana y la corrección actual es suave, sin miedo ni emociones, así que no ve aún momento de compra fuerte.",
- "posiciones": [
-  {
-   "par": "BTC/ETH",
-   "protocolo": "PancakeSwap",
-   "red": "Base",
-   "rango": "no lo especifica",
-   "peso": "posición principal de farming (7 meses, desde marzo)",
-   "comentario": "Paga ~26% anual; planea retirarla, reinvertir dividendos y moverla a la pool cbBTC/ETH de Robinhood (~40% anual)."
-  },
-  {
-   "par": "cbBTC/ETH",
-   "protocolo": "Robinhood (nuevo DEX en la red de Robinhood)",
-   "red": "Robinhood Chain",
-   "rango": "no lo especifica",
-   "peso": null,
-   "comentario": "Destino previsto de la liquidez BTC/ETH por su ~40% anual y el crecimiento esperado de actividad y volumen."
-  },
-  {
-   "par": "HYPE/BTC",
-   "protocolo": "HyperSwap",
-   "red": "Hyperliquid",
-   "rango": "no lo especifica",
-   "peso": "segunda posición principal",
-   "comentario": "~41% anual de media; el valor de la liquidez ha subido casi un 50% desde la entrada y compone los dividendos sobre la misma pool."
-  },
-  {
-   "par": "BNB/ETH",
-   "protocolo": "Uniswap",
-   "red": "Ethereum",
-   "rango": "no lo especifica",
-   "peso": null,
-   "comentario": "~14% anual de media, solo recomendable con capital grande; la usa para acumular más de ambas monedas."
-  },
-  {
-   "par": "ZEC/BNB (transcripción: 'Cec D C BNB')",
-   "protocolo": "no lo especifica",
-   "red": "BNB Chain",
-   "rango": "se salió completamente de rango por la subida de ZEC; convirtió todo a BNB",
-   "peso": null,
-   "comentario": "Rendía ~100% anual en 24h y ~70% a 30 días; apuesta especulativa, ya sin generar comisiones por estar fuera de rango."
-  }
- ],
+ "horizonte": "meses",
+ "escenario": "Remite a sus análisis anteriores: podríamos estar entrando en las primeras etapas de una tendencia alcista explosiva, y aún faltaría aparentemente una etapa alcista en el mercado. No da cifras de precio de BTC ni indicadores en este vídeo; el contenido es sobre farmeo de airdrops de exchanges de perpetuos (el transcript está cortado a mitad, en la promoción de TX Flow).",
+ "posiciones": [],
  "cartera": {
-  "stables_pct": 41,
-  "btc_pct": 30.6,
-  "alts_pct": 22.4,
-  "farming_pct": 6
+  "stables_pct": null,
+  "btc_pct": null,
+  "alts_pct": null,
+  "farming_pct": null
  },
  "niveles": {
-  "soporte": 75000,
+  "soporte": null,
   "resistencia": null,
   "objetivo": null,
-  "compra_escalonada": [
-   80000,
-   75000,
-   63000
-  ]
+  "compra_escalonada": []
  },
- "accion": "Ha hecho una primera compra pequeña de DCA selectivo (60% BTC, 20% HYPE, 10% ETH, 10% BNB), reinicia el contador de 2 semanas y reserva compras fuertes para una corrección con miedo real (por debajo de 80.000, hacia 75.000 o menos); sigue farmeando e interés compuesto sobre las mismas pools.",
- "para_mis_lps": "No da rangos de liquidez concentrada ni usa BTC/USDC: sus pools son BTC/ETH, HYPE/BTC y BNB/ETH, sin rangos concretos. Su aviso de otra caída a 75.000 o ~60.000 $ en semanas sugiere cautela con rangos estrechos por encima de 75k, y el caso de ZEC/BNB muestra el riesgo de salirse de rango en pares volátiles.",
+ "accion": "Farmear airdrops de exchanges de perpetuos antes de que arranque el mercado alcista, con prioridad máxima a Variational y Arcus (blockchain de Robinhood) y a Qfex; prioridad media a RiseX, TX Flow, Lighter en Robinhood e Hyperliquid; baja a Pacifica, Extended y Lighter.",
+ "para_mis_lps": "No aplica: no habla de pools de liquidez concentrada ni de rangos BTC/USDC; solo sesgo alcista de fondo y farmeo de airdrops en perp DEXs (no es LP).",
  "citas": [
-  "lo normal para mí es que Bitcoin de aquí a unas semanas vaya a visitar precios más bajos",
-  "Yo siempre compro fuerte cuando huelo la sangre, cuando veo mucho miedo",
-  "mi posición se ha salido completamente de rango. He convertido todos mis CEC en BNB"
+  "podríamos estar entrando en las primeras etapas de una tendencia alcista explosiva",
+  "Todavía faltaría aparentemente una etapa alcista en el mercado.",
+  "farmear airdrops de exchanges de perpetuos a día de hoy es una de las mejores estrategias que podemos seguir"
  ],
- "confianza": "media",
- "cambios_vs_anterior": "Mantiene el sesgo alcista a largo plazo y la corrección esperada (75k, quizá 60k), pero ahora ya ha ejecutado la primera compra pequeña de DCA selectivo (regla de 2 semanas sin tocar objetivos), con BTC en ~80.700 $ y objetivos 80k / 75k / 63k; farming sube al ~6% de la cartera y planea mover BTC/ETH a Robinhood.",
+ "confianza": "baja",
+ "cambios_vs_anterior": "Mantiene el sesgo alcista de fondo, pero este vídeo no actualiza precio, niveles, DCA ni pools (no menciona 80.000/75.000 ni farming de LPs) y se centra en airdrops de perp DEXs; transcript incompleto.",
  "cadencia_dias": 30,
- "actualizado": "2026-10-16T11:55:18+00:00",
+ "actualizado": "2026-10-29T13:44:09+00:00",
  "historial": [
+  {
+   "agente": "lmec",
+   "nombre": "LMEC",
+   "fuente_fecha": "2026-10-15",
+   "fuentes": [
+    "20261015-as-es-mi-nueva-cartera-cripto-bitcoin-altcoins-farming-y-oportunidades.md"
+   ],
+   "titulo": "ASÍ ES MI NUEVA CARTERA CRIPTO | Bitcoin, Altcoins, Farming y Oportunidades",
+   "tendencia": "alcista",
+   "horizonte": "semanas",
+   "escenario": "Con BTC en ~80.700 $, cree que tras superar tres niveles clave empieza una nueva tendencia alcista a largo plazo, pero espera en las próximas semanas un nuevo mínimo relevante, quizá en la Bull Market Super Band (~75.000 $) o incluso ~60.000 $. Las altcoins han caído un 10-15% en la semana y la corrección actual es suave, sin miedo ni emociones, así que no ve aún momento de compra fuerte.",
+   "posiciones": [
+    {
+     "par": "BTC/ETH",
+     "protocolo": "PancakeSwap",
+     "red": "Base",
+     "rango": "no lo especifica",
+     "peso": "posición principal de farming (7 meses, desde marzo)",
+     "comentario": "Paga ~26% anual; planea retirarla, reinvertir dividendos y moverla a la pool cbBTC/ETH de Robinhood (~40% anual)."
+    },
+    {
+     "par": "cbBTC/ETH",
+     "protocolo": "Robinhood (nuevo DEX en la red de Robinhood)",
+     "red": "Robinhood Chain",
+     "rango": "no lo especifica",
+     "peso": null,
+     "comentario": "Destino previsto de la liquidez BTC/ETH por su ~40% anual y el crecimiento esperado de actividad y volumen."
+    },
+    {
+     "par": "HYPE/BTC",
+     "protocolo": "HyperSwap",
+     "red": "Hyperliquid",
+     "rango": "no lo especifica",
+     "peso": "segunda posición principal",
+     "comentario": "~41% anual de media; el valor de la liquidez ha subido casi un 50% desde la entrada y compone los dividendos sobre la misma pool."
+    },
+    {
+     "par": "BNB/ETH",
+     "protocolo": "Uniswap",
+     "red": "Ethereum",
+     "rango": "no lo especifica",
+     "peso": null,
+     "comentario": "~14% anual de media, solo recomendable con capital grande; la usa para acumular más de ambas monedas."
+    },
+    {
+     "par": "ZEC/BNB (transcripción: 'Cec D C BNB')",
+     "protocolo": "no lo especifica",
+     "red": "BNB Chain",
+     "rango": "se salió completamente de rango por la subida de ZEC; convirtió todo a BNB",
+     "peso": null,
+     "comentario": "Rendía ~100% anual en 24h y ~70% a 30 días; apuesta especulativa, ya sin generar comisiones por estar fuera de rango."
+    }
+   ],
+   "cartera": {
+    "stables_pct": 41,
+    "btc_pct": 30.6,
+    "alts_pct": 22.4,
+    "farming_pct": 6
+   },
+   "niveles": {
+    "soporte": 75000,
+    "resistencia": null,
+    "objetivo": null,
+    "compra_escalonada": [
+     80000,
+     75000,
+     63000
+    ]
+   },
+   "accion": "Ha hecho una primera compra pequeña de DCA selectivo (60% BTC, 20% HYPE, 10% ETH, 10% BNB), reinicia el contador de 2 semanas y reserva compras fuertes para una corrección con miedo real (por debajo de 80.000, hacia 75.000 o menos); sigue farmeando e interés compuesto sobre las mismas pools.",
+   "para_mis_lps": "No da rangos de liquidez concentrada ni usa BTC/USDC: sus pools son BTC/ETH, HYPE/BTC y BNB/ETH, sin rangos concretos. Su aviso de otra caída a 75.000 o ~60.000 $ en semanas sugiere cautela con rangos estrechos por encima de 75k, y el caso de ZEC/BNB muestra el riesgo de salirse de rango en pares volátiles.",
+   "citas": [
+    "lo normal para mí es que Bitcoin de aquí a unas semanas vaya a visitar precios más bajos",
+    "Yo siempre compro fuerte cuando huelo la sangre, cuando veo mucho miedo",
+    "mi posición se ha salido completamente de rango. He convertido todos mis CEC en BNB"
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "Mantiene el sesgo alcista a largo plazo y la corrección esperada (75k, quizá 60k), pero ahora ya ha ejecutado la primera compra pequeña de DCA selectivo (regla de 2 semanas sin tocar objetivos), con BTC en ~80.700 $ y objetivos 80k / 75k / 63k; farming sube al ~6% de la cartera y planea mover BTC/ETH a Robinhood.",
+   "cadencia_dias": 30,
+   "actualizado": "2026-10-16T11:55:18+00:00"
+  },
   {
    "agente": "lmec",
    "nombre": "LMEC",

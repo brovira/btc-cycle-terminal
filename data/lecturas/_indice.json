@@ -1,11 +1,11 @@
 {
- "actualizado": "2026-10-28T13:32:17+00:00",
+ "actualizado": "2026-10-29T13:44:09+00:00",
  "agentes": {
   "cowen": {
    "nombre": "Benjamin Cowen",
    "cadencia_dias": 2,
-   "fuente_fecha": "2026-10-27",
-   "actualizado": "2026-10-28T13:32:17+00:00",
+   "fuente_fecha": "2026-10-29",
+   "actualizado": "2026-10-29T13:43:45+00:00",
    "tendencia": "bajista",
    "pendiente": null,
    "resultado_pase": "actualizada"
@@ -13,11 +13,11 @@
   "lmec": {
    "nombre": "LMEC",
    "cadencia_dias": 30,
-   "fuente_fecha": "2026-10-15",
-   "actualizado": "2026-10-16T11:55:18+00:00",
+   "fuente_fecha": "2026-10-28",
+   "actualizado": "2026-10-29T13:44:09+00:00",
    "tendencia": "alcista",
    "pendiente": null,
-   "resultado_pase": "sin novedad"
+   "resultado_pase": "actualizada"
   },
   "woc": {
    "nombre": "Glassnode · Week On-Chain",
