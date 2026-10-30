@@ -1,7 +1,7 @@
 {
   "_": "Lo escribe ingesta_local.sh en cada ejecucion. Lo lee ingesta/frescura.py. Si esta viejo, la ingesta local NO se esta ejecutando -- da igual lo que digan las fechas de los transcripts.",
-  "ultima_ejecucion": "2026-10-29T07:34:30Z",
-  "desde": "20261019",
+  "ultima_ejecucion": "2026-10-30T08:30:58Z",
+  "desde": "20261020",
   "canales_ilegibles": 0,
   "maquina": "Mac"
 }
