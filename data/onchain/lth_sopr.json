@@ -1,15 +1,11 @@
 {
   "metric": "lth_sopr",
   "source": "https://bitcoin-data.com/v1/lth-sopr",
-  "points": 1454,
-  "ultimo": "2026-10-23",
-  "diasDesdeUltimo": 7,
-  "rancio": true,
+  "points": 1460,
+  "ultimo": "2026-10-30",
+  "diasDesdeUltimo": 1,
+  "rancio": false,
   "series": [
-    {
-      "date": "2022-10-30",
-      "value": 0.5066
-    },
     {
       "date": "2022-10-31",
       "value": 0.6018
@@ -4352,11 +4348,11 @@
     },
     {
       "date": "2025-10-20",
-      "value": 1.0003
+      "value": 1.6913
     },
     {
       "date": "2025-10-21",
-      "value": 0.9995
+      "value": 1.553
     },
     {
       "date": "2025-10-22",
@@ -5821,6 +5817,34 @@
     {
       "date": "2026-10-23",
       "value": 1.0759
+    },
+    {
+      "date": "2026-10-24",
+      "value": 1.3128
+    },
+    {
+      "date": "2026-10-25",
+      "value": 1.2472
+    },
+    {
+      "date": "2026-10-26",
+      "value": 1.1579
+    },
+    {
+      "date": "2026-10-27",
+      "value": 1.0007
+    },
+    {
+      "date": "2026-10-28",
+      "value": 1.1366
+    },
+    {
+      "date": "2026-10-29",
+      "value": 0.838
+    },
+    {
+      "date": "2026-10-30",
+      "value": 0.9824
     }
   ]
 }
