@@ -1,14 +1,14 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-10-29",
+ "fuente_fecha": "2026-10-30",
  "fuentes": [
-  "20261029-bitcoin-post-fomc.md"
+  "20261030-bitcoin-the-q4-dump-is-here.md"
  ],
- "titulo": "Bitcoin: Post-FOMC",
+ "titulo": "Bitcoin: The Q4 Dump is Here",
  "tendencia": "bajista",
  "horizonte": "semanas",
- "escenario": "Mantiene sesgo bajista: la Fed mantuvo tipos (hike probable en diciembre, ~80%, como en 2018 con pausa en midterms), PPI muy caliente (6,35% interanual) y espera PCE caliente, subida del largo plazo y petróleo a 120$ por la guerra de Irán, luego caída de bolsa y de BTC en Q4. BTC rebotó a 87K y topa con la media de 50 días; ve riesgo de que se desvanezca, con patrón de tres mínimos en 2026 (Q1, verano, Q4) visto en oro, Corea del Sur, HSI. Admite que no es obligatorio que ocurra y que el rebote a 87K no lo esperaba.",
+ "escenario": "Con BTC en ~77K (la caída empezó el 29-oct), dos cierres semanales bajo 83K refuerzan la idea de que la ruptura al alza fue un fake out. Espera que BTC baje a la bull market support band (21W EMA / 20W SMA), como ya hicieron total 2, total 3, MicroStrategy, S&P y Nasdaq. Ve una estructura de mínimos del año de midterm (Q1, verano, Q4), con el mínimo final de ciclo probablemente tras las midterms. El patrón de 2015 y 2020 sería caída a la banda, rebote y luego caída final. Como alternativa de cola, un 'rip the band-aid off' tipo FTX con mínimo en octubre, que no sería un nuevo mínimo y dejaría un higher low sobre los 60K bajos.",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
@@ -17,18 +17,49 @@
   "objetivo_correccion": null,
   "invalidacion": null
  },
- "accion": "No da orden explícita; mantiene sesgo bajista/cauto sin tirar la toalla con la idea de caída en Q4, y señala la media de 50 días como nivel crítico.",
- "para_mis_lps": "Sugiere más probabilidad de fade a la baja que de ruptura al alza (87K-90K posible pero no su base), con riesgo de volatilidad macro (PCE, bonos largos, petróleo); no da rangos concretos para LP BTC/USDC, así que usarlo solo como sesgo, no como niveles.",
+ "accion": "No da orden explícita; se declara en el campo bajista por macro y estructura histórica y espera un rebote desde la banda de soporte seguido de una caída final tras las midterms.",
+ "para_mis_lps": "Sugiere volatilidad al alza y sesgo bajista: caída a la BMSB, posible rebote y nueva caída tras las midterms (~mediados de noviembre), con la posibilidad de una caída muy rápida tipo FTX (-24% en dos días). Esto apunta a rangos amplios o a cautela con rangos concentrados por encima del precio actual. No da niveles numéricos de la banda, así que no hay rango concreto.",
  "citas": [
-  "there is just simply the the risk that that Bitcoin fades back down",
-  "Bitcoin has done the same thing the Q1 low the summer low we just need the Q4 low",
-  "the long end spikes and then after the midterms"
+  "I'm more in the bearish camp because I've just seen the structure so many times",
+  "we always want to assume that this time is different. And then what if it's not?",
+  "Bitcoin's historic lows have tended to occur after the midterms"
  ],
  "confianza": "media",
- "cambios_vs_anterior": "Pasa del vídeo de oro a hablar de BTC: sesgo bajista Q4 mantenido, con nuevos datos (Fed mantiene, PPI caliente, BTC rebotó a 87K y topa con la media de 50 días, fake-out bajo 83K 'arguably' confirmado) y sin niveles cuantitativos.",
+ "cambios_vs_anterior": "Pasa de rebote a 87K topando con la media de 50 días a caída a ~77K con dos cierres semanales bajo 83K, y ahora apunta a la BMSB (21W EMA) como objetivo, con un escenario de rebote y caída final tras las midterms. El transcript está truncado a mitad de frase.",
  "cadencia_dias": 2,
- "actualizado": "2026-10-29T13:43:45+00:00",
+ "actualizado": "2026-10-31T13:04:23+00:00",
  "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-10-29",
+   "fuentes": [
+    "20261029-bitcoin-post-fomc.md"
+   ],
+   "titulo": "Bitcoin: Post-FOMC",
+   "tendencia": "bajista",
+   "horizonte": "semanas",
+   "escenario": "Mantiene sesgo bajista: la Fed mantuvo tipos (hike probable en diciembre, ~80%, como en 2018 con pausa en midterms), PPI muy caliente (6,35% interanual) y espera PCE caliente, subida del largo plazo y petróleo a 120$ por la guerra de Irán, luego caída de bolsa y de BTC en Q4. BTC rebotó a 87K y topa con la media de 50 días; ve riesgo de que se desvanezca, con patrón de tres mínimos en 2026 (Q1, verano, Q4) visto en oro, Corea del Sur, HSI. Admite que no es obligatorio que ocurra y que el rebote a 87K no lo esperaba.",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": null,
+    "ma50w": null,
+    "objetivo_correccion": null,
+    "invalidacion": null
+   },
+   "accion": "No da orden explícita; mantiene sesgo bajista/cauto sin tirar la toalla con la idea de caída en Q4, y señala la media de 50 días como nivel crítico.",
+   "para_mis_lps": "Sugiere más probabilidad de fade a la baja que de ruptura al alza (87K-90K posible pero no su base), con riesgo de volatilidad macro (PCE, bonos largos, petróleo); no da rangos concretos para LP BTC/USDC, así que usarlo solo como sesgo, no como niveles.",
+   "citas": [
+    "there is just simply the the risk that that Bitcoin fades back down",
+    "Bitcoin has done the same thing the Q1 low the summer low we just need the Q4 low",
+    "the long end spikes and then after the midterms"
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "Pasa del vídeo de oro a hablar de BTC: sesgo bajista Q4 mantenido, con nuevos datos (Fed mantiene, PPI caliente, BTC rebotó a 87K y topa con la media de 50 días, fake-out bajo 83K 'arguably' confirmado) y sin niveles cuantitativos.",
+   "cadencia_dias": 2,
+   "actualizado": "2026-10-29T13:43:45+00:00"
+  },
   {
    "agente": "cowen",
    "nombre": "Benjamin Cowen",
@@ -369,37 +400,6 @@
    "cambios_vs_anterior": "La lectura anterior (6-oct) trataba de plata/10-year; ahora pasa a BTC: reconoce el máximo más alto pero mantiene la tesis de debilidad en Q4 y vincula el timing de BTC al techo del 10-year (oct-nov), con el oro tocando fondo antes.",
    "cadencia_dias": 2,
    "actualizado": "2026-10-09T13:46:44+00:00"
-  },
-  {
-   "agente": "cowen",
-   "nombre": "Benjamin Cowen",
-   "fuente_fecha": "2026-10-06",
-   "fuentes": [
-    "20261006-silver-dubious-speculation.md"
-   ],
-   "titulo": "Silver: Dubious Speculation",
-   "tendencia": "neutral",
-   "horizonte": "semanas",
-   "escenario": "La plata está en fase de digestión tras un avance parabólico (ya cae más del 50% desde el máximo, frente a ~41% en 1974) y la presión continuará unas semanas mientras el 10-year (~5.3%) siga subiendo con el dólar. Espera que la plata marque su mínimo en la ventana sep-nov habitual del año de midterms, antes o cerca del techo de yields, y que los yields no bajen de verdad hasta después de las midterms; si cae el soporte de ~60$, el objetivo sería barrer los máximos previos de ~50$ (1980/2011). Si el mínimo no llega en un par de meses, cree que los bajistas pasarán a alcistas; después prevé una consolidación larga hasta una nueva subida parabólica hacia finales de la década.",
-   "risk_metric": null,
-   "niveles": {
-    "ma200w": null,
-    "bmsb": null,
-    "ma50w": null,
-    "objetivo_correccion": null,
-    "invalidacion": null
-   },
-   "accion": "No da una acción de trading; recomienda vigilar la plata (dependiente del oro) y el 10-year, esperando que la debilidad culmine en las próximas semanas.",
-   "para_mis_lps": "El vídeo trata de plata y no de BTC, así que no da rangos ni niveles para LPs BTC/USDC; solo refuerza el contexto macro (yields y dólar al alza hasta tras las midterms), que sugiere cautela con la volatilidad en las próximas semanas. Es inferencia mía, no una recomendación suya.",
-   "citas": [
-    "silver should sniff out a low more than likely before yields top.",
-    "when you have a parabolic advance like this, it often requires a long consolidation phase.",
-    "I don't think you're going to really start to see them go down until after the midterms."
-   ],
-   "confianza": "media",
-   "cambios_vs_anterior": "Mantiene el escenario macro (techo de yields tras/cerca de las midterms, como 2018 y 2022) pero pasa el foco a la plata y no aporta nada nuevo sobre BTC ni cifras del mercado cripto; solo compara el ciclo de la plata con el de BTC (mínimos de febrero y marzo).",
-   "cadencia_dias": 2,
-   "actualizado": "2026-10-06T13:37:48+00:00"
   }
  ]
 }
