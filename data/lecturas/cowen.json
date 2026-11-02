@@ -1,34 +1,65 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-11-01",
+ "fuente_fecha": "2026-11-02",
  "fuentes": [
-  "20261101-bitcoin-dooobious-spookulation.md"
+  "20261102-bitcoin-the-beauty-of-mathematics-part-74.md"
  ],
- "titulo": "Bitcoin: Dooobious Spookulation",
+ "titulo": "Bitcoin: The Beauty of Mathematics (Part 74)",
  "tendencia": "bajista",
- "horizonte": "semanas",
- "escenario": "Con BTC en ~77.8K, ya ha llegado a la bull market support band tras el segundo cierre semanal bajo 83K (fake out de la ruptura del máximo de mayo). Avisa de que no hay que ser complaciente: un pullback a la banda podría ser todo, pero históricamente (2015, 2019-2020, 2022) un fake out acaba en el mínimo del rango, y una caída del 20% desde aquí devolvería a BTC a los mínimos del rango, con posibilidad de perderlos. Mantiene la estructura de mínimos del año de midterm (febrero, verano y Q4) y señala que BTC está en la ventana de caída al mínimo del ciclo de 4 años.",
+ "horizonte": "meses",
+ "escenario": "BTC sigue muy por debajo del fair value de la regresión logarítmica pero por encima de la banda inferior; espera pasar el resto del año ahí abajo, más cerca de la línea verde (inferior) que de la roja. Tras dos cierres semanales bajo el máximo de mayo, BTC cayó rápido a la EMA de 21 semanas (bull market support band); el Nasdaq ya cayó ~10% en Q4 y si baja otro 5-10% arrastraría a BTC. Tras las midterms podría ir más profundo dentro de la banda.",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
   "bmsb": null,
   "ma50w": null,
   "objetivo_correccion": null,
-  "invalidacion": 83000
+  "invalidacion": null
  },
- "accion": "No da orden de compra ni venta; advierte de no ser complaciente y trata como posible una caída de ~20% hacia los mínimos del rango (o por debajo) en el Q4.",
- "para_mis_lps": "Su lectura sugiere que la banda de soporte no es garantía de suelo y que los mínimos del rango son plausibles (-20%), así que rangos de liquidez concentrada BTC/USDC con límite inferior justo en la banda corren riesgo de salirse de rango. No da cifras de niveles concretos de la banda.",
+ "accion": "No da orden de compra/venta; sigue en el campo de caída en Q4 y avisa de que algo infravalorado puede infravalorarse más, sin dar por hecho un suelo.",
+ "para_mis_lps": "Sugiere rango/volatilidad a la baja hasta fin de año, con rebotes hacia las midterms y posible caída más profunda después; no da cifras de precio, así que no permite fijar rangos concretos BTC/USDC.",
  "citas": [
-  "when you have a high and you take out that high to the upside and then you give it back on multiple candle closes",
-  "a 20% drop from where we currently are would put Bitcoin back at the range lows",
-  "A February low, a summer low, and a Q4 low. We've said it all year."
+  "My guess is that we will continue to spend the rest of the year down here, probably closer to the green line to the downside than the red line.",
+  "after you get two weekly closes below the prior range high, you then typically go down very quickly to the bull market support band.",
+  "Perhaps on the other side of the midterms, we'll go deeper into that bull market support band."
  ],
  "confianza": "media",
- "cambios_vs_anterior": "BTC ya ha alcanzado la banda de soporte (lo esperado), pero ahora añade que el rebote no está garantizado: apunta a posible caída del 20% a los mínimos del rango, y suma el factor de los IPO (Anthropic, ~16-20 nov) como drenaje de liquidez.",
+ "cambios_vs_anterior": "Mantiene el sesgo bajista de Q4, ahora con la BMSB (EMA 21 semanas) alcanzada y la expectativa de rebote hacia las midterms y mayor caída dentro de la banda después; sin cifras nuevas (ya no menciona el nivel de 83K ni la caída del 20%).",
  "cadencia_dias": 2,
- "actualizado": "2026-11-01T13:47:51+00:00",
+ "actualizado": "2026-11-02T16:33:36+00:00",
  "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-11-01",
+   "fuentes": [
+    "20261101-bitcoin-dooobious-spookulation.md"
+   ],
+   "titulo": "Bitcoin: Dooobious Spookulation",
+   "tendencia": "bajista",
+   "horizonte": "semanas",
+   "escenario": "Con BTC en ~77.8K, ya ha llegado a la bull market support band tras el segundo cierre semanal bajo 83K (fake out de la ruptura del máximo de mayo). Avisa de que no hay que ser complaciente: un pullback a la banda podría ser todo, pero históricamente (2015, 2019-2020, 2022) un fake out acaba en el mínimo del rango, y una caída del 20% desde aquí devolvería a BTC a los mínimos del rango, con posibilidad de perderlos. Mantiene la estructura de mínimos del año de midterm (febrero, verano y Q4) y señala que BTC está en la ventana de caída al mínimo del ciclo de 4 años.",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": null,
+    "ma50w": null,
+    "objetivo_correccion": null,
+    "invalidacion": 83000
+   },
+   "accion": "No da orden de compra ni venta; advierte de no ser complaciente y trata como posible una caída de ~20% hacia los mínimos del rango (o por debajo) en el Q4.",
+   "para_mis_lps": "Su lectura sugiere que la banda de soporte no es garantía de suelo y que los mínimos del rango son plausibles (-20%), así que rangos de liquidez concentrada BTC/USDC con límite inferior justo en la banda corren riesgo de salirse de rango. No da cifras de niveles concretos de la banda.",
+   "citas": [
+    "when you have a high and you take out that high to the upside and then you give it back on multiple candle closes",
+    "a 20% drop from where we currently are would put Bitcoin back at the range lows",
+    "A February low, a summer low, and a Q4 low. We've said it all year."
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "BTC ya ha alcanzado la banda de soporte (lo esperado), pero ahora añade que el rebote no está garantizado: apunta a posible caída del 20% a los mínimos del rango, y suma el factor de los IPO (Anthropic, ~16-20 nov) como drenaje de liquidez.",
+   "cadencia_dias": 2,
+   "actualizado": "2026-11-01T13:47:51+00:00"
+  },
   {
    "agente": "cowen",
    "nombre": "Benjamin Cowen",
@@ -369,37 +400,6 @@
    "cambios_vs_anterior": "Refuerza el marco macro de la lectura anterior (politica restrictiva, 2-year elevado, alivio tras las midterms) con inflacion mas caliente y petroleo/Iran como causa; no aporta nada nuevo sobre dominancia ni niveles de BTC.",
    "cadencia_dias": 2,
    "actualizado": "2026-10-15T12:07:52+00:00"
-  },
-  {
-   "agente": "cowen",
-   "nombre": "Benjamin Cowen",
-   "fuente_fecha": "2026-10-12",
-   "fuentes": [
-    "20261012-bitcoin-dominance.md"
-   ],
-   "titulo": "Bitcoin Dominance",
-   "tendencia": "neutral",
-   "horizonte": "meses",
-   "escenario": "Con la dominancia de BTC en ~60%, espera que suba a corto plazo (objetivo: reencontrar los máximos de 2025 incluyendo stables) porque la política monetaria vuelve a ser restrictiva (Fed funds ~4,75% hacia abril vs 2-year ~4,8%, con el 2-year posiblemente bajando tras las midterms) y el dólar (DXY) sigue con mínimos crecientes, como en 2018. A diferencia del ciclo pasado, no espera que suba durante todo el ciclo: más adelante, cuando los tipos altos golpeen la economía y la política se relaje (quizá 1-2 años), la dominancia caería hacia los 50 bajos o incluso los 40 altos. Los pares de altcoins seguirían débiles frente a BTC hasta ese giro.",
-   "risk_metric": null,
-   "niveles": {
-    "ma200w": null,
-    "bmsb": null,
-    "ma50w": null,
-    "objetivo_correccion": null,
-    "invalidacion": null
-   },
-   "accion": "No da acción de trading; recomienda no asumir que la dominancia sube todo el ciclo y esperar política monetaria más laxa antes de que los pares alt/BTC vayan bien.",
-   "para_mis_lps": "Sin niveles de precio de BTC, no da base para fijar rangos BTC/USDC. Para pares volátiles (alts/BTC) implica sesgo bajista frente a BTC a corto-medio plazo, es decir riesgo de impermanent loss si el LP está en el lado alt.",
-   "citas": [
-    "I think what's more likely to happen is that Bitcoin dominance will go up for part of the cycle, but not for the entire cycle",
-    "my guess is that altcoin pairs are likely going to still want to continue to the downside as difficult as that might be",
-    "I'm still bullish here on the Dixie, the dollar."
-   ],
-   "confianza": "media",
-   "cambios_vs_anterior": "Vídeo monotemático de dominancia y macro (sin precio de BTC ni Q4 bajista); mantiene el marco de tipos/midterms y dólar al alza, sin contradecir la lectura del 2026-10-08.",
-   "cadencia_dias": 2,
-   "actualizado": "2026-10-13T14:34:54+00:00"
   }
  ]
 }
