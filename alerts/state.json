@@ -1,13 +1,13 @@
 {
   "date": "2026-11-02",
-  "phase": "Alcista",
+  "phase": "Transicion",
   "signals": {
     "strong_buy": false,
     "macd_bull_cross_neg": false,
     "rsi_reclaim_34": false,
     "mvrv_z_out_of_green": false,
-    "reclaim_bmsb": true
+    "reclaim_bmsb": false
   },
-  "price": 80197.82,
-  "checked_at": "2026-11-04T15:58:07.873864Z"
+  "price": 75862.76,
+  "checked_at": "2026-11-05T16:10:10.557965Z"
 }
