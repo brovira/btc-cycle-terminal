@@ -2,14 +2,10 @@
   "metric": "realized_profit",
   "source": "https://bitcoin-data.com/v1/realized-profit",
   "points": 1461,
-  "ultimo": "2026-11-05",
+  "ultimo": "2026-11-06",
   "diasDesdeUltimo": 1,
   "rancio": false,
   "series": [
-    {
-      "date": "2022-11-06",
-      "value": 58892983.69
-    },
     {
       "date": "2022-11-07",
       "value": 72016911.75
@@ -5849,6 +5845,10 @@
     {
       "date": "2026-11-05",
       "value": 606163589.61
+    },
+    {
+      "date": "2026-11-06",
+      "value": 197659222.26
     }
   ]
 }
