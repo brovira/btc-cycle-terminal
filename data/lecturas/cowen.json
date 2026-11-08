@@ -1,14 +1,14 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-11-05",
+ "fuente_fecha": "2026-11-06",
  "fuentes": [
-  "20261105-the-stock-market-faces-reality.md"
+  "20261106-bitcoin-the-bears-strike-back.md"
  ],
- "titulo": "The Stock Market Faces Reality",
+ "titulo": "Bitcoin: The Bears Strike Back",
  "tendencia": "bajista",
  "horizonte": "semanas",
- "escenario": "Tras las midterms el rally del día siguiente se está devolviendo (Nasdaq -4% hoy, testeando el mínimo de julio), igual que en 2018, cuando el mercado cayó más en Q4 y arrastró a Bitcoin. Ve tres paralelismos con 2018: Fed agresiva (~75% de probabilidad de subida en diciembre por guerra de Irán y aranceles), guerra comercial/aranceles que erosionan márgenes y mayor escrutinio regulatorio sobre tecnología/IA. No sabe cuánto bajará; si el Nasdaq puede testear el mínimo de julio, Bitcoin también.",
+ "escenario": "Con BTC justo por debajo de 76k, el año de midterm sigue su patrón: mínimos en Q1, verano y Q4 (2014, 2018, 2022), así que espera uno o dos tramos bajistas más hacia un mínimo de ciclo en Q4 o principios de enero. La ruptura de la 50-week es distinta a 2019/2023: ya fue retesteada y la media sigue bajando, y solo subió ~10% tras romperla. Una caída del 20% desde el precio actual llevaría al mínimo de verano. Su base no son caídas continuadas, que requerirían recesión (paro 4.1%, claims <190k, sin señales de recesión).",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
@@ -17,18 +17,50 @@
   "objetivo_correccion": null,
   "invalidacion": null
  },
- "accion": "No da una orden de compra/venta; advierte de que una caída de Bitcoin en Q4 es plausible y espera que los más alcistas capitulen en los mínimos, tras lo cual empezaría el siguiente mercado alcista.",
- "para_mis_lps": "No da rangos ni niveles de precio de BTC, así que no hay un rango concreto que extraer; solo sugiere sesgo de riesgo a la baja y volatilidad elevada en Q4 (posible test del mínimo de julio), lo que aconsejaría cautela con rangos estrechos.",
+ "accion": "No da orden de compra/venta: insiste en tener un plan antes del año de midterm y cumplirlo, sin comprar fake-outs al alza ni vender todo en mínimos locales.",
+ "para_mis_lps": "Su lectura sugiere sesgo bajista/lateral con repetidos wicks al alza a inicio de semana que se devuelven, y posible caída de ~20% al mínimo de verano en Q4; para rangos concentrados BTC/USDC implica no centrar el rango en la ruptura reciente (~81k fue fake-out) y contar con la cola bajista. No da niveles numéricos, así que no se puede fijar rango exacto con su material.",
  "citas": [
-  "If the NASDAQ can test the July low, ask yourself, why can't Bitcoin?",
-  "the people that have been so bullish on Bitcoin the entire year, will be the ones that actually end up capitulating the lows",
-  "that's what normally happens in Q4 of the midterm years is the stock market drops and then it takes Bitcoin down with it"
+  "the goal of midterm years is just to survive",
+  "buying into fake outs is a big mistake oftentimes in mid-term years",
+  "Bitcoin historically has been allergic to the fourth quarter of midterm years",
+  "20% down from the current prices takes you back down to the summer low."
  ],
  "confianza": "media",
- "cambios_vs_anterior": "Pasa de un análisis histórico neutral sobre midterms (sin predicción) a una postura más bajista: ve el patrón de 2018 repitiéndose, con caída adicional del Nasdaq y posible test del mínimo de julio también en Bitcoin.",
+ "cambios_vs_anterior": "Mantiene el sesgo bajista de Q4 de la lectura anterior, pero cambia el apoyo: pasa del paralelismo con 2018 (Fed, aranceles, Nasdaq) a patrones de midterm, falta de volumen de capitulación y rechazo de la comparación con 2019/2023; descarta recesión y matiza que habría uno o dos tramos de caída, no caídas continuadas. Nota: el transcript está truncado hacia el final (Nasdaq/mercados chinos).",
  "cadencia_dias": 2,
- "actualizado": "2026-11-06T14:37:07+00:00",
+ "actualizado": "2026-11-08T13:51:54+00:00",
  "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-11-05",
+   "fuentes": [
+    "20261105-the-stock-market-faces-reality.md"
+   ],
+   "titulo": "The Stock Market Faces Reality",
+   "tendencia": "bajista",
+   "horizonte": "semanas",
+   "escenario": "Tras las midterms el rally del día siguiente se está devolviendo (Nasdaq -4% hoy, testeando el mínimo de julio), igual que en 2018, cuando el mercado cayó más en Q4 y arrastró a Bitcoin. Ve tres paralelismos con 2018: Fed agresiva (~75% de probabilidad de subida en diciembre por guerra de Irán y aranceles), guerra comercial/aranceles que erosionan márgenes y mayor escrutinio regulatorio sobre tecnología/IA. No sabe cuánto bajará; si el Nasdaq puede testear el mínimo de julio, Bitcoin también.",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": null,
+    "ma50w": null,
+    "objetivo_correccion": null,
+    "invalidacion": null
+   },
+   "accion": "No da una orden de compra/venta; advierte de que una caída de Bitcoin en Q4 es plausible y espera que los más alcistas capitulen en los mínimos, tras lo cual empezaría el siguiente mercado alcista.",
+   "para_mis_lps": "No da rangos ni niveles de precio de BTC, así que no hay un rango concreto que extraer; solo sugiere sesgo de riesgo a la baja y volatilidad elevada en Q4 (posible test del mínimo de julio), lo que aconsejaría cautela con rangos estrechos.",
+   "citas": [
+    "If the NASDAQ can test the July low, ask yourself, why can't Bitcoin?",
+    "the people that have been so bullish on Bitcoin the entire year, will be the ones that actually end up capitulating the lows",
+    "that's what normally happens in Q4 of the midterm years is the stock market drops and then it takes Bitcoin down with it"
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "Pasa de un análisis histórico neutral sobre midterms (sin predicción) a una postura más bajista: ve el patrón de 2018 repitiéndose, con caída adicional del Nasdaq y posible test del mínimo de julio también en Bitcoin.",
+   "cadencia_dias": 2,
+   "actualizado": "2026-11-06T14:37:07+00:00"
+  },
   {
    "agente": "cowen",
    "nombre": "Benjamin Cowen",
@@ -369,37 +401,6 @@
    "cambios_vs_anterior": "Pasa de advertir sobre una correccion de Q4 en renta variable a un video macro sobre el Fed sin llamada direccional; mantiene el patron midterm tipo 2018 (rebote de yields hacia las midterms y caida despues) y la probabilidad de no subida en octubre (~80-84%).",
    "cadencia_dias": 2,
    "actualizado": "2026-10-20T12:12:18+00:00"
-  },
-  {
-   "agente": "cowen",
-   "nombre": "Benjamin Cowen",
-   "fuente_fecha": "2026-10-18",
-   "fuentes": [
-    "20261018-has-the-q4-equity-correction-finally-arrived.md"
-   ],
-   "titulo": "Has the Q4 Equity Correction Finally Arrived?",
-   "tendencia": "bajista",
-   "horizonte": "semanas",
-   "escenario": "Video solo de renta variable (no habla de BTC en la parte disponible). Dice que una correccion de Q4 del midterm year empezaria justo asi: debilidad primero en los mercados mas sensibles a tipos y de mas riesgo (Russell -11%, Dow -7/8%, Nasdaq -7%, Corea del Sur -24%) y luego baja por la curva de riesgo hasta el S&P 500, que solo esta ~2% bajo maximos. Ve probable que el Fed no suba tipos en octubre (~84,5% de probabilidad), que el 10 anos rebote y siga presionando al Russell, con posible rally hacia las midterms y otra caida despues, como en 2018 y 2022.",
-   "risk_metric": null,
-   "niveles": {
-    "ma200w": null,
-    "bmsb": null,
-    "ma50w": null,
-    "objetivo_correccion": null,
-    "invalidacion": null
-   },
-   "accion": "No da una llamada de trading; advierte que esto es como empezaria una correccion de Q4 en acciones, aunque admite que es imposible saber si continuara y que la estacionalidad funciona ~70% de las veces.",
-   "para_mis_lps": "Sin lectura directa de BTC en este video; solo implica contexto de riesgo en activos de riesgo (posible caida de acciones que podria arrastrar a cripto y subir la volatilidad), asi que conviene no estrechar demasiado rangos de BTC/USDC ni de pares volatiles. Es inferencia, no algo que el diga.",
-   "citas": [
-    "This is what a correction would start to look like, right?",
-    "We would expect to start in some of the riskier indices and then slowly work its way down the risk curve until it gets to the S&P 500.",
-    "It's impossible to know if this correction will continue, right? Like it's just one day at a time"
-   ],
-   "confianza": "baja",
-   "cambios_vs_anterior": "La lectura anterior era de BTC (punto de decision sobre 87K, neutral); esta es solo de acciones y sesga a bajista en riesgo macro (correccion de Q4 en marcha en Russell/Dow/Nasdaq) sin dar niveles de BTC, asi que la invalidacion de 87K ya no se confirma ni se actualiza.",
-   "cadencia_dias": 2,
-   "actualizado": "2026-10-19T13:57:39+00:00"
   }
  ]
 }
