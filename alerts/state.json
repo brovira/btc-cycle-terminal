@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-02",
+  "date": "2026-11-09",
   "phase": "Transicion",
   "signals": {
     "strong_buy": false,
@@ -8,6 +8,6 @@
     "mvrv_z_out_of_green": false,
     "reclaim_bmsb": false
   },
-  "price": 76011.72,
-  "checked_at": "2026-11-08T14:46:36.076147Z"
+  "price": 74591.29,
+  "checked_at": "2026-11-09T18:21:09.050782Z"
 }
