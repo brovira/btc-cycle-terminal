@@ -1,6 +1,6 @@
 {
   "date": "2026-11-09",
-  "phase": "Transicion",
+  "phase": "Bajista",
   "signals": {
     "strong_buy": false,
     "macd_bull_cross_neg": false,
@@ -8,6 +8,6 @@
     "mvrv_z_out_of_green": false,
     "reclaim_bmsb": false
   },
-  "price": 74591.29,
-  "checked_at": "2026-11-09T18:21:09.050782Z"
+  "price": 73215.4,
+  "checked_at": "2026-11-10T16:07:11.890235Z"
 }
