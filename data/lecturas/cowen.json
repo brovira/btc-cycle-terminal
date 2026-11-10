@@ -1,35 +1,67 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-11-06",
+ "fuente_fecha": "2026-11-10",
  "fuentes": [
-  "20261106-bitcoin-the-bears-strike-back.md"
+  "20261109-bitcoin-falls-to-the-bull-market-support-band.md",
+  "20261110-gold-dubious-speculation.md"
  ],
- "titulo": "Bitcoin: The Bears Strike Back",
+ "titulo": "Bitcoin Falls to the Bull Market Support Band",
  "tendencia": "bajista",
  "horizonte": "semanas",
- "escenario": "Con BTC justo por debajo de 76k, el año de midterm sigue su patrón: mínimos en Q1, verano y Q4 (2014, 2018, 2022), así que espera uno o dos tramos bajistas más hacia un mínimo de ciclo en Q4 o principios de enero. La ruptura de la 50-week es distinta a 2019/2023: ya fue retesteada y la media sigue bajando, y solo subió ~10% tras romperla. Una caída del 20% desde el precio actual llevaría al mínimo de verano. Su base no son caídas continuadas, que requerirían recesión (paro 4.1%, claims <190k, sin señales de recesión).",
+ "escenario": "BTC tocó ~73.5k, justo en la 20-week SMA (ya dentro de la bull market support band) y cerró la semana por debajo de la 50-week. Espera que BTC pierda la BMSB, bajando en escalera, porque seguimos en la ventana de debilidad de Q4 del año de midterm; su base es mínimo en febrero, verano y Q4, y el de Q4 aún no se ha encontrado. Por patrón post-primera subida de tipos, otro mínimo hacia el día 94 (~diciembre), coincidiendo con la próxima reunión de la Fed (como en 2018).",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
-  "bmsb": null,
+  "bmsb": 73500,
   "ma50w": null,
   "objetivo_correccion": null,
   "invalidacion": null
  },
- "accion": "No da orden de compra/venta: insiste en tener un plan antes del año de midterm y cumplirlo, sin comprar fake-outs al alza ni vender todo en mínimos locales.",
- "para_mis_lps": "Su lectura sugiere sesgo bajista/lateral con repetidos wicks al alza a inicio de semana que se devuelven, y posible caída de ~20% al mínimo de verano en Q4; para rangos concentrados BTC/USDC implica no centrar el rango en la ruptura reciente (~81k fue fake-out) y contar con la cola bajista. No da niveles numéricos, así que no se puede fijar rango exacto con su material.",
+ "accion": "No da orden de compra/venta: dice que el momento de vender era Q4 del año pasado y critica vender en mínimos por sustos diarios; comunica el escenario más probable (más caídas hasta un mínimo en Q4/diciembre).",
+ "para_mis_lps": "Sugiere esperar más caídas en escalera con rebotes en Q4, y pérdida de la BMSB (~73.5k), por lo que un rango BTC/USDC concentrado alrededor de los niveles actuales corre riesgo de salirse por abajo; no da niveles numéricos de mínimo, así que el rango inferior no está definido por él. Para pares volátiles/alts aplica su sesgo de sangrado frente a BTC y de BTC frente al oro.",
  "citas": [
-  "the goal of midterm years is just to survive",
-  "buying into fake outs is a big mistake oftentimes in mid-term years",
-  "Bitcoin historically has been allergic to the fourth quarter of midterm years",
-  "20% down from the current prices takes you back down to the summer low."
+  "my guess is that Bitcoin will lose the bull market support band.",
+  "my base case, a February low, a summer low, and a Q4 low.",
+  "this is just nothing more than a fake out to convince people that this time is different"
  ],
  "confianza": "media",
- "cambios_vs_anterior": "Mantiene el sesgo bajista de Q4 de la lectura anterior, pero cambia el apoyo: pasa del paralelismo con 2018 (Fed, aranceles, Nasdaq) a patrones de midterm, falta de volumen de capitulación y rechazo de la comparación con 2019/2023; descarta recesión y matiza que habría uno o dos tramos de caída, no caídas continuadas. Nota: el transcript está truncado hacia el final (Nasdaq/mercados chinos).",
+ "cambios_vs_anterior": "BTC pasó de justo bajo 76k a tocar ~73.5k en la 20W SMA (BMSB) y cerró la semana bajo la 50-week; añade un mínimo esperado hacia el día 94 tras la primera subida de tipos (~diciembre, Fed) y las caídas en escalera; el sesgo bajista y el mínimo de Q4 se mantienen.",
  "cadencia_dias": 2,
- "actualizado": "2026-11-08T13:51:54+00:00",
+ "actualizado": "2026-11-10T15:14:34+00:00",
  "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-11-06",
+   "fuentes": [
+    "20261106-bitcoin-the-bears-strike-back.md"
+   ],
+   "titulo": "Bitcoin: The Bears Strike Back",
+   "tendencia": "bajista",
+   "horizonte": "semanas",
+   "escenario": "Con BTC justo por debajo de 76k, el año de midterm sigue su patrón: mínimos en Q1, verano y Q4 (2014, 2018, 2022), así que espera uno o dos tramos bajistas más hacia un mínimo de ciclo en Q4 o principios de enero. La ruptura de la 50-week es distinta a 2019/2023: ya fue retesteada y la media sigue bajando, y solo subió ~10% tras romperla. Una caída del 20% desde el precio actual llevaría al mínimo de verano. Su base no son caídas continuadas, que requerirían recesión (paro 4.1%, claims <190k, sin señales de recesión).",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": null,
+    "ma50w": null,
+    "objetivo_correccion": null,
+    "invalidacion": null
+   },
+   "accion": "No da orden de compra/venta: insiste en tener un plan antes del año de midterm y cumplirlo, sin comprar fake-outs al alza ni vender todo en mínimos locales.",
+   "para_mis_lps": "Su lectura sugiere sesgo bajista/lateral con repetidos wicks al alza a inicio de semana que se devuelven, y posible caída de ~20% al mínimo de verano en Q4; para rangos concentrados BTC/USDC implica no centrar el rango en la ruptura reciente (~81k fue fake-out) y contar con la cola bajista. No da niveles numéricos, así que no se puede fijar rango exacto con su material.",
+   "citas": [
+    "the goal of midterm years is just to survive",
+    "buying into fake outs is a big mistake oftentimes in mid-term years",
+    "Bitcoin historically has been allergic to the fourth quarter of midterm years",
+    "20% down from the current prices takes you back down to the summer low."
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "Mantiene el sesgo bajista de Q4 de la lectura anterior, pero cambia el apoyo: pasa del paralelismo con 2018 (Fed, aranceles, Nasdaq) a patrones de midterm, falta de volumen de capitulación y rechazo de la comparación con 2019/2023; descarta recesión y matiza que habría uno o dos tramos de caída, no caídas continuadas. Nota: el transcript está truncado hacia el final (Nasdaq/mercados chinos).",
+   "cadencia_dias": 2,
+   "actualizado": "2026-11-08T13:51:54+00:00"
+  },
   {
    "agente": "cowen",
    "nombre": "Benjamin Cowen",
@@ -370,37 +402,6 @@
    "cambios_vs_anterior": "La lectura anterior era puramente macro, sin BTC; ahora añade el nivel técnico de 83K (máximo de mayo) como línea que defienden los alcistas, la media de 50 días en ~81,7K y la dominancia BTC al alza cerca del 61%, y mantiene el sesgo macro de política más restrictiva con el FOMC en una semana.",
    "cadencia_dias": 2,
    "actualizado": "2026-10-22T12:26:25+00:00"
-  },
-  {
-   "agente": "cowen",
-   "nombre": "Benjamin Cowen",
-   "fuente_fecha": "2026-10-19",
-   "fuentes": [
-    "20261019-what-will-the-federal-reserve-do-next.md"
-   ],
-   "titulo": "What will the Federal Reserve Do Next?",
-   "tendencia": "neutral",
-   "horizonte": "meses",
-   "escenario": "Video puramente macro, sin BTC. Tipos al 4% tras la subida de septiembre; ve probable que el Fed NO suba en octubre (~80-84% de probabilidad de mantener), que el 2 anos (4,76%, llego a 4,9%) y el largo rebote hasta las midterms y luego caigan, y que el Fed suba una vez mas en diciembre (a 4,25%), igualando fed funds y 2 anos y quedando en pausa en 2027. Lo plantea como 'deja vu' de 2018 (subida en septiembre, pausa en noviembre, subida en diciembre) y avisa de que el mercado (dos subidas mas en 2027) suele equivocarse.",
-   "risk_metric": null,
-   "niveles": {
-    "ma200w": null,
-    "bmsb": null,
-    "ma50w": null,
-    "objetivo_correccion": null,
-    "invalidacion": null
-   },
-   "accion": "No da llamada de trading: solo su prevision macro (sin subida en octubre, una subida en diciembre, probable pausa en 2027) y pide no ser determinista sobre subidas posteriores.",
-   "para_mis_lps": "No aplica directamente: no habla de BTC ni de rangos. Implicacion indirecta: rendimientos subiendo hacia las midterms y bajando despues sugiere volatilidad macro elevada hasta noviembre, pero es inferencia, no algo que el diga.",
-   "citas": [
-    "this does in fact feel like deja vu from 2018",
-    "history doesn't always repeat itself, but it certainly does rhyme",
-    "I think one more rate hike is in the cards before the end of the year"
-   ],
-   "confianza": "media",
-   "cambios_vs_anterior": "Pasa de advertir sobre una correccion de Q4 en renta variable a un video macro sobre el Fed sin llamada direccional; mantiene el patron midterm tipo 2018 (rebote de yields hacia las midterms y caida despues) y la probabilidad de no subida en octubre (~80-84%).",
-   "cadencia_dias": 2,
-   "actualizado": "2026-10-20T12:12:18+00:00"
   }
  ]
 }
