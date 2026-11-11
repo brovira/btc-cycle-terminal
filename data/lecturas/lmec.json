@@ -1,14 +1,14 @@
 {
  "agente": "lmec",
  "nombre": "LMEC",
- "fuente_fecha": "2026-10-28",
+ "fuente_fecha": "2026-11-10",
  "fuentes": [
-  "20261028-una-oportunidad-que-aparece-pocas-veces-y-est-pasando-ahora.md"
+  "20261110-burbuja-a-punto-de-explotar-as-me-preparo-y-t-tambi-n-deber-as.md"
  ],
- "titulo": "Una OPORTUNIDAD que Aparece POCAS VECES (Y Está Pasando AHORA)",
+ "titulo": "BURBUJA A PUNTO DE EXPLOTAR 👉 Así me preparo... y tú también deberías",
  "tendencia": "alcista",
  "horizonte": "meses",
- "escenario": "Remite a sus análisis anteriores: podríamos estar entrando en las primeras etapas de una tendencia alcista explosiva, y aún faltaría aparentemente una etapa alcista en el mercado. No da cifras de precio de BTC ni indicadores en este vídeo; el contenido es sobre farmeo de airdrops de exchanges de perpetuos (el transcript está cortado a mitad, en la promoción de TX Flow).",
+ "escenario": "Estima un 90% de probabilidad de que el suelo del mercado bajista se hiciera en junio en 58.000$ (RSI diario en 15, señales favorables en semanal, 2 semanas y mensual; bajistas en diario y 3 días). Pero ve ~75% de probabilidad de más correcciones o un lateral prolongado en las próximas semanas/meses, con BTC cerca de 74.000$ y posibles visitas a 65.000, 60.000 o incluso 58.000 sin invalidar la tesis. Confirmará al 99% el mercado alcista con un mínimo creciente por encima de 58.000 y la ruptura de 88.000$; riesgo externo: posible burbuja de IA y caída de Nvidia/Nasdaq arrastrando a cripto.",
  "posiciones": [],
  "cartera": {
   "stables_pct": null,
@@ -17,23 +17,59 @@
   "farming_pct": null
  },
  "niveles": {
-  "soporte": null,
-  "resistencia": null,
+  "soporte": 58000,
+  "resistencia": 88000,
   "objetivo": null,
   "compra_escalonada": []
  },
- "accion": "Farmear airdrops de exchanges de perpetuos antes de que arranque el mercado alcista, con prioridad máxima a Variational y Arcus (blockchain de Robinhood) y a Qfex; prioridad media a RiseX, TX Flow, Lighter en Robinhood e Hyperliquid; baja a Pacifica, Extended y Lighter.",
- "para_mis_lps": "No aplica: no habla de pools de liquidez concentrada ni de rangos BTC/USDC; solo sesgo alcista de fondo y farmeo de airdrops en perp DEXs (no es LP).",
+ "accion": "Plan prudente y conservador: comprar en las correcciones (hizo una compra fuerte de BTC hace un par de días a ~76.000$) manteniendo liquidez por si hay cisne negro o caída de las tecnológicas.",
+ "para_mis_lps": "Su escenario base es de rango/corrección con soporte clave en 58.000$ y confirmación alcista solo sobre 88.000$, lo que apoyaría rangos BTC/USDC aproximadamente entre 58.000 y 88.000, con riesgo de cola por debajo de 58.000 si cae la bolsa tecnológica. No da rangos de LP ni pools en este vídeo (transcript cortado antes del plan de inversión).",
  "citas": [
-  "podríamos estar entrando en las primeras etapas de una tendencia alcista explosiva",
-  "Todavía faltaría aparentemente una etapa alcista en el mercado.",
-  "farmear airdrops de exchanges de perpetuos a día de hoy es una de las mejores estrategias que podemos seguir"
+  "Creo que Bitcoin ya ha marcado suelo definitivo en junio en los 58.000 dólares.",
+  "tenemos aproximadamente un 75% de probabilidades de sufrir más correcciones durante las próximas semanas o puede que meses",
+  "la clave será cuando confirmemos un nuevo mínimo y después superemos los 88.000 dólares."
  ],
- "confianza": "baja",
- "cambios_vs_anterior": "Mantiene el sesgo alcista de fondo, pero este vídeo no actualiza precio, niveles, DCA ni pools (no menciona 80.000/75.000 ni farming de LPs) y se centra en airdrops de perp DEXs; transcript incompleto.",
+ "confianza": "media",
+ "cambios_vs_anterior": "Pasa del vídeo de farmeo de airdrops sin cifras a un análisis completo de BTC con cifras: suelo en 58.000$ (90%), 75% de más correcciones a corto, confirmación sobre 88.000$ y compra fuerte a ~76.000$.",
  "cadencia_dias": 30,
- "actualizado": "2026-10-29T13:44:09+00:00",
+ "actualizado": "2026-11-11T14:42:59+00:00",
  "historial": [
+  {
+   "agente": "lmec",
+   "nombre": "LMEC",
+   "fuente_fecha": "2026-10-28",
+   "fuentes": [
+    "20261028-una-oportunidad-que-aparece-pocas-veces-y-est-pasando-ahora.md"
+   ],
+   "titulo": "Una OPORTUNIDAD que Aparece POCAS VECES (Y Está Pasando AHORA)",
+   "tendencia": "alcista",
+   "horizonte": "meses",
+   "escenario": "Remite a sus análisis anteriores: podríamos estar entrando en las primeras etapas de una tendencia alcista explosiva, y aún faltaría aparentemente una etapa alcista en el mercado. No da cifras de precio de BTC ni indicadores en este vídeo; el contenido es sobre farmeo de airdrops de exchanges de perpetuos (el transcript está cortado a mitad, en la promoción de TX Flow).",
+   "posiciones": [],
+   "cartera": {
+    "stables_pct": null,
+    "btc_pct": null,
+    "alts_pct": null,
+    "farming_pct": null
+   },
+   "niveles": {
+    "soporte": null,
+    "resistencia": null,
+    "objetivo": null,
+    "compra_escalonada": []
+   },
+   "accion": "Farmear airdrops de exchanges de perpetuos antes de que arranque el mercado alcista, con prioridad máxima a Variational y Arcus (blockchain de Robinhood) y a Qfex; prioridad media a RiseX, TX Flow, Lighter en Robinhood e Hyperliquid; baja a Pacifica, Extended y Lighter.",
+   "para_mis_lps": "No aplica: no habla de pools de liquidez concentrada ni de rangos BTC/USDC; solo sesgo alcista de fondo y farmeo de airdrops en perp DEXs (no es LP).",
+   "citas": [
+    "podríamos estar entrando en las primeras etapas de una tendencia alcista explosiva",
+    "Todavía faltaría aparentemente una etapa alcista en el mercado.",
+    "farmear airdrops de exchanges de perpetuos a día de hoy es una de las mejores estrategias que podemos seguir"
+   ],
+   "confianza": "baja",
+   "cambios_vs_anterior": "Mantiene el sesgo alcista de fondo, pero este vídeo no actualiza precio, niveles, DCA ni pools (no menciona 80.000/75.000 ni farming de LPs) y se centra en airdrops de perp DEXs; transcript incompleto.",
+   "cadencia_dias": 30,
+   "actualizado": "2026-10-29T13:44:09+00:00"
+  },
   {
    "agente": "lmec",
    "nombre": "LMEC",
