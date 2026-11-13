@@ -1,5 +1,10 @@
 {
   "functions": {
-    "api/portfolio.js": { "maxDuration": 60 }
+    "api/portfolio.js": {
+      "maxDuration": 60
+    },
+    "api/aave.js": {
+      "maxDuration": 30
+    }
   }
 }
