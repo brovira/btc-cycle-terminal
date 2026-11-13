@@ -2,14 +2,10 @@
   "metric": "true_market_mean",
   "source": "https://bitcoin-data.com/v1/true-market-mean",
   "points": 1455,
-  "ultimo": "2026-11-05",
+  "ultimo": "2026-11-06",
   "diasDesdeUltimo": 7,
   "rancio": true,
   "series": [
-    {
-      "date": "2022-11-12",
-      "value": 30887.75
-    },
     {
       "date": "2022-11-13",
       "value": 30867.15
@@ -5825,6 +5821,10 @@
     {
       "date": "2026-11-05",
       "value": 79128.74
+    },
+    {
+      "date": "2026-11-06",
+      "value": 78998.22
     }
   ]
 }

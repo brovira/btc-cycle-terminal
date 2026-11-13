@@ -2,14 +2,10 @@
   "metric": "sth_mvrv",
   "source": "https://bitcoin-data.com/v1/sth-mvrv",
   "points": 1455,
-  "ultimo": "2026-11-05",
+  "ultimo": "2026-11-06",
   "diasDesdeUltimo": 7,
   "rancio": true,
   "series": [
-    {
-      "date": "2022-11-12",
-      "value": 0.8244
-    },
     {
       "date": "2022-11-13",
       "value": 0.8089
@@ -5825,6 +5821,10 @@
     {
       "date": "2026-11-05",
       "value": 1.0016
+    },
+    {
+      "date": "2026-11-06",
+      "value": 1.0015
     }
   ]
 }
