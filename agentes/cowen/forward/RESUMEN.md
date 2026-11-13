@@ -2,6 +2,16 @@
 
 > Postura direccional/de ciclo extraída de sus vídeos, evaluada por precio real (CoinGecko) a 7/30/90d. Lo último arriba. No es asesoramiento financiero.
 
+## 2026-11-12 · Bitcoin Q4 Dump Came Just the Same
+
+**Sesgo:** pendiente  ·  **Fase:** incierto  ·  **Acción:** —  ·  **Confianza:** baja
+
+- **Tesis:** Pendiente de análisis (sin API key). Rellenar en chat.
+- **Niveles:** —
+- **Resultado (precio real):** sin horizonte cumplido aún
+
+---
+
 ## 2026-11-05 · The Stock Market Faces Reality
 
 **Sesgo:** pendiente  ·  **Fase:** incierto  ·  **Acción:** —  ·  **Confianza:** baja
