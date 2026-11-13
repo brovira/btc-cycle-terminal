@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loop · BTC apalancado</title>
+<style>
+  :root{--bg:#0b111b;--bg2:#0e1622;--panel:#121c2b;--panel2:#18263a;--line:#22344b;--ink:#eaf0f8;--ink2:#aebccf;--muted:#7c8fa8;--accent:#3fa9f5;--bull:#2fc39b;--bear:#f2606d;--hot:#f2a33f;--loop:#9b8cff;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--mono:ui-monospace,"SF Mono","JetBrains Mono","Menlo","Consolas",monospace;--radius:16px}
+  @media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--bg:#eef1f6;--bg2:#e7ecf3;--panel:#fff;--panel2:#f4f7fb;--line:#dde5ee;--ink:#0e1622;--ink2:#3d4c5e;--muted:#67788c;--accent:#1f74c0;--bull:#0e846a;--bear:#c93a48;--hot:#b9791a;--loop:#6a55e0}}
+  :root[data-theme="dark"]{--bg:#0b111b;--bg2:#0e1622;--panel:#121c2b;--panel2:#18263a;--line:#22344b;--ink:#eaf0f8;--ink2:#aebccf;--muted:#7c8fa8;--accent:#3fa9f5;--bull:#2fc39b;--bear:#f2606d;--hot:#f2a33f;--loop:#9b8cff}
+  :root[data-theme="light"]{--bg:#eef1f6;--bg2:#e7ecf3;--panel:#fff;--panel2:#f4f7fb;--line:#dde5ee;--ink:#0e1622;--ink2:#3d4c5e;--muted:#67788c;--accent:#1f74c0;--bull:#0e846a;--bear:#c93a48;--hot:#b9791a;--loop:#6a55e0}
+  .page-loop .sec-head{margin-top:40px}
+  .page-loop .sec-head:first-of-type{margin-top:24px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--sc,var(--loop));border-radius:13px;padding:13px 15px;min-width:0}
+  .stat .l{font-size:11.5px;color:var(--muted)}
+  .stat .n{font-variant-numeric:tabular-nums;font-size:22px;font-weight:750;margin-top:2px;overflow-wrap:anywhere}
+  .stat .s{font-size:11.5px;color:var(--muted);margin-top:3px}
+  .up{color:var(--bull)} .down{color:var(--bear)} .warn{color:var(--hot)}
+  .ruler{position:relative;height:56px;margin:8px 4px 4px}
+  .ruler .bar{position:absolute;left:0;right:0;top:24px;height:8px;border-radius:5px;background:linear-gradient(90deg,color-mix(in oklab,var(--bear) 55%,transparent),color-mix(in oklab,var(--hot) 40%,transparent) 35%,color-mix(in oklab,var(--bull) 35%,transparent))}
+  .ruler .mk{position:absolute;top:0;transform:translateX(-50%);font-size:11px;white-space:nowrap;text-align:center}
+  .ruler .mk i{display:block;width:2px;height:22px;margin:2px auto 0;background:currentColor}
+  .ruler .zone{position:absolute;top:22px;height:12px;border-radius:4px;background:color-mix(in oklab,var(--accent) 30%,transparent);border:1px dashed var(--accent)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  th{color:var(--muted);font-weight:600;font-size:11.5px}
+  .tablewrap{overflow-x:auto}
+  .form{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:14px}
+  .form label{display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:var(--muted)}
+  .form input{font:inherit;font-size:14px;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);width:150px;max-width:100%}
+  .form input.wide{width:260px}
+  .note{font-size:12.5px;color:var(--ink2);line-height:1.5}
+  .warnbox{padding:11px 14px;border-radius:11px;background:color-mix(in oklab,var(--hot) 12%,transparent);border:1px solid color-mix(in oklab,var(--hot) 35%,var(--line));font-size:12.5px;color:var(--ink2);margin-top:12px}
+  .badbox{padding:11px 14px;border-radius:11px;background:color-mix(in oklab,var(--bear) 12%,transparent);border:1px solid color-mix(in oklab,var(--bear) 40%,var(--line));font-size:12.5px;color:var(--ink2);margin-top:12px}
+  @media (max-width:520px){.stat .n{font-size:19px}.form input,.form input.wide{width:100%}.form label{flex:1 1 100%}}
+</style>
+<link rel="stylesheet" href="dashboard.css">
+</head>
+<body class="dashboard-page page-loop">
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="kicker">Estrategias · Apalancamiento</div>
+      <h1><span class="title-icon">🔁</span> Loop · BTC apalancado en Aave</h1>
+      <div class="meta"><span class="dot" id="statusDot"></span><span id="statusText">Leyendo Aave on-chain…</span></div>
+    </div>
+    <div class="controls">
+      <a class="btn" href="index.html">← Panel</a>
+      <a class="btn" href="decision.html">🧭 ¿Qué hago hoy?</a>
+      <button class="btn" id="reloadBtn">↻ Releer</button>
+      <button class="btn" id="themeBtn">◐ Tema</button>
+    </div>
+  </header>
+
+  <div class="sec-head"><h2>📍 Posición en vivo</h2><div class="rule"></div><span class="mtxt" id="mercado"></span></div>
+  <div class="cards" id="cards"></div>
+  <div id="alerta"></div>
+
+  <div class="sec-head"><h2>📏 Dónde está la liquidación</h2><div class="rule"></div><span class="mtxt">precio de BTC · zonas de los analistas</span></div>
+  <div class="panel" style="padding:16px 18px">
+    <div class="ruler" id="ruler"></div>
+    <div class="note" id="rulerNote" style="margin-top:10px"></div>
+  </div>
+
+  <div class="sec-head"><h2>🧾 Por activo</h2><div class="rule"></div><span class="mtxt">saldos de los aTokens y la deuda variable, tasas de hoy</span></div>
+  <div class="panel tablewrap" style="padding:6px 10px" id="reservas"></div>
+
+  <div class="sec-head"><h2>🧮 Plan de tramos</h2><div class="rule"></div><span class="mtxt">cuánto pedir en cada compra y dónde queda la liquidación</span></div>
+  <div class="panel" style="padding:16px 18px">
+    <div class="form">
+      <label>USDC/USDT por tramo<input id="pTramo" type="number" step="500" value="12000"></label>
+      <label>Precios de compra de los tramos que faltan ($, separados por coma)<input id="pPrecios" class="wide" type="text" value=""></label>
+      <label>Coste del swap (%)<input id="pSwap" type="number" step="0.05" value="0.3"></label>
+      <label>Techo de apalancamiento<input id="pTecho" type="number" step="0.05" value="1.9"></label>
+    </div>
+    <div class="tablewrap" id="plan"></div>
+    <div class="note" id="planNote" style="margin-top:10px"></div>
+  </div>
+  <p class="mtxt" style="margin-top:28px">Datos leídos del contrato Pool de Aave v3 (getUserAccountData, getReserveData) y del oráculo de Aave, sin pasar por su interfaz. El health factor y el umbral de liquidación son los mismos que usa Aave para liquidar. La dirección de la wallet se lee del repo privado y no sale en esta página.</p>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtUSD=(v,d=0)=>v==null||!isFinite(v)?"—":"$"+Number(v).toLocaleString("es-ES",{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtN=(v,d=2)=>v==null||!isFinite(v)?"—":Number(v).toLocaleString("es-ES",{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtBTC=v=>v==null||!isFinite(v)?"—":"₿ "+fmtN(v,4);
+(function(){try{const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);}catch(e){}})();
+$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement;const cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);try{localStorage.setItem("btc-term-theme",nx);}catch(e){}});
+
+// Zonas que dan los analistas (ver agentes/): se actualizan a mano cuando cambie su lectura.
+const ZONAS=[
+  {desde:63000,hasta:65000,txt:"63–65k · Cowen y LMEC (próxima compra fuerte)",fuente:"Cowen 11-nov · LMEC 10-nov"},
+  {desde:60000,hasta:63000,txt:"60–63k · liquidaciones de largos (Glassnode)",fuente:"WoC sem. 44, 4-nov"},
+  {desde:58000,hasta:58000,txt:"58k · suelo de junio (LMEC)",fuente:"LMEC 10-nov"},
+  {desde:54000,hasta:54000,txt:"~54k · precio realizado (Cowen)",fuente:"Cowen 12-nov"},
+];
+let A=null;
+
+function hfColor(hf){return hf==null?"":hf<1.3?"down":hf<1.7?"warn":"up";}
+
+function renderCards(){
+  const a=A.account, lev=A.leverage;
+  const ltBtc=(A.tasas.find(t=>t.symbol==="cbBTC")||{}).liquidationThresholdPct;
+  const cards=[
+    {l:"Health factor",n:a.healthFactor!=null?fmtN(a.healthFactor,2):"∞",cl:hfColor(a.healthFactor),s:"Aave liquida por debajo de 1,0",sc:"var(--loop)"},
+    {l:"Precio de liquidación BTC",n:A.liqPrice!=null?fmtUSD(A.liqPrice):"sin deuda",cl:"down",s:A.liqDistancePct!=null?`${fmtN(A.liqDistancePct,1)}% por debajo de hoy`:"",sc:"var(--bear)"},
+    {l:"BTC hoy (oráculo Aave)",n:fmtUSD(A.btcPriceUsd),s:"el precio con el que liquida Aave",sc:"var(--accent)"},
+    {l:"Colateral",n:fmtBTC(A.btcColateral),s:fmtUSD(a.collateralUsd)+` · LT ${fmtN(a.liquidationThresholdPct,0)}%`,sc:"var(--bull)"},
+    {l:"Deuda",n:fmtUSD(a.debtUsd),s:A.borrowApyMedioPct!=null?`APY ${fmtN(A.borrowApyMedioPct,2)}% · ${fmtUSD(A.interesAnualUsd)}/año`:"sin préstamo",sc:"var(--hot)"},
+    {l:"Apalancamiento",n:lev!=null?fmtN(lev,2)+"x":"—",cl:lev>1.9?"down":lev>1.75?"warn":"",s:"colateral / patrimonio neto",sc:"var(--loop)"},
+    {l:"Patrimonio neto",n:fmtBTC(A.equityBtc),s:fmtUSD(A.equityUsd)+" (colateral − deuda)",sc:"var(--bull)"},
+    {l:"Liquidación en 12 meses",n:A.liqPrice12m!=null?fmtUSD(A.liqPrice12m):"—",s:"si no amortizas: los intereses suben la deuda",sc:"var(--hot)"},
+  ];
+  $("#cards").innerHTML=cards.map(c=>`<div class="stat" style="--sc:${c.sc}"><div class="l">${c.l}</div><div class="n ${c.cl||""}">${c.n}</div><div class="s">${c.s||""}</div></div>`).join("");
+  $("#mercado").textContent=`${A.mercado}${A.eMode?` · e-mode ${A.eMode}`:""} · leído ${new Date(A.generado).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})}`;
+  let al="";
+  if(a.healthFactor!=null&&a.healthFactor<1.5)al=`<div class="badbox"><b>Health factor bajo (${fmtN(a.healthFactor,2)}).</b> Una caída del ${fmtN(A.liqDistancePct,1)}% te liquida. Añade colateral o devuelve deuda.</div>`;
+  else if(lev!=null&&lev>1.9)al=`<div class="warnbox"><b>Apalancamiento ${fmtN(lev,2)}x, por encima del techo de 1,9x</b> que te pusiste.</div>`;
+  if(A.eMode)al+=`<div class="warnbox">La cuenta está en <b>e-mode ${A.eMode}</b>: los umbrales por activo de la tabla no son los que aplican. El health factor y la liquidación de arriba sí son correctos.</div>`;
+  if(A.liqMetodo&&A.liqMetodo.startsWith("por activo"))al+=`<div class="warnbox">Colateral o deuda mixtos: el precio de liquidación de BTC supone que el resto de activos no se mueve.</div>`;
+  $("#alerta").innerHTML=al;
+}
+
+function renderRuler(){
+  const px=A.btcPriceUsd, liq=A.liqPrice;
+  const lo=Math.min(liq||px*0.45, 50000)*0.9, hi=px*1.08;
+  const pos=v=>Math.max(0,Math.min(100,(v-lo)/(hi-lo)*100));
+  let h=`<div class="bar"></div>`;
+  for(const z of ZONAS){
+    if(z.hasta>z.desde)h+=`<div class="zone" style="left:${pos(z.desde)}%;width:${pos(z.hasta)-pos(z.desde)}%" title="${esc(z.txt)} · ${esc(z.fuente)}"></div>`;
+    else h+=`<div class="mk" style="left:${pos(z.desde)}%;color:var(--accent);top:30px" title="${esc(z.txt)} · ${esc(z.fuente)}"><i style="height:10px;margin:0 auto"></i>${Math.round(z.desde/1000)}k</div>`;
+  }
+  h+=`<div class="mk" style="left:${pos(px)}%;color:var(--ink)">hoy ${Math.round(px/1000)}k<i></i></div>`;
+  if(liq)h+=`<div class="mk" style="left:${pos(liq)}%;color:var(--bear)">liq. ${fmtN(liq/1000,1)}k<i></i></div>`;
+  if(A.liqPrice12m)h+=`<div class="mk" style="left:${pos(A.liqPrice12m)}%;color:var(--hot);top:30px"><i style="height:10px;margin:0 auto"></i>12m</div>`;
+  $("#ruler").innerHTML=h;
+  const peor=54000;
+  $("#rulerNote").innerHTML=liq
+    ?`Zonas (en azul): ${ZONAS.map(z=>esc(z.txt)).join(" · ")}. Si BTC fuera al escenario más bajista que se maneja (~54k, Cowen), la liquidación quedaría a <b>${fmtN((1-liq/peor)*100,0)}%</b> por debajo de ese precio.`
+    :`Sin deuda todavía: no hay precio de liquidación. Zonas de los analistas: ${ZONAS.map(z=>esc(z.txt)).join(" · ")}.`;
+}
+
+function renderReservas(){
+  const rows=A.tasas.map(t=>{
+    const r=A.reservas.find(x=>x.symbol===t.symbol)||{};
+    const tiene=r.supplied>0||r.debt>0;
+    return `<tr style="${tiene?"font-weight:650":"opacity:.62"}"><td>${esc(t.symbol)}</td><td>${r.supplied>0?fmtN(r.supplied,r.stable?2:6):"—"}</td><td>${r.debt>0?fmtN(r.debt,r.stable?2:6):"—"}</td><td>${fmtUSD(t.priceUsd,t.priceUsd<10?4:0)}</td><td>${fmtN(t.supplyApyPct,2)}%</td><td class="${t.borrowApyPct>8?"down":""}">${fmtN(t.borrowApyPct,2)}%</td><td>${fmtN(t.ltvPct,0)}%</td><td>${fmtN(t.liquidationThresholdPct,0)}%</td></tr>`;
+  }).join("");
+  $("#reservas").innerHTML=`<table><thead><tr><th>Activo</th><th>Depositado</th><th>Deuda</th><th>Precio</th><th>APY depósito</th><th>APY préstamo</th><th>LTV máx.</th><th>Umbral liq.</th></tr></thead><tbody>${rows}</tbody></table>
+  <div class="note" style="padding:8px 2px">Para pedir prestado, elige el estable con el <b>APY de préstamo</b> más bajo: cada punto sube tu precio de liquidación ~1% al año.</div>`;
+}
+
+function renderPlan(){
+  if(!A)return;
+  const ltBtc=((A.tasas.find(t=>t.symbol==="cbBTC")||{}).liquidationThresholdPct||A.account.liquidationThresholdPct)/100;
+  const tramo=+$("#pTramo").value||0, s=(+$("#pSwap").value||0)/100, techo=+$("#pTecho").value||1.9;
+  const precios=$("#pPrecios").value.split(/[,;\s]+/).map(x=>+x.replace(/\./g,"").replace(/k$/i,"000")).filter(x=>x>1000);
+  let C=A.btcColateral, D=A.account.debtUsd;
+  const fila=(n,p,txt)=>{
+    const liq=D>0?D/(C*ltBtc):null, lev=C*p>D?C*p/(C*p-D):null, hf=D>0?C*p*ltBtc/D:null;
+    const mal=lev!=null&&lev>techo;
+    return {html:`<tr class="${mal?"down":""}"><td>${txt}</td><td>${fmtUSD(p)}</td><td>${fmtUSD(D)}</td><td>${fmtBTC(C)}</td><td><b>${liq?fmtUSD(liq):"—"}</b></td><td>${lev?fmtN(lev,2)+"x":"—"}</td><td>${hf?fmtN(hf,2):"∞"}</td></tr>`,mal,liq,lev};
+  };
+  const out=[fila(0,A.btcPriceUsd,"Hoy")];
+  precios.forEach((p,i)=>{C+=tramo*(1-s)/p;D+=tramo;out.push(fila(i+1,p,`Tramo ${i+1}: +${fmtUSD(tramo)} → +${fmtBTC(tramo*(1-s)/p)}`));});
+  $("#plan").innerHTML=`<table><thead><tr><th>Paso</th><th>Precio de compra</th><th>Deuda acumulada</th><th>Colateral</th><th>Liquidación</th><th>Apalanc. a ese precio</th><th>HF a ese precio</th></tr></thead><tbody>${out.map(o=>o.html).join("")}</tbody></table>`;
+  const ult=out[out.length-1], primeroMal=out.findIndex(o=>o.mal);
+  // Margen que queda bajo el techo, al ultimo precio de la lista
+  const pUlt=precios.length?precios[precios.length-1]:A.btcPriceUsd, k=1-1/techo;
+  const margen=Math.max(0,(C*pUlt*k-D)/(1-(1-s)*k));
+  $("#planNote").innerHTML=(primeroMal>=0?`<div class="badbox">A partir del paso ${primeroMal} superas el techo de ${fmtN(techo,2)}x. Reduce el tamaño del tramo o quita uno.</div>`:"")+
+    `Cada tramo pide ${fmtUSD(tramo)}, compra cbBTC a ese precio (menos ${fmtN(s*100,2)}% de swap) y lo vuelve a depositar. La liquidación depende solo de la deuda y del colateral: comprar más abajo te da más BTC por el mismo dinero y la baja. `+
+    `Tras el último paso, a ${fmtUSD(pUlt)}, aún podrías pedir <b>${fmtUSD(margen)}</b> más sin pasar de ${fmtN(techo,2)}x. No incluye los intereses (ver «Liquidación en 12 meses»).`;
+}
+["#pTramo","#pPrecios","#pSwap","#pTecho"].forEach(id=>$(id).addEventListener("input",renderPlan));
+
+async function load(){
+  $("#statusDot").className="dot";$("#statusText").textContent="Leyendo Aave on-chain…";
+  let j=null,status=0;
+  try{const r=await fetch("/api/aave",{cache:"no-store"});status=r.status;j=await r.json().catch(()=>null);}catch(e){}
+  if(!j||status>=400||j.error){
+    $("#statusDot").className="dot err";
+    $("#statusText").textContent=status===401?"La sesión ha caducado. Recarga la página para volver a entrar.":"No se pudo leer Aave: "+((j&&(j.message||j.error))||("error "+(status||"de red")));
+    return;
+  }
+  A=j;
+  if(!$("#pPrecios").value){
+    // Por defecto: si aun no hay deuda, los 3 tramos del plan; si ya hay, los 2 que faltan.
+    const z=[Math.round(A.btcPriceUsd/100)*100,64000,59000];
+    $("#pPrecios").value=(A.account.debtUsd>0?z.slice(1):z).join(", ");
+  }
+  renderCards();renderRuler();renderReservas();renderPlan();
+  $("#statusDot").className="dot ok";
+  $("#statusText").textContent="En vivo desde Aave v3 · se relee cada 2 min";
+}
+$("#reloadBtn").addEventListener("click",load);
+load();setInterval(load,120000);
+</script>
+</body>
+</html>
