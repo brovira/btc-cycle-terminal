@@ -166,9 +166,9 @@
 <script>
 "use strict";
 const $=s=>document.querySelector(s);
-const fmtUSD=(v,d=0)=>v==null||isNaN(v)?"—":"$"+Number(v).toLocaleString("en-US",{maximumFractionDigits:d,minimumFractionDigits:d});
+const fmtUSD=(v,d=0)=>v==null||isNaN(v)?"—":(v<0?"−":"")+"$"+Math.abs(Number(v)).toLocaleString("en-US",{maximumFractionDigits:d,minimumFractionDigits:d});
 const fmtEUR=v=>v==null||isNaN(v)?"—":(v<0?"-€":"€")+Math.abs(Math.round(v)).toLocaleString("en-US");
-const fmtAmt=v=>v==null?"—":Number(v).toLocaleString("en-US",{maximumFractionDigits:v>1000?0:(v>1?4:6)});
+const fmtAmt=v=>v==null?"—":Number(v).toLocaleString("en-US",{maximumFractionDigits:Math.abs(v)>1000?0:(Math.abs(v)>1?4:6)});
 const fmtPx=v=>v==null||!isFinite(v)||v<=0?"—":v>=1000?"$"+(v/1000).toFixed(2)+"K":"$"+Number(v).toLocaleString("en-US",{maximumFractionDigits:v<1?6:2});
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
 (function(){const s=localStorage.getItem("btc-term-theme");if(s)document.documentElement.setAttribute("data-theme",s);})();
@@ -193,7 +193,7 @@ function tokIcon(sym){
   const gl=t==="btc"?"₿":t==="stable"?"$":initials(sym);
   return `<span class="ticon" style="background:color-mix(in oklab,${c} 20%,transparent);border-color:color-mix(in oklab,${c} 40%,transparent);color:${c}">${esc(gl)}</span>`;
 }
-const PROTO_META={ "Wallet":["👛",0],"Orca":["🌊",1],"Uniswap V3":["🦄",2],"ProjectX":["✖️",3],"Hyperliquid":["⚡",4],"Aave":["👻",5],"Kamino":["🅚",6],"Manual":["✍️",9] };
+const PROTO_META={ "Wallet":["👛",0],"Orca":["🌊",1],"Uniswap V3":["🦄",2],"PancakeSwap":["🥞",2],"HyperSwap":["🌀",3],"ProjectX":["✖️",3],"Hyperliquid":["⚡",4],"Aave":["👻",5],"Kamino":["🅚",6],"Manual":["✍️",9] };
 function protoIcon(p){return (PROTO_META[p]||PROTO_META[Object.keys(PROTO_META).find(k=>p.startsWith(k))]||["🔹",8])[0];}
 function protoOrder(p){const m=PROTO_META[p]||PROTO_META[Object.keys(PROTO_META).find(k=>p.startsWith(k))];return m?m[1]:8;}
 
@@ -281,6 +281,7 @@ function rebuild(){
   if(!RAW)return;
   const{j,px,orca,manual}=RAW;
   const sol=j.solana,evm=j.evm||{},uni=j.uniswap||{positions:[]},prjx=j.projectx||{positions:[]},hl=j.hyperliquid||{tokens:[]};
+  const hsw=j.hyperswap||{positions:[]},uniBase=j.uniswapBase||{positions:[]};
   const chains=[["ethereum",evm.ethereum],["base",evm.base],["hyperevm",evm.hyperevm],["polygon",evm.polygon],["arbitrum",evm.arbitrum],["optimism",evm.optimism]].filter(x=>x[1]&&!x[1].error);
   const solAddr=sol&&sol.address?short(sol.address):"solana";
   const evmAddr="EVM";
@@ -301,13 +302,24 @@ function rebuild(){
   // Orca LPs → descompuestas por token (para que cbBTC sume wallet+pools)
   for(const p of (orca.positions||[]))for(const x of p.parts)push({sym:x.sym,chain:"solana",protocol:"Orca",address:solAddr,amount:x.amount,usd:x.usd,kind:"lp"});
   // Uniswap V3 / ProjectX → descompuestas por token (price0/price1 del backend)
-  for(const[src,net]of[[uni,"ethereum"],[prjx,"hyperevm"]])for(const p of (src.positions||[])){
-    const proto=p.protocol||(net==="ethereum"?"Uniswap V3":"ProjectX");
+  // Antes solo se sumaban Uniswap (Ethereum) y ProjectX: la API ya traia HyperSwap y Base
+  // (Uniswap + PancakeSwap), pero aqui no se pintaban y no contaban en el total.
+  const V3SRC=[[uni,"ethereum","Uniswap V3"],[prjx,"hyperevm","ProjectX"],[hsw,"hyperevm","HyperSwap"],[uniBase,"base","Uniswap V3"]];
+  const v3Pos=[];
+  for(const[src,net,defProto]of V3SRC)for(const p of (src.positions||[])){
+    const proto=p.protocol||defProto;
+    v3Pos.push({...p,protocol:proto});
     const u0=(p.price0!=null&&p.amt0!=null)?p.amt0*p.price0:null;
     const u1=(p.price1!=null&&p.amt1!=null)?p.amt1*p.price1:null;
     if(u0!=null)push({sym:p.sym0,chain:net,protocol:proto,address:evmAddr,amount:p.amt0,usd:u0,kind:"lp"});
     if(u1!=null)push({sym:p.sym1,chain:net,protocol:proto,address:evmAddr,amount:p.amt1,usd:u1,kind:"lp"});
     if(u0==null&&u1==null&&p.usd)push({sym:p.pair,chain:net,protocol:proto,address:evmAddr,amount:null,usd:p.usd,kind:"lp"});
+  }
+  // Aave v3 (Ethereum): cada deposito suma y cada deuda RESTA (es un pasivo)
+  const av=j.aave;
+  if(av&&!av.error)for(const r of (av.reservas||[])){
+    if(r.supplied>0)push({sym:r.symbol,chain:"ethereum",protocol:"Aave",address:evmAddr,amount:r.supplied,usd:r.suppliedUsd,kind:"defi"});
+    if(r.debt>0)push({sym:r.symbol,chain:"ethereum",protocol:"Aave",address:evmAddr,amount:-r.debt,usd:-r.debtUsd,kind:"debt"});
   }
   // Kamino
   const kam=j.kamino;if(kam&&kam.ok&&kam.usd>1)push({sym:"Depósitos",chain:"solana",protocol:"Kamino",address:solAddr,amount:null,usd:kam.usd,kind:"defi"});
@@ -315,7 +327,7 @@ function rebuild(){
   for(const m of (manual||[]))push({...m,address:m.chain==="solana"?solAddr:evmAddr});
 
   ASSETS_FULL=ASSETS.slice();
-  if(DUST_HIDE)ASSETS=ASSETS.filter(a=>(a.usd||0)>=DUST_MIN);
+  if(DUST_HIDE)ASSETS=ASSETS.filter(a=>Math.abs(a.usd||0)>=DUST_MIN);
 
   TOTAL_USD=ASSETS_FULL.reduce((s,a)=>s+(a.usd||0),0);
 
@@ -323,7 +335,7 @@ function rebuild(){
   const pmap={};
   for(const a of ASSETS){const o=pmap[a.protocol]||(pmap[a.protocol]={name:a.protocol,usd:0,items:[]});o.usd+=a.usd||0;o.items.push(a);}
   PROTOS=Object.values(pmap).sort((x,y)=>protoOrder(x.name)-protoOrder(y.name)||y.usd-x.usd);
-  RAW.orcaPos=orca.positions;RAW.uniPos=(uni.positions||[]);RAW.prjxPos=(prjx.positions||[]);RAW.hl=hl;
+  RAW.orcaPos=orca.positions;RAW.v3Pos=v3Pos;RAW.hl=hl;RAW.aave=av&&!av.error?av:null;RAW.aaveErr=av&&av.error;
 
   renderNetWorth();
   populateFilters();
@@ -340,11 +352,16 @@ function setTarget(k,v){const t=getTarget();t[k]=Math.max(0,Math.min(100,Math.ro
 function renderNetWorth(){
   const{px}=RAW;
   const total=TOTAL_USD;
-  const stables=ASSETS_FULL.filter(a=>capTier(a.sym)==="stable").reduce((s,a)=>s+(a.usd||0),0);
+  const activos=ASSETS_FULL.filter(a=>(a.usd||0)>0).reduce((s,a)=>s+a.usd,0);
+  const pasivos=ASSETS_FULL.filter(a=>(a.usd||0)<0).reduce((s,a)=>s+a.usd,0);
+  const stables=ASSETS_FULL.filter(a=>capTier(a.sym)==="stable"&&(a.usd||0)>0).reduce((s,a)=>s+(a.usd||0),0);
   const tier={};for(const t of TIERS)tier[t[0]]=0;
   for(const a of ASSETS_FULL){tier[capTier(a.sym)]+=(a.usd||0);}
-  const seg=TIERS.map(([k,,c])=>total?`<i style="width:${(tier[k]/total*100).toFixed(2)}%;background:${c}"></i>`:"").join("");
-  const leg=TIERS.filter(([k])=>tier[k]>0).map(([k,name,c])=>`<span><span class="rdot" style="background:${c}"></span>${name} <b>${(tier[k]/total*100).toFixed(total&&tier[k]/total<0.001?2:1)}%</b></span>`).join("");
+  // Exposicion NETA: la deuda en estables resta del cubo de estables (un prestamo en USDC es estar corto de dolares).
+  // La barra solo pinta los cubos positivos; un cubo neto negativo sale en la leyenda.
+  const posTot=TIERS.reduce((s,[k])=>s+Math.max(0,tier[k]),0)||1;
+  const seg=TIERS.map(([k,,c])=>tier[k]>0?`<i style="width:${(tier[k]/posTot*100).toFixed(2)}%;background:${c}"></i>`:"").join("");
+  const leg=TIERS.filter(([k])=>Math.abs(tier[k])>0.5).map(([k,name,c])=>`<span><span class="rdot" style="background:${c}"></span>${name} <b style="${tier[k]<0?"color:var(--bear)":""}">${(tier[k]/total*100).toFixed(total&&Math.abs(tier[k]/total)<0.001?2:1)}%</b></span>`).join("");
   const T=getTarget(),tsum=TIERS.reduce((s,[k])=>s+(+T[k]||0),0),thr=Math.max(50,total*0.005);
   const objRows=TIERS.map(([k,name,c])=>{
     const cur=tier[k]||0,curPct=total?cur/total*100:0,tgtPct=+T[k]||0,gap=total*tgtPct/100-cur;
@@ -365,8 +382,8 @@ function renderNetWorth(){
       <div class="lbl">Net worth</div>
       <div class="big">${fmtUSD(total)}</div>
       <div class="substats">
-        <div><div class="lbl">Total activos</div><div class="n">${fmtUSD(total)}</div></div>
-        <div><div class="lbl">Pasivos</div><div class="n">$0</div></div>
+        <div><div class="lbl">Total activos</div><div class="n">${fmtUSD(activos)}</div></div>
+        <div><div class="lbl">Pasivos</div><div class="n" style="${pasivos<0?"color:var(--bear)":""}">${pasivos<0?"−"+fmtUSD(-pasivos):"$0"}</div></div>
         <div><div class="lbl">Pólvora (estables)</div><div class="n" style="color:var(--stable)">${fmtUSD(stables)}</div></div>
         <div><div class="lbl">En BTC</div><div class="n" style="color:var(--hot)">${px.BTC?("₿ "+(total/px.BTC).toFixed(4)):"—"}</div></div>
       </div>
@@ -382,10 +399,12 @@ function renderNetWorth(){
     </div>`;
   $("#nwCard").querySelectorAll(".objinp").forEach(inp=>inp.addEventListener("change",e=>{setTarget(e.target.dataset.tier,e.target.value);renderNetWorth();}));
 }
-function bar(pct,color){return `<div class="shcell"><span class="mono" style="font-size:12px;color:var(--muted)">${pct<0.1?"<0.1":pct.toFixed(1)}%</span><div class="shbar"><i style="width:${Math.min(100,pct)}%${color?";background:"+color:""}"></i></div></div>`;}
+function bar(pct,color){
+  if(pct<0)return `<div class="shcell"><span class="mono" style="font-size:12px;color:var(--bear)">${pct.toFixed(1)}%</span><div class="shbar"><i style="width:${Math.min(100,-pct)}%;background:var(--bear)"></i></div></div>`;
+  return `<div class="shcell"><span class="mono" style="font-size:12px;color:var(--muted)">${pct<0.1?"<0.1":pct.toFixed(1)}%</span><div class="shbar"><i style="width:${Math.min(100,pct)}%${color?";background:"+color:""}"></i></div></div>`;}
 function whereLabel(a){
   const via=` <span class="chip">${esc(a.chain)}</span>`;
-  const verb=a.protocol==="Wallet"?"Idle en Wallet":(a.kind==="stake"?"Staking en "+esc(a.protocol):(a.kind==="lp"?"LP en "+esc(a.protocol):"En "+esc(a.protocol)));
+  const verb=a.protocol==="Wallet"?"Idle en Wallet":(a.kind==="debt"?"Deuda en "+esc(a.protocol):a.kind==="stake"?"Staking en "+esc(a.protocol):(a.kind==="lp"?"LP en "+esc(a.protocol):"En "+esc(a.protocol)));
   return `${verb}${via} <span class="addr">${esc(a.address)}</span>`;
 }
 let GB_MODE="activo",FILT_W="all",FILT_C="all";
@@ -404,7 +423,7 @@ function underlying(sym){
 function walletOf(a){return a.chain==="solana"?"solana":"evm";}
 function viewAssets(){
   let arr=ASSETS_FULL.slice();
-  if(DUST_HIDE)arr=arr.filter(a=>(a.usd||0)>=DUST_MIN);
+  if(DUST_HIDE)arr=arr.filter(a=>Math.abs(a.usd||0)>=DUST_MIN);
   if(FILT_W!=="all")arr=arr.filter(a=>walletOf(a)===FILT_W);
   if(FILT_C!=="all")arr=arr.filter(a=>a.chain===FILT_C);
   return arr;
@@ -510,14 +529,27 @@ function simpleBody(items){
     h+=`<tr><td><span class="tok">${tokIcon(a.sym)}${esc(strip(a.sym))}${a.kind==="stake"?' <span class="chip">staked</span>':''}</span></td><td class="addr" style="text-align:left">${esc(a.chain)}</td><td>${a.amount!=null?fmtAmt(a.amount):"—"}</td><td>${bar(pct(a.usd||0))}</td><td>${fmtUSD(a.usd,2)}</td></tr>`;
   return h+`</tbody></table>`;
 }
+function aaveBody(items){
+  const A=RAW.aave;
+  const head=A?`<div style="display:flex;gap:18px;flex-wrap:wrap;padding:6px 2px 12px;font-size:13px" class="mono">
+      <span>Health factor <b style="color:${A.account.healthFactor==null?"inherit":A.account.healthFactor<1.5?"var(--bear)":A.account.healthFactor<2?"var(--hot)":"var(--bull)"}">${A.account.healthFactor!=null?A.account.healthFactor.toFixed(2):"∞"}</b></span>
+      <span>Liquidación BTC <b style="color:var(--bear)">${A.liqPrice!=null?fmtUSD(A.liqPrice):"—"}</b></span>
+      <span>Neto <b>${fmtUSD(A.equityUsd)}</b></span>
+      <a href="loop.html" style="margin-left:auto">🔁 Ver el loop →</a></div>`:"";
+  let h=head+`<table><thead><tr><th>Activo</th><th></th><th>Cantidad</th><th>% cartera</th><th>Valor</th></tr></thead><tbody>`;
+  for(const a of items.slice().sort((x,y)=>(y.usd||0)-(x.usd||0)))
+    h+=`<tr><td><span class="tok">${tokIcon(a.sym)}${esc(strip(a.sym))}</span></td><td><span class="chip" style="${a.kind==="debt"?"color:var(--bear)":""}">${a.kind==="debt"?"deuda":"depósito"}</span></td><td>${fmtAmt(a.amount)}</td><td>${bar(pct(a.usd||0))}</td><td style="${a.usd<0?"color:var(--bear)":""}">${a.usd<0?"−"+fmtUSD(-a.usd,2):fmtUSD(a.usd,2)}</td></tr>`;
+  return h+`</tbody></table>`;
+}
 function renderHoldings(){
   const chipsEl=$("#protoChips"),listEl=$("#protoList");
   chipsEl.innerHTML=PROTOS.map(p=>`<div class="pchip" data-p="${esc(p.name)}"><span class="pi">${protoIcon(p.name)}</span><div><div class="pv">${fmtUSD(p.usd)}</div><div class="pl">${esc(p.name)} · ${pct(p.usd).toFixed(1)}%</div></div></div>`).join("");
   listEl.innerHTML=PROTOS.map((p,i)=>{
     let body;
+    const v3=(RAW.v3Pos||[]).filter(x=>x.protocol===p.name&&x.usd);
     if(p.name==="Orca")body=lpBody(RAW.orcaPos||[]);
-    else if(p.name==="Uniswap V3")body=lpBody((RAW.uniPos||[]).filter(x=>x.usd));
-    else if(p.name==="ProjectX")body=lpBody((RAW.prjxPos||[]).filter(x=>x.usd));
+    else if(p.name==="Aave")body=aaveBody(p.items);
+    else if(v3.length)body=lpBody(v3);
     else if(p.name==="Wallet")body=walletBody(p.items);
     else body=simpleBody(p.items);
     return `<details class="panel proto" id="proto-${i}">

@@ -7,6 +7,7 @@
 // GET /api/portfolio  →  { solana:{...}, evm:{...}, prices:{...} }
 
 const { authConfigured, requestAuthorized } = require("../lib/auth");
+const { leerLoop } = require("./aave.js");   // Aave v3 (Ethereum): depositos, deuda, HF
 const fs = require("fs");
 const pathLib = require("path");
 const REPO = process.env.PRIVATE_REPO || "brovira/DeFi-Tracker";
@@ -127,6 +128,9 @@ async function fetchEvmChain(base, chain, addr) {
         const tok = row.token || {}; const dec = +(tok.decimals || 18);
         const amt = +(row.value || 0) / Math.pow(10, dec);
         if (!amt || amt <= 0 || tok.type !== "ERC-20") continue;
+        // Depositos y deuda de Aave (aEthcbBTC, variableDebtEthUSDC...): los lee leerLoop() con su
+        // precio y restando la deuda. Si se contaran aqui saldrian duplicados o sin precio.
+        if (/^(a(Eth|Bas|Arb|Opt|Pol|Ava)[A-Za-z0-9]+|variableDebt[A-Za-z0-9]+|stableDebt[A-Za-z0-9]+)$/.test(tok.symbol || "")) continue;
         // ANTI-SPAM: token "legítimo" si tiene market cap real EN Blockscout, o si no lo
         // tiene pero el precio existe y la cantidad es razonable (spam suele mandar
         // cantidades absurdas, billones/trillones de unidades, para inflar un precio falso).
@@ -702,7 +706,7 @@ module.exports = async (req, res) => {
       return res.end(JSON.stringify({ error: "no_wallets", message: "Rellena data/wallets.json en el repo privado: {\"solana\":\"...\",\"evm\":\"...\"}" }));
     }
     const px = await fetchPrices();
-    const [sol, eth, base, hyperevm, polygon, arbitrum, optimism, hl, uni, prjx, kamino, hyperswap, uniBase] = await Promise.all([
+    const [sol, eth, base, hyperevm, polygon, arbitrum, optimism, hl, uni, prjx, kamino, hyperswap, uniBase, aave] = await Promise.all([
       wallets.solana ? fetchSolana(wallets.solana, px).catch(e => ({ error: String(e.message || e) })) : null,
       wallets.evm ? fetchEvmChain("https://eth.blockscout.com", "ethereum", wallets.evm).catch(e => ({ error: String(e.message || e) })) : null,
       wallets.evm ? fetchEvmChain("https://base.blockscout.com", "base", wallets.evm).catch(e => ({ error: String(e.message || e) })) : null,
@@ -719,6 +723,7 @@ module.exports = async (req, res) => {
         { address: UNISWAP_V3_BASE_POSITION_MANAGER, label: "Uniswap V3" },
         { address: PANCAKESWAP_V3_POSITION_MANAGER, label: "PancakeSwap V3" },
       ], "Base").catch(e => ({ positions: [], totalUsd: 0, warning: String(e.message || e) })) : null,
+      wallets.evm ? leerLoop(wallets.evm).catch(e => ({ error: String(e.message || e) })) : null,
     ]);
     // Traza por fuente V3 en los logs de Vercel: desde el panel no se ve el cuerpo de la
     // respuesta, y "no aparece" no distingue entre 0 posiciones, error o timeout.
@@ -726,7 +731,7 @@ module.exports = async (req, res) => {
       .map(([k, v]) => `${k}=${v ? (v.positions || []).length : "null"}${v && v.warning ? `(!${String(v.warning).slice(0, 60)})` : ""}`).join(" ");
     console.log(`[portfolio] v3 ${resumenV3} · ${Date.now() - t0}ms`);
     res.setHeader("Cache-Control", "private, max-age=120");
-    return res.end(JSON.stringify({ prices: px, solana: sol, evm: { ethereum: eth, base, hyperevm, polygon, arbitrum, optimism }, hyperliquid: hl, uniswap: uni, projectx: prjx, hyperswap, uniswapBase: uniBase, kamino }));
+    return res.end(JSON.stringify({ prices: px, solana: sol, evm: { ethereum: eth, base, hyperevm, polygon, arbitrum, optimism }, hyperliquid: hl, uniswap: uni, projectx: prjx, hyperswap, uniswapBase: uniBase, kamino, aave }));
   } catch (e) {
     res.statusCode = 502; return res.end(JSON.stringify({ error: "fetch_error", message: String((e && e.message) || e) }));
   }
