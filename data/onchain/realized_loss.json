@@ -2,14 +2,10 @@
   "metric": "realized_loss",
   "source": "https://bitcoin-data.com/v1/realized-loss",
   "points": 1461,
-  "ultimo": "2026-11-12",
+  "ultimo": "2026-11-13",
   "diasDesdeUltimo": 1,
   "rancio": false,
   "series": [
-    {
-      "date": "2022-11-13",
-      "value": -290977591.12
-    },
     {
       "date": "2022-11-14",
       "value": -820193279.91
@@ -5849,6 +5845,10 @@
     {
       "date": "2026-11-12",
       "value": -1129499181.77
+    },
+    {
+      "date": "2026-11-13",
+      "value": -1517386264.87
     }
   ]
 }
