@@ -10,6 +10,7 @@
   @media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--bg:#eef1f6;--bg2:#e7ecf3;--panel:#fff;--panel2:#f4f7fb;--line:#dde5ee;--ink:#0e1622;--ink2:#3d4c5e;--muted:#67788c;--accent:#1f74c0;--bull:#0e846a;--bear:#c93a48;--hot:#b9791a;--loop:#6a55e0}}
   :root[data-theme="dark"]{--bg:#0b111b;--bg2:#0e1622;--panel:#121c2b;--panel2:#18263a;--line:#22344b;--ink:#eaf0f8;--ink2:#aebccf;--muted:#7c8fa8;--accent:#3fa9f5;--bull:#2fc39b;--bear:#f2606d;--hot:#f2a33f;--loop:#9b8cff}
   :root[data-theme="light"]{--bg:#eef1f6;--bg2:#e7ecf3;--panel:#fff;--panel2:#f4f7fb;--line:#dde5ee;--ink:#0e1622;--ink2:#3d4c5e;--muted:#67788c;--accent:#1f74c0;--bull:#0e846a;--bear:#c93a48;--hot:#b9791a;--loop:#6a55e0}
+  .page-loop *,.page-loop *::before,.page-loop *::after{box-sizing:border-box}
   .page-loop .sec-head{margin-top:40px}
   .page-loop .sec-head:first-of-type{margin-top:24px}
   .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
@@ -59,6 +60,9 @@
   <div class="cards" id="cards"></div>
   <div id="alerta"></div>
 
+  <div class="sec-head"><h2>🧾 Tramos ejecutados</h2><div class="rule"></div><span class="mtxt">cada compra del loop, verificada on-chain</span></div>
+  <div class="panel tablewrap" style="padding:6px 10px" id="tramos"><div class="note" style="padding:10px 4px">Cargando…</div></div>
+
   <div class="sec-head"><h2>📏 Dónde está la liquidación</h2><div class="rule"></div><span class="mtxt">precio de BTC · zonas de los analistas</span></div>
   <div class="panel" style="padding:16px 18px">
     <div class="ruler" id="ruler"></div>
@@ -97,7 +101,28 @@ const ZONAS=[
   {desde:58000,hasta:58000,txt:"58k · suelo de junio (LMEC)",fuente:"LMEC 10-nov"},
   {desde:54000,hasta:54000,txt:"~54k · precio realizado (Cowen)",fuente:"Cowen 12-nov"},
 ];
-let A=null;
+let A=null, LIBRO=null;
+
+async function loadLibro(){
+  try{const r=await fetch("/api/private?file=loop",{cache:"no-store"});if(r.ok)LIBRO=await r.json();}catch(e){}
+}
+function renderTramos(){
+  const el=$("#tramos");
+  const T=(LIBRO&&LIBRO.tramos)||[];
+  const plan=(LIBRO&&LIBRO.plan)||{};
+  const porque=plan.porque?`<div class="note" style="padding:8px 4px"><b>Porqué:</b> ${esc(plan.porque)}</div>`:`<div class="warnbox">Falta el <b>porqué</b> del loop en el diario.</div>`;
+  if(!T.length){el.innerHTML=`<div class="note" style="padding:10px 4px">Aún no hay tramos anotados.${plan.precios?` Plan: ${plan.precios.length} tramos de ${fmtUSD(plan.tramo_usd)} a ${plan.precios.map(p=>Math.round(p/1000)+"k").join(" / ")} en ${esc(plan.estable||"estables")}.`:""}</div>${porque}`;return;}
+  const px=A&&A.btcPriceUsd;
+  const usd=T.reduce((s,t)=>s+(+t.prestado_usd||0),0), btc=T.reduce((s,t)=>s+(+t.cbbtc_comprado||0),0);
+  const medio=btc>0?usd/btc:null;
+  const deuda=A?A.account.debtUsd:null;
+  // Resultado del loop = lo que vale hoy el BTC comprado con prestamo − lo que se debe hoy (con intereses)
+  const res=px&&deuda!=null?btc*px-deuda:null;
+  const filas=T.map((t,i)=>`<tr><td>${i+1} · ${esc(t.fecha||"—")}</td><td>${fmtN(t.prestado,2)} ${esc(t.estable||"")}</td><td>${fmtBTC(t.cbbtc_comprado)}</td><td>${fmtUSD(t.precio)}</td><td>${px?`<span class="${px>=t.precio?"up":"down"}">${fmtN((px/t.precio-1)*100,1)}%</span>`:"—"}</td><td style="text-align:left;white-space:normal;font-size:12px">${esc(t.nota||"")}</td></tr>`).join("");
+  el.innerHTML=`<table><thead><tr><th>Tramo</th><th>Prestado</th><th>cbBTC comprado</th><th>Precio</th><th>vs hoy</th><th style="text-align:left">Nota</th></tr></thead><tbody>${filas}
+  <tr style="font-weight:750"><td>Total</td><td>${fmtUSD(usd)}</td><td>${fmtBTC(btc)}</td><td>${medio?fmtUSD(medio)+" medio":"—"}</td><td>${px&&medio?`<span class="${px>=medio?"up":"down"}">${fmtN((px/medio-1)*100,1)}%</span>`:"—"}</td><td></td></tr></tbody></table>
+  <div class="note" style="padding:8px 4px">Resultado del loop hoy: el BTC comprado con préstamo vale <b>${px?fmtUSD(btc*px):"—"}</b> y debes <b>${fmtUSD(deuda)}</b> (con intereses) → <b class="${res>=0?"up":"down"}">${res!=null?(res>=0?"+":"")+fmtUSD(res):"—"}</b>. Para que el loop gane, BTC tiene que acabar por encima de tu precio medio más los intereses.</div>${porque}`;
+}
 
 function hfColor(hf){return hf==null?"":hf<1.3?"down":hf<1.7?"warn":"up";}
 
@@ -187,12 +212,16 @@ async function load(){
     return;
   }
   A=j;
+  if(!LIBRO)await loadLibro();
   if(!$("#pPrecios").value){
-    // Por defecto: si aun no hay deuda, los 3 tramos del plan; si ya hay, los 2 que faltan.
-    const z=[Math.round(A.btcPriceUsd/100)*100,64000,59000];
-    $("#pPrecios").value=(A.account.debtUsd>0?z.slice(1):z).join(", ");
+    // Por defecto: los precios del plan que aun no se han ejecutado (libro privado data/loop.json).
+    const plan=(LIBRO&&LIBRO.plan)||{}, hechos=((LIBRO&&LIBRO.tramos)||[]).length;
+    const z=(plan.precios&&plan.precios.length)?plan.precios:[Math.round(A.btcPriceUsd/100)*100,64000,59000];
+    $("#pPrecios").value=z.slice(Math.min(hechos,z.length)).join(", ");
+    if(plan.tramo_usd)$("#pTramo").value=plan.tramo_usd;
+    if(plan.techo_apalancamiento)$("#pTecho").value=plan.techo_apalancamiento;
   }
-  renderCards();renderRuler();renderReservas();renderPlan();
+  renderCards();renderTramos();renderRuler();renderReservas();renderPlan();
   $("#statusDot").className="dot ok";
   $("#statusText").textContent="En vivo desde Aave v3 · se relee cada 2 min";
 }
