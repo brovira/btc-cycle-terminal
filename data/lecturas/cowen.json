@@ -1,35 +1,66 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-11-12",
+ "fuente_fecha": "2026-11-13",
  "fuentes": [
-  "20261111-bitcoin-falls-below-the-50w-moving-average.md",
-  "20261112-bitcoin-q4-dump-came-just-the-same.md"
+  "20261113-bitcoin-drops-below-70k.md"
  ],
- "titulo": "Bitcoin Q4 Dump Came Just the Same",
+ "titulo": "Bitcoin Drops Below $70k",
  "tendencia": "bajista",
  "horizonte": "semanas",
- "escenario": "BTC (~72k) está barriendo soportes previos con rebotes cada vez más débiles; el barrido del máximo de mayo fue un fake out como 2015/2019/marzo 2022, tras la primera subida de tipos y el patrón de septiembre de año de midterm. Espera debilidad unas semanas más, al menos hasta el FOMC de diciembre (9 dic) y quizá poco después, y entonces se verá si el mínimo de Q4 es más alto o más bajo. Un mínimo claramente más bajo (idealmente bajo el realized price ~54k) daría un mejor mercado alcista en 2027; un mínimo más alto sería alcista 3-6 meses, pero cree que luego se testearía el realized price.",
+ "escenario": "BTC cae bajo 70k y testea la 200-week MA; cree que entra en su mínimo de ciclo de 4 años (capitulación post-midterms, Q4, como 2014/2018/2022), con el máximo de mayo como fake out (como 2015/2020/marzo 2022) tras la subida de tipos de septiembre. Los fake outs de 2015 y 2020 cayeron ~30% bajo la 200W; un 30% desde aquí llevaría a los 40k, muy por debajo del realized price. Hay posibilidad de mínimo más alto, pero entonces el mercado alcista de 2027 sería más flojo y habría nueva caída hacia agosto-septiembre de 2027.",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
   "bmsb": null,
   "ma50w": null,
-  "objetivo_correccion": 54000,
-  "invalidacion": null
+  "objetivo_correccion": 49000,
+  "invalidacion": 83000
  },
- "accion": "Está bajista para las próximas semanas y espera que a final de año muchos bajistas pasen a alcistas; ya compró BTC el 1 de julio, y no da órdenes concretas de compra/venta ahora.",
- "para_mis_lps": "No habla de rangos de liquidez ni LPs; implícitamente sugiere régimen bajista/volátil con posibles nuevos mínimos (zona 60k, realized price ~54k) y rebotes débiles, pero es inferencia mía, no suya.",
+ "accion": "No da órdenes concretas: advierte de no ser complaciente ni intentar cazar el suelo (bottom calling) y de observar si la capitulación ocurre con volumen alto.",
+ "para_mis_lps": "Sugiere evitar asumir que la 200W (~70k) aguanta como suelo: un wick 30% por debajo (zona 40k, bajo el realized price) es plausible, así que un rango LP BTC/USDC estrecho alrededor de 70k tiene riesgo de salirse por abajo; la volatilidad debería seguir alta hasta el FOMC de mediados de diciembre. Él no habla de LPs.",
  "citas": [
-  "I'm bearish for the next few weeks. By the end of the year, I think a lot of bears will become bulls",
-  "The window of weakness is still open and we likely continue to go down for a few more weeks.",
-  "Historically, Bitcoin's lows occur below the realized price."
+  "bears bear markets make fools of both bulls and bears.",
+  "I wouldn't look at the 200-week moving average and say like unilaterally that it has to hold as support.",
+  "I think that Bitcoin is going into its four-year cycle low."
  ],
  "confianza": "media",
- "cambios_vs_anterior": "Mantiene el escenario bajista hasta un mínimo de Q4/FOMC de diciembre, pero ahora añade con BTC ~72k el realized price (~54k) como objetivo de referencia, admite que un mínimo más alto es posible (no su caso base) y lo enlaza a si 2027 será mejor o más débil.",
+ "cambios_vs_anterior": "Sigue bajista, pero ahora BTC ya está bajo 70k testeando la 200W y añade que un wick ~30% bajo ella llevaría a los 40k (por debajo del realized price ~54k); marca como mínimo probable mediados de dic (FOMC) y como señal de fake out la pérdida de 83k en cierres semanales; el nivel de 54k deja de ser el único objetivo. El transcript aparece truncado al final.",
  "cadencia_dias": 2,
- "actualizado": "2026-11-13T14:55:03+00:00",
+ "actualizado": "2026-11-14T13:47:29+00:00",
  "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-11-12",
+   "fuentes": [
+    "20261111-bitcoin-falls-below-the-50w-moving-average.md",
+    "20261112-bitcoin-q4-dump-came-just-the-same.md"
+   ],
+   "titulo": "Bitcoin Q4 Dump Came Just the Same",
+   "tendencia": "bajista",
+   "horizonte": "semanas",
+   "escenario": "BTC (~72k) está barriendo soportes previos con rebotes cada vez más débiles; el barrido del máximo de mayo fue un fake out como 2015/2019/marzo 2022, tras la primera subida de tipos y el patrón de septiembre de año de midterm. Espera debilidad unas semanas más, al menos hasta el FOMC de diciembre (9 dic) y quizá poco después, y entonces se verá si el mínimo de Q4 es más alto o más bajo. Un mínimo claramente más bajo (idealmente bajo el realized price ~54k) daría un mejor mercado alcista en 2027; un mínimo más alto sería alcista 3-6 meses, pero cree que luego se testearía el realized price.",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": null,
+    "ma50w": null,
+    "objetivo_correccion": 54000,
+    "invalidacion": null
+   },
+   "accion": "Está bajista para las próximas semanas y espera que a final de año muchos bajistas pasen a alcistas; ya compró BTC el 1 de julio, y no da órdenes concretas de compra/venta ahora.",
+   "para_mis_lps": "No habla de rangos de liquidez ni LPs; implícitamente sugiere régimen bajista/volátil con posibles nuevos mínimos (zona 60k, realized price ~54k) y rebotes débiles, pero es inferencia mía, no suya.",
+   "citas": [
+    "I'm bearish for the next few weeks. By the end of the year, I think a lot of bears will become bulls",
+    "The window of weakness is still open and we likely continue to go down for a few more weeks.",
+    "Historically, Bitcoin's lows occur below the realized price."
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "Mantiene el escenario bajista hasta un mínimo de Q4/FOMC de diciembre, pero ahora añade con BTC ~72k el realized price (~54k) como objetivo de referencia, admite que un mínimo más alto es posible (no su caso base) y lo enlaza a si 2027 será mejor o más débil.",
+   "cadencia_dias": 2,
+   "actualizado": "2026-11-13T14:55:03+00:00"
+  },
   {
    "agente": "cowen",
    "nombre": "Benjamin Cowen",
@@ -372,37 +403,6 @@
    "cambios_vs_anterior": "Endurece el sesgo: ya hay un primer cierre semanal bajo 83K y un cierre diario bajo la media de 50 días, y añade un guion macro concreto (FOMC 28-oct, PCE 29-oct, 10 años ~5,3%) hacia la BMSB; la invalidación sigue en 83K.",
    "cadencia_dias": 2,
    "actualizado": "2026-10-24T11:38:45+00:00"
-  },
-  {
-   "agente": "cowen",
-   "nombre": "Benjamin Cowen",
-   "fuente_fecha": "2026-10-22",
-   "fuentes": [
-    "20261022-bitcoin-bull-market-support-band.md"
-   ],
-   "titulo": "Bitcoin Bull Market Support Band",
-   "tendencia": "neutral",
-   "horizonte": "semanas",
-   "escenario": "BTC ha vuelto a perder los 82K tras rebotar en la media de 50 días; mientras esté bajo 83K la carga de la prueba empieza a volver hacia los alcistas. Si pierde 83K, el siguiente punto es la bull market support band (21W EMA), en la zona baja-media de los 70K, y por debajo un retest de los mínimos del rango. Ve un posible máximo local entre el 21 de octubre y el 3 de noviembre (midterms) y un Q4 débil si cae la bolsa; el análisis técnico es alcista, pero el macro para acciones y energía es bajista.",
-   "risk_metric": null,
-   "niveles": {
-    "ma200w": null,
-    "bmsb": null,
-    "ma50w": null,
-    "objetivo_correccion": null,
-    "invalidacion": 83000
-   },
-   "accion": "No da llamada de compra/venta: vigilar el cierre diario bajo la media de 50 días como primera señal de que se va a la 21W EMA, y un segundo cierre semanal bajo 83K devolvería la carga de la prueba a los alcistas.",
-   "para_mis_lps": "Sugiere tener en cuenta un posible retest de la BMSB (low-mid 70s) en las próximas semanas, con 83K y la media de 50 días (~81-82K) como niveles clave; no da rangos concretos para LPs. Una dominancia BTC al alza (altcoins sangrando contra BTC) penaliza los pares volátiles frente a BTC/USDC.",
-   "citas": [
-    "if we're losing 83k here then the next obvious stop is just the bull market support band, right? And that's going to be like the low to mid 70s.",
-    "A close below the 50-day would be your first sign that the 21-week EMA is in play.",
-    "Bitcoin dominance will likely go up because we're going back to tighter monetary policy"
-   ],
-   "confianza": "media",
-   "cambios_vs_anterior": "Sesgo más cauteloso: BTC cae de ~84K a menos de 82K y ahora marca la BMSB (low-mid 70s) como siguiente parada si se pierden 83K; la carga de la prueba sigue en los bajistas solo mientras haya cierre sobre 83K, y mantiene la dominancia BTC al alza.",
-   "cadencia_dias": 2,
-   "actualizado": "2026-10-23T12:07:26+00:00"
   }
  ]
 }
