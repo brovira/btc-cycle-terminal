@@ -60,7 +60,7 @@
   <div class="cards" id="cards"></div>
   <div id="alerta"></div>
 
-  <div class="sec-head"><h2>🧾 Tramos ejecutados</h2><div class="rule"></div><span class="mtxt">cada compra del loop, verificada on-chain</span></div>
+  <div class="sec-head"><h2>🧾 Aportes y tramos</h2><div class="rule"></div><span class="mtxt">lo que has puesto tú y lo comprado con préstamo, verificado on-chain</span></div>
   <div class="panel tablewrap" style="padding:6px 10px" id="tramos"><div class="note" style="padding:10px 4px">Cargando…</div></div>
 
   <div class="sec-head"><h2>📏 Dónde está la liquidación</h2><div class="rule"></div><span class="mtxt">precio de BTC · zonas de los analistas</span></div>
@@ -106,12 +106,36 @@ let A=null, LIBRO=null;
 async function loadLibro(){
   try{const r=await fetch("/api/private?file=loop",{cache:"no-store"});if(r.ok)LIBRO=await r.json();}catch(e){}
 }
+// Lo que has puesto TU (BTC propio depositado) frente a lo comprado con prestamo, y si
+// cuadra con el colateral que lee Aave on-chain.
+function aportes(){
+  const L=LIBRO||{};
+  if(L.aportes&&L.aportes.length)return L.aportes;
+  return L.colateral_inicial_btc?[{fecha:"",btc:L.colateral_inicial_btc,nota:"colateral inicial"}]:[];
+}
+function renderAportes(){
+  const ap=aportes(), T=(LIBRO&&LIBRO.tramos)||[];
+  if(!ap.length||!A)return "";
+  const propio=ap.reduce((s,a)=>s+(+a.btc||0),0), prestamo=T.reduce((s,t)=>s+(+t.cbbtc_comprado||0),0);
+  const esperado=propio+prestamo, real=A.btcColateral, dif=real-esperado;
+  const cuadra=Math.abs(dif)<0.00001;
+  const ganadoBtc=A.equityBtc!=null?A.equityBtc-propio:null;
+  const filas=ap.map(a=>`<tr><td>${esc(a.fecha||"—")}</td><td>${esc(a.nota||"")}</td><td>${fmtN(+a.btc,8)}</td></tr>`).join("");
+  return `<table><thead><tr><th>Fecha</th><th style="text-align:right">Aporte propio</th><th>BTC</th></tr></thead><tbody>${filas}
+    <tr style="font-weight:750"><td>Aportado por ti</td><td></td><td>${fmtN(propio,8)}</td></tr>
+    <tr><td>Comprado con préstamo</td><td></td><td>${fmtN(prestamo,8)}</td></tr>
+    <tr style="font-weight:750"><td>Colateral esperado</td><td></td><td>${fmtN(esperado,8)}</td></tr>
+    <tr><td>Colateral en Aave (on-chain)</td><td style="text-align:right">${cuadra?'<span class="up">cuadra ✓</span>':`<span class="warn">difiere ${dif>0?"+":""}${fmtN(dif,8)}</span>`}</td><td>${fmtN(real,8)}</td></tr>
+    </tbody></table>
+    <div class="note" style="padding:8px 4px">Tu patrimonio neto en el loop es <b>${fmtBTC(A.equityBtc)}</b> frente a <b>${fmtBTC(propio)}</b> que pusiste: el loop te ${ganadoBtc>=0?"suma":"resta"} <b class="${ganadoBtc>=0?"up":"down"}">${ganadoBtc>=0?"+":""}${fmtN(ganadoBtc,4)} BTC</b> a precio de hoy (la deuda medida en BTC al precio actual).</div>`;
+}
 function renderTramos(){
   const el=$("#tramos");
   const T=(LIBRO&&LIBRO.tramos)||[];
   const plan=(LIBRO&&LIBRO.plan)||{};
   const porque=plan.porque?`<div class="note" style="padding:8px 4px"><b>Porqué:</b> ${esc(plan.porque)}</div>`:`<div class="warnbox">Falta el <b>porqué</b> del loop en el diario.</div>`;
-  if(!T.length){el.innerHTML=`<div class="note" style="padding:10px 4px">Aún no hay tramos anotados.${plan.precios?` Plan: ${plan.precios.length} tramos de ${fmtUSD(plan.tramo_usd)} a ${plan.precios.map(p=>Math.round(p/1000)+"k").join(" / ")} en ${esc(plan.estable||"estables")}.`:""}</div>${porque}`;return;}
+  const apHtml=renderAportes();
+  if(!T.length){el.innerHTML=apHtml+`<div class="note" style="padding:10px 4px">Aún no hay tramos anotados.${plan.precios?` Plan: ${plan.precios.length} tramos de ${fmtUSD(plan.tramo_usd)} a ${plan.precios.map(p=>Math.round(p/1000)+"k").join(" / ")} en ${esc(plan.estable||"estables")}.`:""}</div>${porque}`;return;}
   const px=A&&A.btcPriceUsd;
   const usd=T.reduce((s,t)=>s+(+t.prestado_usd||0),0), btc=T.reduce((s,t)=>s+(+t.cbbtc_comprado||0),0);
   const medio=btc>0?usd/btc:null;
@@ -119,7 +143,7 @@ function renderTramos(){
   // Resultado del loop = lo que vale hoy el BTC comprado con prestamo − lo que se debe hoy (con intereses)
   const res=px&&deuda!=null?btc*px-deuda:null;
   const filas=T.map((t,i)=>`<tr><td>${i+1} · ${esc(t.fecha||"—")}</td><td>${fmtN(t.prestado,2)} ${esc(t.estable||"")}</td><td>${fmtBTC(t.cbbtc_comprado)}</td><td>${fmtUSD(t.precio)}</td><td>${px?`<span class="${px>=t.precio?"up":"down"}">${fmtN((px/t.precio-1)*100,1)}%</span>`:"—"}</td><td style="text-align:left;white-space:normal;font-size:12px">${esc(t.nota||"")}</td></tr>`).join("");
-  el.innerHTML=`<table><thead><tr><th>Tramo</th><th>Prestado</th><th>cbBTC comprado</th><th>Precio</th><th>vs hoy</th><th style="text-align:left">Nota</th></tr></thead><tbody>${filas}
+  el.innerHTML=apHtml+`<h3 style="font-size:13px;margin:16px 4px 4px">Tramos con préstamo</h3><table><thead><tr><th>Tramo</th><th>Prestado</th><th>cbBTC comprado</th><th>Precio</th><th>vs hoy</th><th style="text-align:left">Nota</th></tr></thead><tbody>${filas}
   <tr style="font-weight:750"><td>Total</td><td>${fmtUSD(usd)}</td><td>${fmtBTC(btc)}</td><td>${medio?fmtUSD(medio)+" medio":"—"}</td><td>${px&&medio?`<span class="${px>=medio?"up":"down"}">${fmtN((px/medio-1)*100,1)}%</span>`:"—"}</td><td></td></tr></tbody></table>
   <div class="note" style="padding:8px 4px">Resultado del loop hoy: el BTC comprado con préstamo vale <b>${px?fmtUSD(btc*px):"—"}</b> y debes <b>${fmtUSD(deuda)}</b> (con intereses) → <b class="${res>=0?"up":"down"}">${res!=null?(res>=0?"+":"")+fmtUSD(res):"—"}</b>. Para que el loop gane, BTC tiene que acabar por encima de tu precio medio más los intereses.</div>${porque}`;
 }
@@ -137,6 +161,7 @@ function renderCards(){
     {l:"Deuda",n:fmtUSD(a.debtUsd),s:A.borrowApyMedioPct!=null?`APY ${fmtN(A.borrowApyMedioPct,2)}% · ${fmtUSD(A.interesAnualUsd)}/año`:"sin préstamo",sc:"var(--hot)"},
     {l:"Apalancamiento",n:lev!=null?fmtN(lev,2)+"x":"—",cl:lev>1.9?"down":lev>1.75?"warn":"",s:"colateral / patrimonio neto",sc:"var(--loop)"},
     {l:"Patrimonio neto",n:fmtBTC(A.equityBtc),s:fmtUSD(A.equityUsd)+" (colateral − deuda)",sc:"var(--bull)"},
+    ...(LIBRO&&aportes().length?[{l:"Aportado por ti",n:fmtBTC(aportes().reduce((s,a)=>s+(+a.btc||0),0)),s:"BTC propio depositado (sin préstamo)",sc:"var(--accent)"}]:[]),
     {l:"Liquidación en 12 meses",n:A.liqPrice12m!=null?fmtUSD(A.liqPrice12m):"—",s:"si no amortizas: los intereses suben la deuda",sc:"var(--hot)"},
   ];
   $("#cards").innerHTML=cards.map(c=>`<div class="stat" style="--sc:${c.sc}"><div class="l">${c.l}</div><div class="n ${c.cl||""}">${c.n}</div><div class="s">${c.s||""}</div></div>`).join("");
@@ -196,7 +221,9 @@ function renderPlan(){
   // Margen que queda bajo el techo, al ultimo precio de la lista
   const pUlt=precios.length?precios[precios.length-1]:A.btcPriceUsd, k=1-1/techo;
   const margen=Math.max(0,(C*pUlt*k-D)/(1-(1-s)*k));
-  $("#planNote").innerHTML=(primeroMal>=0?`<div class="badbox">A partir del paso ${primeroMal} superas el techo de ${fmtN(techo,2)}x. Reduce el tamaño del tramo o quita uno.</div>`:"")+
+  const liqObj=LIBRO&&LIBRO.plan&&LIBRO.plan.liquidacion_objetivo;
+  const pasaObj=liqObj?out.findIndex(o=>o.liq!=null&&o.liq>liqObj):-1;
+  $("#planNote").innerHTML=(pasaObj>0?`<div class="badbox">En el paso ${pasaObj} la liquidación pasa de tu objetivo de ${fmtUSD(liqObj)}. Reduce el tramo o deposita más colateral antes.</div>`:liqObj&&out.length>1?`<div class="note" style="padding:6px 0"><span class="up">✓</span> Todos los pasos dejan la liquidación por debajo de tu objetivo de <b>${fmtUSD(liqObj)}</b>.</div>`:"")+(primeroMal>=0?`<div class="badbox">A partir del paso ${primeroMal} superas el techo de ${fmtN(techo,2)}x. Reduce el tamaño del tramo o quita uno.</div>`:"")+
     `Cada tramo pide ${fmtUSD(tramo)}, compra cbBTC a ese precio (menos ${fmtN(s*100,2)}% de swap) y lo vuelve a depositar. La liquidación depende solo de la deuda y del colateral: comprar más abajo te da más BTC por el mismo dinero y la baja. `+
     `Tras el último paso, a ${fmtUSD(pUlt)}, aún podrías pedir <b>${fmtUSD(margen)}</b> más sin pasar de ${fmtN(techo,2)}x. No incluye los intereses (ver «Liquidación en 12 meses»).`;
 }
