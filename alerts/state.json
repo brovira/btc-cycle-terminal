@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-09",
+  "date": "2026-11-16",
   "phase": "Bajista",
   "signals": {
     "strong_buy": false,
@@ -8,6 +8,6 @@
     "mvrv_z_out_of_green": false,
     "reclaim_bmsb": false
   },
-  "price": 64732.18,
-  "checked_at": "2026-11-15T15:23:01.854948Z"
+  "price": 64942.97,
+  "checked_at": "2026-11-16T17:57:51.192592Z"
 }
