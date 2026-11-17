@@ -1,35 +1,66 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-11-14",
+ "fuente_fecha": "2026-11-16",
  "fuentes": [
-  "20261114-bitcoin-the-capitulation-spiral.md"
+  "20261116-bitcoin-dubious-speculation.md"
  ],
- "titulo": "Bitcoin: The Capitulation Spiral",
+ "titulo": "Bitcoin: Dubious Speculation",
  "tendencia": "bajista",
  "horizonte": "semanas",
- "escenario": "BTC cayó a ~66k (mínimo intradía bajo 65k) y ya está bajo la 200-week MA; cree que está en la 'capitulación spiral' del mínimo de ciclo de 4 años, con el máximo de mayo como fake out (como 2015/2020/marzo 2022) tras la subida de tipos de septiembre. En 2015 y 2020 el precio cayó ~30% bajo la 200W y no tocó fondo en ella; el patrón post-subida de tipos apunta a un mínimo hacia el día 94 (hoy día 59, ~35 días, aún en 2026), probablemente con un rebote y un último tramo bajista antes de fin de año. El risk on-chain está por debajo de 0.2 (mínimos históricos bajo 0.1) y el realized price sigue siendo un nivel a vigilar.",
+ "escenario": "BTC ronda 65k tras caer ~12-13% en la semana (~17% desde la apertura semanal), consecuencia del fake out sobre el máximo de 83k que confirmó por debajo. Ve una 'ventana de debilidad' de 1-2 meses donde cabe un mínimo inferior; su base es un rebote con máximo más bajo en 1-2 semanas y otra caída hacia el FOMC de diciembre (análogo dic-2018), aunque si no hay rebote la capitulación final podría estar muy cerca. Si no hay mínimo inferior hacia mediados de enero, es menos probable a corto plazo. Cree que estamos cerca del final del bear market en tiempo, no necesariamente en precio.",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
   "bmsb": null,
   "ma50w": null,
-  "objetivo_correccion": null,
+  "objetivo_correccion": 54000,
   "invalidacion": null
  },
- "accion": "No da órdenes: advierte de que quienes cantan el suelo siguen 'wrecked', pide ser realista (es razonable ser bajista en un mercado bajista) y vigilar el realized price; si aguanta las zonas de 65k+ dentro de un par de meses, tendería a recuperar.",
- "para_mis_lps": "Su lectura implica volatilidad alta y sesgo bajista en las próximas semanas (caídas semanales encadenadas, posibles drops del 30-40% semanal como 2015/2020), así que un rango estrecho de liquidez concentrada BTC/USDC en torno al precio actual corre riesgo de salirse por abajo; no da rangos concretos ni niveles numéricos, así que no hay más que extraer.",
+ "accion": "No da órdenes: pide tener el realized price (~54k) en el radar, mantener la mente abierta y no atarse emocionalmente a opiniones; vigilar mediados de diciembre (FOMC ~9 dic, posible shutdown ~11-12 dic).",
+ "para_mis_lps": "Implica riesgo de otro tramo bajista (posible mínimo inferior hacia ~54k, realized price) antes de fin de año, con volatilidad alta y posible vela de capitulación de -30/40% en dos semanas; rangos concentrados BTC/USDC por encima de ~54-60k correrían riesgo de salirse de rango. No da rangos concretos ni lo trata en términos de LP.",
  "citas": [
-  "we are in our capitulation spiral right now.",
-  "all the people that keep calling the bottom keep on getting wrecked",
-  "it's okay to be bullish in a bull market and it's okay to be bearish in a bare market.",
-  "They happened after the midterms, right? Every single time."
+  "if Bitcoin were to drop another 17 %, that puts you down near the realized price, down at like $54,000.",
+  "I think we're in kind of like a window of weakness where over the next month or two is when a lower low could occur.",
+  "if Bitcoin does not bounce here, then what it means to me is that we are very close to the final capitulation candle."
  ],
  "confianza": "media",
- "cambios_vs_anterior": "Precio ya en ~66k (mínimo bajo 65k) y bajo la 200W: la capitulación se materializa; añade el timing (día 94 post-subida de tipos, ~35 días), el risk on-chain <0.2 y el rebote intermedio previo al último tramo, pero no repite objetivo (49k) ni invalidación (83k) en este vídeo.",
+ "cambios_vs_anterior": "Precio algo más recuperado (~65k vs ~66k mínimo previo, sin mencionar ya la 200W MA), cuantifica el realized price en ~54k, precisa la ventana del mínimo (mediados de dic/FOMC, hasta mediados de enero) y plantea dos rutas: capitulación inmediata si no hay rebote, o lower high y nueva caída hacia el FOMC.",
  "cadencia_dias": 2,
- "actualizado": "2026-11-15T14:18:44+00:00",
+ "actualizado": "2026-11-17T16:29:13+00:00",
  "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-11-14",
+   "fuentes": [
+    "20261114-bitcoin-the-capitulation-spiral.md"
+   ],
+   "titulo": "Bitcoin: The Capitulation Spiral",
+   "tendencia": "bajista",
+   "horizonte": "semanas",
+   "escenario": "BTC cayó a ~66k (mínimo intradía bajo 65k) y ya está bajo la 200-week MA; cree que está en la 'capitulación spiral' del mínimo de ciclo de 4 años, con el máximo de mayo como fake out (como 2015/2020/marzo 2022) tras la subida de tipos de septiembre. En 2015 y 2020 el precio cayó ~30% bajo la 200W y no tocó fondo en ella; el patrón post-subida de tipos apunta a un mínimo hacia el día 94 (hoy día 59, ~35 días, aún en 2026), probablemente con un rebote y un último tramo bajista antes de fin de año. El risk on-chain está por debajo de 0.2 (mínimos históricos bajo 0.1) y el realized price sigue siendo un nivel a vigilar.",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": null,
+    "ma50w": null,
+    "objetivo_correccion": null,
+    "invalidacion": null
+   },
+   "accion": "No da órdenes: advierte de que quienes cantan el suelo siguen 'wrecked', pide ser realista (es razonable ser bajista en un mercado bajista) y vigilar el realized price; si aguanta las zonas de 65k+ dentro de un par de meses, tendería a recuperar.",
+   "para_mis_lps": "Su lectura implica volatilidad alta y sesgo bajista en las próximas semanas (caídas semanales encadenadas, posibles drops del 30-40% semanal como 2015/2020), así que un rango estrecho de liquidez concentrada BTC/USDC en torno al precio actual corre riesgo de salirse por abajo; no da rangos concretos ni niveles numéricos, así que no hay más que extraer.",
+   "citas": [
+    "we are in our capitulation spiral right now.",
+    "all the people that keep calling the bottom keep on getting wrecked",
+    "it's okay to be bullish in a bull market and it's okay to be bearish in a bare market.",
+    "They happened after the midterms, right? Every single time."
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "Precio ya en ~66k (mínimo bajo 65k) y bajo la 200W: la capitulación se materializa; añade el timing (día 94 post-subida de tipos, ~35 días), el risk on-chain <0.2 y el rebote intermedio previo al último tramo, pero no repite objetivo (49k) ni invalidación (83k) en este vídeo.",
+   "cadencia_dias": 2,
+   "actualizado": "2026-11-15T14:18:44+00:00"
+  },
   {
    "agente": "cowen",
    "nombre": "Benjamin Cowen",
@@ -373,37 +404,6 @@
    "cambios_vs_anterior": "Vídeo de oro sin datos de BTC: no actualiza niveles (BMSB 72-76K, 83K) pero refuerza el patrón de suelo en Q4 de año bajista/midterm y añade el viento en contra de dólar al alza y una posible subida de tipos en diciembre.",
    "cadencia_dias": 2,
    "actualizado": "2026-10-28T13:32:17+00:00"
-  },
-  {
-   "agente": "cowen",
-   "nombre": "Benjamin Cowen",
-   "fuente_fecha": "2026-10-25",
-   "fuentes": [
-    "20261025-bitcoin-bears-regaining-control.md"
-   ],
-   "titulo": "Bitcoin: Bears Regaining Control",
-   "tendencia": "bajista",
-   "horizonte": "semanas",
-   "escenario": "BTC (~80K) ya cerró semanalmente bajo 83K (82.042 la semana pasada, 82.179 la anterior al cierre de hoy); si el cierre de hoy se confirma serían dos cierres semanales bajo 83K, lo que apunta a un 'fake out' del breakout sobre el máximo de mayo y a una caída a la bull market support band (72K-76K), como ya hicieron S&P, Nasdaq, Dow, Russell, ETH, Total2, Total3 y MicroStrategy tras cerrar bajo la media de 50 días. Históricamente (2014, 2018, 2022) el último tramo bajista llegó después de las midterms (3-nov), así que no descarta un suelo de Q4; a largo plazo sigue muy alcista.",
-   "risk_metric": null,
-   "niveles": {
-    "ma200w": null,
-    "bmsb": 76000,
-    "ma50w": null,
-    "objetivo_correccion": 72000,
-    "invalidacion": 83000
-   },
-   "accion": "No da orden de compra/venta: mantiene su estrategia de DCA en la segunda mitad del año de midterms (compró algo en julio) y vigila el segundo cierre semanal bajo 83K; su temor es un camino tipo plata 2011 con nuevos mínimos en 2027-2028.",
-   "para_mis_lps": "Su lectura sugiere que el rango 72K-76K (BMSB) es el objetivo táctico a la baja y 83K la zona de invalidación, por lo que un LP concentrado BTC/USDC por encima de ~83K tendría alto riesgo de quedar fuera de rango; no da rangos de liquidez explícitos, es inferencia de sus niveles.",
-   "citas": [
-    "a weekly close below 83K would be the shift of considering the bears being back in control, but two weekly closes would more or less confirm it.",
-    "the bull market support band for Bitcoin currently ranges from around 76K to about 72.",
-    "I think DCA is probably the best way to go."
-   ],
-   "confianza": "alta",
-   "cambios_vs_anterior": "Se endurece: el segundo cierre semanal bajo 83K ya está prácticamente hecho (82.179K vs 82.042K previo), precio ~80K, y concreta la BMSB en 72K-76K; añade que el DCA sigue siendo su estrategia y el escenario de caída de 60K como señal de alarma.",
-   "cadencia_dias": 2,
-   "actualizado": "2026-10-26T13:34:50+00:00"
   }
  ]
 }
