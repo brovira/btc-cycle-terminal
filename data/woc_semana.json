@@ -1,53 +1,49 @@
 {
   "_como_se_actualiza": "AUTOMÁTICO desde jul-2026: ingesta/sync_woc.py lee la recomendación del pipeline semanal del repo privado (DeFi-Tracker) y la traduce a este formato. Workflow: sync-woc.yml, jueves 14:00 UTC (1h después del pipeline).",
   "_pendiente_agente": "`fiabilidad_tipo` se asigna por heurística de palabras clave y `cambios_de_fiabilidad` queda vacío: eso lo calibra el agente glassnode_tactico contra track_record.md.",
-  "updated": "2026-11-04",
-  "woc_fecha": "2026-11-04",
-  "woc_titulo": "Idling at Support",
+  "updated": "2026-11-17",
+  "woc_fecha": "2026-11-17",
+  "woc_titulo": "Capitulation Meets Support",
   "fuentes": [
-    "2026-11-04-the-week-onchain-week-44-2026.md",
+    "2026-11-17-the-week-onchain-week-46-2026.md",
     "recomendaciones.jsonl (pipeline semanal, DeFi-Tracker)",
     "claude -p con la suscripcion (CLAUDE_CODE_OAUTH_TOKEN), sin ANTHROPIC_API_KEY"
   ],
-  "resumen": "El leverage largo se ha reseteado en buena parte tras el retroceso del ~10%, y los STH pasaron de casi todos en ganancia a ~38%, así que el mercado está menos estirado. Los shorts se acumulan sobre el precio (cluster en ~$87K), lo que deja un posible combustible de short-squeeze, pero sin evidencia de funding negativo ni OI en máximos. Quedan offside los vendedores recientes de altcoins y los shorts nuevos si el precio sube, mientras la demanda externa (ETF con ~$1B de salidas en dos semanas) sigue ausente.",
-  "que_hacemos": "<b>Acción de LP: ENSANCHAR</b> · régimen de leverage: <b>reseteando</b> · confianza: media.<br>El leverage ya no está apinado en largo y hay shorts crecientes sobre el precio, pero no hay datos de funding, skew ni VRP que justifiquen estrechar, y el precio está en un retest binario del True Market Mean con la banda $73K-76K como soporte. Sin leverage extremo ni ruptura sostenida bajo $73K no hay confluencia para SALIR.",
+  "resumen": "El leverage largo quedó en gran parte limpiado tras el crash, con capitulación de pérdidas realizadas y bids dominantes, así que no hay longs apinados cerca; quedan longs en el cluster $59.5K-62.2K por debajo. Los shorts del cluster ~$87.5K están lejos y no están offside mientras la demanda siga fina (stablecoins -4.2% en 90d, ETFs -$2.6B, mineros vendiendo). El mercado está más limpio que complaciente, pero sin demanda amplia confirmada.",
+  "que_hacemos": "<b>Acción de LP: ENSANCHAR</b> · régimen de leverage: <b>reseteando</b> · confianza: media.<br>Hay señales de suelo local (capitulación, leverage limpiado, bids 2.3x), pero el precio está sobre un soporte único ($62K-66K) con un cluster de longs justo debajo y demanda débil, sin datos de funding/skew/VRP que justifiquen estrechar el rango. No hay confluencia de leverage extremo para SALIR, aunque un cierre diario bajo $62K la crearía.",
   "niveles": [
     {
       "k": "STH cost basis (resistencia/soporte)",
-      "v": "$75.700"
+      "v": "$74.100"
     },
     {
-      "k": "True Market Mean (línea bull/bear)",
-      "v": "$77.700"
+      "k": "Realized Price (suelo del ciclo)",
+      "v": "$53.700"
     },
     {
       "k": "Estante de demanda (soporte)",
-      "v": "$73.000"
+      "v": "$62.000"
     },
     {
       "k": "Muro de oferta (resistencia)",
-      "v": "$87.000"
-    },
-    {
-      "k": "Max pain de opciones",
-      "v": "$80.000"
+      "v": "$87.500"
     }
   ],
-  "metricas": "Sin funding, skew 25d, VRP ni DVOL. Calls ~$18B vs puts ~$13B en todos los vencimientos (call-heavy; mayores calls de diciembre en $80K, $90K, $100K y $120K; mayores puts en $60K o menos). OI de opciones: $5.7B (27 nov) y $12.5B (25 dic), con max pain en $80K y $76K, a ambos lados del spot. Heatmap de liquidaciones: longs largamente limpiados, banda restante en $73K-76K y bloque en $60K-63K; shorts crecientes sobre el precio, con el mayor cluster cerca de $87K. STH Supply in Profit ~38%.",
+  "metricas": "Sin funding, skew 25d, put/call, VRP, DVOL ni max pain. Liquidaciones de longs el 13-14 nov entre las mayores respecto al OI desde 2023; la mayoría de longs sobre $62K eliminados; cluster de longs restante en $59.5K-62.2K; mayor cluster de shorts en ~$87.5K. Bids/asks en Binance+Coinbase a menos del 5% del precio ~2.3x; mayor bid individual en Binance desde agosto cerca de $60K. Takers pasaron a compra neta; Coinbase Premium positivo el fin de semana del mínimo y de vuelta a un pequeño descuento. Opciones Deribit: ~1/3 de probabilidad de liquidar bajo $53.7K en sep-2027.",
   "llamadas_abiertas": [
     {
-      "llamada": "Una ruptura diaria sostenida bajo $73K (la banda STH cost basis/200d/liquidaciones largas) pasaría a SALIR. Una recuperación sobre el True Market Mean ($77.7K) con STH Supply in Profit sobre 50% y los shorts de ~$87K siendo presionados permitiría pasar a FARMEAR con rango estrecho, o subir el rango.",
+      "llamada": "Un cierre diario bajo $62K (con el cluster de liquidaciones de $59.5K-62.2K activándose) pasaría a SALIR, con $58.5K y $53.7K como objetivos; recuperar el STH cost basis de $74.1K con Coinbase Premium positivo sostenido y funding neutral/negativo permitiría pasar a FARMEAR.",
       "tipo": "señal a vigilar (del WoC)",
-      "fiabilidad_tipo": "posicionamiento + nivel on-chain — 8/10 histórico",
+      "fiabilidad_tipo": "posicionamiento/leverage — 8/10 histórico (su punto fuerte)",
       "criterio_exito": "se evalúa el jueves siguiente: narrativa del WoC nuevo + movimiento real de precio",
       "estado": "pendiente"
     }
   ],
   "evaluadas_recientes": [
     {
-      "llamada": "Un cierre diario bajo el True Market Mean ($77.9K) con las bids de $78K-79K barridas pasaría a SALIR hacia el STH cost basis ($75.8K). Cierres diarios sobre $85K, con ETF volviendo a entrar con más volumen, permitirían subir el rango o pasar a FARMEAR.",
+      "llamada": "Recuperar el STH cost basis ($75.6K) y el True Market Mean ($77.5K) con funding negativo/OI aún alto y short squeeze hacia $84K-87.5K permitiría pasar a FARMEAR o subir el rango; un cierre diario sostenido bajo $73K con el leverage rebuilding en largo pasaría a SALIR, con $68K-72.5K (bids) y $62K-66K como siguientes soportes.",
       "veredicto": "PARCIAL",
-      "nota": "ENSANCHAR fue razonable: el precio cayó ~10% desde el máximo de septiembre y retestea el True Market Mean ($77.7K) sin perder el STH cost basis ($75.7K), y SALIR no se activó (no hubo cierre sostenido bajo $73K). El soporte de $80K no aguantó y la caja se desplazó a la baja más de lo previsto, aunque el leverage largo se limpió sin cascada."
+      "nota": "ENSANCHAR resultó prudente: el precio no recuperó el STH cost basis ni el True Market Mean y no hubo squeeze; en cambio se produjo un crash a $62K con liquidaciones de longs de las mayores desde 2023. La rotura bajo $73K y el flush de longs apuntaban más a SALIR que a un rebote, aunque el precio mantuvo el bloque $62K-66K y no cayó al cluster $59.5K, y los shorts del $87.5K siguen sin ser alcanzados."
     }
   ],
   "cambios_de_fiabilidad": ""
