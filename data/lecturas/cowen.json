@@ -1,15 +1,14 @@
 {
  "agente": "cowen",
  "nombre": "Benjamin Cowen",
- "fuente_fecha": "2026-11-18",
+ "fuente_fecha": "2026-11-19",
  "fuentes": [
-  "20261117-stock-market-the-breakdown-continues.md",
-  "20261118-bitcoin-the-bull-s-dilemma.md"
+  "20261119-the-anthropic-ipo.md"
  ],
- "titulo": "Bitcoin: The Bull's Dilemma",
+ "titulo": "The Anthropic IPO",
  "tendencia": "bajista",
  "horizonte": "semanas",
- "escenario": "Sigue bajista en BTC en el Q4 del año de midterm: el patrón febrero-verano-Q4 de mínimos se cumple en stablecoin market cap (cayó a 293B perdiendo el soporte de 305B de feb/jul) y en proxies como Coinbase, así que no ve por qué BTC no pueda bajar de los ~60k de verano. Ve una ventana de debilidad de unas 7-8 semanas; si no hay mínimo inferior en ese plazo, es menos probable a corto plazo y muchos bears se volverán bulls. En bolsa espera que la corrección siga hasta el FOMC de diciembre (Nasdaq 2018 tocó fondo ~25 dic): S&P objetivo corto <7.200, rango 7.000-6.200; DXY hacia 105-106 como pico de hawkishness.",
+ "escenario": "Video de bolsa sobre la IPO de Anthropic (83$/accion, ~1,5T de valoracion). Patron habitual de IPO: subida inicial, caida ~50% y mejor entrada tras la caida; con SpaceX el minimo llego ~32 dias de trading despues. BTC (~63.995) esta casi igual que el dia de la IPO de SpaceX (11 jun, ~63.562); el minimo local de BTC tras aquella IPO llego ~20 dias despues, lo que apuntaria al FOMC del 9 de diciembre. Nasdaq 2026 vs 2018: enfriamiento hacia el FOMC de diciembre, con minimo posible ~25 dic.",
  "risk_metric": null,
  "niveles": {
   "ma200w": null,
@@ -18,19 +17,51 @@
   "objetivo_correccion": null,
   "invalidacion": null
  },
- "accion": "No da órdenes de compra/venta: mantiene sesgo bajista en activos de riesgo, dice que no le importaría pasarse a sesgo más alcista pronto (año pre-halving) y propone revisar en 4-5 semanas dónde podría estar un mínimo con rebote duradero.",
- "para_mis_lps": "No habla de LPs ni rangos. Implica que un rango BTC/USDC debería contemplar posible ruptura bajista por debajo de ~60k en las próximas 4-8 semanas y que la liquidez en stablecoins se está reduciendo; no da niveles exactos.",
+ "accion": "No da ordenes: avisa de que lo habitual es subida inicial y luego caida, y que la entrada mas interesante suele ser tras el drop (comenta que el compro SpaceX, sin ser consejo financiero).",
+ "para_mis_lps": "No da rangos de precio de BTC; solo una ventana temporal: posible techo local en torno al 21 de nov y minimo local cerca del FOMC del 9 dic. Para LPs de BTC/USDC sugiere cautela con volatilidad a la baja hasta diciembre, sin niveles concretos.",
  "citas": [
-  "Bitcoin remains bearish in my opinion, especially Q4 of the mid-term year.",
-  "if it doesn't happen in the next 7 weeks, then it's less likely to happen for a while",
-  "stable coin market cap did not find support at 305 billion like it did back in July and and February. It's now at 293 billion.",
-  "bear markets make fools of both bulls and bears."
+  "usually, you know, the the more interesting time to buy an IPO is after the drop from the initial surge",
+  "maybe looking for a local low in Bitcoin sometime around the next December FOMC",
+  "the 21st has tended to mark sort of these like local tops by Bitcoin"
  ],
  "confianza": "media",
- "cambios_vs_anterior": "Mantiene el sesgo bajista y la ventana de debilidad (ahora 7-8 semanas), añade como confirmación la ruptura de stablecoin market cap a 293B y proxies (COIN) y habla de ~60k como suelo de verano a perder, sin repetir el realized price 54k ni el rebote con máximo más bajo; el vídeo de BTC está truncado y no da niveles de MAs ni risk metric.",
+ "cambios_vs_anterior": "Mantiene el sesgo bajista y la ventana hasta el FOMC de diciembre (9 dic), ahora con analogia SpaceX/IPO y marcando el 21 de nov como posible techo local de BTC; no repite objetivos de S&P ni DXY.",
  "cadencia_dias": 2,
- "actualizado": "2026-11-19T16:03:57+00:00",
+ "actualizado": "2026-11-20T15:45:40+00:00",
  "historial": [
+  {
+   "agente": "cowen",
+   "nombre": "Benjamin Cowen",
+   "fuente_fecha": "2026-11-18",
+   "fuentes": [
+    "20261117-stock-market-the-breakdown-continues.md",
+    "20261118-bitcoin-the-bull-s-dilemma.md"
+   ],
+   "titulo": "Bitcoin: The Bull's Dilemma",
+   "tendencia": "bajista",
+   "horizonte": "semanas",
+   "escenario": "Sigue bajista en BTC en el Q4 del año de midterm: el patrón febrero-verano-Q4 de mínimos se cumple en stablecoin market cap (cayó a 293B perdiendo el soporte de 305B de feb/jul) y en proxies como Coinbase, así que no ve por qué BTC no pueda bajar de los ~60k de verano. Ve una ventana de debilidad de unas 7-8 semanas; si no hay mínimo inferior en ese plazo, es menos probable a corto plazo y muchos bears se volverán bulls. En bolsa espera que la corrección siga hasta el FOMC de diciembre (Nasdaq 2018 tocó fondo ~25 dic): S&P objetivo corto <7.200, rango 7.000-6.200; DXY hacia 105-106 como pico de hawkishness.",
+   "risk_metric": null,
+   "niveles": {
+    "ma200w": null,
+    "bmsb": null,
+    "ma50w": null,
+    "objetivo_correccion": null,
+    "invalidacion": null
+   },
+   "accion": "No da órdenes de compra/venta: mantiene sesgo bajista en activos de riesgo, dice que no le importaría pasarse a sesgo más alcista pronto (año pre-halving) y propone revisar en 4-5 semanas dónde podría estar un mínimo con rebote duradero.",
+   "para_mis_lps": "No habla de LPs ni rangos. Implica que un rango BTC/USDC debería contemplar posible ruptura bajista por debajo de ~60k en las próximas 4-8 semanas y que la liquidez en stablecoins se está reduciendo; no da niveles exactos.",
+   "citas": [
+    "Bitcoin remains bearish in my opinion, especially Q4 of the mid-term year.",
+    "if it doesn't happen in the next 7 weeks, then it's less likely to happen for a while",
+    "stable coin market cap did not find support at 305 billion like it did back in July and and February. It's now at 293 billion.",
+    "bear markets make fools of both bulls and bears."
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "Mantiene el sesgo bajista y la ventana de debilidad (ahora 7-8 semanas), añade como confirmación la ruptura de stablecoin market cap a 293B y proxies (COIN) y habla de ~60k como suelo de verano a perder, sin repetir el realized price 54k ni el rebote con máximo más bajo; el vídeo de BTC está truncado y no da niveles de MAs ni risk metric.",
+   "cadencia_dias": 2,
+   "actualizado": "2026-11-19T16:03:57+00:00"
+  },
   {
    "agente": "cowen",
    "nombre": "Benjamin Cowen",
@@ -375,37 +406,6 @@
    "cambios_vs_anterior": "Pasa de rebote a 87K topando con la media de 50 días a caída a ~77K con dos cierres semanales bajo 83K, y ahora apunta a la BMSB (21W EMA) como objetivo, con un escenario de rebote y caída final tras las midterms. El transcript está truncado a mitad de frase.",
    "cadencia_dias": 2,
    "actualizado": "2026-10-31T13:04:23+00:00"
-  },
-  {
-   "agente": "cowen",
-   "nombre": "Benjamin Cowen",
-   "fuente_fecha": "2026-10-29",
-   "fuentes": [
-    "20261029-bitcoin-post-fomc.md"
-   ],
-   "titulo": "Bitcoin: Post-FOMC",
-   "tendencia": "bajista",
-   "horizonte": "semanas",
-   "escenario": "Mantiene sesgo bajista: la Fed mantuvo tipos (hike probable en diciembre, ~80%, como en 2018 con pausa en midterms), PPI muy caliente (6,35% interanual) y espera PCE caliente, subida del largo plazo y petróleo a 120$ por la guerra de Irán, luego caída de bolsa y de BTC en Q4. BTC rebotó a 87K y topa con la media de 50 días; ve riesgo de que se desvanezca, con patrón de tres mínimos en 2026 (Q1, verano, Q4) visto en oro, Corea del Sur, HSI. Admite que no es obligatorio que ocurra y que el rebote a 87K no lo esperaba.",
-   "risk_metric": null,
-   "niveles": {
-    "ma200w": null,
-    "bmsb": null,
-    "ma50w": null,
-    "objetivo_correccion": null,
-    "invalidacion": null
-   },
-   "accion": "No da orden explícita; mantiene sesgo bajista/cauto sin tirar la toalla con la idea de caída en Q4, y señala la media de 50 días como nivel crítico.",
-   "para_mis_lps": "Sugiere más probabilidad de fade a la baja que de ruptura al alza (87K-90K posible pero no su base), con riesgo de volatilidad macro (PCE, bonos largos, petróleo); no da rangos concretos para LP BTC/USDC, así que usarlo solo como sesgo, no como niveles.",
-   "citas": [
-    "there is just simply the the risk that that Bitcoin fades back down",
-    "Bitcoin has done the same thing the Q1 low the summer low we just need the Q4 low",
-    "the long end spikes and then after the midterms"
-   ],
-   "confianza": "media",
-   "cambios_vs_anterior": "Pasa del vídeo de oro a hablar de BTC: sesgo bajista Q4 mantenido, con nuevos datos (Fed mantiene, PPI caliente, BTC rebotó a 87K y topa con la media de 50 días, fake-out bajo 83K 'arguably' confirmado) y sin niveles cuantitativos.",
-   "cadencia_dias": 2,
-   "actualizado": "2026-10-29T13:43:45+00:00"
   }
  ]
 }

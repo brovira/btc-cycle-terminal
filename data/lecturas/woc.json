@@ -1,42 +1,81 @@
 {
  "agente": "woc",
  "nombre": "Glassnode · Week On-Chain",
- "fuente_fecha": "2026-11-04",
+ "fuente_fecha": "2026-11-18",
  "fuentes": [
-  "20261104-the-week-onchain-week-44-2026.md"
+  "20261118-book-churn.md"
  ],
- "titulo": "The Week On-Chain — Idling at Support (Week 44, 2026)",
- "tendencia": "alcista",
- "horizonte": "semanas",
- "escenario": "BTC reteste el breakout de agosto: el 3 nov cerró justo bajo la True Market Mean ($77.7K) y tocó $76.1K antes de recuperar; STH Cost Basis $75.7K y media de 50 semanas justo debajo. El exceso de septiembre está purgado (STH supply in profit ~38% frente a ≥97.5%) y el apalancamiento largo se limpió; caso base: si aguanta, el retest es un reseteo sano dentro de la tendencia alcista de agosto. Falta dinero nuevo externo (ETFs con casi $1B de salidas en dos semanas).",
+ "titulo": "Book Churn — How Fast the Order Book Is Being Rewritten",
+ "tendencia": "neutral",
+ "horizonte": "dias",
+ "escenario": "No es un informe de mercado sino un artículo metodológico sobre la métrica Book Churn (frecuencia de revisión de niveles del order book en Binance perps). No da escenario de precio ni niveles de cost basis. Un zscore ≥ 2 precede una hora de volatilidad superior a la mediana ~63% de las veces (base 50%), sin dirección.",
  "rango_esperado": {
-  "bajo": 73000,
-  "alto": 87000,
-  "base": "suelo en la zona $73K-$76K (STH Cost Basis $75.7K + media de 200 días + banda de liquidaciones largas); techo en ~$87K (mayor cluster de liquidaciones de shorts, cerca del máximo de septiembre)"
+  "bajo": null,
+  "alto": null,
+  "base": "No aplica: el informe no da rango de precio."
  },
- "regimen_leverage": "Largos apalancados purgados desde agosto; shorts crecientes por encima del precio (cluster ~$87K), riesgo de short squeeze. Opciones sesgadas a calls (~$18B calls vs ~$13B puts), con parte de covered calls.",
+ "regimen_leverage": null,
  "accion_lp": null,
  "niveles": {
-  "sth_cost_basis": 75700,
-  "true_market_mean": 77700,
+  "sth_cost_basis": null,
+  "true_market_mean": null,
   "realized_price": null,
-  "soporte": 73000,
-  "resistencia": 87000,
+  "soporte": null,
+  "resistencia": null,
   "sth_menos_1s": null,
   "sth_mas_1s": null
  },
- "accion": "No da recomendación operativa explícita: vigila la zona $73K-$76K como nivel clave, considera mejor el riesgo/recompensa que en el máximo de septiembre e invalida con una ruptura sostenida bajo $73K.",
- "para_mis_lps": "No habla de LPs. Implícitamente, un rango BTC/USDC con suelo en ~$73K-$76K y techo en ~$87K encajaría con su lectura, con riesgo de salida si se pierden los $73K de forma sostenida.",
+ "accion": "Ninguna recomendación operativa: presenta Book Churn como indicador de actividad/volatilidad a corto plazo que iguala pero no supera una señal causal de rango de precio.",
+ "para_mis_lps": "No aplica directamente a rangos de liquidez concentrada; como mucho, un churn alto indicaría mayor probabilidad de volatilidad en la hora siguiente (sin dirección), pero el propio artículo declara que no se evaluó uso de trading ni ejecución.",
  "citas": [
-  "Level to watch: $73K–$76K (STH Cost Basis + 200-day average + long-liquidation cluster).",
-  "if it holds, the retest is a healthy reset within the August uptrend.",
-  "a sustained break below $73K points to a longer consolidation."
+  "Churn peaks with the price move; it does not lead it and has no direction.",
+  "It shifts odds, not a forecast.",
+  "No trading or execution use evaluated."
  ],
- "confianza": "media",
- "cambios_vs_anterior": "Pasa de BTC 'boxed in' entre $80K y $87.5K a un retest más bajo de la True Market Mean ($77.7K) y el STH Cost Basis ($75.7K), con soporte clave desplazado a $73K-$76K y sesgo constructivo (reseteo sano) en lugar de lateral.",
+ "confianza": "baja",
+ "cambios_vs_anterior": "La lectura anterior (4 nov) tenía escenario y niveles ($73K-$87K, STH CB $75.7K); este informe no aporta visión de precio ni niveles, así que se mantiene vigente la lectura previa sin cambios y aquí van en null.",
  "cadencia_dias": 7,
- "actualizado": "2026-11-06T14:37:30+00:00",
+ "actualizado": "2026-11-20T15:46:01+00:00",
  "historial": [
+  {
+   "agente": "woc",
+   "nombre": "Glassnode · Week On-Chain",
+   "fuente_fecha": "2026-11-04",
+   "fuentes": [
+    "20261104-the-week-onchain-week-44-2026.md"
+   ],
+   "titulo": "The Week On-Chain — Idling at Support (Week 44, 2026)",
+   "tendencia": "alcista",
+   "horizonte": "semanas",
+   "escenario": "BTC reteste el breakout de agosto: el 3 nov cerró justo bajo la True Market Mean ($77.7K) y tocó $76.1K antes de recuperar; STH Cost Basis $75.7K y media de 50 semanas justo debajo. El exceso de septiembre está purgado (STH supply in profit ~38% frente a ≥97.5%) y el apalancamiento largo se limpió; caso base: si aguanta, el retest es un reseteo sano dentro de la tendencia alcista de agosto. Falta dinero nuevo externo (ETFs con casi $1B de salidas en dos semanas).",
+   "rango_esperado": {
+    "bajo": 73000,
+    "alto": 87000,
+    "base": "suelo en la zona $73K-$76K (STH Cost Basis $75.7K + media de 200 días + banda de liquidaciones largas); techo en ~$87K (mayor cluster de liquidaciones de shorts, cerca del máximo de septiembre)"
+   },
+   "regimen_leverage": "Largos apalancados purgados desde agosto; shorts crecientes por encima del precio (cluster ~$87K), riesgo de short squeeze. Opciones sesgadas a calls (~$18B calls vs ~$13B puts), con parte de covered calls.",
+   "accion_lp": null,
+   "niveles": {
+    "sth_cost_basis": 75700,
+    "true_market_mean": 77700,
+    "realized_price": null,
+    "soporte": 73000,
+    "resistencia": 87000,
+    "sth_menos_1s": null,
+    "sth_mas_1s": null
+   },
+   "accion": "No da recomendación operativa explícita: vigila la zona $73K-$76K como nivel clave, considera mejor el riesgo/recompensa que en el máximo de septiembre e invalida con una ruptura sostenida bajo $73K.",
+   "para_mis_lps": "No habla de LPs. Implícitamente, un rango BTC/USDC con suelo en ~$73K-$76K y techo en ~$87K encajaría con su lectura, con riesgo de salida si se pierden los $73K de forma sostenida.",
+   "citas": [
+    "Level to watch: $73K–$76K (STH Cost Basis + 200-day average + long-liquidation cluster).",
+    "if it holds, the retest is a healthy reset within the August uptrend.",
+    "a sustained break below $73K points to a longer consolidation."
+   ],
+   "confianza": "media",
+   "cambios_vs_anterior": "Pasa de BTC 'boxed in' entre $80K y $87.5K a un retest más bajo de la True Market Mean ($77.7K) y el STH Cost Basis ($75.7K), con soporte clave desplazado a $73K-$76K y sesgo constructivo (reseteo sano) en lugar de lateral.",
+   "cadencia_dias": 7,
+   "actualizado": "2026-11-06T14:37:30+00:00"
+  },
   {
    "agente": "woc",
    "nombre": "Glassnode · Week On-Chain",
