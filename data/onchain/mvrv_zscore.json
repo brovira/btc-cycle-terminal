@@ -2,14 +2,10 @@
   "metric": "mvrv_zscore",
   "source": "https://bitcoin-data.com/v1/mvrv-zscore",
   "points": 1455,
-  "ultimo": "2026-11-20",
+  "ultimo": "2026-11-21",
   "diasDesdeUltimo": 7,
   "rancio": true,
   "series": [
-    {
-      "date": "2022-11-27",
-      "value": -0.2729
-    },
     {
       "date": "2022-11-28",
       "value": -0.2801
@@ -5825,6 +5821,10 @@
     {
       "date": "2026-11-20",
       "value": 0.1825
+    },
+    {
+      "date": "2026-11-21",
+      "value": 0.2298
     }
   ]
 }
